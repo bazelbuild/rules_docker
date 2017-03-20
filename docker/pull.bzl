@@ -28,16 +28,13 @@ def _impl(repository_ctx):
   # We do this in a directory named image (with a BUILD target image), so
   # that users can reference: @foo//image
   if repository_ctx.attr.digest:
-    # TODO(mattmoor): Update this once we've released a version that supports
-    # pulling by digest.
-    fail("docker_puller doesn't yet support pulling digests.")
-    # repository_ctx.template(
-    #     "image/BUILD", repository_ctx.path(repository_ctx.attr._digest_tpl),
-    #     substitutions={
-    #         "%{registry}": repository_ctx.attr.registry,
-    #         "%{repository}": repository_ctx.attr.repository,
-    #         "%{digest}": repository_ctx.attr.digest
-    #     }, executable=False)
+    repository_ctx.template(
+        "image/BUILD", repository_ctx.path(repository_ctx.attr._digest_tpl),
+        substitutions={
+            "%{registry}": repository_ctx.attr.registry,
+            "%{repository}": repository_ctx.attr.repository,
+            "%{digest}": repository_ctx.attr.digest
+        }, executable=False)
   else:
     repository_ctx.template(
         "image/BUILD", repository_ctx.path(repository_ctx.attr._tag_tpl),

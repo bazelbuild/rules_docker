@@ -66,7 +66,7 @@ py_library(
 new_git_repository(
     name = "containerregistry",
     remote = "https://github.com/google/containerregistry.git",
-    commit = "d618b0b677a7b2db940777fbb153ab7ebf63c660",
+    commit = "e7c44f172b1c316178cdd90b541ad9b9c4da19ff",
     build_file_content = """
 py_library(
    name = "containerregistry",
