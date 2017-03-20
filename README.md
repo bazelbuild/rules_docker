@@ -32,7 +32,11 @@ git_repository(
     tag = "0.0.0",
 )
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_pull")
+load(
+  "@io_bazel_rules_docker//docker:docker.bzl",
+  "docker_repositories", "docker_pull"
+)
+docker_repositories()
 
 docker_pull(
   name = "java_base",
