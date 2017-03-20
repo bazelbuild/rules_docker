@@ -72,24 +72,11 @@ docker_bundle(
 )
 ```
 
-### docker_pull (launcher.gcr.io)
-
-TODO(mattmoor): Add a launcher example.
-
-### docker_pull (DockerHub?)
-
-TODO(mattmoor): Add a DockerHub example.
-
-### docker_pull (Quay?)
-
-TODO(mattmoor): Add a Quay example.
-
-
 ## Things still missing:
 
 - Authenticated pull
 - [Authenticated] push
-
+- Examples of `docker_pull` from various popular registries.
 
 
 <a name="docker_pull"></a>
