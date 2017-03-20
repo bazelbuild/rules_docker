@@ -3,6 +3,7 @@
 ## Rules
 
 * [docker_build](#docker_build)
+* [docker_bundle](#docker_bundle)
 * [docker_pull](#docker_pull)
 
 ## Overview
@@ -54,6 +55,20 @@ docker_build(
     base = ["@java_base//image"],
     files = ["//java/com/example/app:Hello_deploy.jar"],
     cmd = ["Hello_deploy.jar"]
+)
+```
+
+### docker_bundle
+
+```python
+docker_bundle(
+    name = "bundle",
+    images = {
+        # A set of images to bundle up into a single tarball.
+        "gcr.io/foo/bar:bazz": ":app",
+        "gcr.io/foo/bar:blah": "//my:sidecar",
+        "gcr.io/foo/bar:booo": "@your//random:image",
+    }
 )
 ```
 
@@ -426,6 +441,46 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
            `//package/name:target`. Setting this attribute to
            `gcr.io/dummy` would set the default tag to
            `gcr.io/dummy/package_name:target`.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="docker_bundle"></a>
+## docker_bundle
+
+```python
+docker_bundle(name, images)
+```
+
+A rule that aliases and saves N images into a single `docker save` tarball.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name, required</code></p>
+        <p>Unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>images</code></td>
+      <td>
+        <p><code>Map of Tag to image Label; required</code></p>
+        <p>A collection of the images to save into the tarball.  The keys
+           are the tags with which to alias the image specified by the
+           value.  The value may be the output of either `docker_pull`,
+           `docker_build`, or a `docker save` tarball.</p>
       </td>
     </tr>
   </tbody>

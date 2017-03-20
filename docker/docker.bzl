@@ -13,4 +13,9 @@
 # limitations under the License.
 """Rules for manipulation Docker images."""
 
+# Alias docker_build and docker_bundle for now, so folks can move to
+# referencing this before it becomes the source of truth.
+load("@bazel_tools//tools/build_defs/docker:docker.bzl", "docker_build", "docker_bundle")
+
+# Expose the docker_pull repository rule.
 load(":pull.bzl", "docker_pull")
