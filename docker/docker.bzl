@@ -15,84 +15,28 @@
 
 # Alias docker_build and docker_bundle for now, so folks can move to
 # referencing this before it becomes the source of truth.
-load("@bazel_tools//tools/build_defs/docker:docker.bzl", "docker_build", "docker_bundle")
+# TODO(mattmoor): Add docker_bundle once it is a part of a Bazel release.
+load("@bazel_tools//tools/build_defs/docker:docker.bzl", "docker_build")
 
 # Expose the docker_pull repository rule.
 load(":pull.bzl", "docker_pull")
 
+# Expose the docker_push rule.
+load(":push.bzl", "docker_push")
+
 
 def docker_repositories():
   """Download dependencies of docker rules."""
-  # Used for the HTTP transport in containerregistry
-  native.new_http_archive(
-      name = "httplib2",
-      url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.10.3",
-      sha256 = "d1bee28a68cc665c451c83d315e3afdbeb5391f08971dcc91e060d5ba16986f1",
-      strip_prefix = "httplib2-0.10.3/python2/httplib2/",
-      type = "tar.gz",
-      build_file_content = """
-py_library(
-   name = "httplib2",
-   srcs = glob(["**/*.py"]),
-   data = ["cacerts.txt"],
-   visibility = ["//visibility:public"]
-)""",
+  native.http_file(
+    name = "puller",
+    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.1/puller.par",
+    sha256 = "ad078d2e3041b03fb28f3a99b30f1834da602883867d2daa3535f24928fdcfbd",
+    executable = True,
   )
 
-  # Used for authentication in containerregistry
-  native.new_http_archive(
-      name = "oauth2client",
-      url = "https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0",
-      sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
-      strip_prefix = "oauth2client-4.0.0/oauth2client/",
-      type = "tar.gz",
-      build_file_content = """
-py_library(
-   name = "oauth2client",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"],
-   deps = [
-     "@httplib2//:httplib2",
-   ]
-)"""
-  )
-
-  # Used for parallel execution in containerregistry
-  native.new_http_archive(
-      name = "concurrent",
-      url = "https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5",
-      sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
-      strip_prefix = "pythonfutures-3.0.5/concurrent/",
-      type = "tar.gz",
-      build_file_content = """
-py_library(
-   name = "concurrent",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"]
-)"""
-  )
-
-  # Used for pulling and pushing Docker images.
-  native.new_git_repository(
-      name = "containerregistry",
-      remote = "https://github.com/google/containerregistry.git",
-      commit = "e7c44f172b1c316178cdd90b541ad9b9c4da19ff",
-      build_file_content = """
-py_library(
-   name = "containerregistry",
-   srcs = glob(["**/*.py"]),
-   deps = [
-     "@httplib2//:httplib2",
-     "@oauth2client//:oauth2client",
-     "@concurrent//:concurrent",
-   ]
-)
-
-py_binary(
-   name = "puller",
-   srcs = ["tools/docker_puller_.py"],
-   main = "tools/docker_puller_.py",
-   visibility = ["//visibility:public"],
-   deps = [":containerregistry"]
-)""",
+  native.http_file(
+    name = "pusher",
+    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.1/pusher.par",
+    sha256 = "5b77f4060a1c20e6cbeb3ca417f90a19d180390f63bc90f5b9ae44e919e99308",
+    executable = True,
   )

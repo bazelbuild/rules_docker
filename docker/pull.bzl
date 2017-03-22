@@ -21,28 +21,41 @@ construct new images with docker_build.
 
 def _impl(repository_ctx):
   """Core implementation of docker_pull."""
+
   # Add an empty top-level BUILD file.
   repository_ctx.file("BUILD", "")
 
+  # TODO(mattmoor): Is there a way of doing this so that
+  # consumers can just depend on @base//image ?
+  repository_ctx.file("image/BUILD", """
+package(default_visibility = ["//visibility:public"])
+exports_files(["image.tar"])
+""")
+
+  args = [
+      repository_ctx.path(repository_ctx.attr._puller),
+      "--tarball", repository_ctx.path("image/image.tar")
+  ]
+
   # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
-  # We do this in a directory named image (with a BUILD target image), so
-  # that users can reference: @foo//image
   if repository_ctx.attr.digest:
-    repository_ctx.template(
-        "image/BUILD", repository_ctx.path(repository_ctx.attr._digest_tpl),
-        substitutions={
-            "%{registry}": repository_ctx.attr.registry,
-            "%{repository}": repository_ctx.attr.repository,
-            "%{digest}": repository_ctx.attr.digest
-        }, executable=False)
+    args += [
+        "--name", "{registry}/{repository}@{digest}".format(
+            registry=repository_ctx.attr.registry,
+            repository=repository_ctx.attr.repository,
+            digest=repository_ctx.attr.digest)
+    ]
   else:
-    repository_ctx.template(
-        "image/BUILD", repository_ctx.path(repository_ctx.attr._tag_tpl),
-        substitutions={
-            "%{registry}": repository_ctx.attr.registry,
-            "%{repository}": repository_ctx.attr.repository,
-            "%{tag}": repository_ctx.attr.tag
-        }, executable=False)
+    args += [
+        "--name", "{registry}/{repository}:{tag}".format(
+            registry=repository_ctx.attr.registry,
+            repository=repository_ctx.attr.repository,
+            tag=repository_ctx.attr.tag)
+    ]
+
+  result = repository_ctx.execute(args)
+  if result.return_code:
+    fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
 
 
 _docker_pull = repository_rule(
@@ -52,14 +65,11 @@ _docker_pull = repository_rule(
         "repository": attr.string(mandatory=True),
         "digest": attr.string(),
         "tag": attr.string(default="latest"),
-        "_tag_tpl": attr.label(
-            default=Label("//docker:pull-tag.BUILD.tpl"),
-            cfg="host",
-            allow_files=True),
-        "_digest_tpl": attr.label(
-            default=Label("//docker:pull-digest.BUILD.tpl"),
-            cfg="host",
-            allow_files=True),
+        "_puller": attr.label(
+          executable=True,
+          default=Label("@puller//file:puller.par"),
+          cfg="host",
+        ),
     },
 )
 

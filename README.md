@@ -48,6 +48,19 @@ docker_pull(
 )
 ```
 
+## Authorization
+
+You can use these rules to access private images using standard Docker
+authentication methods.  e.g. to utilize the [Google Container Registry](
+https://gcr.io)[credential helper](
+https://github.com/GoogleCloudPlatform/docker-credential-gcr):
+
+``` shell
+$ gcloud components install docker-credential-gcr
+
+$ docker-credential-gcr configure-docker
+```
+
 ## Examples
 
 ### docker_build
@@ -76,10 +89,39 @@ docker_bundle(
 )
 ```
 
+### docker_pull
+
+In `WORKSPACE`:
+
+```python
+docker_pull(
+    name = "base",
+    registry = "gcr.io",
+    repository = "my-project/my-base",
+    # 'tag' is also supported, but digest is encouraged for reproducibility.
+    digest = "sha256:deadbeef",
+)
+```
+
+This can then be referenced in `BUILD` files as `@base//image`.
+
+### docker_push
+
+This target pushes on `bazel run :push_foo`:
+
+``` python
+docker_push(
+   name = "push_foo",
+   image = ":foo",
+   registry = "gcr.io",
+   repository = "my-project/my-image",
+   tag = "dev",
+)
+```
+
+
 ## Things still missing:
 
-- Authenticated pull
-- [Authenticated] push
 - Examples of `docker_pull` from various popular registries.
 
 
@@ -148,6 +190,65 @@ use with `docker_build`s `base` attribute.
           <strong>Note:</strong> For reproducible builds, use of `digest`
           is recommended.
         </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="docker_push"></a>
+## docker_push
+
+```python
+docker_push(name, image, registry, repository, tag)
+```
+
+An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name, required</code></p>
+        <p>Unique name for this repository rule</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>image</code></td>
+      <td>
+        <p><code>Label; required</code></p>
+        <p>The label containing a Docker image to publish.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>registry</code></td>
+      <td>
+        <p><code>Registry Domain; required</code></p>
+        <p>The registry to which to publish the image.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>repository</code></td>
+      <td>
+        <p><code>Repository; required</code></p>
+        <p>The `repository` of images to which to push.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>tag</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>The `tag` of the docker image to push to the specified `repository`.
+           This attribute defaults to `latest`.</p>
       </td>
     </tr>
   </tbody>

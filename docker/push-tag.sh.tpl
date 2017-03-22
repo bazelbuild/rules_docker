@@ -1,3 +1,4 @@
+#!/bin/bash -xe
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-genrule(
-    name = "image",
-    outs = ["image.tar"],
-    cmd = """$(location @containerregistry//:puller) \
-               --name=%{registry}/%{repository}@%{digest} \
-               --tarball=$(location image.tar)""",
-    tools = ["@containerregistry//:puller"],
-    visibility = ["//visibility:public"],
-)
+%{docker_pusher} \
+  --name=%{registry}/%{repository}:%{tag} \
+  --tarball=%{image} "$@"
