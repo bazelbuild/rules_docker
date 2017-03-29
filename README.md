@@ -5,6 +5,7 @@
 * [docker_build](#docker_build)
 * [docker_bundle](#docker_bundle)
 * [docker_pull](#docker_pull)
+* [docker_push](#docker_push)
 
 ## Overview
 
