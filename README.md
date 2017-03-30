@@ -1,4 +1,4 @@
-# Docker Rules
+# Bazel Docker Rules
 
 ## Rules
 
@@ -10,9 +10,9 @@
 ## Overview
 
 This repository contains a set of rules for pulling down base images, augmenting
-them with build artifacts and assets, and (coming soon) publishing those images.
-These rules do not require / use Docker for pulling, building, or pushing
-images.  This means:
+them with build artifacts and assets, and publishing those images.
+**These rules do not require / use Docker for pulling, building, or pushing
+images.**  This means:
 * They can be used to develop Docker containers on Windows / OSX without
 `boot2docker` or `docker-machine` installed.
 * They do not require root access on your workstation.
