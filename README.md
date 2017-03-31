@@ -17,7 +17,7 @@ images.**  This means:
 `boot2docker` or `docker-machine` installed.
 * They do not require root access on your workstation.
 
-Also unlike traditional Docker builds, the Docker images produced by
+Also, unlike traditional Docker builds, the Docker images produced by
 `docker_build` are deterministic / reproducible.
 
 
@@ -53,10 +53,10 @@ docker_pull(
 
 You can use these rules to access private images using standard Docker
 authentication methods.  e.g. to utilize the [Google Container Registry](
-https://gcr.io)[credential helper](
+https://gcr.io) [credential helper](
 https://github.com/GoogleCloudPlatform/docker-credential-gcr):
 
-``` shell
+```shell
 $ gcloud components install docker-credential-gcr
 
 $ docker-credential-gcr configure-docker
@@ -134,7 +134,7 @@ docker_pull(name, registry, repository, digest, tag)
 ```
 
 A repository rule that pulls down a Docker base image in a manner suitable for
-use with `docker_build`s `base` attribute.
+use with `docker_build`'s `base` attribute.
 
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
@@ -151,7 +151,7 @@ use with `docker_build`s `base` attribute.
       <td><code>name</code></td>
       <td>
         <p><code>Name, required</code></p>
-        <p>Unique name for this repository rule</p>
+        <p>Unique name for this repository rule.</p>
       </td>
     </tr>
     <tr>
@@ -172,7 +172,7 @@ use with `docker_build`s `base` attribute.
       <td><code>digest</code></td>
       <td>
         <p><code>string; optional</code></p>
-        <p>The `digest` of the docker image to pull from the specified
+        <p>The `digest` of the Docker image to pull from the specified
            `repository`.</p>
         <p>
           <strong>Note:</strong> For reproducible builds, use of `digest`
@@ -184,7 +184,7 @@ use with `docker_build`s `base` attribute.
       <td><code>tag</code></td>
       <td>
         <p><code>string; optional</code></p>
-        <p>The `tag` of the docker image to pull from the specified `repository`.
+        <p>The `tag` of the Docker image to pull from the specified `repository`.
            If neither this nor `digest` is specified, this attribute defaults
            to `latest`.  If both are specified, then `tag` is ignored.</p>
         <p>
@@ -220,7 +220,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td><code>name</code></td>
       <td>
         <p><code>Name, required</code></p>
-        <p>Unique name for this repository rule</p>
+        <p>Unique name for this rule.</p>
       </td>
     </tr>
     <tr>
@@ -248,7 +248,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td><code>tag</code></td>
       <td>
         <p><code>string; optional</code></p>
-        <p>The `tag` of the docker image to push to the specified `repository`.
+        <p>The `tag` of the Docker image to push to the specified `repository`.
            This attribute defaults to `latest`.</p>
       </td>
     </tr>
@@ -295,7 +295,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <p>
             <b>Note:</b> this target is not suitable for direct consumption.
             It is used for incremental loading and non-docker rules should
-            depends on the docker image (<i>name</i>.tar) instead.
+            depends on the Docker image (<i>name</i>.tar) instead.
         </p>
       </td>
     </tr>
@@ -347,13 +347,12 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <p>Root path of the files.</p>
         <p>
           The directory structure from the files is preserved inside the
-          docker image but a prefix path determined by `data_path`
+          Docker image, but a prefix path determined by `data_path`
           is removed from the directory structure. This path can
           be absolute from the workspace root if starting with a `/` or
           relative to the rule's directory. A relative path may starts with "./"
           (or be ".") but cannot use go up with "..". By default, the
-          `data_path` attribute is unused and all files are supposed to have no
-          prefix.
+          `data_path` attribute is unused, and all files should have no prefix.
         </p>
       </td>
     </tr>
@@ -374,7 +373,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <code>List of files, optional</code>
         <p>File to add to the layer.</p>
         <p>
-          A list of files that should be included in the docker image.
+          A list of files that should be included in the Docker image.
         </p>
       </td>
     </tr>
@@ -383,7 +382,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td>
         <code>Bool, default to False</code>
         <p>
-          Whether to use the legacy strategy for naming the repository name
+          Whether to use the legacy strategy for setting the repository name
           embedded in the resulting tarball.
           e.g. <code>bazel/{target.replace('/', '_')}</code>
           vs. <code>bazel/{target}</code>
@@ -405,7 +404,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <code>List of files, optional</code>
         <p>Tar file to extract in the layer.</p>
         <p>
-          A list of tar files whose content should be in the docker image.
+          A list of tar files whose content should be in the Docker image.
         </p>
       </td>
     </tr>
@@ -415,7 +414,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <code>List of files, optional</code>
         <p>Debian package to install.</p>
         <p>
-          A list of debian packages that will be installed in the docker image.
+          A list of debian packages that will be installed in the Docker image.
         </p>
       </td>
     </tr>
@@ -423,7 +422,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>symlinks</code></td>
       <td>
         <code>Dictionary, optional</code>
-        <p>Symlinks to create in the docker image.</p>
+        <p>Symlinks to create in the Docker image.</p>
         <p>
           <code>
           symlinks = {
@@ -440,7 +439,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <code>String, optional</code>
         <p><a href="https://docs.docker.com/reference/builder/#user">The user
                that the image should run as.</a></p>
-        <p>Because building the image never happens inside a docker container,
+        <p>Because building the image never happens inside a Docker container,
                this user does not affect the other actions (e.g.,
                adding files).</p>
       </td>
@@ -467,7 +466,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <code>Dictionary from strings to strings, optional</code>
         <p><a href="https://docs.docker.com/reference/builder/#env">Dictionary
                from environment variable names to their values when running the
-               docker image.</a></p>
+               Docker image.</a></p>
         <p>
           <code>
           env = {
@@ -485,7 +484,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <p><a href="https://docs.docker.com/reference/builder/#label">Dictionary
                from custom metadata names to their values. You can also put a
                file name prefixed by '@' as a value. Then the value is replaced
-               with the contents of the file.
+               with the contents of the file.</a></p>
         <p>
           <code>
           labels = {
@@ -518,8 +517,8 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td>
         <code>String, optional</code>
         <p><a href="https://docs.docker.com/reference/builder/#workdir">Initial
-               working directory when running the docker image.</a></p>
-        <p>Because building the image never happens inside a docker container,
+               working directory when running the Docker image.</a></p>
+        <p>Because building the image never happens inside a Docker container,
                this working directory does not affect the other actions (e.g.,
                adding files).</p>
       </td>
@@ -529,7 +528,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td>
         <code>String, default to `bazel`</code>
         <p>The repository for the default tag for the image.</a></p>
-        <p>Image generated by `docker_build` are tagged by default to
+        <p>Images generated by `docker_build` are tagged by default to
            `bazel/package_name:target` for a `docker_build` target at
            `//package/name:target`. Setting this attribute to
            `gcr.io/dummy` would set the default tag to
@@ -572,7 +571,7 @@ A rule that aliases and saves N images into a single `docker save` tarball.
         <p><code>Map of Tag to image Label; required</code></p>
         <p>A collection of the images to save into the tarball.  The keys
            are the tags with which to alias the image specified by the
-           value.  The value may be the output of either `docker_pull`,
+           value.  The value may be the output of `docker_pull`,
            `docker_build`, or a `docker save` tarball.</p>
       </td>
     </tr>
