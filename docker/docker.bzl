@@ -29,14 +29,14 @@ def docker_repositories():
   """Download dependencies of docker rules."""
   native.http_file(
     name = "puller",
-    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.1/puller.par",
-    sha256 = "ad078d2e3041b03fb28f3a99b30f1834da602883867d2daa3535f24928fdcfbd",
+    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.2/puller.par",
+    sha256 = "a69b44222148b8a740d557e93f6227e25e8aa1c7ac2aab137c66752cddf2a754",
     executable = True,
   )
 
   native.http_file(
     name = "pusher",
-    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.1/pusher.par",
-    sha256 = "5b77f4060a1c20e6cbeb3ca417f90a19d180390f63bc90f5b9ae44e919e99308",
+    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.2/pusher.par",
+    sha256 = "73f511f94d2a6ed870c51aaf50b720a1b205970d6fd930078abefd4bd1a0ab99",
     executable = True,
   )
