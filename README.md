@@ -70,7 +70,7 @@ $ docker-credential-gcr configure-docker
 docker_build(
     name = "app",
     # References docker_pull from WORKSPACE (above)
-    base = ["@java_base//image"],
+    base = ["@java_base//image:image.tar"],
     files = ["//java/com/example/app:Hello_deploy.jar"],
     cmd = ["Hello_deploy.jar"]
 )
@@ -104,7 +104,7 @@ docker_pull(
 )
 ```
 
-This can then be referenced in `BUILD` files as `@base//image`.
+This can then be referenced in `BUILD` files as `@base//image:image.tar`.
 
 ### docker_push
 
@@ -120,10 +120,35 @@ docker_push(
 )
 ```
 
+### docker_pull (DockerHub)
 
-## Things still missing:
+In `WORKSPACE`:
 
-- Examples of `docker_pull` from various popular registries.
+```python
+docker_pull(
+    name = "official_ubuntu",
+    registry = "index.docker.io",
+    repository = "library/ubuntu",
+    tag = "14.04",
+)
+```
+
+This can then be referenced in `BUILD` files as `@official_ubuntu//image:image.tar`.
+
+### docker_pull (Quay.io)
+
+In `WORKSPACE`:
+
+```python
+docker_pull(
+    name = "etcd",
+    registry = "quay.io",
+    repository = "coreos/etcd",
+    tag = "latest",
+)
+```
+
+This can then be referenced in `BUILD` files as `@etcd//image:image.tar`.
 
 
 <a name="docker_pull"></a>
