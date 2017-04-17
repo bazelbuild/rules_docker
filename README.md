@@ -20,6 +20,9 @@ images.**  This means:
 Also, unlike traditional Docker builds, the Docker images produced by
 `docker_build` are deterministic / reproducible.
 
+__NOTE:__ `docker_push` and `docker_pull` make use of
+[google/containerregistry](https://github.com/google/containerregistry) for
+registry interactions.
 
 ## Setup
 
