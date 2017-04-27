@@ -15,8 +15,8 @@
 
 # Alias docker_build and docker_bundle for now, so folks can move to
 # referencing this before it becomes the source of truth.
-# TODO(mattmoor): Add docker_bundle once it is a part of a Bazel release.
-load("@bazel_tools//tools/build_defs/docker:docker.bzl", "docker_build")
+load(":build.bzl", "docker_build")
+load(":bundle.bzl", "docker_bundle")
 
 # Expose the docker_pull repository rule.
 load(":pull.bzl", "docker_pull")
@@ -24,19 +24,109 @@ load(":pull.bzl", "docker_pull")
 # Expose the docker_push rule.
 load(":push.bzl", "docker_push")
 
+# The release of the github.com/google/containerregistry to consume.
+CONTAINERREGISTRY_RELEASE = 'v0.0.3'
 
 def docker_repositories():
   """Download dependencies of docker rules."""
   native.http_file(
     name = "puller",
-    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.2/puller.par",
-    sha256 = "a69b44222148b8a740d557e93f6227e25e8aa1c7ac2aab137c66752cddf2a754",
+    url = ("https://storage.googleapis.com/containerregistry-releases/" +
+           CONTAINERREGISTRY_RELEASE + "/puller.par"),
+    sha256 = "7b12952520cec8a95ca4e63d38dca0d2e35c8c7248ccb73729f1fcabdb0629ce",
     executable = True,
   )
 
   native.http_file(
     name = "pusher",
-    url = "https://storage.googleapis.com/containerregistry-releases/v0.0.2/pusher.par",
-    sha256 = "73f511f94d2a6ed870c51aaf50b720a1b205970d6fd930078abefd4bd1a0ab99",
+    url = ("https://storage.googleapis.com/containerregistry-releases/" +
+           CONTAINERREGISTRY_RELEASE + "/pusher.par"),
+    sha256 = "7750d145432cad892dc032c376308a5bfe73c663c76c1551da37babf4033d1fd",
     executable = True,
+  )
+
+  native.git_repository(
+    name = "containerregistry",
+    remote = "https://github.com/google/containerregistry.git",
+    tag = CONTAINERREGISTRY_RELEASE,
+  )
+
+  # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
+  # once transitive workspace instantiation lands.
+  native.new_http_archive(
+    name = "httplib2",
+    url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.10.3",
+    sha256 = "d1bee28a68cc665c451c83d315e3afdbeb5391f08971dcc91e060d5ba16986f1",
+    strip_prefix = "httplib2-0.10.3/python2/httplib2/",
+    type = "tar.gz",
+    build_file_content = """
+py_library(
+   name = "httplib2",
+   srcs = glob(["**/*.py"]),
+   data = ["cacerts.txt"],
+   visibility = ["//visibility:public"]
+)""",
+  )
+
+  # Used by oauth2client
+  native.new_http_archive(
+    name = "six",
+    url = "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz",
+    sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
+    strip_prefix = "six-1.9.0/",
+    type = "tar.gz",
+    build_file_content = """
+# Rename six.py to __init__.py
+genrule(
+    name = "rename",
+    srcs = ["six.py"],
+    outs = ["__init__.py"],
+    cmd = "cat $< >$@",
+)
+py_library(
+   name = "six",
+   srcs = [":__init__.py"],
+   visibility = ["//visibility:public"],
+)"""
+  )
+
+  # Used for authentication in containerregistry
+  native.new_http_archive(
+    name = "oauth2client",
+    url = "https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0",
+    sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
+    strip_prefix = "oauth2client-4.0.0/oauth2client/",
+    type = "tar.gz",
+    build_file_content = """
+py_library(
+   name = "oauth2client",
+   srcs = glob(["**/*.py"]),
+   visibility = ["//visibility:public"],
+   deps = [
+     "@httplib2//:httplib2",
+     "@six//:six",
+   ]
+)"""
+  )
+
+  # Used for parallel execution in containerregistry
+  native.new_http_archive(
+    name = "concurrent",
+    url = "https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5",
+    sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
+    strip_prefix = "pythonfutures-3.0.5/concurrent/",
+    type = "tar.gz",
+    build_file_content = """
+py_library(
+   name = "concurrent",
+   srcs = glob(["**/*.py"]),
+   visibility = ["//visibility:public"]
+)"""
+  )
+
+  # For packaging python tools.
+  native.git_repository(
+    name = "subpar",
+    remote = "https://github.com/google/subpar",
+    commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
   )
