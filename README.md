@@ -1,5 +1,8 @@
 # Bazel Docker Rules
 
+[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker)
+
+
 ## Rules
 
 * [docker_build](#docker_build)
