@@ -24,11 +24,11 @@ def sha256(ctx, artifact):
       mnemonic = "SHA256")
   return out
 
-
 tools = {
     "sha256": attr.label(
-        default=Label("//docker:sha256"),
-        cfg="host",
-        executable=True,
-        allow_files=True)
+        default = Label("//docker:sha256"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
 }

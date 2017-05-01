@@ -25,7 +25,7 @@ load(":pull.bzl", "docker_pull")
 load(":push.bzl", "docker_push")
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = 'v0.0.3'
+CONTAINERREGISTRY_RELEASE = "v0.0.3"
 
 def docker_repositories():
   """Download dependencies of docker rules."""

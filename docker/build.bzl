@@ -13,25 +13,40 @@
 # limitations under the License.
 """Rule for building a Docker image."""
 
-load(":filetype.bzl",
-     tar_filetype="tar",
-     deb_filetype="deb",
-     docker_filetype="docker")
-load(":hash.bzl",
-     _hash_tools="tools", _sha256="sha256")
-load(":label.bzl", _string_to_label="string_to_label")
-load(":layers.bzl",
-     _assemble_image="assemble",
-     _get_layers="get_from_target",
-     _incr_load="incremental_load",
-     _layer_tools="tools")
+load(
+    ":filetype.bzl",
+    deb_filetype = "deb",
+    docker_filetype = "docker",
+    tar_filetype = "tar",
+)
+load(
+    ":hash.bzl",
+    _hash_tools = "tools",
+    _sha256 = "sha256",
+)
+load(
+    ":label.bzl",
+    _string_to_label = "string_to_label",
+)
+load(
+    ":layers.bzl",
+    _assemble_image = "assemble",
+    _get_layers = "get_from_target",
+    _incr_load = "incremental_load",
+    _layer_tools = "tools",
+)
 load(":list.bzl", "reverse")
-load(":path.bzl",
-     "dirname", "strip_prefix",
-     _join_path="join",
-     _canonicalize_path="canonicalize")
-load(":serialize.bzl", _serialize_dict="dict_to_associative_list")
-
+load(
+    ":path.bzl",
+    "dirname",
+    "strip_prefix",
+    _canonicalize_path = "canonicalize",
+    _join_path = "join",
+)
+load(
+    ":serialize.bzl",
+    _serialize_dict = "dict_to_associative_list",
+)
 
 def _build_layer(ctx):
   """Build the current layer for appending it the base layer."""
@@ -73,7 +88,6 @@ def _build_layer(ctx):
   )
   return layer
 
-
 # TODO(mattmoor): In a future change, we should establish the invariant that
 # base must expose "docker_layers", possibly by hoisting a "docker_load" rule
 # from a tarball "base".
@@ -85,7 +99,6 @@ def _get_base_artifact(ctx):
     if len(ctx.files.base) != 1:
       fail("base attribute should be a single tar file.")
     return ctx.files.base[0]
-
 
 def _image_config(ctx, layer_names):
   """Create the configuration for a new docker image."""
@@ -145,7 +158,6 @@ def _image_config(ctx, layer_names):
       mnemonic = "ImageConfig")
   return config
 
-
 def _metadata_action(ctx, layer, name, output):
   """Generate the action to create the JSON metadata for the layer."""
   rewrite_tool = ctx.executable.rewrite_tool
@@ -203,13 +215,11 @@ def _metadata_action(ctx, layer, name, output):
       use_default_shell_env=True,
       mnemonic = "RewriteJSON")
 
-
 def _metadata(ctx, layer, name):
   """Create the metadata for the new docker image."""
   metadata = ctx.new_file(ctx.label.name + ".metadata")
   _metadata_action(ctx, layer, name, metadata)
   return metadata
-
 
 def _compute_layer_name(ctx, layer):
   """Compute the layer's name.
@@ -235,7 +245,6 @@ def _compute_layer_name(ctx, layer):
   _metadata_action(ctx, layer, layer_sha, metadata)
   return _sha256(ctx, metadata)
 
-
 def _repository_name(ctx):
   """Compute the repository name for the current rule."""
   if ctx.attr.legacy_repository_naming:
@@ -244,7 +253,6 @@ def _repository_name(ctx):
   # Newer Docker clients support multi-level names, which are a part of
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
-
 
 def _create_image(ctx, layers, identifier, config, name, metadata, tags):
   """Create the new image."""
@@ -275,7 +283,6 @@ def _create_image(ctx, layers, identifier, config, name, metadata, tags):
       outputs = [ctx.outputs.layer],
       mnemonic = "CreateImage",
   )
-
 
 def _docker_build_impl(ctx):
   """Implementation for the docker_build rule."""
@@ -321,18 +328,16 @@ def _docker_build_impl(ctx):
                 files = set([ctx.outputs.layer]),
                 docker_layers = layers)
 
-
 docker_build_ = rule(
-    implementation = _docker_build_impl,
     attrs = {
-        "base": attr.label(allow_files=docker_filetype),
+        "base": attr.label(allow_files = docker_filetype),
         "data_path": attr.string(),
-        "directory": attr.string(default="/"),
-        "tars": attr.label_list(allow_files=tar_filetype),
-        "debs": attr.label_list(allow_files=deb_filetype),
-        "files": attr.label_list(allow_files=True),
-        "legacy_repository_naming": attr.bool(default=False),
-        "mode": attr.string(default="0555"),
+        "directory": attr.string(default = "/"),
+        "tars": attr.label_list(allow_files = tar_filetype),
+        "debs": attr.label_list(allow_files = deb_filetype),
+        "files": attr.label_list(allow_files = True),
+        "legacy_repository_naming": attr.bool(default = False),
+        "mode": attr.string(default = "0555"),
         "symlinks": attr.string_dict(),
         "entrypoint": attr.string_list(),
         "cmd": attr.string_list(),
@@ -342,38 +347,44 @@ docker_build_ = rule(
         "ports": attr.string_list(),  # Skylark doesn't support int_list...
         "volumes": attr.string_list(),
         "workdir": attr.string(),
-        "repository": attr.string(default="bazel"),
+        "repository": attr.string(default = "bazel"),
         # Implicit dependencies.
         "label_files": attr.label_list(
-            allow_files=True),
+            allow_files = True,
+        ),
         "label_file_strings": attr.string_list(),
         "build_layer": attr.label(
-            default=Label("@bazel_tools//tools/build_defs/pkg:build_tar"),
-            cfg="host",
-            executable=True,
-            allow_files=True),
+            default = Label("@bazel_tools//tools/build_defs/pkg:build_tar"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
         "create_image": attr.label(
-            default=Label("//docker:create_image"),
-            cfg="host",
-            executable=True,
-            allow_files=True),
+            default = Label("//docker:create_image"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
         "rewrite_tool": attr.label(
-            default=Label("//docker:rewrite_json"),
-            cfg="host",
-            executable=True,
-            allow_files=True),
+            default = Label("//docker:rewrite_json"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
         "create_image_config": attr.label(
-            default=Label("//docker:create_image_config"),
-            cfg="host",
-            executable=True,
-            allow_files=True)
+            default = Label("//docker:create_image_config"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
     } + _hash_tools + _layer_tools,
+    executable = True,
     outputs = {
         "out": "%{name}.tar",
         "layer": "%{name}-layer.tar",
     },
-    executable = True)
-
+    implementation = _docker_build_impl,
+)
 
 # This validates the two forms of value accepted by
 # ENTRYPOINT and CMD, turning them into a canonical
@@ -404,7 +415,6 @@ def _validate_command(name, argument):
     fail("The %s attribute must be a string or list, if specified." % name)
   else:
     return None
-
 
 # Produces a new docker image tarball compatible with 'docker load', which
 # is a single additional layer atop 'base'.  The goal is to have relatively

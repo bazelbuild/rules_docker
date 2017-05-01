@@ -17,7 +17,6 @@ This wraps the containerregistry.tools.docker_pusher executable in a
 Bazel rule for publishing base images without a Docker client.
 """
 
-
 def _impl(ctx):
   """Core implementation of docker_push."""
 
@@ -42,27 +41,30 @@ def _impl(ctx):
       ctx.executable._pusher
   ]))
 
-
 _docker_push = rule(
-    implementation = _impl,
     attrs = {
-        "image": attr.label(allow_files=[".tar"], single_file=True),
-        "registry": attr.string(mandatory=True),
-        "repository": attr.string(mandatory=True),
-        "tag": attr.string(default="latest"),
+        "image": attr.label(
+            allow_files = [".tar"],
+            single_file = True,
+        ),
+        "registry": attr.string(mandatory = True),
+        "repository": attr.string(mandatory = True),
+        "tag": attr.string(default = "latest"),
         "_tag_tpl": attr.label(
-            default=Label("//docker:push-tag.sh.tpl"),
-            single_file=True,
-            allow_files=True),
+            default = Label("//docker:push-tag.sh.tpl"),
+            single_file = True,
+            allow_files = True,
+        ),
         "_pusher": attr.label(
-            default=Label("@pusher//file"),
-            cfg="host",
-            executable=True,
-            allow_files=True),
+            default = Label("@pusher//file"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
     },
     executable = True,
+    implementation = _impl,
 )
-
 
 def docker_push(image=None, **kwargs):
   """Pushes a docker image.

@@ -14,8 +14,10 @@
 """Tools for dealing with Docker Image layers."""
 
 load(":list.bzl", "reverse")
-load(":path.bzl", _get_runfile_path="runfile")
-
+load(
+    ":path.bzl",
+    _get_runfile_path = "runfile",
+)
 
 def _extract_id(ctx, artifact):
   id_out = ctx.new_file(artifact.basename + ".id")
@@ -30,7 +32,6 @@ def _extract_id(ctx, artifact):
       outputs = [id_out, name_out],
       mnemonic = "ExtractID")
   return id_out, name_out
-
 
 def get_from_target(ctx, attr_target, file_target):
   if hasattr(attr_target, "docker_layers"):
@@ -49,7 +50,6 @@ def get_from_target(ctx, attr_target, file_target):
         "name": name_out
     }]
 
-
 def assemble(ctx, layers, tags_to_names, output):
   """Create the full image from the list of layers."""
   layers = [l["layer"] for l in layers]
@@ -67,7 +67,6 @@ def assemble(ctx, layers, tags_to_names, output):
       outputs = [output],
       mnemonic = "JoinLayers"
   )
-
 
 def incremental_load(ctx, layers, images, output):
   """Generate the incremental load statement."""
@@ -92,20 +91,22 @@ def incremental_load(ctx, layers, images, output):
       output = output,
       executable = True)
 
-
 tools = {
     "incremental_load_template": attr.label(
-        default=Label("//docker:incremental_load_template"),
-        single_file=True,
-        allow_files=True),
+        default = Label("//docker:incremental_load_template"),
+        single_file = True,
+        allow_files = True,
+    ),
     "join_layers": attr.label(
-        default=Label("//docker:join_layers"),
-        cfg="host",
-        executable=True,
-        allow_files=True),
+        default = Label("//docker:join_layers"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
     "extract_id": attr.label(
-        default=Label("//docker:extract_id"),
-        cfg="host",
-        executable=True,
-        allow_files=True),
+        default = Label("//docker:extract_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
 }

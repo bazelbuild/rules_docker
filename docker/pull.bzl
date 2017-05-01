@@ -18,7 +18,6 @@ Bazel rule for downloading base images without a Docker client to
 construct new images with docker_build.
 """
 
-
 def _impl(repository_ctx):
   """Core implementation of docker_pull."""
 
@@ -57,22 +56,20 @@ exports_files(["image.tar"])
   if result.return_code:
     fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
 
-
 _docker_pull = repository_rule(
-    implementation = _impl,
     attrs = {
-        "registry": attr.string(mandatory=True),
-        "repository": attr.string(mandatory=True),
+        "registry": attr.string(mandatory = True),
+        "repository": attr.string(mandatory = True),
         "digest": attr.string(),
-        "tag": attr.string(default="latest"),
+        "tag": attr.string(default = "latest"),
         "_puller": attr.label(
-          executable=True,
-          default=Label("@puller//file:puller.par"),
-          cfg="host",
+            executable = True,
+            default = Label("@puller//file:puller.par"),
+            cfg = "host",
         ),
     },
+    implementation = _impl,
 )
-
 
 def docker_pull(**kwargs):
   """Pulls a docker image.
