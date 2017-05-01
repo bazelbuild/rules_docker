@@ -12,6 +12,10 @@ addons:
     packages:
       - bazel
 
+install:
+  - go get -u github.com/bazelbuild/buildifier/buildifier
+
 script:
   - bazel clean && bazel build //...
   - bazel clean && bazel test --test_output=errors //...
+  - buildifier -mode=check $(find . -name BUILD -o -name '*.bzl' -type f)
