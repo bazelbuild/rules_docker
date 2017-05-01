@@ -50,7 +50,7 @@ def get_from_target(ctx, attr_target, file_target):
         "name": name_out
     }]
 
-def assemble(ctx, layers, tags_to_names, output):
+def assemble(ctx, layers, tags_to_names, output, stamp=False):
   """Create the full image from the list of layers."""
   layers = [l["layer"] for l in layers]
   args = [
@@ -59,7 +59,11 @@ def assemble(ctx, layers, tags_to_names, output):
       "--tags=" + tag + "=@" + tags_to_names[tag].path
       for tag in tags_to_names
   ] + ["--layer=" + l.path for l in layers]
+  if stamp:
+    args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
   inputs = layers + tags_to_names.values()
+  if stamp:
+    inputs += [ctx.info_file, ctx.version_file]
   ctx.action(
       executable = ctx.executable.join_layers,
       arguments = args,

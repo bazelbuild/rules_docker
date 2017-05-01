@@ -54,6 +54,7 @@ TEST_DATA = [
     # TODO(mattmoor): Re-enable once archive is visible
     # "//docker/testdata:extras_with_deb.tar",
     "//docker/testdata:bundle_test.tar",
+    "//docker/testdata:stamped_bundle_test.tar",
     "//docker/testdata:pause_based.tar",
 ]
 

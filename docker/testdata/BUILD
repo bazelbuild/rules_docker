@@ -253,6 +253,14 @@ docker_bundle(
     },
 )
 
+docker_bundle(
+    name = "stamped_bundle_test",
+    images = {
+        "example.com/{BUILD_USER}:stamped": ":with_user",
+    },
+    stamp = True,
+)
+
 # Generate a dummy debian package with a test/ directory
 py_binary(
     name = "gen_deb",
