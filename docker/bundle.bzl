@@ -13,14 +13,18 @@
 # limitations under the License.
 """Rule for bundling Docker images into a tarball."""
 
-load(":label.bzl", _string_to_label="string_to_label")
-load(":layers.bzl",
-     _assemble_image="assemble",
-     _get_layers="get_from_target",
-     _incr_load="incremental_load",
-     _layer_tools="tools")
+load(
+    ":label.bzl",
+    _string_to_label = "string_to_label",
+)
+load(
+    ":layers.bzl",
+    _assemble_image = "assemble",
+    _get_layers = "get_from_target",
+    _incr_load = "incremental_load",
+    _layer_tools = "tools",
+)
 load(":list.bzl", "reverse")
-
 
 def _docker_bundle_impl(ctx):
   """Implementation for the docker_bundle rule."""
@@ -68,20 +72,19 @@ def _docker_bundle_impl(ctx):
   return struct(runfiles = runfiles,
                 files = set())
 
-
 docker_bundle_ = rule(
-    implementation = _docker_bundle_impl,
     attrs = {
         "images": attr.string_dict(),
         # Implicit dependencies.
-        "image_targets": attr.label_list(allow_files=True),
+        "image_targets": attr.label_list(allow_files = True),
         "image_target_strings": attr.string_list(),
     } + _layer_tools,
+    executable = True,
     outputs = {
         "out": "%{name}.tar",
     },
-    executable = True)
-
+    implementation = _docker_bundle_impl,
+)
 
 # Produces a new docker image tarball compatible with 'docker load', which
 # contains the N listed 'images', each aliased with their key.

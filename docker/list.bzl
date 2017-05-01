@@ -13,7 +13,6 @@
 # limitations under the License.
 """Methods for manipulating lists."""
 
-
 def reverse(lst):
   result = []
   for el in lst:

@@ -13,14 +13,12 @@
 # limitations under the License.
 """Rules for manipulating paths."""
 
-
 def dirname(path):
   """Returns the directory's name."""
   last_sep = path.rfind("/")
   if last_sep == -1:
     return ""  # The artifact is at the top level.
   return path[:last_sep]
-
 
 def join(directory, path):
   """Compute the relative data path prefix from the data_path attribute."""
@@ -31,7 +29,6 @@ def join(directory, path):
   if directory == "/":
     return path
   return directory + "/" + path
-
 
 def canonicalize(path):
   """Canonicalize the input path."""
@@ -53,13 +50,11 @@ def canonicalize(path):
   else:  # Relative to a sub-directory
     return path
 
-
 def strip_prefix(path, prefix):
   """Returns the path with the specified prefix removed."""
   if path.startswith(prefix):
     return path[len(prefix):]
   return path
-
 
 def runfile(ctx, f):
   """Return the runfiles relative path of f."""

@@ -14,8 +14,17 @@
 """Filetype constants."""
 
 # Filetype to restrict inputs
-tar = [".tar", ".tar.gz", ".tgz", ".tar.xz"]
-deb = [".deb", ".udeb"]
+tar = [
+    ".tar",
+    ".tar.gz",
+    ".tgz",
+    ".tar.xz",
+]
+
+deb = [
+    ".deb",
+    ".udeb",
+]
 
 # Docker files are tarballs, should we allow other extensions than tar?
 docker = tar
