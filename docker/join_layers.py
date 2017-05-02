@@ -43,6 +43,9 @@ parser.add_argument('--tags', action='append', required=True,
                           'and the layer they tag. '
                           'e.g. ubuntu=deadbeef,gcr.io/blah/debian=baadf00d'))
 
+parser.add_argument('--stamp-info-file', action='append', required=False,
+                    help=('If stamping these layers, the list of files from '
+                          'which to obtain workspace information'))
 
 def create_image(output, layers, tag_to_layer=None, layer_to_tags=None):
   """Creates a Docker image from a list of layers.
@@ -87,13 +90,27 @@ def main():
 
   tag_to_layer = {}
   layer_to_tags = {}
+  stamp_info = {}
+
+  if args.stamp_info_file:
+    for infofile in args.stamp_info_file:
+      with open(infofile) as info:
+        for line in info:
+          line = line.strip("\n")
+          key, value = line.split(" ", 1)
+          if key in stamp_info:
+            print ("WARNING: Duplicate value for workspace status key '%s': "
+                   "using '%s'" % (key, value))
+          stamp_info[key] = value
+
   for entry in args.tags:
     elts = entry.split('=')
     if len(elts) != 2:
       raise Exception('Expected associative list key=value, got: %s' % entry)
     (fq_tag, layer_id) = elts
 
-    tag = docker_name.Tag(fq_tag)
+    formatted_tag = fq_tag.format(**stamp_info)
+    tag = docker_name.Tag(formatted_tag)
     layer_id = utils.ExtractValue(layer_id)
 
     # Add the mapping in one direction.

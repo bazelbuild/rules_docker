@@ -62,7 +62,7 @@ def _docker_bundle_impl(ctx):
       # points to the name of the layer.
       k: images[k]["name"]
       for k in images
-  }, ctx.outputs.out)
+  }, ctx.outputs.out, stamp=ctx.attr.stamp)
 
   runfiles = ctx.runfiles(
       files = ([l["name"] for l in layers] +
@@ -78,6 +78,10 @@ docker_bundle_ = rule(
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
         "image_target_strings": attr.string_list(),
+        "stamp": attr.bool(
+            default = False,
+            mandatory = False,
+        ),
     } + _layer_tools,
     executable = True,
     outputs = {

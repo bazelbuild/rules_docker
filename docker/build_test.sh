@@ -522,6 +522,11 @@ function test_bundle() {
     "[\"gcr.io/google-containers/pause:2.0\"]"
 }
 
+function test_stamped_bundle() {
+  check_manifest_property "RepoTags" "stamped_bundle_test" \
+    "[\"example.com/$USER:stamped\"]"
+}
+
 function test_pause_based() {
   # Check that when we add a single layer on top of a checked in tarball, that
   # all of the layers from the original tarball are included.  We omit the
