@@ -97,7 +97,10 @@ def main():
       with open(infofile) as info:
         for line in info:
           line = line.strip("\n")
-          key, value = line.split(" ")
+          key, value = line.split(" ", 1)
+          if key in stamp_info:
+            print ("WARNING: Duplicate value for workspace status key '%s': "
+                   "using '%s'" % (key, value))
           stamp_info[key] = value
 
   for entry in args.tags:

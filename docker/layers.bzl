@@ -59,10 +59,9 @@ def assemble(ctx, layers, tags_to_names, output, stamp=False):
       "--tags=" + tag + "=@" + tags_to_names[tag].path
       for tag in tags_to_names
   ] + ["--layer=" + l.path for l in layers]
-  if stamp:
-    args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
   inputs = layers + tags_to_names.values()
   if stamp:
+    args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
     inputs += [ctx.info_file, ctx.version_file]
   ctx.action(
       executable = ctx.executable.join_layers,

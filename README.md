@@ -597,10 +597,26 @@ A rule that aliases and saves N images into a single `docker save` tarball.
       <td><code>images</code></td>
       <td>
         <p><code>Map of Tag to image Label; required</code></p>
-        <p>A collection of the images to save into the tarball.  The keys
-           are the tags with which to alias the image specified by the
-           value.  The value may be the output of `docker_pull`,
-           `docker_build`, or a `docker save` tarball.</p>
+        <p>A collection of the images to save into the tarball.</p>
+        <p>The keys are the tags with which to alias the image specified by the
+           value. These tags may contain make variables (<code>$FOO</code>),
+           and if <code>stamp</code> is set to true, may also contain workspace
+           status variables (<code>{BAR}</code>).</p>
+        <p>The values may be the output of <code>docker_pull</code>,
+           <code>docker_build</code>, or a <code>docker save</code> tarball.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>stamp</code></td>
+      <td>
+        <p><code>Bool; optional</code></p>
+        <p>If true, enable use of workspace status variables
+        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
+        and custom values set using <code>--workspace_status_command</code>)
+        in tags.</p>
+        <p>These fields are specified in the tag using using Python format
+        syntax, e.g.
+        <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
       </td>
     </tr>
   </tbody>
