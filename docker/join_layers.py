@@ -25,9 +25,9 @@ from docker import utils
 from containerregistry.client import docker_name
 from containerregistry.client.v1 import docker_image as v1_image
 from containerregistry.client.v1 import save as v1_save
-from containerregistry.client.v2 import v1_compat
 from containerregistry.client.v2_2 import save as v2_2_save
 from containerregistry.client.v2_2 import v2_compat
+from containerregistry.client.v2_2 import docker_image as v2_2_image
 
 parser = argparse.ArgumentParser(
     description='Link together several layer shards.')
@@ -46,6 +46,35 @@ parser.add_argument('--tags', action='append', required=True,
 parser.add_argument('--stamp-info-file', action='append', required=False,
                     help=('If stamping these layers, the list of files from '
                           'which to obtain workspace information'))
+
+
+class ImageConfig(v2_2_image.DockerImage):
+  """Create an image that only exposes config_file."""
+
+  def __init__(self, cfg):
+    self._cfg = cfg
+
+  def manifest(self):
+    """Override."""
+    raise Exception('This image only exists to expose config_file().')
+
+  def config_file(self):
+    """Override."""
+    return self._cfg
+
+  def blob(self, digest):
+    """Override."""
+    raise Exception('This image only exists to expose config_file().')
+
+  # __enter__ and __exit__ allow use as a context manager.
+  def __enter__(self):
+    """Open the image for reading."""
+    return self
+
+  def __exit__(self, unused_type, unused_value, unused_traceback):
+    """Close the image."""
+    pass
+
 
 def create_image(output, layers, tag_to_layer=None, layer_to_tags=None):
   """Creates a Docker image from a list of layers.
@@ -78,8 +107,15 @@ def create_image(output, layers, tag_to_layer=None, layer_to_tags=None):
       v1_img = v1_image.FromShardedTarball(
           lambda layer_id: layer_to_tarball[layer_id], top)
       tag_to_v1_image[tag] = v1_img
-      v2_img = v1_compat.V2FromV1(v1_img)
-      v2_2_img = v2_compat.V22FromV2(v2_img)
+      v2_2_img = ImageConfig(v2_compat.config_file([
+          json.loads(v1_img.json(layer_id))
+          for layer_id in reversed(v1_img.ancestry(v1_img.top()))
+      ], [
+          'sha256:' + hashlib.sha256(
+              v1_img.uncompressed_layer(layer_id)
+          ).hexdigest()
+          for layer_id in reversed(v1_img.ancestry(v1_img.top()))
+      ]))
       tag_to_image[tag] = v2_2_img
 
     v2_2_save.multi_image_tarball(tag_to_image, tar, tag_to_v1_image)

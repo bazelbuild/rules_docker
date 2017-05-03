@@ -15,7 +15,6 @@
 
 import argparse
 import cStringIO
-import gzip
 import hashlib
 import json
 import sys
@@ -84,17 +83,13 @@ class ImageShard(v1_image.DockerImage):
     """Override."""
     return json.dumps(self._metadata, sort_keys=True)
 
+  def uncompressed_layer(self, layer_id):
+    """Override."""
+    return self._layer
+
   def layer(self, layer_id):
     """Override."""
-    if layer_id != self.top():
-      raise Exception('Shard only supports fetching the topmost layer')
-    buf = cStringIO.StringIO()
-    f = gzip.GzipFile(mode='wb', fileobj=buf)
-    try:
-      f.write(self._layer)
-    finally:
-      f.close()
-    return buf.getvalue()
+    raise Exception('This code path should not gzip the image.')
 
   def ancestry(self, layer_id):
     """Override."""
@@ -168,7 +163,7 @@ def create_image(output,
     }
 
     if base:
-      with v2_2_image.FromTarball(base, allow_shards=True) as v2_2_img:
+      with v2_2_image.FromTarball(base) as v2_2_img:
         parent = hashlib.sha256(v2_2_img.config_file()).hexdigest()
         manifest_item['Parent'] = 'sha256:' + parent
 
