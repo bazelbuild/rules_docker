@@ -76,7 +76,7 @@ def main():
 
   base_json = '{}'
   if args.base:
-    with v2_2_image.FromTarball(args.base, allow_shards=True) as v2_2_img:
+    with v2_2_image.FromTarball(args.base) as v2_2_img:
       base_json = v2_2_img.config_file()
   data = json.loads(base_json)
 
