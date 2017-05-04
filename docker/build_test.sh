@@ -524,7 +524,7 @@ function test_bundle() {
 
 function test_stamped_bundle() {
   check_manifest_property "RepoTags" "stamped_bundle_test" \
-    "[\"example.com/$USER:stamped\"]"
+    "[\"example.com/aaaaa$USER:stamped\"]"
 }
 
 function test_pause_based() {

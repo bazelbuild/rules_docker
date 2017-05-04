@@ -256,7 +256,8 @@ docker_bundle(
 docker_bundle(
     name = "stamped_bundle_test",
     images = {
-        "example.com/{BUILD_USER}:stamped": ":with_user",
+        # Pad username so that it is long enough.
+        "example.com/aaaaa{BUILD_USER}:stamped": ":with_user",
     },
     stamp = True,
 )
