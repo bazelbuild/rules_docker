@@ -1,6 +1,9 @@
 # Bazel Docker Rules
 
-[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker)
+Bazel ≥0.4.4 | linux-x86_64 | ubuntu_16.04-x86_64 | darwin-x86_64
+:---: | :---: | :---: | :---:
+[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_docker/BAZEL_VERSION=latest,PLATFORM_NAME=linux-x86_64)](http://ci.bazel.io/job/rules_docker/BAZEL_VERSION=latest,PLATFORM_NAME=linux-x86_64) | [![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_docker/BAZEL_VERSION=latest,PLATFORM_NAME=ubuntu_16.04-x86_64)](http://ci.bazel.io/job/rules_docker/BAZEL_VERSION=latest,PLATFORM_NAME=ubuntu_16.04-x86_64) | [![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_docker/BAZEL_VERSION=latest,PLATFORM_NAME=darwin-x86_64)](http://ci.bazel.io/job/rules_docker/BAZEL_VERSION=latest,PLATFORM_NAME=darwin-x86_64)
+
 
 
 ## Rules
