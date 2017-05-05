@@ -115,11 +115,11 @@ function check_images() {
   local manifest="$(tar xOf "${test_data}" "manifest.json")"
   local manifest_images=(
     $(echo "${manifest}" | grep -Eo '"Config":[[:space:]]*"[^"]+"' \
-      | sed -r -e 's#"Config":.*?"([0-9a-f]+)\.json"#\1#'))
+      | grep -Eo '[0-9a-f]{64}'))
 
   local manifest_parents=(
     $(echo "${manifest}" | grep -Eo '"Parent":[[:space:]]*"[^"]+"' \
-      | sed -r -e 's#"Parent":.*?"sha256:([0-9a-f]+)"#\1#'))
+      | grep -Eo '[0-9a-f]{64}'))
 
   # Verbose output for testing.
   echo Expected: "${expected_images[@]}"
@@ -160,8 +160,7 @@ function check_image_manifest_layers() {
   local manifest="$(tar xOf "${test_data}" "manifest.json")"
   local manifest_layers=(
     $(echo "${manifest}" | grep -Eo '"Layers":[[:space:]]*\[[^]]+\]' \
-      | grep -Eo '\[.+\]' | tail -n 1 | tr ',' '\n' \
-      | sed -r -e 's#.*"([0-9a-f]+)/layer\.tar".*#\1#'))
+      | grep -Eo '\[.+\]' | tail -n 1 | grep -Eo '[0-fa-z]{64}'))
 
   # Verbose output for testing.
   echo Expected: "${expected_layers[@]}"
@@ -193,7 +192,7 @@ function check_layers_aux() {
   tar tvf "${test_data}"
 
   local actual_layers=(
-    $(tar tvf ${test_data} | tr -s ' ' | cut -d' ' -f 6- | sort \
+    $(tar tf ${test_data} | sort \
       | cut -d'/' -f 1 | grep -E '^[0-9a-f]+$' | sort | uniq))
 
   # Verbose output for testing.
@@ -400,8 +399,7 @@ function get_layer_listing() {
   local input=$1
   local layer=$2
   local test_data="${TEST_DATA_DIR}/${input}.tar"
-  tar xOf "${test_data}" \
-    "${layer}/layer.tar" | tar tv | sed -e 's/^.*:00 //'
+  tar xOf "${test_data}" "${layer}/layer.tar" | tar t
 }
 
 function test_data_path() {

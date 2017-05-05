@@ -29,6 +29,7 @@ function fail() {
 
 # Die if "$1" != "$2", print $3 as death reason
 check_eq () {
+    echo Checking "$1" = "$2"
     [ "$1" = "$2" ] || fail "Check failed: '$1' == '$2' ${3:+ ($3)}"
 }
 
