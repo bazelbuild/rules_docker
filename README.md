@@ -159,6 +159,36 @@ docker_pull(
 
 This can then be referenced in `BUILD` files as `@etcd//image:image.tar`.
 
+### docker_pull (Bintray.io)
+
+In `WORKSPACE`:
+
+```python
+docker_pull(
+    name = "artifactory",
+    registry = "docker.bintray.io",
+    repository = "jfrog/artifactory-pro",
+)
+```
+
+This can then be referenced in `BUILD` files as `@artifactory//image:image.tar`.
+
+### docker_pull (Gitlab)
+
+In `WORKSPACE`:
+
+```python
+docker_pull(
+    name = "gitlab",
+    registry = "registry.gitlab.com",
+    repository = "username/project/image",
+    tag = "tag",
+)
+```
+
+This can then be referenced in `BUILD` files as `@gitlab//image:image.tar`.
+
+**NOTE:** This will only work on systems with Python >2.7.6
 
 <a name="docker_pull"></a>
 ## docker_pull
