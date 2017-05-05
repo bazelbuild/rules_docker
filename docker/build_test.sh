@@ -38,6 +38,7 @@ function EXPECT_CONTAINS() {
   local substring="${2}"
   local message="${3:-Expected '${substring}' not found in '${complete}'}"
 
+  echo Checking "$1" contains "$2"
   CONTAINS "${complete}" "${substring}" || fail "$message"
 }
 
@@ -46,7 +47,8 @@ function EXPECT_NOT_CONTAINS() {
   local substring="${2}"
   local message="${3:-Unexpected '${substring}' found in '${complete}'}"
 
-  (CONTAINS "${complete}" "${substring}" && fail "$message") || /bin/true
+  echo Checking "$1" does not contain "$2"
+  (CONTAINS "${complete}" "${substring}" && fail "$message") || true
 }
 
 function no_check() {
@@ -177,7 +179,7 @@ function check_layers_aux() {
   tar tvf "${test_data}"
 
   local actual_layers=(
-    $(tar tvf ${test_data} | tr -s ' ' | cut -d' ' -f 6- | sort \
+    $(tar tf ${test_data} | sort \
       | cut -d'/' -f 1 | grep -E '^[0-9a-f]+$' | sort | uniq))
 
   # Verbose output for testing.
@@ -422,8 +424,7 @@ function get_layer_listing() {
   local input=$1
   local layer=$2
   local test_data="${TEST_DATA_DIR}/${input}.tar"
-  tar xOf "${test_data}" \
-    "${layer}/layer.tar" | tar tv | sed -e 's/^.*:00 //'
+  tar xOf "${test_data}" "${layer}/layer.tar" | tar t
 }
 
 function test_data_path() {
