@@ -540,6 +540,13 @@ function test_pause_based() {
     "da7bd81140ca921a067c604a3ba3f54d4e0d51ba5276cd9f32ad6a28e588f470"
 }
 
+function test_build_with_tag() {
+  # We should have a tag in our manifest containing the name
+  # specified via the tag kwarg.
+  check_manifest_property "RepoTags" "build_with_tag" \
+    "[\"gcr.io/build/with:tag\"]"
+}
+
 tests=$(grep "^function test_" "${BASH_SOURCE[0]}" \
           | cut -d' ' -f 2 | cut -d'(' -f 1)
 

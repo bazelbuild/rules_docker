@@ -39,6 +39,7 @@ TEST_TARGETS = [
     "with_user",
     "workdir_with_tar_base",
     "link_with_files_base",
+    "build_with_tag",
 ]
 
 TEST_DATA = [
