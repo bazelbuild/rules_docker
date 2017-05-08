@@ -284,3 +284,15 @@ genrule(
 #     debs = [":gen.deb"],
 #     tars = ["extras.tar"],
 # )
+
+load(
+    "//docker/contrib:with-tag.bzl",
+    docker_build_with_tag = "docker_build",
+)
+
+docker_build_with_tag(
+    name = "build_with_tag",
+    base = ":with_user",
+    files = ["foo"],
+    tag = "gcr.io/build/with:tag",
+)
