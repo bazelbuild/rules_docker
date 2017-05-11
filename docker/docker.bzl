@@ -25,7 +25,7 @@ load(":pull.bzl", "docker_pull")
 load(":push.bzl", "docker_push")
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.6"
+CONTAINERREGISTRY_RELEASE = "v0.0.7"
 
 def docker_repositories():
   """Download dependencies of docker rules."""
@@ -33,7 +33,7 @@ def docker_repositories():
     name = "puller",
     url = ("https://storage.googleapis.com/containerregistry-releases/" +
            CONTAINERREGISTRY_RELEASE + "/puller.par"),
-    sha256 = "39674ec7ac8456e4b67bfcd67e03a4e6e86f3cc5c2e94003a7aec4550ef8c5d9",
+    sha256 = "163bcf9fd4627d3dc9d454eee26605552de1201b152a40702c860a120307096c",
     executable = True,
   )
 
@@ -41,7 +41,7 @@ def docker_repositories():
     name = "pusher",
     url = ("https://storage.googleapis.com/containerregistry-releases/" +
            CONTAINERREGISTRY_RELEASE + "/pusher.par"),
-    sha256 = "daeedba9f31bb5f9b8691a6ca6a371f701544c7c29878033b5c0793dd62bab78",
+    sha256 = "45219688ba9d2cafcc791393b4ba321fe6b8592f8b251f49f422f2d202d5a44d",
     executable = True,
   )
 

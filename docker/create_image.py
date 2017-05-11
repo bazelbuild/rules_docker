@@ -72,11 +72,9 @@ class ImageShard(v1_image.DockerImage):
   def repositories(self):
     """Override."""
     return {
-        '{registry}/{repository}'.format(
-            registry=self._tag.registry,
-            repository=self._tag.repository): {
-                self._tag.tag: self.top()
-            }
+        str(self._tag.as_repository()): {
+            self._tag.tag: self.top()
+        }
     }
 
   def json(self, layer_id):
@@ -125,7 +123,7 @@ def create_image(output,
     repository: repository name for this docker image.
   """
   tag = docker_name.Tag('{repository}:{tag}'.format(
-      repository=repository, tag=name))
+      repository=repository, tag=name), strict=False)
 
   with tarfile.open(name=output, mode='w') as tar:
     def add_file(filename, contents):
