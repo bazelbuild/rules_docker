@@ -146,7 +146,7 @@ def main():
     (fq_tag, layer_id) = elts
 
     formatted_tag = fq_tag.format(**stamp_info)
-    tag = docker_name.Tag(formatted_tag)
+    tag = docker_name.Tag(formatted_tag, strict=False)
     layer_id = utils.ExtractValue(layer_id)
 
     # Add the mapping in one direction.
