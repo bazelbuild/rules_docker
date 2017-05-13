@@ -296,3 +296,20 @@ docker_build_with_tag(
     files = ["foo"],
     tag = "gcr.io/build/with:tag",
 )
+
+load("//docker/contrib:passwd.bzl", "passwd_file")
+
+passwd_file(
+    name = "testpasswd",
+    gid = 2345,
+    home = "/myhomedir",
+    info = "myusernameinfo",
+    shell = "/myshell",
+    uid = 1234,
+    username = "foobar",
+)
+
+docker_build(
+    name = "with_passwd",
+    tars = [":testpasswd.passwd.tar"],
+)

@@ -547,6 +547,24 @@ function test_build_with_tag() {
     "[\"gcr.io/build/with:tag\"]"
 }
 
+function test_build_with_passwd() {
+  # We should have a tag in our manifest containing the name
+  # specified via the tag kwarg.
+
+  local layer="621fe329a78d65d90d34d6dc277ccac2249bba4c8228222271418bf6b07c4dec"
+  check_layers "with_passwd" "${layer}"
+  
+  check_eq "$(get_layer_listing "with_passwd" "${layer}")" \
+    './
+./etc/
+./etc/passwd'
+
+  local test_data="${TEST_DATA_DIR}/with_passwd.tar"
+  echo $test_data
+  passwd_contents=$(tar xOf "${test_data}" "${layer}/layer.tar" | tar xO "./etc/passwd")
+  check_eq ${passwd_contents} "foobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell"
+}
+
 tests=$(grep "^function test_" "${BASH_SOURCE[0]}" \
           | cut -d' ' -f 2 | cut -d'(' -f 1)
 
