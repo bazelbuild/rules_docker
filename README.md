@@ -50,8 +50,7 @@ docker_repositories()
 docker_pull(
   name = "java_base",
   registry = "gcr.io",
-  # TODO(mattmoor): Replace this.
-  repository = "google-appengine/java",
+  repository = "distroless/java",
   # 'tag' is also supported, but digest is encouraged for reproducibility.
   digest = "sha256:deadbeef",
 )
