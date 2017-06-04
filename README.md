@@ -77,7 +77,7 @@ $ docker-credential-gcr configure-docker
 docker_build(
     name = "app",
     # References docker_pull from WORKSPACE (above)
-    base = ["@java_base//image:image.tar"],
+    base = "@java_base//image:image.tar",
     files = ["//java/com/example/app:Hello_deploy.jar"],
     cmd = ["Hello_deploy.jar"]
 )
