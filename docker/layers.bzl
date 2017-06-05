@@ -20,8 +20,8 @@ load(
 )
 
 def _extract_id(ctx, artifact):
-  id_out = ctx.new_file(artifact.basename + ".id")
-  name_out = ctx.new_file(artifact.basename + ".name")
+  id_out = ctx.new_file(ctx.label.name + "." + artifact.basename + ".id")
+  name_out = ctx.new_file(ctx.label.name + "." + artifact.basename + ".name")
   ctx.action(
       executable = ctx.executable.extract_id,
       arguments = [

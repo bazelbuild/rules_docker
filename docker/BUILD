@@ -59,6 +59,8 @@ TEST_DATA = [
     "//docker/testdata:stamped_bundle_test.tar",
     "//docker/testdata:pause_based.tar",
     "//docker/testdata:dashdash_entrypoint.tar",
+    "//docker/testdata:base_based.tar",
+    "//docker/testdata:cc_based.tar",
 ]
 
 sh_test(

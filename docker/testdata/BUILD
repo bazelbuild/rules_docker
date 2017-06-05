@@ -321,3 +321,14 @@ docker_build(
     name = "with_passwd",
     tars = [":testpasswd.passwd.tar"],
 )
+
+
+docker_build(
+    name = "base_based",
+    base = "@distroless_base//image:image.tar",
+)
+
+docker_build(
+    name = "cc_based",
+    base = "@distroless_cc//image:image.tar",
+)
