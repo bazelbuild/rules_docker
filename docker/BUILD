@@ -137,7 +137,10 @@ py_binary(
 
 py_library(
     name = "utils",
-    srcs = ["utils.py"],
+    srcs = [
+        "__init__.py",
+        "utils.py",
+    ],
 )
 
 filegroup(
