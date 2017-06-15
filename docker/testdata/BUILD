@@ -120,6 +120,14 @@ docker_build(
     tars = ["two.tar"],
 )
 
+docker_build(
+    name = "dashdash_entrypoint",
+    entrypoint = [
+        "/bar",
+        "--",
+    ],
+)
+
 # TODO(mattmoor): Test scalar cmd
 docker_build(
     name = "derivative_with_shadowed_cmd",

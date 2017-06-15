@@ -71,6 +71,14 @@ def KeyValueToDict(pair):
   return d
 
 
+# See: https://bugs.python.org/issue14364
+def fix_dashdash(l):
+  return [
+    x if x != [] else '--'
+    for x in l
+  ]
+
+
 def main():
   args = parser.parse_args()
 
@@ -92,8 +100,9 @@ def main():
 
   output = v2_2_metadata.Override(data, v2_2_metadata.Overrides(
       author='Bazel', created_by='bazel build ...',
-      layers=layers, entrypoint=args.entrypoint, cmd=args.command,
-      user=args.user, labels=labels, env=KeyValueToDict(args.env),
+      layers=layers, entrypoint=fix_dashdash(args.entrypoint),
+      cmd=fix_dashdash(args.command), user=args.user,
+      labels=labels, env=KeyValueToDict(args.env),
       ports=args.ports, volumes=args.volumes, workdir=args.workdir),
                                   architecture=_PROCESSOR_ARCHITECTURE,
                                   operating_system=_OPERATING_SYSTEM)
