@@ -79,6 +79,14 @@ def KeyValueToDict(pair):
   return d
 
 
+# See: https://bugs.python.org/issue14364
+def fix_dashdash(l):
+  return [
+    x if x != [] else '--'
+    for x in l
+  ]
+
+
 def main():
   args = parser.parse_args()
 
@@ -104,7 +112,8 @@ def main():
   output = v1_metadata.Override(
       data, v1_metadata.Overrides(
           name=name, parent=parent, size=os.path.getsize(args.layer),
-          entrypoint=args.entrypoint, cmd=args.command, user=args.user,
+          entrypoint=fix_dashdash(args.entrypoint),
+          cmd=fix_dashdash(args.command), user=args.user,
           labels=labels, env=KeyValueToDict(args.env or []), ports=args.ports,
           volumes=args.volumes, workdir=args.workdir),
       docker_version=_DOCKER_VERSION,

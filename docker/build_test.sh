@@ -311,6 +311,15 @@ function test_base_with_entrypoint() {
     '{"8080/tcp": {}}'
 }
 
+function test_dashdash_entrypoint() {
+  check_layers "dashdash_entrypoint" \
+    "4c83668121aaf97689c60549a8b1b9c7f549a4ace353f53a7baabee8a90a177c"
+
+  check_entrypoint "dashdash_entrypoint" \
+    "4c83668121aaf97689c60549a8b1b9c7f549a4ace353f53a7baabee8a90a177c" \
+    '["/bar", "--"]'
+}
+
 function test_derivative_with_shadowed_cmd() {
   check_layers "derivative_with_shadowed_cmd" \
     "4acbeb0495918726c0107e372b421e1d2a6fd4825d58fc3f0b0b2a719fb3ce1b" \
