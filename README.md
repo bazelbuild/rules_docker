@@ -56,6 +56,31 @@ docker_pull(
 )
 ```
 
+## Using with Docker locally.
+
+Suppose you have a `docker_build` target `//my/image:helloworld`:
+
+```python
+docker_build(
+    name = "helloworld",
+    ...
+)
+```
+
+You can load this into your local Docker client by running:
+`bazel run my/image:helloworld`.
+
+Alternately, you can build a `docker load` compatible bundle with:
+`bazel build my/image:helloworld.tar`.  This will produce the file:
+`bazel-genfiles/my/image/helloworld.tar`, which you can load into
+your local Docker client by running:
+`docker load -i bazel-genfiles/my/image/helloworld.tar`.  Building
+this target can be expensive for large images.
+
+These work with both `docker_build` and `docker_bundle`.  For
+`docker_build` the image name will be `bazel/my/image:helloworld`.
+For `docker_bundle`, it will apply the tags you have specified.
+
 ## Authorization
 
 You can use these rules to access private images using standard Docker
