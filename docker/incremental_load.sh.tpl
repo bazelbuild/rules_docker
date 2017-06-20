@@ -22,16 +22,6 @@ RUNFILES="${PYTHON_RUNFILES:-${BASH_SOURCE[0]}.runfiles}"
 
 DOCKER="${DOCKER:-docker}"
 
-FULL_DOCKER_VERSION=$(docker version -f {{.Server.Version}} 2> /dev/null \
-    || echo "1.5.0")
-DOCKER_MAJOR_VERSION=$(echo "$FULL_DOCKER_VERSION" | awk -F\. '{ print $1 }')
-DOCKER_MINOR_VERSION=$(echo "$FULL_DOCKER_VERSION" | awk -F\. '{ print $2 }')
-if [ "$DOCKER_MAJOR_VERSION" -eq "1" ] && [ "$DOCKER_MINOR_VERSION" -lt "10" ]; then
-  LEGACY_DOCKER=true
-else
-  LEGACY_DOCKER=false
-fi
-
 # List all images identifier (only the identifier) from the local
 # docker registry.
 IMAGES="$("${DOCKER}" images -aq)"
@@ -42,34 +32,22 @@ IMAGE_LEN=$(for i in $IMAGES; do echo -n $i | wc -c; done | sort -g | head -1 | 
 function incr_load() {
   # Load a layer if and only if the layer is not in "$IMAGES", that is
   # in the local docker registry.
-  if [ "$LEGACY_DOCKER" = true ]; then
-    name=$(cat ${RUNFILES}/$1)
-  else
-    name=$(cat ${RUNFILES}/$2)
-  fi
+  name=$(cat ${RUNFILES}/$1)
 
   if (echo "$IMAGES" | grep -q ^${name:0:$IMAGE_LEN}$); then
     echo "Skipping $name, already loaded."
   else
     echo "Loading $name..."
-    "${DOCKER}" load -i ${RUNFILES}/$3
+    "${DOCKER}" load -i ${RUNFILES}/$2
   fi
 }
 
 function tag_layer() {
-  if [ "$LEGACY_DOCKER" = true ]; then
-    name=$(cat ${RUNFILES}/$2)
-  else
-    name=$(cat ${RUNFILES}/$3)
-  fi
+  name=$(cat ${RUNFILES}/$2)
 
   TAG="$1"
   echo "Tagging ${name} as ${TAG}"
-  if [ "$LEGACY_DOCKER" = true ]; then
-    "${DOCKER}" tag -f ${name} ${TAG}
-  else
-    "${DOCKER}" tag sha256:${name} ${TAG}
-  fi
+  "${DOCKER}" tag sha256:${name} ${TAG}
 }
 
 function read_variables() {
