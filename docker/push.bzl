@@ -57,6 +57,7 @@ _docker_push = rule(
         "image": attr.label(
             allow_files = [".tar"],
             single_file = True,
+            mandatory = True,
         ),
         "registry": attr.string(mandatory = True),
         "repository": attr.string(mandatory = True),
