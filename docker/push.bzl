@@ -17,8 +17,18 @@ This wraps the containerregistry.tools.docker_pusher executable in a
 Bazel rule for publishing base images without a Docker client.
 """
 
+load(
+    ":path.bzl",
+    _get_runfile_path = "runfile",
+)
+
 def _impl(ctx):
   """Core implementation of docker_push."""
+  stamp_inputs = []
+  if ctx.attr.stamp:
+    stamp_inputs = [ctx.info_file, ctx.version_file]
+
+  stamp_arg = " ".join(["--stamp-info-file=%s" % f.short_path for f in stamp_inputs])
 
   ctx.template_action(
       template = ctx.file._tag_tpl,
@@ -27,6 +37,7 @@ def _impl(ctx):
               "registry", ctx.attr.registry, {}),
           "%{repository}": ctx.expand_make_variables(
               "repository", ctx.attr.repository, {}),
+          "%{stamp}": stamp_arg,
           "%{tag}": ctx.expand_make_variables(
               "tag", ctx.attr.tag, {}),
           "%{image}": ctx.file.image.short_path,
@@ -39,7 +50,7 @@ def _impl(ctx):
   return struct(runfiles = ctx.runfiles(files = [
       ctx.file.image,
       ctx.executable._pusher
-  ]))
+  ] + stamp_inputs))
 
 _docker_push = rule(
     attrs = {
@@ -60,6 +71,10 @@ _docker_push = rule(
             cfg = "host",
             executable = True,
             allow_files = True,
+        ),
+        "stamp": attr.bool(
+            default = False,
+            mandatory = False,
         ),
     },
     executable = True,

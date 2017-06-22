@@ -13,7 +13,12 @@
 # limitations under the License.
 package(default_visibility = ["//docker:__subpackages__"])
 
-load("//docker:docker.bzl", "docker_build", "docker_bundle")
+load(
+    "//docker:docker.bzl",
+    "docker_build",
+    "docker_bundle",
+    "docker_push",
+)
 
 genrule(
     name = "gen",
@@ -244,6 +249,15 @@ docker_build(
     symlinks = {
         "/usr/bin/java": "/bar",
     },
+)
+
+docker_push(
+    name = "push_stamp",
+    image = ":link_with_files_base",
+    registry = "gcr.io",
+    repository = "convoy-adapter/bazel-test",
+    stamp = True,
+    tag = "{BUILD_USER}",
 )
 
 docker_build(
