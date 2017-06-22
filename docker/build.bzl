@@ -314,7 +314,7 @@ def _docker_build_impl(ctx):
   ] + _get_layers(ctx, ctx.attr.base, ctx.files.base)
 
   # Generate the incremental load statement
-  _incr_load(ctx, layers, {tag_name: {"name": name, "id": identifier}
+  _incr_load(ctx, layers, {tag_name: {"id": identifier}
                            for tag_name in tags},
              ctx.outputs.executable)
 

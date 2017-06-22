@@ -86,19 +86,17 @@ def incremental_load(ctx, layers, images, output, stamp=False):
               "read_variables %s" % _get_runfile_path(ctx, f)
               for f in stamp_files]),
           "%{load_statements}": "\n".join([
-              "incr_load '%s' '%s' '%s'" % (_get_runfile_path(ctx, l["name"]),
-                                            _get_runfile_path(ctx, l["id"]),
-                                            _get_runfile_path(ctx, l["layer"]))
+              "incr_load '%s' '%s'" % (_get_runfile_path(ctx, l["id"]),
+                                       _get_runfile_path(ctx, l["layer"]))
               # The last layer is the first in the list of layers.
               # We reverse to load the layer from the parent to the child.
               for l in reverse(layers)]),
           "%{tag_statements}": "\n".join([
-              "tag_layer \"%s\" '%s' '%s'" % (
+              "tag_layer \"%s\" '%s'" % (
                   # Turn stamp variable references into bash variables.
                   # It is notable that the only legal use of '{' in a
                   # tag would be for stamp variables, '$' is not allowed.
                   img if not stamp else img.replace("{", "${"),
-                  _get_runfile_path(ctx, images[img]["name"]),
                   _get_runfile_path(ctx, images[img]["id"]))
               for img in images
           ])
