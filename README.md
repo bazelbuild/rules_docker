@@ -499,7 +499,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>user</code></td>
       <td>
         <code>String, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#user">The user
+        <p><a href="https://docs.docker.com/engine/reference/builder/#user">The user
                that the image should run as.</a></p>
         <p>Because building the image never happens inside a Docker container,
                this user does not affect the other actions (e.g.,
@@ -510,7 +510,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>entrypoint</code></td>
       <td>
         <code>String or string list, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#entrypoint">List
+        <p><a href="https://docs.docker.com/engine/reference/builder/#entrypoint">List
                of entrypoints to add in the image.</a></p>
       </td>
     </tr>
@@ -518,7 +518,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>cmd</code></td>
       <td>
         <code>String or string list, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#cmd">List
+        <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
                of commands to execute in the image.</a></p>
       </td>
     </tr>
@@ -526,7 +526,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>env</code></td>
       <td>
         <code>Dictionary from strings to strings, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#env">Dictionary
+        <p><a href="https://docs.docker.com/engine/reference/builder/#env">Dictionary
                from environment variable names to their values when running the
                Docker image.</a></p>
         <p>
@@ -543,7 +543,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>labels</code></td>
       <td>
         <code>Dictionary from strings to strings, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#label">Dictionary
+        <p><a href="https://docs.docker.com/engine/reference/builder/#label">Dictionary
                from custom metadata names to their values. You can also put a
                file name prefixed by '@' as a value. Then the value is replaced
                with the contents of the file.</a></p>
@@ -562,7 +562,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>ports</code></td>
       <td>
         <code>String list, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#expose">List
+        <p><a href="https://docs.docker.com/engine/reference/builder/#expose">List
                of ports to expose.</a></p>
       </td>
     </tr>
@@ -570,7 +570,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>volumes</code></td>
       <td>
         <code>String list, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#volumes">List
+        <p><a href="https://docs.docker.com/engine/reference/builder/#volumes">List
                of volumes to mount.</a></p>
       </td>
     </tr>
@@ -578,7 +578,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td><code>workdir</code></td>
       <td>
         <code>String, optional</code>
-        <p><a href="https://docs.docker.com/reference/builder/#workdir">Initial
+        <p><a href="https://docs.docker.com/engine/reference/builder/#workdir">Initial
                working directory when running the Docker image.</a></p>
         <p>Because building the image never happens inside a Docker container,
                this working directory does not affect the other actions (e.g.,

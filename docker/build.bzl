@@ -457,32 +457,32 @@ def _validate_command(name, argument):
 #          ...
 #      },
 #
-#      # https://docs.docker.com/reference/builder/#entrypoint
+#      # https://docs.docker.com/engine/reference/builder/#entrypoint
 #      entrypoint="...", or
 #      entrypoint=[...],            -- exec form
 #
-#      # https://docs.docker.com/reference/builder/#cmd
+#      # https://docs.docker.com/engine/reference/builder/#cmd
 #      cmd="...", or
 #      cmd=[...],                   -- exec form
 #
-#      # https://docs.docker.com/reference/builder/#expose
+#      # https://docs.docker.com/engine/reference/builder/#expose
 #      ports=[...],
 #
-#      # https://docs.docker.com/reference/builder/#user
+#      # https://docs.docker.com/engine/reference/builder/#user
 #      # NOTE: the normal directive affects subsequent RUN, CMD,
 #      # and ENTRYPOINT
 #      user="...",
 #
-#      # https://docs.docker.com/reference/builder/#volume
+#      # https://docs.docker.com/engine/reference/builder/#volume
 #      volumes=[...],
 #
-#      # https://docs.docker.com/reference/builder/#workdir
+#      # https://docs.docker.com/engine/reference/builder/#workdir
 #      # NOTE: the normal directive affects subsequent RUN, CMD,
 #      # ENTRYPOINT, ADD, and COPY, but this attribute only affects
 #      # the entry point.
 #      workdir="...",
 #
-#      # https://docs.docker.com/reference/builder/#env
+#      # https://docs.docker.com/engine/reference/builder/#env
 #      env = {
 #         "var1": "val1",
 #         "var2": "val2",
