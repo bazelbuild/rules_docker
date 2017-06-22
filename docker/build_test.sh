@@ -573,7 +573,7 @@ function test_build_with_passwd() {
 
   local layer="621fe329a78d65d90d34d6dc277ccac2249bba4c8228222271418bf6b07c4dec"
   check_layers "with_passwd" "${layer}"
-  
+
   check_eq "$(get_layer_listing "with_passwd" "${layer}")" \
     './
 ./etc/
