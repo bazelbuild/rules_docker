@@ -55,7 +55,8 @@ def _docker_bundle_impl(ctx):
     images[tag] = _get_layers(
         ctx, image_target_dict[target], image_files_dict[target])[0]
 
-  _incr_load(ctx, layers, images, ctx.outputs.executable)
+  _incr_load(ctx, layers, images, ctx.outputs.executable,
+             stamp=ctx.attr.stamp)
 
   _assemble_image(ctx, reverse(layers), {
       # Create a new dictionary with the same keyspace that
@@ -64,8 +65,13 @@ def _docker_bundle_impl(ctx):
       for k in images
   }, ctx.outputs.out, stamp=ctx.attr.stamp)
 
+  stamp_files = []
+  if ctx.attr.stamp:
+    stamp_files = [ctx.info_file, ctx.version_file]
+
   runfiles = ctx.runfiles(
-      files = ([l["name"] for l in layers] +
+      files = (stamp_files +
+               [l["name"] for l in layers] +
                [l["id"] for l in layers] +
                [l["layer"] for l in layers]))
 

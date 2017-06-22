@@ -71,11 +71,20 @@ def assemble(ctx, layers, tags_to_names, output, stamp=False):
       mnemonic = "JoinLayers"
   )
 
-def incremental_load(ctx, layers, images, output):
+def incremental_load(ctx, layers, images, output, stamp=False):
   """Generate the incremental load statement."""
+  stamp_files = []
+  if stamp:
+    stamp_files = [ctx.info_file, ctx.version_file]
   ctx.template_action(
       template = ctx.file.incremental_load_template,
       substitutions = {
+          # If this rule involves stamp variables than load them as bash
+          # variables, and turn references to them into bash variable
+          # references.
+          "%{stamp_statements}": "\n".join([
+              "read_variables %s" % _get_runfile_path(ctx, f)
+              for f in stamp_files]),
           "%{load_statements}": "\n".join([
               "incr_load '%s' '%s' '%s'" % (_get_runfile_path(ctx, l["name"]),
                                             _get_runfile_path(ctx, l["id"]),
@@ -84,8 +93,11 @@ def incremental_load(ctx, layers, images, output):
               # We reverse to load the layer from the parent to the child.
               for l in reverse(layers)]),
           "%{tag_statements}": "\n".join([
-              "tag_layer '%s' '%s' '%s'" % (
-                  img,
+              "tag_layer \"%s\" '%s' '%s'" % (
+                  # Turn stamp variable references into bash variables.
+                  # It is notable that the only legal use of '{' in a
+                  # tag would be for stamp variables, '$' is not allowed.
+                  img if not stamp else img.replace("{", "${"),
                   _get_runfile_path(ctx, images[img]["name"]),
                   _get_runfile_path(ctx, images[img]["id"]))
               for img in images

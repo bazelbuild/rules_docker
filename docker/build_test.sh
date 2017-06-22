@@ -537,6 +537,17 @@ function test_stamped_bundle() {
     "[\"example.com/aaaaa$USER:stamped\"]"
 }
 
+function test_stamped_bundle() {
+  # The path to the script.
+  local test_data="${TEST_DATA_DIR}/stamped_bundle_test"
+
+  # The script contents.
+  local script="$(cat ${test_data})"
+
+  EXPECT_CONTAINS "${script}" "read_variables"
+  EXPECT_CONTAINS "${script}" '${BUILD_USER}'
+}
+
 function test_pause_based() {
   # Check that when we add a single layer on top of a checked in tarball, that
   # all of the layers from the original tarball are included.  We omit the

@@ -72,6 +72,21 @@ function tag_layer() {
   fi
 }
 
+function read_variables() {
+  local file=${RUNFILES}/$1
+  local new_file=$(mktemp)
+  trap "rm -f ${new_file}" EXIT
+
+  # Rewrite the file from Bazel for the form FOO=...
+  # to a form suitable for sourcing into bash to expose
+  # these variables as substitutions in the tag statements.
+  sed -E "s/^([^ ]+) (.*)\$/export \\1='\\2'/g" < ${file} > ${new_file}
+  source ${new_file}
+}
+
+# Statements initializing stamp variables.
+%{stamp_statements}
+
 # List of 'incr_load' statements for all layers.
 # This generated and injected by docker_build.
 %{load_statements}
