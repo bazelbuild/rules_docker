@@ -19,47 +19,65 @@ load(
     _get_runfile_path = "runfile",
 )
 
-def _extract_id(ctx, artifact):
-  id_out = ctx.new_file(ctx.label.name + "." + artifact.basename + ".id")
-  name_out = ctx.new_file(ctx.label.name + "." + artifact.basename + ".name")
+def _extract_layers(ctx, artifact):
+  config_file = ctx.new_file(ctx.label.name + "." + artifact.basename + ".config")
   ctx.action(
-      executable = ctx.executable.extract_id,
+      executable = ctx.executable.extract_config,
       arguments = [
           "--tarball", artifact.path,
-          "--output_id", id_out.path,
-          "--output_name", name_out.path],
+          "--output", config_file.path],
       inputs = [artifact],
-      outputs = [id_out, name_out],
-      mnemonic = "ExtractID")
-  return id_out, name_out
+      outputs = [config_file],
+      mnemonic = "ExtractConfig")
+  return {
+      "config": config_file,
+      # TODO(mattmoor): Do we need to compute config_digest here?
+      # I believe we would for a checked in tarball to be usable
+      # with docker_bundle + bazel run.
+      "legacy": artifact,
+  }
 
 def get_from_target(ctx, attr_target, file_target):
-  if hasattr(attr_target, "docker_layers"):
-    return attr_target.docker_layers
+  if hasattr(attr_target, "docker_parts"):
+    return attr_target.docker_parts
   else:
     if not file_target:
-      return []
+      return {}
     target = file_target[0]
-    id_out, name_out = _extract_id(ctx, target)
-    return [{
-        "layer": target,
-        # ID is actually the hash of the v2.2 configuration file,
-        # which is the name of the json file within the tarball.
-        "id": id_out,
-        # Name is the v1 image identifier we've assigned.
-        "name": name_out
-    }]
+    return _extract_layers(ctx, target)
 
-def assemble(ctx, layers, tags_to_names, output, stamp=False):
+def assemble(ctx, images, output, stamp=False):
   """Create the full image from the list of layers."""
-  layers = [l["layer"] for l in layers]
   args = [
       "--output=" + output.path,
-  ] + [
-      "--tags=" + tag + "=@" + tags_to_names[tag].path
-      for tag in tags_to_names
-  ] + ["--layer=" + l.path for l in layers]
-  inputs = layers + tags_to_names.values()
+  ]
+
+  inputs = []
+  for tag in images:
+    image = images[tag]
+    args += [
+        "--tags=" + tag + "=@" + image["config"].path
+    ]
+    inputs += [image["config"]]
+
+    for i in range(0, len(image["diff_id"])):
+      args += [
+          "--layer=" + 
+          "@" + image["diff_id"][i].path +
+          "=@" + image["blobsum"][i].path +
+          # No @, not resolved through utils, always filename.
+          "=" + image["unzipped_layer"][i].path +
+          "=" + image["zipped_layer"][i].path
+      ]
+    inputs += image["unzipped_layer"]
+    inputs += image["diff_id"]
+    inputs += image["zipped_layer"]
+    inputs += image["blobsum"]
+
+    if image.get("legacy"):
+      args += ["--legacy=" + image["legacy"].path]
+      inputs += [image["legacy"]]
+
   if stamp:
     args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
     inputs += [ctx.info_file, ctx.version_file]
@@ -71,11 +89,51 @@ def assemble(ctx, layers, tags_to_names, output, stamp=False):
       mnemonic = "JoinLayers"
   )
 
-def incremental_load(ctx, layers, images, output, stamp=False):
+def incremental_load(ctx, images, output, stamp=False):
   """Generate the incremental load statement."""
   stamp_files = []
   if stamp:
     stamp_files = [ctx.info_file, ctx.version_file]
+
+  load_statements = []
+  tag_statements = []
+  # TODO(mattmoor): Consider adding cleanup_statements.
+  for tag in images:
+    image = images[tag]
+
+    # First load the legacy base image, if it exists.
+    if image.get("legacy"):
+      load_statements += [
+          "load_legacy '%s'" % _get_runfile_path(ctx, image["legacy"])
+      ]
+
+    # Next import each of the unzipped layers, except the last.
+    load_statements += [
+        "import_layer '%s' '%s'" % (_get_runfile_path(ctx, diff_id),
+                                    _get_runfile_path(ctx, layer))
+        for (diff_id, layer) in reversed(zip(image["diff_id"][1:],
+                                             image["unzipped_layer"][1:]))
+    ]
+
+    # Now that all the filesystem layers are present in the daemon,
+    # load the config file to tie them all together.
+    load_statements += [
+        "import_config '%s' '%s' '%s'" % (
+            _get_runfile_path(ctx, image["config"]),
+            _get_runfile_path(ctx, image["diff_id"][0]),
+            _get_runfile_path(ctx, image["unzipped_layer"][0]))
+    ]
+
+    # Now tag the imported config with the specified tag.
+    tag_statements += [
+        "tag_layer \"%s\" '%s'" % (
+            # Turn stamp variable references into bash variables.
+            # It is notable that the only legal use of '{' in a
+            # tag would be for stamp variables, '$' is not allowed.
+            tag if not stamp else tag.replace("{", "${"),
+            _get_runfile_path(ctx, image["config_digest"]))
+    ]
+
   ctx.template_action(
       template = ctx.file.incremental_load_template,
       substitutions = {
@@ -85,21 +143,8 @@ def incremental_load(ctx, layers, images, output, stamp=False):
           "%{stamp_statements}": "\n".join([
               "read_variables %s" % _get_runfile_path(ctx, f)
               for f in stamp_files]),
-          "%{load_statements}": "\n".join([
-              "incr_load '%s' '%s'" % (_get_runfile_path(ctx, l["id"]),
-                                       _get_runfile_path(ctx, l["layer"]))
-              # The last layer is the first in the list of layers.
-              # We reverse to load the layer from the parent to the child.
-              for l in reverse(layers)]),
-          "%{tag_statements}": "\n".join([
-              "tag_layer \"%s\" '%s'" % (
-                  # Turn stamp variable references into bash variables.
-                  # It is notable that the only legal use of '{' in a
-                  # tag would be for stamp variables, '$' is not allowed.
-                  img if not stamp else img.replace("{", "${"),
-                  _get_runfile_path(ctx, images[img]["id"]))
-              for img in images
-          ])
+          "%{load_statements}": "\n".join(load_statements),
+          "%{tag_statements}": "\n".join(tag_statements)
       },
       output = output,
       executable = True)
@@ -116,8 +161,8 @@ tools = {
         executable = True,
         allow_files = True,
     ),
-    "extract_id": attr.label(
-        default = Label("//docker:extract_id"),
+    "extract_config": attr.label(
+        default = Label("//docker:extract_config"),
         cfg = "host",
         executable = True,
         allow_files = True,

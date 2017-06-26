@@ -123,6 +123,15 @@ py_binary(
 )
 
 py_binary(
+    name = "extract_config",
+    srcs = ["extract_config.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@containerregistry//:containerregistry",
+    ],
+)
+
+py_binary(
     name = "join_layers",
     srcs = ["join_layers.py"],
     visibility = ["//visibility:public"],
