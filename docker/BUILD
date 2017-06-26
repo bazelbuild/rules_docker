@@ -85,39 +85,11 @@ sh_test(
 # Used by docker_build and friends
 
 py_binary(
-    name = "rewrite_json",
-    srcs = ["rewrite_json.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "@containerregistry//:containerregistry",
-    ],
-)
-
-py_binary(
     name = "create_image_config",
     srcs = ["create_image_config.py"],
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@containerregistry//:containerregistry",
-    ],
-)
-
-py_binary(
-    name = "create_image",
-    srcs = ["create_image.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":utils",
-        "@containerregistry//:containerregistry",
-    ],
-)
-
-py_binary(
-    name = "extract_id",
-    srcs = ["extract_id.py"],
-    visibility = ["//visibility:public"],
-    deps = [
         "@containerregistry//:containerregistry",
     ],
 )

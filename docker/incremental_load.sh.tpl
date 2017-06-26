@@ -31,8 +31,8 @@ IMAGE_LEN=$(for i in $IMAGES; do echo -n $i | wc -c; done | sort -g | head -1 | 
 [ -n "$IMAGE_LEN" ] || IMAGE_LEN=64
 
 # Create temporary files in which to record things to clean up.
-TEMP_FILES=$(mktemp)
-TEMP_IMAGES=$(mktemp)
+TEMP_FILES="$(mktemp)"
+TEMP_IMAGES="$(mktemp)"
 function cleanup() {
   cat "${TEMP_FILES}" | xargs rm -rf> /dev/null 2>&1 || true
   cat "${TEMP_IMAGES}" | xargs "${DOCKER}" rmi > /dev/null 2>&1 || true
@@ -54,24 +54,24 @@ function load_legacy() {
 function import_layer() {
   # Load a layer if and only if the layer is not in "$IMAGES", that is
   # in the local docker registry.
-  local name=$(cat ${RUNFILES}/$1)
+  local name="$(cat "${RUNFILES}/$1")"
 
   if (echo "$IMAGES" | grep -q ^${name:0:$IMAGE_LEN}$); then
     echo "Skipping ${name}, already loaded."
   else
     echo "Importing ${name}..."
-    TEMP_IMAGE=$(cat ${RUNFILES}/$2 | "${DOCKER}" import -)
+    TEMP_IMAGE="$(cat "${RUNFILES}/$2" | "${DOCKER}" import -)"
     echo "${TEMP_IMAGE}" >> "${TEMP_IMAGES}"
   fi
 }
 
 function import_config() {
   # Create an image from the image configuration file.
-  local name=${RUNFILES}/$1
-  local diff_id=$(cat ${RUNFILES}/$2)
-  local layer=${RUNFILES}/$3
+  local name="${RUNFILES}/$1"
+  local diff_id="$(cat "${RUNFILES}/$2")"
+  local layer="${RUNFILES}/$3"
 
-  local tmp_dir=$(mktemp -d)
+  local tmp_dir="$(mktemp -d)"
   echo "${tmp_dir}" >> "${TEMP_FILES}"
 
   cd "${tmp_dir}"
@@ -101,7 +101,7 @@ EOF
 }
 
 function tag_layer() {
-  local name=$(cat ${RUNFILES}/$2)
+  local name="$(cat "${RUNFILES}/$2")"
 
   local TAG="$1"
   echo "Tagging ${name} as ${TAG}"
@@ -109,8 +109,8 @@ function tag_layer() {
 }
 
 function read_variables() {
-  local file=${RUNFILES}/$1
-  local new_file=$(mktemp)
+  local file="${RUNFILES}/$1"
+  local new_file="$(mktemp)"
   echo "${new_file}" >> "${TEMP_FILES}"
 
   # Rewrite the file from Bazel for the form FOO=...
@@ -123,7 +123,7 @@ function read_variables() {
 # Statements initializing stamp variables.
 %{stamp_statements}
 
-# List of 'incr_load' statements for all layers.
+# List of 'import_foo' statements for all layers.
 # This generated and injected by docker_build.
 %{load_statements}
 

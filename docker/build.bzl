@@ -264,18 +264,6 @@ docker_build_ = rule(
             executable = True,
             allow_files = True,
         ),
-        "create_image": attr.label(
-            default = Label("//docker:create_image"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "rewrite_tool": attr.label(
-            default = Label("//docker:rewrite_json"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
         "create_image_config": attr.label(
             default = Label("//docker:create_image_config"),
             cfg = "host",

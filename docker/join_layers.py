@@ -131,7 +131,7 @@ def create_bundle(output, tag_to_config, diffid_to_blobsum,
   Args:
     output: the name of the docker image file to create.
     layers: the layers (tar files) to join to the image.
-    tag_to_layer: a map from google3.third_party.bazel_rules.rules_docker.docker_name.Tag to the layer id it references.
+    tag_to_layer: a map from docker_name.Tag to the layer id it references.
     layer_to_tags: a map from the name of the layer tarball as it appears
             in our archives to the list of tags applied to it.
   """
