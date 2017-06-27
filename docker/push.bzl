@@ -21,6 +21,11 @@ load(
     ":path.bzl",
     _get_runfile_path = "runfile",
 )
+load(
+    ":layers.bzl",
+    _get_layers = "get_from_target",
+    _layer_tools = "tools"
+)
 
 def _impl(ctx):
   """Core implementation of docker_push."""
@@ -28,7 +33,25 @@ def _impl(ctx):
   if ctx.attr.stamp:
     stamp_inputs = [ctx.info_file, ctx.version_file]
 
+  image = _get_layers(ctx, ctx.attr.image, ctx.files.image)
+
   stamp_arg = " ".join(["--stamp-info-file=%s" % f.short_path for f in stamp_inputs])
+
+  # Leverage our efficient intermediate representation to push.
+  legacy_base_arg = ""
+  if image.get("legacy"):
+    print("Pushing an image based on a tarball can be very " +
+          "expensive.  If the image is the output of a " +
+          "docker_build, consider dropping the '.tar' extension. " +
+          "If the image is checked in, consider using " +
+          "docker_import instead.")
+    legacy_base_arg = "--tarball=%s" % image["legacy"].short_path
+
+  blobsums = image.get("blobsum", [])
+  digest_arg = " ".join(["--digest=%s" % f.short_path for f in blobsums])
+  blobs = image.get("zipped_layer", [])
+  layer_arg = " ".join(["--layer=%s" % f.short_path for f in blobs])
+  config_arg = "--config=%s" % image["config"].short_path
 
   ctx.template_action(
       template = ctx.file._tag_tpl,
@@ -40,7 +63,8 @@ def _impl(ctx):
           "%{stamp}": stamp_arg,
           "%{tag}": ctx.expand_make_variables(
               "tag", ctx.attr.tag, {}),
-          "%{image}": ctx.file.image.short_path,
+          "%{image}": "%s %s %s %s" % (
+              legacy_base_arg, config_arg, digest_arg, layer_arg),
           "%{docker_pusher}": ctx.executable._pusher.short_path,
       },
       output = ctx.outputs.executable,
@@ -48,9 +72,10 @@ def _impl(ctx):
   )
 
   return struct(runfiles = ctx.runfiles(files = [
-      ctx.file.image,
-      ctx.executable._pusher
-  ] + stamp_inputs))
+      ctx.executable._pusher,
+      image["config"]
+  ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
+  stamp_inputs +  ([image["legacy"]] if image.get("legacy") else [])))
 
 _docker_push = rule(
     attrs = {
@@ -77,7 +102,7 @@ _docker_push = rule(
             default = False,
             mandatory = False,
         ),
-    },
+    } + _layer_tools,
     executable = True,
     implementation = _impl,
 )
@@ -94,8 +119,4 @@ def docker_push(image=None, **kwargs):
     repository: the name of the image.
     tag: (optional) the tag of the image, default to 'latest'.
   """
-
-  if not image.endswith(".tar"):
-    image = image + ".tar"
-
   _docker_push(image=image, **kwargs)

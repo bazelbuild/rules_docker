@@ -24,16 +24,21 @@ def _impl(repository_ctx):
   # Add an empty top-level BUILD file.
   repository_ctx.file("BUILD", "")
 
-  # TODO(mattmoor): Is there a way of doing this so that
-  # consumers can just depend on @base//image ?
   repository_ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
-exports_files(["image.tar"])
+
+load("@io_bazel_rules_docker//docker:import.bzl", "docker_import")
+
+docker_import(
+  name = "image",
+  config = "config.json",
+  layers = glob(["*.tar.gz"]),
+)
 """)
 
   args = [
       repository_ctx.path(repository_ctx.attr._puller),
-      "--tarball", repository_ctx.path("image/image.tar")
+      "--directory", repository_ctx.path("image")
   ]
 
   # If a digest is specified, then pull by digest.  Otherwise, pull by tag.

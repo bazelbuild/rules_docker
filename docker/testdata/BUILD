@@ -267,6 +267,24 @@ docker_build(
     files = ["foo"],
 )
 
+# We should get a warning when we build/run this.
+docker_push(
+    name = "push_inadvertent_legacy_base",
+    image = ":with_env.tar",
+    registry = "gcr.io",
+    repository = "convoy-adapter/bazel-test",
+    tag = "with_env",
+)
+
+# We should get a warning when we build/run this.
+docker_push(
+    name = "push_legacy_base",
+    image = ":pause_based",
+    registry = "gcr.io",
+    repository = "convoy-adapter/bazel-test",
+    tag = "pause_based",
+)
+
 docker_bundle(
     name = "bundle_test",
     images = {
