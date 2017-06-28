@@ -32,7 +32,7 @@ load(
 
 docker_build(
   name = "pause_based",
-  base = "@pause//image:image.tar",
+  base = "@pause//image",
   workdir = "/tmp",
 )
 EOF
