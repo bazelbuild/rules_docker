@@ -24,7 +24,6 @@ load(
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
-load(":list.bzl", "reverse")
 
 def _docker_bundle_impl(ctx):
   """Implementation for the docker_bundle rule."""

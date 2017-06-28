@@ -13,7 +13,6 @@
 # limitations under the License.
 """Tools for dealing with Docker Image layers."""
 
-load(":list.bzl", "reverse")
 load(
     ":path.bzl",
     _get_runfile_path = "runfile",

@@ -39,7 +39,6 @@ load(
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
-load(":list.bzl", "reverse")
 load(
     ":path.bzl",
     "dirname",
