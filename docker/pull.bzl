@@ -28,11 +28,13 @@ def _impl(repository_ctx):
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//docker:import.bzl", "docker_import")
+load("@io_bazel_rules_docker//docker:list.bzl", "reverse")
 
 docker_import(
   name = "image",
   config = "config.json",
-  layers = glob(["*.tar.gz"]),
+  # TODO(mattmoor): fast_puller should reverse the order...
+  layers = reverse(glob(["*.tar.gz"])),
 )
 """)
 

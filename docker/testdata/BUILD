@@ -394,7 +394,6 @@ PAUSE_LAYERS = [
     srcs = [":pause.tar"],
 ) for id in PAUSE_LAYERS]
 
-
 docker_import(
    name = "pause_piecemeal",
    config = ":pause_config.json",
