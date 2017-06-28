@@ -51,52 +51,155 @@ function load_legacy() {
   "${DOCKER}" load -i "${tarball}"
 }
 
-function import_layer() {
-  # Load a layer if and only if the layer is not in "$IMAGES", that is
-  # in the local docker registry.
-  local name="$(cat "${RUNFILES}/$1")"
+function join_by() {
+  local IFS="$1"
+  shift
+  echo "$*"
+}
 
-  if (echo "$IMAGES" | grep -q ^${name:0:$IMAGE_LEN}$); then
-    echo "Skipping ${name}, already loaded."
-  else
-    echo "Importing ${name}..."
-    TEMP_IMAGE="$(cat "${RUNFILES}/$2" | "${DOCKER}" import -)"
-    echo "${TEMP_IMAGE}" >> "${TEMP_IMAGES}"
-  fi
+function sequence_exists() {
+  local diff_ids="$@"
+  cat > config.json <<EOF
+{
+    "architecture": "amd64",
+    "author": "Bazel",
+    "config": {},
+    "created": "0001-01-01T00:00:00Z",
+    "history": [
+        {
+            "author": "Bazel",
+            "created": "0001-01-01T00:00:00Z",
+            "created_by": "bazel build ..."
+        }
+    ],
+    "os": "linux",
+    "rootfs": {
+        "diff_ids": [$(join_by , ${diff_ids[@]})],
+        "type": "layers"
+    }
+}
+EOF
+
+  cat > manifest.json <<EOF
+[{
+   "Config": "config.json",
+   "Layers": [$(join_by , ${diff_ids[@]})],
+   "RepoTags": []
+}]
+EOF
+
+  set -o pipefail
+  tar c config.json manifest.json |& \
+      "${DOCKER}" load |& \
+      cut -d':' -f 2- >> "${TEMP_IMAGES}" 2> /dev/null
+}
+
+function find_diffbase() {
+  local name="$1"
+  shift
+
+  NEW_DIFF_IDS=()
+  while test $# -gt 0
+  do
+    local diff_id="$(cat "${RUNFILES}/$1")"
+    # Throwaway the layer, we only want diff id.
+    shift 2
+
+    NEW_DIFF_IDS+=("${diff_id}")
+  done
+
+  TOTAL_DIFF_IDS=($(cat "${name}" | python -mjson.tool | \
+      grep sha256 | cut -d'"' -f 2 | cut -d':' -f 2))
+
+  LEGACY_COUNT=$((${#TOTAL_DIFF_IDS[@]} - ${#NEW_DIFF_IDS[@]}))
+  echo "${TOTAL_DIFF_IDS[@]:0:${LEGACY_COUNT}}"
 }
 
 function import_config() {
   # Create an image from the image configuration file.
   local name="${RUNFILES}/$1"
-  local diff_id="$(cat "${RUNFILES}/$2")"
-  local layer="${RUNFILES}/$3"
+  shift 1
 
   local tmp_dir="$(mktemp -d)"
   echo "${tmp_dir}" >> "${TEMP_FILES}"
 
   cd "${tmp_dir}"
-  cp "${name}" the-image.json
-  cp "${layer}" "${diff_id}.tar"
-  local parent_layers=$(cat the-image.json | python -mjson.tool | \
-    grep sha256 | grep "," | cut -d'"' -f 2 | cut -d':' -f 2)
 
+  # Docker elides layer reads from the tarball when it
+  # already has a copy of the layer with the same basis
+  # as it has within the tarball.  This means that once
+  # we have found the lowest layer in our image of which
+  # Docker is unaware we must load all of the remaining
+  # layers.  So to determine existence, iterate through
+  # the layers attempting to load the image without it's
+  # tarball.  As soon as one fails, break and synthesize
+  # a "docker save" tarball of all of the remaining layers.
+
+  # Find the cut-off point of layers we may
+  # already know about, and setup out arrays.
+  DIFF_IDS=()
+  ALL_QUOTED=()
+  for diff_id in $(find_diffbase "${name}" "$@");
+  do
+    DIFF_IDS+=("\"sha256:${diff_id}\"")
+    ALL_QUOTED+=("\"${diff_id}.tar\"")
+  done
+
+  # Starting from our legacy diffbase, figure out which
+  # additional layers the Docker daemon already has.
+  while test $# -gt 0
+  do
+    local diff_id="$(cat "${RUNFILES}/$1")"
+    local layer="${RUNFILES}/$2"
+
+    DIFF_IDS+=("\"sha256:${diff_id}\"")
+
+    if ! sequence_exists "${DIFF_IDS[@]}"; then
+      # This sequence of diff-ids has not been seen,
+      # so we must start by making this layer part of
+      # the tarball we load.
+      break
+    fi
+
+    ALL_QUOTED+=("\"${diff_id}.tar\"")
+    shift 2
+  done
+
+  # Set up the list of layers we actually need to load,
+  # from the cut-off established above.
+  MISSING=()
+  while test $# -gt 0
+  do
+    local diff_id="$(cat "${RUNFILES}/$1")"
+    local layer="${RUNFILES}/$2"
+    shift 2
+
+    ALL_QUOTED+=("\"${diff_id}.tar\"")
+
+    # Only create the link if it doesn't exist.
+    # Only add files to MISSING once.
+    if [ ! -f "${diff_id}.tar" ]; then
+      ln -s "${layer}" "${diff_id}.tar"
+      MISSING+=("${diff_id}.tar")
+    fi
+  done
+
+  cp "${name}" config.json
   cat > manifest.json <<EOF
 [{
-   "Config": "the-image.json",
-   "Layers": [$(
-for x in ${parent_layers}
-do
-  # We must follow a consistent scheme here in case it overlaps
-  # with the final layer.
-  echo -n "\"$x.tar\","
-done
-echo -n "\"${diff_id}.tar\""
-)
-   ],
+   "Config": "config.json",
+   "Layers": [$(join_by , ${ALL_QUOTED[@]})],
    "RepoTags": []
 }]
 EOF
-  tar c the-image.json "${diff_id}.tar" manifest.json | docker load
+
+  MISSING+=("config.json" "manifest.json")
+
+  # We minimize reads / writes by symlinking the layers above
+  # and then streaming exactly the layers we've established are
+  # needed into the Docker daemon.
+  tar --create --absolute-names --dereference \
+      "${MISSING[@]}" | tee image.tar | "${DOCKER}" load
 }
 
 function tag_layer() {
@@ -122,10 +225,10 @@ function read_variables() {
 # Statements initializing stamp variables.
 %{stamp_statements}
 
-# List of 'import_foo' statements for all layers.
-# This generated and injected by docker_build.
+# List of 'import_config' statements for all images.
+# This generated and injected by docker_*.
 %{load_statements}
 
 # List of 'tag_layer' statements for all tags.
-# This generated and injected by docker_build.
+# This generated and injected by docker_*.
 %{tag_statements}

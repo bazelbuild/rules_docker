@@ -107,21 +107,18 @@ def incremental_load(ctx, images, output, stamp=False):
           "load_legacy '%s'" % _get_runfile_path(ctx, image["legacy"])
       ]
 
-    # Next import each of the unzipped layers, except the last.
-    load_statements += [
-        "import_layer '%s' '%s'" % (_get_runfile_path(ctx, diff_id),
-                                    _get_runfile_path(ctx, layer))
-        for (diff_id, layer) in reversed(zip(image["diff_id"][1:],
-                                             image["unzipped_layer"][1:]))
-    ]
+    pairs = reversed(zip(image["diff_id"], image["unzipped_layer"]))
 
-    # Now that all the filesystem layers are present in the daemon,
-    # load the config file to tie them all together.
+    # Import the config and the subset of layers not present
+    # in the daemon.
     load_statements += [
-        "import_config '%s' '%s' '%s'" % (
+        "import_config '%s' %s" % (
             _get_runfile_path(ctx, image["config"]),
-            _get_runfile_path(ctx, image["diff_id"][0]),
-            _get_runfile_path(ctx, image["unzipped_layer"][0]))
+            " ".join([
+              "'%s' '%s'" % (
+                _get_runfile_path(ctx, diff_id),
+                _get_runfile_path(ctx, unzipped_layer))
+              for (diff_id, unzipped_layer) in pairs]))
     ]
 
     # Now tag the imported config with the specified tag.
