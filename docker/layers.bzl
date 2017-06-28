@@ -107,7 +107,7 @@ def incremental_load(ctx, images, output, stamp=False):
           "load_legacy '%s'" % _get_runfile_path(ctx, image["legacy"])
       ]
 
-    pairs = reversed(zip(image["diff_id"], image["unzipped_layer"]))
+    pairs = zip(image["diff_id"], image["unzipped_layer"])
 
     # Import the config and the subset of layers not present
     # in the daemon.

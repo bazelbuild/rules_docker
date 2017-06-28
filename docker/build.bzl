@@ -185,11 +185,13 @@ def _docker_build_impl(ctx):
   tag_name = _repository_name(ctx) + ":" + ctx.label.name
 
   # Get the layers and shas from our base.
+  # These are ordered as they'd appear in the v2.2 config,
+  # so they grow at the end.
   parent_parts = _get_layers(ctx, ctx.attr.base, ctx.files.base)
-  zipped_layers = [zipped_layer] + parent_parts.get("zipped_layer", [])
-  shas = [blob_sum] + parent_parts.get("blobsum", [])
-  unzipped_layers = [unzipped_layer] + parent_parts.get("unzipped_layer", [])
-  diff_ids = [diff_id] + parent_parts.get("diff_id", [])
+  zipped_layers = parent_parts.get("zipped_layer", []) + [zipped_layer]
+  shas = parent_parts.get("blobsum", []) + [blob_sum]
+  unzipped_layers = parent_parts.get("unzipped_layer", []) + [unzipped_layer]
+  diff_ids = parent_parts.get("diff_id", []) + [diff_id]
 
   # These are the constituent parts of the Docker image, which each
   # rule in the chain must preserve.
