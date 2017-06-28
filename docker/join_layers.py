@@ -191,8 +191,7 @@ def main():
       config_file = legacy_image.config_file()
       cfg = json.loads(config_file)
       fs_layers = list(reversed(legacy_image.fs_layers()))
-      for i in xrange(len(cfg['rootfs']['diff_ids'])):
-        diff_id = cfg['rootfs']['diff_ids'][i]
+      for i, diff_id in enumerate(cfg['rootfs']['diff_ids']):
         blob_sum = fs_layers[i]
         diffid_to_blobsum[diff_id] = blob_sum
         blobsum_to_legacy[blob_sum] = legacy_image

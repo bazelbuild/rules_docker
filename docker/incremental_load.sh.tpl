@@ -31,8 +31,8 @@ IMAGE_LEN=$(for i in $IMAGES; do echo -n $i | wc -c; done | sort -g | head -1 | 
 [ -n "$IMAGE_LEN" ] || IMAGE_LEN=64
 
 # Create temporary files in which to record things to clean up.
-TEMP_FILES="$(mktemp)"
-TEMP_IMAGES="$(mktemp)"
+TEMP_FILES="$(mktemp -t)"
+TEMP_IMAGES="$(mktemp -t)"
 function cleanup() {
   cat "${TEMP_FILES}" | xargs rm -rf> /dev/null 2>&1 || true
   cat "${TEMP_IMAGES}" | xargs "${DOCKER}" rmi > /dev/null 2>&1 || true
@@ -96,8 +96,7 @@ echo -n "\"${diff_id}.tar\""
    "RepoTags": []
 }]
 EOF
-  tar cf image.tar the-image.json "${diff_id}.tar" manifest.json
-  docker load -i image.tar
+  tar c the-image.json "${diff_id}.tar" manifest.json | docker load
 }
 
 function tag_layer() {
@@ -110,7 +109,7 @@ function tag_layer() {
 
 function read_variables() {
   local file="${RUNFILES}/$1"
-  local new_file="$(mktemp)"
+  local new_file="$(mktemp -t)"
   echo "${new_file}" >> "${TEMP_FILES}"
 
   # Rewrite the file from Bazel for the form FOO=...
