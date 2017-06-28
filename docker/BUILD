@@ -60,8 +60,8 @@ TEST_DATA = [
     "//docker/testdata:stamped_bundle_test",
     "//docker/testdata:pause_based.tar",
     "//docker/testdata:dashdash_entrypoint.tar",
-    "//docker/testdata:base_based.tar",
-    "//docker/testdata:cc_based.tar",
+    "//docker/testdata:base_based_warning.tar",
+    "//docker/testdata:cc_based_warning.tar",
     "//docker/testdata:pause_piecemeal.tar",
 ]
 
