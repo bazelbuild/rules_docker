@@ -84,6 +84,15 @@ function test_bazel_run_docker_bundle_clean() {
   done
 }
 
+function test_bazel_run_docker_import_clean() {
+  cd "${ROOT}"
+  for target in $(bazel query 'kind("docker_import", "docker/testdata/...")');
+  do
+    clear_docker
+    bazel run $target
+  done
+}
+
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
   clear_docker
@@ -102,8 +111,19 @@ function test_bazel_run_docker_bundle_incremental() {
   done
 }
 
+function test_bazel_run_docker_import_incremental() {
+  cd "${ROOT}"
+  clear_docker
+  for target in $(bazel query 'kind("docker_import", "docker/testdata/...")');
+  do
+    bazel run $target
+  done
+}
+
 test_top_level
 test_bazel_run_docker_build_clean
 test_bazel_run_docker_bundle_clean
+test_bazel_run_docker_import_clean
 test_bazel_run_docker_build_incremental
 test_bazel_run_docker_bundle_incremental
+test_bazel_run_docker_import_incremental

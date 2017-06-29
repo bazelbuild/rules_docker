@@ -18,6 +18,9 @@
 load(":build.bzl", "docker_build")
 load(":bundle.bzl", "docker_bundle")
 
+# Expose the docker_import rule.
+load(":import.bzl", "docker_import")
+
 # Expose the docker_pull repository rule.
 load(":pull.bzl", "docker_pull")
 
