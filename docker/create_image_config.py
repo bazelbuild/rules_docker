@@ -18,7 +18,6 @@ import json
 import sys
 
 from docker import utils
-from containerregistry.client.v2_2 import docker_image as v2_2_image
 from containerregistry.transform.v2_2 import metadata as v2_2_metadata
 
 parser = argparse.ArgumentParser(
@@ -84,8 +83,8 @@ def main():
 
   base_json = '{}'
   if args.base:
-    with v2_2_image.FromTarball(args.base) as v2_2_img:
-      base_json = v2_2_img.config_file()
+    with open(args.base, 'r') as r:
+      base_json = r.read()
   data = json.loads(base_json)
 
   layers = []

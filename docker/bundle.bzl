@@ -35,48 +35,31 @@ def _docker_bundle_impl(ctx):
   image_files_dict = _string_to_label(
       ctx.files.image_targets, ctx.attr.image_target_strings)
 
-  seen_names = []
-  layers = []
-  for i in range(0, len(ctx.attr.image_targets)):
-    target_layers = _get_layers(
-        ctx, ctx.attr.image_targets[i], ctx.files.image_targets[i])
-    for layer in target_layers:
-      if layer["name"].path in seen_names:
-        continue
-      seen_names.append(layer["name"].path)
-      layers.append(layer)
-
-  images = dict()
+  images = {}
+  runfiles = []
   for unresolved_tag in ctx.attr.images:
     # Allow users to put make variables into the tag name.
     tag = ctx.expand_make_variables("images", unresolved_tag, {})
 
     target = ctx.attr.images[unresolved_tag]
-    images[tag] = _get_layers(
-        ctx, image_target_dict[target], image_files_dict[target])[0]
 
-  _incr_load(ctx, layers, images, ctx.outputs.executable,
+    l = _get_layers(ctx, image_target_dict[target], image_files_dict[target])
+    images[tag] = l
+    runfiles += [l.get('config')]
+    runfiles += [l.get('config_digest')]
+    runfiles += l.get('unzipped_layer', [])
+    runfiles += l.get('diff_id', [])
+
+  _incr_load(ctx, images, ctx.outputs.executable,
              stamp=ctx.attr.stamp)
-
-  _assemble_image(ctx, reverse(layers), {
-      # Create a new dictionary with the same keyspace that
-      # points to the name of the layer.
-      k: images[k]["name"]
-      for k in images
-  }, ctx.outputs.out, stamp=ctx.attr.stamp)
+  _assemble_image(ctx, images, ctx.outputs.out, stamp=ctx.attr.stamp)
 
   stamp_files = []
   if ctx.attr.stamp:
     stamp_files = [ctx.info_file, ctx.version_file]
 
-  runfiles = ctx.runfiles(
-      files = (stamp_files +
-               [l["name"] for l in layers] +
-               [l["id"] for l in layers] +
-               [l["layer"] for l in layers]))
-
-  return struct(runfiles = runfiles,
-                files = set())
+  return struct(runfiles = ctx.runfiles(
+      files = (stamp_files + runfiles)), files = set())
 
 docker_bundle_ = rule(
     attrs = {

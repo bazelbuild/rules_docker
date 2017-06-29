@@ -25,6 +25,10 @@ load(
     _sha256 = "sha256",
 )
 load(
+    ":zip.bzl",
+    _gzip = "gzip",
+)
+load(
     ":label.bzl",
     _string_to_label = "string_to_label",
 )
@@ -51,7 +55,7 @@ load(
 def _build_layer(ctx):
   """Build the current layer for appending it the base layer."""
 
-  layer = ctx.new_file(ctx.label.name + ".layer")
+  layer = ctx.outputs.layer
   build_layer = ctx.executable.build_layer
   args = [
       "--output=" + layer.path,
@@ -86,21 +90,19 @@ def _build_layer(ctx):
       use_default_shell_env=True,
       mnemonic="DockerLayer"
   )
-  return layer
+  return layer, _sha256(ctx, layer)
 
-# TODO(mattmoor): In a future change, we should establish the invariant that
-# base must expose "docker_layers", possibly by hoisting a "docker_load" rule
-# from a tarball "base".
-def _get_base_artifact(ctx):
+def _zip_layer(ctx, layer):
+  zipped_layer = _gzip(ctx, layer)
+  return zipped_layer, _sha256(ctx, zipped_layer)
+
+def _get_base_config(ctx):
   if ctx.files.base:
-    if hasattr(ctx.attr.base, "docker_layers"):
-      # The base is the first layer in docker_layers if provided.
-      return _get_layers(ctx, ctx.attr.base, ctx.files.base)[0]["layer"]
-    if len(ctx.files.base) != 1:
-      fail("base attribute should be a single tar file.")
-    return ctx.files.base[0]
+    # The base is the first layer in docker_parts if provided.
+    l = _get_layers(ctx, ctx.attr.base, ctx.files.base)
+    return l.get("config")
 
-def _image_config(ctx, layer_names):
+def _image_config(ctx, layer_name):
   """Create the configuration for a new docker image."""
   config = ctx.new_file(ctx.label.name + ".config")
 
@@ -138,13 +140,13 @@ def _image_config(ctx, layer_names):
   if ctx.attr.workdir:
     args += ["--workdir=" + ctx.attr.workdir]
 
-  inputs = layer_names
-  args += ["--layer=@" + l.path for l in layer_names]
+  inputs = [layer_name]
+  args += ["--layer=@" + layer_name.path]
 
   if ctx.attr.label_files:
     inputs += ctx.files.label_files
 
-  base = _get_base_artifact(ctx)
+  base = _get_base_config(ctx)
   if base:
     args += ["--base=%s" % base.path]
     inputs += [base]
@@ -156,94 +158,7 @@ def _image_config(ctx, layer_names):
       outputs = [config],
       use_default_shell_env=True,
       mnemonic = "ImageConfig")
-  return config
-
-def _metadata_action(ctx, layer, name, output):
-  """Generate the action to create the JSON metadata for the layer."""
-  rewrite_tool = ctx.executable.rewrite_tool
-
-  label_file_dict = _string_to_label(
-      ctx.files.label_files, ctx.attr.label_file_strings)
-
-  labels = dict()
-  for l in ctx.attr.labels:
-    fname = ctx.attr.labels[l]
-    if fname[0] == "@":
-      labels[l] = "@" + label_file_dict[fname[1:]].path
-    else:
-      labels[l] = fname
-
-  args = [
-      "--output=%s" % output.path,
-      "--layer=%s" % layer.path,
-      "--name=@%s" % name.path,
-  ] + [
-      "--entrypoint=%s" % x for x in ctx.attr.entrypoint
-  ] + [
-      "--command=%s" % x for x in ctx.attr.cmd
-  ] + [
-      "--ports=%s" % x for x in ctx.attr.ports
-  ] + [
-      "--volumes=%s" % x for x in ctx.attr.volumes
-  ]
-  _labels = _serialize_dict(labels)
-  if _labels:
-    args += ["--labels=%s" % x for x in _labels.split(',')]
-  _env = _serialize_dict(ctx.attr.env)
-  if _env:
-    args += ["--env=%s" % x for x in _env.split(',')]
-
-  if ctx.attr.workdir:
-    args += ["--workdir=" + ctx.attr.workdir]
-  inputs = [layer, rewrite_tool, name]
-  if ctx.attr.label_files:
-    inputs += ctx.files.label_files
-
-  # TODO(mattmoor): Does this properly handle naked tarballs?
-  base = _get_base_artifact(ctx)
-  if base:
-    args += ["--base=%s" % base.path]
-    inputs += [base]
-  if ctx.attr.user:
-    args += ["--user=" + ctx.attr.user]
-
-  ctx.action(
-      executable = rewrite_tool,
-      arguments = args,
-      inputs = inputs,
-      outputs = [output],
-      use_default_shell_env=True,
-      mnemonic = "RewriteJSON")
-
-def _metadata(ctx, layer, name):
-  """Create the metadata for the new docker image."""
-  metadata = ctx.new_file(ctx.label.name + ".metadata")
-  _metadata_action(ctx, layer, name, metadata)
-  return metadata
-
-def _compute_layer_name(ctx, layer):
-  """Compute the layer's name.
-
-  This function synthesize a version of its metadata where in place
-  of its final name, we use the SHA256 of the layer blob.
-
-  This makes the name of the layer a function of:
-    - Its layer's SHA256
-    - Its metadata
-    - Its parent's name.
-  Assuming the parent's name is derived by this same rigor, then
-  a simple induction proves the content addressability.
-
-  Args:
-    ctx: Rule context.
-    layer: The layer's artifact for which to compute the name.
-  Returns:
-    The artifact that will contains the name for the layer.
-  """
-  metadata = ctx.new_file(ctx.label.name + ".metadata-name")
-  layer_sha = _sha256(ctx, layer)
-  _metadata_action(ctx, layer, layer_sha, metadata)
-  return _sha256(ctx, metadata)
+  return config, _sha256(ctx, config)
 
 def _repository_name(ctx):
   """Compute the repository name for the current rule."""
@@ -254,79 +169,71 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _create_image(ctx, layers, identifier, config, name, metadata, tags):
-  """Create the new image."""
-  args = [
-      "--output=" + ctx.outputs.layer.path,
-      "--config=" + config.path,
-  ] + ["--tag=" + tag for tag in tags]
-
-  args += ["--layer=%s" % layers[0]["layer"].path]
-  inputs = [identifier, config, layers[0]["layer"]]
-
-  if name:
-    args += ["--repository=" + _repository_name(ctx)]
-    inputs += [name]
-
-  if metadata:
-    args += ["--metadata=" + metadata.path]
-    inputs += [metadata]
-
-  base = _get_base_artifact(ctx)
-  if base:
-    args += ["--base=%s" % base.path]
-    inputs += [base]
-  ctx.action(
-      executable = ctx.executable.create_image,
-      arguments = args,
-      inputs = inputs,
-      outputs = [ctx.outputs.layer],
-      mnemonic = "CreateImage",
-  )
-
 def _docker_build_impl(ctx):
   """Implementation for the docker_build rule."""
-  layer = _build_layer(ctx)
-  layer_sha = _sha256(ctx, layer)
 
-  config = _image_config(ctx, [layer_sha])
-  identifier = _sha256(ctx, config)
+  # Generate the unzipped filesystem layer, and its sha256 (aka diff_id).
+  unzipped_layer, diff_id = _build_layer(ctx)
 
-  name = _compute_layer_name(ctx, layer)
-  metadata = _metadata(ctx, layer, name)
+  # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
+  zipped_layer, blob_sum = _zip_layer(ctx, unzipped_layer)
+
+  # Generate the new config using the attributes specified and the diff_id
+  config_file, config_digest = _image_config(ctx, diff_id)
 
   # Construct a temporary name based on the build target.
-  tags = [_repository_name(ctx) + ":" + ctx.label.name]
+  tag_name = _repository_name(ctx) + ":" + ctx.label.name
 
-  # creating a partial image so only pass the layers that belong to it
-  image_layer = {"layer": layer, "name": layer_sha}
-  _create_image(ctx, [image_layer], identifier, config, name, metadata, tags)
+  # Get the layers and shas from our base.
+  # These are ordered as they'd appear in the v2.2 config,
+  # so they grow at the end.
+  parent_parts = _get_layers(ctx, ctx.attr.base, ctx.files.base)
+  zipped_layers = parent_parts.get("zipped_layer", []) + [zipped_layer]
+  shas = parent_parts.get("blobsum", []) + [blob_sum]
+  unzipped_layers = parent_parts.get("unzipped_layer", []) + [unzipped_layer]
+  diff_ids = parent_parts.get("diff_id", []) + [diff_id]
 
-  # Compute the layers transitive provider.
-  # This must includes all layers of the image, including:
-  #  - The layer introduced by this rule.
-  #  - The layers transitively introduced by docker_build deps.
-  #  - Layers introduced by a static tarball base.
-  # This is because downstream tooling should just be able to depend on
-  # the availability and completeness of this field.
-  layers =  [
-      {"layer": ctx.outputs.layer, "id": identifier, "name": name}
-  ] + _get_layers(ctx, ctx.attr.base, ctx.files.base)
+  # These are the constituent parts of the Docker image, which each
+  # rule in the chain must preserve.
+  docker_parts = {
+      # The path to the v2.2 configuration file.
+      "config": config_file,
+      "config_digest": config_digest,
 
-  # Generate the incremental load statement
-  _incr_load(ctx, layers, {tag_name: {"id": identifier}
-                           for tag_name in tags},
-             ctx.outputs.executable)
+      # A list of paths to the layer .tar.gz files
+      "zipped_layer": zipped_layers,
+      # A list of paths to the layer digests.
+      "blobsum": shas,
 
-  _assemble_image(ctx, reverse(layers), {tag_name: name for tag_name in tags},
-                  ctx.outputs.out)
+      # TODO(mattmoor): docker_pull is going to need to produce all of
+      # these files, so figure out if/how we're going to produce them
+      # efficiently before getting too happy with this solution.
+
+      # A list of paths to the layer .tar files
+      "unzipped_layer": unzipped_layers,
+      # A list of paths to the layer diff_ids.
+      "diff_id": diff_ids,
+
+      # At the root of the chain, we support deriving from a tarball
+      # base image.
+      "legacy": parent_parts.get("legacy"),
+  }
+
+  # We support incrementally loading or assembling this single image
+  # with a temporary name given by its build rule.
+  images = {
+      tag_name: docker_parts
+  }
+
+  _incr_load(ctx, images, ctx.outputs.executable)
+  _assemble_image(ctx, images, ctx.outputs.out)
+
   runfiles = ctx.runfiles(
-      files = ([l["name"] for l in layers] +
-               [l["id"] for l in layers] +
-               [l["layer"] for l in layers]))
+      files = unzipped_layers + diff_ids + [config_file, config_digest] +
+      ([docker_parts["legacy"]] if docker_parts["legacy"] else []))
   return struct(runfiles = runfiles,
                 files = set([ctx.outputs.layer]),
-                docker_layers = layers)
+                docker_parts = docker_parts)
 
 docker_build_ = rule(
     attrs = {
@@ -355,18 +262,6 @@ docker_build_ = rule(
         "label_file_strings": attr.string_list(),
         "build_layer": attr.label(
             default = Label("@bazel_tools//tools/build_defs/pkg:build_tar"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "create_image": attr.label(
-            default = Label("//docker:create_image"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "rewrite_tool": attr.label(
-            default = Label("//docker:rewrite_json"),
             cfg = "host",
             executable = True,
             allow_files = True,

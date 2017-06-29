@@ -336,7 +336,6 @@ docker_build(
     tars = [":testpasswd.passwd.tar"],
 )
 
-
 docker_build(
     name = "base_based",
     base = "@distroless_base//image:image.tar",

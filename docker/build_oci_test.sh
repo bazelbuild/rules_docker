@@ -235,25 +235,25 @@ function test_gen_image() {
 }
 
 function test_dummy_repository() {
-  local layer="0279f3ce8b08d10506abcf452393b3e48439f5eca41b836fae59a0d509fbafea"
+  local layer="7771c123a312b2d11b841ac88b8d349fd472288e019d90e0298177c237e8548d"
   local test_data="${TEST_DATA_DIR}/dummy_repository.tar"
   check_layers_aux "dummy_repository" "$layer"
 }
 
 function test_files_base() {
   check_layers "files_base" \
-    "82ca3945f7d07df82f274d7fafe83fd664c2154e5c64c988916ccd5b217bb710"
+    "ef2df17c7d29bc9716c86a40311a1c026d7f328374e69e003e7af64f6e148a1b"
 }
 
 function test_files_with_files_base() {
   check_layers "files_with_files_base" \
-    "82ca3945f7d07df82f274d7fafe83fd664c2154e5c64c988916ccd5b217bb710" \
-    "84c0d09919ae8b06cb6b064d8cd5eab63341a46f11ccc7ecbe270ad3e1f52744"
+    "669910cb103f8c2f1ee940975f73a1e23673046d5428718358083cbb3341b132" \
+    "7d3922332e0b0720caa78a5fac5df60f31ce63a8f7bcbf1369cf50cf0f2eec89"
 }
 
 function test_tar_base() {
   check_layers "tar_base" \
-    "8b9e4db9dd4b990ee6d8adc2843ad64702ad9063ae6c22e8ca5f94aa54e71277"
+    "823a94eba6bd535a1badc72f7258e8f4d96d6ff636e3c4c409128a6de1e8df39"
 
   # Check that this layer doesn't have any entrypoint data by looking
   # for *any* entrypoint.
@@ -263,80 +263,80 @@ function test_tar_base() {
 
 function test_tar_with_tar_base() {
   check_layers "tar_with_tar_base" \
-    "8b9e4db9dd4b990ee6d8adc2843ad64702ad9063ae6c22e8ca5f94aa54e71277" \
-    "1cc81a2aaec2e3727d98d48bf9ba09d3ac96ef48adf5edae861d15dd0191dc40"
+    "b87a71a87c61a17440123d30023adea0d277bdb9926a11b0b016b61a33098908" \
+    "01d70f1c84473e80c71fb1392aa605c834bf27f23ac78d6f8292348770ba9051"
 }
 
 function test_directory_with_tar_base() {
   check_layers "directory_with_tar_base" \
-    "8b9e4db9dd4b990ee6d8adc2843ad64702ad9063ae6c22e8ca5f94aa54e71277" \
-    "e56ddeb8279698484f50d480f71cb5380223ad0f451766b7b9a9348129d02542"
+    "b87a71a87c61a17440123d30023adea0d277bdb9926a11b0b016b61a33098908" \
+    "9888a583af14e1d51b2bc18003dab010a3781aa0d85603fa1b952f693a76ffb1"
 }
 
 function test_files_with_tar_base() {
   check_layers "files_with_tar_base" \
-    "8b9e4db9dd4b990ee6d8adc2843ad64702ad9063ae6c22e8ca5f94aa54e71277" \
-    "f099727fa58f9b688e77b511b3cc728b86ae0e84d197b9330bd51082ad5589f2"
+    "b87a71a87c61a17440123d30023adea0d277bdb9926a11b0b016b61a33098908" \
+    "b0b24d40d4d3492d6a8115c595c9ae225491ba35ea9f37121b440733275d1af1"
 }
 
 function test_workdir_with_tar_base() {
   check_layers "workdir_with_tar_base" \
-    "8b9e4db9dd4b990ee6d8adc2843ad64702ad9063ae6c22e8ca5f94aa54e71277" \
-    "f24cbe53bd1b78909c6dba0bd47016354f3488b35b85aeee68ecc423062b927e"
+    "b87a71a87c61a17440123d30023adea0d277bdb9926a11b0b016b61a33098908" \
+    "5915f95557288f70c1b852a407287431b77598ef4212a177d9aa7fd895c1d532"
 }
 
 function test_tar_with_files_base() {
   check_layers "tar_with_files_base" \
-    "82ca3945f7d07df82f274d7fafe83fd664c2154e5c64c988916ccd5b217bb710" \
-    "bee1a325e4b51a1dcfd7e447987b4e130590815865ab22e8744878053d525f20"
+    "669910cb103f8c2f1ee940975f73a1e23673046d5428718358083cbb3341b132" \
+    "e9dcbb6979d1c16c832f3a2879788a123da3b81c98a98ef2ba7f44e73da1edc8"
 }
 
 function test_base_with_entrypoint() {
   check_layers "base_with_entrypoint" \
-    "4acbeb0495918726c0107e372b421e1d2a6fd4825d58fc3f0b0b2a719fb3ce1b"
+    "2296fe5c1a9cf075fa2dea939d51ee263dd8c9b8f91030e07f56bc27bffa1ab5"
 
   check_entrypoint "base_with_entrypoint" \
-    "9dfc166b58022e6c602f310a4e4305d3e69db467b92f4da72d9be6dd47cbe88d" \
+    "d59ab78d94f88b906227b8696d3065b91c71a1c6045d5103f3572c1e6fe9a1a9" \
     '["/bar"]'
 
   # Check that the base layer has a port exposed.
   check_ports "base_with_entrypoint" \
-    "9dfc166b58022e6c602f310a4e4305d3e69db467b92f4da72d9be6dd47cbe88d" \
+    "d59ab78d94f88b906227b8696d3065b91c71a1c6045d5103f3572c1e6fe9a1a9" \
     '{"8080/tcp": {}}'
 }
 
 function test_derivative_with_shadowed_cmd() {
   check_layers "derivative_with_shadowed_cmd" \
-    "4acbeb0495918726c0107e372b421e1d2a6fd4825d58fc3f0b0b2a719fb3ce1b" \
-    "e35f57dc6c1e84ae67dcaaf3479a3a3c0f52ac4d194073bd6214e04c05beab42"
+    "924348d4f092ab4b3a17e14c68d8e42e2c6564bde6d5d72f2e8fb66ac1bfe20a" \
+    "9c7d54bff967bae78b7b2011d1e68c62e7b2f4eba63925df027d8c8172a3bb79"
 }
 
 function test_derivative_with_cmd() {
   check_layers "derivative_with_cmd" \
-    "4acbeb0495918726c0107e372b421e1d2a6fd4825d58fc3f0b0b2a719fb3ce1b" \
-    "e35f57dc6c1e84ae67dcaaf3479a3a3c0f52ac4d194073bd6214e04c05beab42" \
-    "186289545131e34510006ac79498078dcf41736a5eb9a36920a6b30d3f45bc01"
+    "924348d4f092ab4b3a17e14c68d8e42e2c6564bde6d5d72f2e8fb66ac1bfe20a" \
+    "3ecdff6ae8d5240aa21295c0b425c2d1adb08e10bd10ce77f27d5896a72960e3" \
+    "354cd9c43dd83f0aecf8d1091b61b7e7ea0c31b2079c8b7c9b2c14f7d989c4a0"
 
   check_images "derivative_with_cmd" \
-    "9b4bb0e2509c7a411094135b47c077ffd5402b8aa57513607acc2140897cba05"
+    "d3ea6e7cfc3e182a8ca43081db1e145f1bee8c5da5627639800c76abf61b5165"
 
   check_entrypoint "derivative_with_cmd" \
-    "9b4bb0e2509c7a411094135b47c077ffd5402b8aa57513607acc2140897cba05" \
+    "d3ea6e7cfc3e182a8ca43081db1e145f1bee8c5da5627639800c76abf61b5165" \
     '["/bar"]'
 }
 
 function test_derivative_with_volume() {
   check_layers "derivative_with_volume" \
-    "125e7cfb9d4a6d803a57b88bcdb05d9a6a47ac0d6312a8b4cff52a2685c5c858" \
-    "08424283ad3a7e020e210bec22b166d7ebba57f7ba2d0713c2fd7bd1e2038f88"
+    "5e01cffa06e7ab7f23f1e46fe2e567084477d03e35692f20b6ad0ea2e51fe24e" \
+    "f69c3d81f60ad3efc8ee66f7c6241bf2450bb7fb8b14d12164b5f57b64b3086b"
 
   check_images "derivative_with_volume" \
-    "328b83ffa7a62f455d751d62470ca55a9fc7a3ba6468273d8c291fe54313bdc6"
+    "c872bf3f4c7eb5a01ae7ad6fae4c25e86ff2923bb1fe29be5edcdff1b31ed71a"
 
   # Check that the topmost layer has the ports exposed by the bottom
   # layer, and itself.
   check_volumes "derivative_with_volume" \
-    "328b83ffa7a62f455d751d62470ca55a9fc7a3ba6468273d8c291fe54313bdc6" \
+    "c872bf3f4c7eb5a01ae7ad6fae4c25e86ff2923bb1fe29be5edcdff1b31ed71a" \
     '{"/asdf": {}, "/blah": {}, "/logs": {}}'
 }
 
@@ -348,50 +348,54 @@ function test_derivative_with_volume() {
 
 function test_with_env() {
   check_layers "with_env" \
-    "125e7cfb9d4a6d803a57b88bcdb05d9a6a47ac0d6312a8b4cff52a2685c5c858" \
-    "42a1bd0f449f61a23b8a7776875ffb6707b34ee99c87d6428a7394f5e55e8624"
+    "5e01cffa06e7ab7f23f1e46fe2e567084477d03e35692f20b6ad0ea2e51fe24e" \
+    "958057ce6cd518030ed84548a16d72f1c3d168c71222368e0bbfd3e5b0dc3725"
 
   check_env "with_env" \
-    "3f495f4831dc214529ad3ff32e93c6928934fa0fa4d0edd82f9b9a7cf51dbb35" \
+    "87c0d91841f92847ec6c183810f720e5926dba0652eb5d52a807366825dd21c7" \
     '["bar=blah blah blah", "foo=/asdf"]'
 }
 
 function test_with_double_env() {
   check_layers "with_double_env" \
-    "125e7cfb9d4a6d803a57b88bcdb05d9a6a47ac0d6312a8b4cff52a2685c5c858" \
-    "42a1bd0f449f61a23b8a7776875ffb6707b34ee99c87d6428a7394f5e55e8624" \
-    "576a9fd9c690be04dc7aacbb9dbd1f14816e32dbbcc510f4d42325bbff7163dd"
+    "5e01cffa06e7ab7f23f1e46fe2e567084477d03e35692f20b6ad0ea2e51fe24e" \
+    "0e14197f4601f043f0e3e6b209c5962ac96da809d25d4cf0e5c38be52151a515" \
+    "a1eafb9b3f015fc28237bf9e10f9a6103dd9d29368f081952207fddcd1045833"
 
   # Check both the aggregation and the expansion of embedded variables.
   check_env "with_double_env" \
-    "5c84dcabe46f312455e6933cb028e414cdc41511bc7813007db93964c674722b" \
+    "273d2a6cfc25001baf9d3f7c68770ec79a1671b8249d153e7611a4f80165ecda" \
     '["bar=blah blah blah", "baz=/asdf blah blah blah", "foo=/asdf"]'
 }
 
 function test_with_label() {
   check_layers "with_label" \
-    "125e7cfb9d4a6d803a57b88bcdb05d9a6a47ac0d6312a8b4cff52a2685c5c858" \
-    "eba6abda3d259ab6ed5f4d48b76df72a5193fad894d4ae78fbf0a363d8f9e8fd"
+    "5e01cffa06e7ab7f23f1e46fe2e567084477d03e35692f20b6ad0ea2e51fe24e" \
+    "57438bbe887e61de6b535eda83047c45ee1f98e2bf50071358e617067ccb04aa"
 
   check_label "with_label" \
-    "34990d0e79239de8cae3ca5f96dd19a15d5021c6ec06095e7e3d1bb1870273d0" \
+    "83c007425faff33ac421329af9f6444b7250abfc12c28f188b47e97fb715c006" \
     '["com.example.bar={\"name\": \"blah\"}", "com.example.baz=qux", "com.example.foo={\"name\": \"blah\"}"]'
 }
 
 function test_with_double_label() {
   check_layers "with_double_label" \
-    "125e7cfb9d4a6d803a57b88bcdb05d9a6a47ac0d6312a8b4cff52a2685c5c858" \
-    "eba6abda3d259ab6ed5f4d48b76df72a5193fad894d4ae78fbf0a363d8f9e8fd" \
-    "bfe88fbb5e24fc5bff138f7a1923d53a2ee1bbc8e54b6f5d9c371d5f48b6b023"
+    "5e01cffa06e7ab7f23f1e46fe2e567084477d03e35692f20b6ad0ea2e51fe24e" \
+    "0e14197f4601f043f0e3e6b209c5962ac96da809d25d4cf0e5c38be52151a515" \
+    "b14fe258f95cd176eef757a7343508f028cf568e0feb9fea677469742700534e"
 
   check_label "with_double_label" \
-    "bd87475b45f295baa575cedc52fd9646ed42bfee6787788de4cce7a6314c506b" \
+    "8cfc89c83adf947cd2c18c11579559f1f48cf375a20364ec79eb14d6580dbf75" \
     '["com.example.bar={\"name\": \"blah\"}", "com.example.baz=qux", "com.example.foo={\"name\": \"blah\"}", "com.example.qux={\"name\": \"blah-blah\"}"]'
 }
 
 function test_with_user() {
+  check_layers "with_user" \
+    "5e01cffa06e7ab7f23f1e46fe2e567084477d03e35692f20b6ad0ea2e51fe24e" \
+    "5f8e5f6593a746cb509459aee90b2ac9c64031db513e8a013ef6236c821e72a4"
+
   check_user "with_user" \
-    "963d5cb51f245f4c3ded3675065b76184c442bbed4ffc2533068416e7b1ac135" \
+    "bd6666bdde7d4a837a0685d2861822507119f7f6e565acecbbbe93f1d0cc1974" \
     "\"nobody\""
 }
 
@@ -403,10 +407,10 @@ function get_layer_listing() {
 }
 
 function test_data_path() {
-  local no_data_path_sha="451d182e5c71840f00ba9726dc0239db73a21b7e89e79c77f677e3f7c5c23d44"
-  local data_path_sha="9a41c9e1709558f7ef06f28f66e9056feafa7e0f83990801e1b27c987278d8e8"
-  local absolute_data_path_sha="f196c42ab4f3eb850d9655b950b824db2c99c01527703ac486a7b48bb2a34f44"
-  local root_data_path_sha="f196c42ab4f3eb850d9655b950b824db2c99c01527703ac486a7b48bb2a34f44"
+  local no_data_path_sha="de3853f68a7edad8a8adb83363652d0927d6a69c6ed790e85bf0048892134bbc"
+  local data_path_sha="0ea8ce6cf08d60758c509295987232a41a9b07676533c6aae8d7608c85fb2b82"
+  local absolute_data_path_sha="800edeae00c369c8caadf06a816014629f6144c857ee33facfb6ab82705d83ef"
+  local root_data_path_sha="800edeae00c369c8caadf06a816014629f6144c857ee33facfb6ab82705d83ef"
 
   check_layers_aux "no_data_path_image" "${no_data_path_sha}"
   check_layers_aux "data_path_image" "${data_path_sha}"
