@@ -22,10 +22,18 @@ RUNFILES="${PYTHON_RUNFILES:-${BASH_SOURCE[0]}.runfiles}"
 
 DOCKER="${DOCKER:-docker}"
 
+function list_diffids() {
+    for image in $("${DOCKER}" images -aq 2> /dev/null);
+    do
+	for entry in $("${DOCKER}" inspect "${image}" -f '{{json .RootFS.Layers}}');
+	do
+	    echo -n $entry | python -mjson.tool | grep sha256 | cut -d'"' -f 2 | cut -d':' -f 2
+	done
+    done
+}
+
 # Fetch the diff ids of the layers loaded in the docker daemon already
-IMAGES=$(${DOCKER} inspect $(${DOCKER} images -aq) |& \
-  grep sha256 | grep -v Id | cut -d'"' -f 2 | cut -d':' -f 2 | \
-  sort | uniq)
+IMAGES=$(list_diffids | sort | uniq)
 IMAGE_LEN=$(for i in $IMAGES; do echo -n $i | wc -c; done | sort -g | head -1 | xargs)
 
 [ -n "$IMAGE_LEN" ] || IMAGE_LEN=64
