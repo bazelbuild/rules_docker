@@ -94,6 +94,77 @@ $ gcloud components install docker-credential-gcr
 $ docker-credential-gcr configure-docker
 ```
 
+## Varying image names
+
+A common request from folks using `docker_push` or `docker_bundle` is to
+be able to vary the tag that is pushed or embedded.  There are two options
+at present for doing this.
+
+### Stamping
+
+The first option is to use `stamp = True`.
+
+```python
+# A common pattern when users want to avoid trampling
+# on each other's images during development.
+docker_push(
+  name = "publish",
+
+  # Any of these components may have variables.
+  registry = "gcr.io",
+  repository = "my-project/my-image",
+  tag = "{BUILD_USER}",
+
+  # Trigger stamping.
+  stamp = True,
+)
+```
+
+The next natural question is: "Well what variables can I use?"  This
+option consumes the workspace-status variables Bazel defines in
+`stable-status.txt` and `volatile-status.txt`.  These files will appear
+in the target's runfiles:
+
+```shell
+$ bazel build //docker/testdata:push_stamp
+...
+
+$ cat bazel-bin/docker/testdata/push_stamp.runfiles/io_bazel_rules_docker/stable-status.txt
+BUILD_EMBED_LABEL
+BUILD_HOST bazel
+BUILD_USER mattmoor
+
+$ cat bazel-bin/docker/testdata/push_stamp.runfiles/io_bazel_rules_docker/volatile-status.txt
+BUILD_TIMESTAMP 1498740967769
+
+```
+
+You can augment these variables via `--workspace_status_command`,
+including through the use of [`.bazelrc`](https://github.com/kubernetes/kubernetes/blob/81ce94ae1d8f5d04058eeb214e9af498afe78ff2/build/root/.bazelrc#L6).
+
+
+### Make variables
+
+The second option is to employ `Makefile`-style variables:
+
+```python
+docker_bundle(
+  name = "bundle",
+
+  images = {
+    "gcr.io/$(project)/frontend:latest": "//frontend:image",
+    "gcr.io/$(project)/backend:latest": "//backend:image",
+  }
+)
+```
+
+These variables are specified on the CLI using:
+
+```shell
+   bazel build --define project=blah //path/to:bundle
+```
+
+
 ## Examples
 
 ### docker_build
@@ -337,6 +408,19 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
         <p><code>string; optional</code></p>
         <p>The `tag` of the Docker image to push to the specified `repository`.
            This attribute defaults to `latest`.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>stamp</code></td>
+      <td>
+        <p><code>Bool; optional</code></p>
+        <p>If true, enable use of workspace status variables
+        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
+        and custom values set using <code>--workspace_status_command</code>)
+        in tags.</p>
+        <p>These fields are specified in the tag using using Python format
+        syntax, e.g.
+        <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
       </td>
     </tr>
   </tbody>
