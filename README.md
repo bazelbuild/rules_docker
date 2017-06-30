@@ -10,6 +10,7 @@ Bazel ≥0.4.4 | linux-x86_64 | ubuntu_16.04-x86_64 | darwin-x86_64
 
 * [docker_build](#docker_build)
 * [docker_bundle](#docker_bundle)
+* [docker_import](#docker_import)
 * [docker_pull](#docker_pull)
 * [docker_push](#docker_push)
 
@@ -760,6 +761,55 @@ A rule that aliases and saves N images into a single `docker save` tarball.
         <p>These fields are specified in the tag using using Python format
         syntax, e.g.
         <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="docker_import"></a>
+## docker_import
+
+```python
+docker_import(name, config, layers)
+```
+
+A rule that imports a docker image into our intermediate form.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name, required</code></p>
+        <p>Unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>config</code></td>
+      <td>
+        <p><code>The v2.2 image's json configuration; required</code></p>
+        <p>A json configuration file containing the image's metadata.</p>
+        <p>This appears in `docker save` tarballs as `<hex>.json` and is
+           referenced by `manifest.json` in the config field.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>layers</code></td>
+      <td>
+        <p><code>The list of layer `.tar.gz`s; required</code></p>
+        <p>The list of layer `.tar.gz` files in the order they appear
+           in the `config.json`'s layer section, or in the order that
+           they appear in `docker save` tarballs' `manifest.json`
+           `Layers` field (although these are gzipped).</p>
       </td>
     </tr>
   </tbody>

@@ -17,6 +17,7 @@ load(
     "//docker:docker.bzl",
     "docker_build",
     "docker_bundle",
+    "docker_import",
     "docker_push",
 )
 
@@ -344,4 +345,34 @@ docker_build(
 docker_build(
     name = "cc_based",
     base = "@distroless_cc//image:image.tar",
+)
+
+PAUSE_CONFIG = "2b58359142b094165abfc9ad9c327c453a3eaa624d0c5ee8f0ed1ab50483603b.json"
+
+genrule(
+    name = "pause_config",
+    cmd = ("tar xOf $(location :pause.tar) %s " +
+           "> $(location :pause_config.json)") % PAUSE_CONFIG,
+    outs = ["pause_config.json"],
+    srcs = [":pause.tar"],
+)
+
+PAUSE_LAYERS = [
+    "9285c41a2f85a67c85185be04743004e806fd1e16777f2230166281f4e49cb4c",
+    "da7bd81140ca921a067c604a3ba3f54d4e0d51ba5276cd9f32ad6a28e588f470",
+]
+
+[genrule(
+    name = "extract_%s" % id,
+    cmd = ("tar xOf $(location :pause.tar) %s/layer.tar " +
+           "| gzip -n > $(location :%s.tar.gz)") % (id, id),
+    outs = ["%s.tar.gz" % id],
+    srcs = [":pause.tar"],
+) for id in PAUSE_LAYERS]
+
+
+docker_import(
+   name = "pause_piecemeal",
+   config = ":pause_config.json",
+    layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
 )

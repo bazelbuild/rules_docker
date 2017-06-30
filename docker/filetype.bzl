@@ -13,13 +13,13 @@
 # limitations under the License.
 """Filetype constants."""
 
+tgz = [".tar.gz", ".tgz"]
+
 # Filetype to restrict inputs
 tar = [
     ".tar",
-    ".tar.gz",
-    ".tgz",
     ".tar.xz",
-]
+] + tgz
 
 deb = [
     ".deb",
