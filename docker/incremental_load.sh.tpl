@@ -23,13 +23,13 @@ RUNFILES="${PYTHON_RUNFILES:-${BASH_SOURCE[0]}.runfiles}"
 DOCKER="${DOCKER:-docker}"
 
 function list_diffids() {
-    for image in $("${DOCKER}" images -aq 2> /dev/null);
+  for image in $("${DOCKER}" images -aq 2> /dev/null);
+  do
+    for entry in $("${DOCKER}" inspect "${image}" -f '{{json .RootFS.Layers}}');
     do
-	for entry in $("${DOCKER}" inspect "${image}" -f '{{json .RootFS.Layers}}');
-	do
-	    echo -n $entry | python -mjson.tool | grep sha256 | cut -d'"' -f 2 | cut -d':' -f 2
-	done
+      echo -n $entry | python -mjson.tool | grep sha256 | cut -d'"' -f 2 | cut -d':' -f 2
     done
+  done
 }
 
 # Fetch the diff ids of the layers loaded in the docker daemon already
@@ -117,7 +117,7 @@ function find_diffbase() {
   done
 
   TOTAL_DIFF_IDS=($(cat "${name}" | python -mjson.tool | \
-      grep sha256 | cut -d'"' -f 2 | cut -d':' -f 2))
+      grep -E '^ +"sha256:' | cut -d'"' -f 2 | cut -d':' -f 2))
 
   LEGACY_COUNT=$((${#TOTAL_DIFF_IDS[@]} - ${#NEW_DIFF_IDS[@]}))
   echo "${TOTAL_DIFF_IDS[@]:0:${LEGACY_COUNT}}"
