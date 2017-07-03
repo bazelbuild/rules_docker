@@ -35,7 +35,7 @@ DOCKER="${DOCKER:-docker}"
 function list_diffids() {
   for image in $("${DOCKER}" images -aq 2> /dev/null);
   do
-    for entry in $("${DOCKER}" inspect "${image}" -f '{{json .RootFS.Layers}}');
+    for entry in $("${DOCKER}" inspect -f '{{json .RootFS.Layers}}' "${image}");
     do
       echo -n $entry | python -mjson.tool | grep sha256 | cut -d'"' -f 2 | cut -d':' -f 2
     done
