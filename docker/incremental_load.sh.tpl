@@ -18,6 +18,16 @@ set -eu
 
 # This is a generated file that loads all docker layers built by "docker_build".
 
+# Check we are using GNU tar as this script relies on some impl specifics
+# e.g. on a Mac the default is a BSD variant which will bork
+tar --version | grep 'GNU' >/dev/null 2>&1
+if [ ! $? -eq 0 ]; then
+  echo "Error: GNU tar needs to be installed."
+  echo "If you are on a Mac, install Homebrew then..."
+  echo "  brew install gnu-tar --with-default-names"
+  exit 1
+fi
+
 RUNFILES="${PYTHON_RUNFILES:-${BASH_SOURCE[0]}.runfiles}"
 
 DOCKER="${DOCKER:-docker}"
@@ -25,7 +35,7 @@ DOCKER="${DOCKER:-docker}"
 function list_diffids() {
   for image in $("${DOCKER}" images -aq 2> /dev/null);
   do
-    for entry in $("${DOCKER}" inspect "${image}" -f '{{json .RootFS.Layers}}');
+    for entry in $("${DOCKER}" inspect -f '{{json .RootFS.Layers}}' "${image}");
     do
       echo -n $entry | python -mjson.tool | grep sha256 | cut -d'"' -f 2 | cut -d':' -f 2
     done
@@ -39,8 +49,8 @@ IMAGE_LEN=$(for i in $IMAGES; do echo -n $i | wc -c; done | sort -g | head -1 | 
 [ -n "$IMAGE_LEN" ] || IMAGE_LEN=64
 
 # Create temporary files in which to record things to clean up.
-TEMP_FILES="$(mktemp -t)"
-TEMP_IMAGES="$(mktemp -t)"
+TEMP_FILES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_files')"
+TEMP_IMAGES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_images')"
 function cleanup() {
   cat "${TEMP_FILES}" | xargs rm -rf> /dev/null 2>&1 || true
   cat "${TEMP_IMAGES}" | xargs "${DOCKER}" rmi > /dev/null 2>&1 || true
@@ -97,9 +107,7 @@ EOF
 EOF
 
   set -o pipefail
-  tar c config.json manifest.json |& \
-      "${DOCKER}" load |& \
-      cut -d':' -f 2- >> "${TEMP_IMAGES}" 2> /dev/null
+  tar c config.json manifest.json | "${DOCKER}" load | cut -d':' -f 2- >> "${TEMP_IMAGES}" 2>/dev/null
 }
 
 function find_diffbase() {
@@ -220,7 +228,7 @@ function tag_layer() {
 
 function read_variables() {
   local file="${RUNFILES}/$1"
-  local new_file="$(mktemp -t)"
+  local new_file="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_new')"
   echo "${new_file}" >> "${TEMP_FILES}"
 
   # Rewrite the file from Bazel for the form FOO=...
