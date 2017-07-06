@@ -267,6 +267,24 @@ docker_build(
     files = ["foo"],
 )
 
+# We should get a warning when we build/run this.
+docker_push(
+    name = "push_inadvertent_legacy_base",
+    image = ":with_env.tar",
+    registry = "gcr.io",
+    repository = "convoy-adapter/bazel-test",
+    tag = "with_env",
+)
+
+# We should get a warning when we build/run this.
+docker_push(
+    name = "push_legacy_base",
+    image = ":pause_based",
+    registry = "gcr.io",
+    repository = "convoy-adapter/bazel-test",
+    tag = "pause_based",
+)
+
 docker_bundle(
     name = "bundle_test",
     images = {
@@ -338,13 +356,19 @@ docker_build(
 )
 
 docker_build(
-    name = "base_based",
+    name = "base_based_warning",
     base = "@distroless_base//image:image.tar",
 )
 
 docker_build(
-    name = "cc_based",
+    name = "cc_based_warning",
     base = "@distroless_cc//image:image.tar",
+)
+
+# Tests loading a docker_pull'd base.
+docker_build(
+    name = "cc_based",
+    base = "@distroless_cc//image",
 )
 
 PAUSE_CONFIG = "2b58359142b094165abfc9ad9c327c453a3eaa624d0c5ee8f0ed1ab50483603b.json"
@@ -374,5 +398,5 @@ PAUSE_LAYERS = [
 docker_import(
    name = "pause_piecemeal",
    config = ":pause_config.json",
-    layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
+   layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
 )

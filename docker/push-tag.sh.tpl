@@ -15,4 +15,4 @@
 
 %{docker_pusher} \
   --name=%{registry}/%{repository}:%{tag} \
-  %{stamp} --tarball=%{image} "$@"
+  %{stamp} %{image} "$@"

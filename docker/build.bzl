@@ -39,7 +39,6 @@ load(
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
-load(":list.bzl", "reverse")
 load(
     ":path.bzl",
     "dirname",
@@ -204,10 +203,6 @@ def _docker_build_impl(ctx):
       "zipped_layer": zipped_layers,
       # A list of paths to the layer digests.
       "blobsum": shas,
-
-      # TODO(mattmoor): docker_pull is going to need to produce all of
-      # these files, so figure out if/how we're going to produce them
-      # efficiently before getting too happy with this solution.
 
       # A list of paths to the layer .tar files
       "unzipped_layer": unzipped_layers,
