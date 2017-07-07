@@ -11,7 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for building a Docker image."""
+"""Rule for building a Docker image.
+
+In addition to the base docker_build rule, we expose its constituents
+(attr, outputs, implementation) directly so that others may expose a
+more specialized build leveraging the same implementation.  The
+expectation in such cases is that users will write something like:
+
+  load(
+    "@io_bazel_rules_docker//docker:build.bzl",
+    _build_attrs="attrs",
+    _build_outputs="outputs",
+    _build_implementation="implementation",
+  )
+
+  def _impl(ctx):
+    ...
+    return _build_implementation(ctx, ... kwarg overrides ...)
+
+  _foo_image = rule(
+      attrs = _build_attrs + {
+         # My attributes, or overrides of _build_attrs defaults.
+         ...
+      },
+      executable = True,
+      outputs = _build_outputs,
+      implementation = _impl,
+  )
+
+"""
 
 load(
     ":filetype.bzl",
@@ -51,14 +79,14 @@ load(
     _serialize_dict = "dict_to_associative_list",
 )
 
-def _build_layer(ctx):
+def _build_layer(ctx, files=None, directory=None, symlinks=None):
   """Build the current layer for appending it the base layer."""
 
   layer = ctx.outputs.layer
   build_layer = ctx.executable.build_layer
   args = [
       "--output=" + layer.path,
-      "--directory=" + ctx.attr.directory,
+      "--directory=" + directory,
       "--mode=" + ctx.attr.mode,
   ]
 
@@ -68,23 +96,23 @@ def _build_layer(ctx):
         dirname(ctx.outputs.out.short_path),
         _canonicalize_path(ctx.attr.data_path))
     args += ["--file=%s=%s" % (f.path, strip_prefix(f.short_path, data_path))
-             for f in ctx.files.files]
+             for f in files]
   else:
     # Otherwise, files are added without a directory prefix at all.
     args += ["--file=%s=%s" % (f.path, f.basename)
-             for f in ctx.files.files]
+             for f in files]
 
   args += ["--tar=" + f.path for f in ctx.files.tars]
   args += ["--deb=" + f.path for f in ctx.files.debs if f.path.endswith(".deb")]
-  args += ["--link=%s:%s" % (k, ctx.attr.symlinks[k])
-           for k in ctx.attr.symlinks]
+  args += ["--link=%s:%s" % (k, symlinks[k])
+           for k in symlinks]
   arg_file = ctx.new_file(ctx.label.name + ".layer.args")
   ctx.file_action(arg_file, "\n".join(args))
 
   ctx.action(
       executable = build_layer,
       arguments = ["--flagfile=" + arg_file.path],
-      inputs = ctx.files.files + ctx.files.tars + ctx.files.debs + [arg_file],
+      inputs = files + ctx.files.tars + ctx.files.debs + [arg_file],
       outputs = [layer],
       use_default_shell_env=True,
       mnemonic="DockerLayer"
@@ -101,7 +129,7 @@ def _get_base_config(ctx):
     l = _get_layers(ctx, ctx.attr.base, ctx.files.base)
     return l.get("config")
 
-def _image_config(ctx, layer_name):
+def _image_config(ctx, layer_name, entrypoint=None, cmd=None):
   """Create the configuration for a new docker image."""
   config = ctx.new_file(ctx.label.name + ".config")
 
@@ -119,9 +147,9 @@ def _image_config(ctx, layer_name):
   args = [
       "--output=%s" % config.path,
   ] + [
-      "--entrypoint=%s" % x for x in ctx.attr.entrypoint
+      "--entrypoint=%s" % x for x in entrypoint
   ] + [
-      "--command=%s" % x for x in ctx.attr.cmd
+      "--command=%s" % x for x in cmd
   ] + [
       "--ports=%s" % x for x in ctx.attr.ports
   ] + [
@@ -168,17 +196,26 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _docker_build_impl(ctx):
+def implementation(ctx, files=None, directory=None,
+                   entrypoint=None, cmd=None, symlinks=None):
   """Implementation for the docker_build rule."""
 
+  files = files or ctx.files.files
+  directory = directory or ctx.attr.directory
+  entrypoint = entrypoint or ctx.attr.entrypoint
+  cmd = cmd or ctx.attr.cmd
+  symlinks = symlinks or ctx.attr.symlinks
+
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id).
-  unzipped_layer, diff_id = _build_layer(ctx)
+  unzipped_layer, diff_id = _build_layer(ctx, files=files,
+                                         directory=directory, symlinks=symlinks)
 
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
   zipped_layer, blob_sum = _zip_layer(ctx, unzipped_layer)
 
   # Generate the new config using the attributes specified and the diff_id
-  config_file, config_digest = _image_config(ctx, diff_id)
+  config_file, config_digest = _image_config(
+    ctx, diff_id, entrypoint=entrypoint, cmd=cmd)
 
   # Construct a temporary name based on the build target.
   tag_name = _repository_name(ctx) + ":" + ctx.label.name
@@ -230,50 +267,54 @@ def _docker_build_impl(ctx):
                 files = set([ctx.outputs.layer]),
                 docker_parts = docker_parts)
 
-docker_build_ = rule(
-    attrs = {
-        "base": attr.label(allow_files = docker_filetype),
-        "data_path": attr.string(),
-        "directory": attr.string(default = "/"),
-        "tars": attr.label_list(allow_files = tar_filetype),
-        "debs": attr.label_list(allow_files = deb_filetype),
-        "files": attr.label_list(allow_files = True),
-        "legacy_repository_naming": attr.bool(default = False),
-        "mode": attr.string(default = "0555"),
-        "symlinks": attr.string_dict(),
-        "entrypoint": attr.string_list(),
-        "cmd": attr.string_list(),
-        "user": attr.string(),
-        "env": attr.string_dict(),
-        "labels": attr.string_dict(),
-        "ports": attr.string_list(),  # Skylark doesn't support int_list...
-        "volumes": attr.string_list(),
-        "workdir": attr.string(),
-        "repository": attr.string(default = "bazel"),
-        # Implicit dependencies.
-        "label_files": attr.label_list(
-            allow_files = True,
-        ),
-        "label_file_strings": attr.string_list(),
-        "build_layer": attr.label(
-            default = Label("//docker:build_tar"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "create_image_config": attr.label(
-            default = Label("//docker:create_image_config"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-    } + _hash_tools + _layer_tools,
+attrs = {
+  "base": attr.label(allow_files = docker_filetype),
+  "data_path": attr.string(),
+  "directory": attr.string(default = "/"),
+  "tars": attr.label_list(allow_files = tar_filetype),
+  "debs": attr.label_list(allow_files = deb_filetype),
+  "files": attr.label_list(allow_files = True),
+  "legacy_repository_naming": attr.bool(default = False),
+  "mode": attr.string(default = "0555"),
+  "symlinks": attr.string_dict(),
+  "entrypoint": attr.string_list(),
+  "cmd": attr.string_list(),
+  "user": attr.string(),
+  "env": attr.string_dict(),
+  "labels": attr.string_dict(),
+  "ports": attr.string_list(),  # Skylark doesn't support int_list...
+  "volumes": attr.string_list(),
+  "workdir": attr.string(),
+  "repository": attr.string(default = "bazel"),
+  # Implicit dependencies.
+  "label_files": attr.label_list(
+    allow_files = True,
+  ),
+  "label_file_strings": attr.string_list(),
+  "build_layer": attr.label(
+    default = Label("//docker:build_tar"),
+    cfg = "host",
     executable = True,
-    outputs = {
-        "out": "%{name}.tar",
-        "layer": "%{name}-layer.tar",
-    },
-    implementation = _docker_build_impl,
+    allow_files = True,
+  ),
+  "create_image_config": attr.label(
+    default = Label("//docker:create_image_config"),
+    cfg = "host",
+    executable = True,
+    allow_files = True,
+  ),
+} + _hash_tools + _layer_tools
+
+outputs = {
+  "out": "%{name}.tar",
+  "layer": "%{name}-layer.tar",
+}
+
+docker_build_ = rule(
+    attrs = attrs,
+    executable = True,
+    outputs = outputs,
+    implementation = implementation,
 )
 
 # This validates the two forms of value accepted by
