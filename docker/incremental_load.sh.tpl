@@ -18,16 +18,6 @@ set -eu
 
 # This is a generated file that loads all docker layers built by "docker_build".
 
-# Check we are using GNU tar as this script relies on some impl specifics
-# e.g. on a Mac the default is a BSD variant which will bork
-tar --version | grep 'GNU' >/dev/null 2>&1
-if [ ! $? -eq 0 ]; then
-  echo "Error: GNU tar needs to be installed."
-  echo "If you are on a Mac, install Homebrew then..."
-  echo "  brew install gnu-tar --with-default-names"
-  exit 1
-fi
-
 RUNFILES="${PYTHON_RUNFILES:-${BASH_SOURCE[0]}.runfiles}"
 
 DOCKER="${DOCKER:-docker}"
@@ -214,8 +204,7 @@ EOF
   # We minimize reads / writes by symlinking the layers above
   # and then streaming exactly the layers we've established are
   # needed into the Docker daemon.
-  tar --create --absolute-names --dereference \
-      "${MISSING[@]}" | tee image.tar | "${DOCKER}" load
+  tar cPh "${MISSING[@]}" | tee image.tar | "${DOCKER}" load
 }
 
 function tag_layer() {
