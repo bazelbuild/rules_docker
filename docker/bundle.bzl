@@ -58,7 +58,10 @@ def _docker_bundle_impl(ctx):
     stamp_files = [ctx.info_file, ctx.version_file]
 
   return struct(runfiles = ctx.runfiles(
-      files = (stamp_files + runfiles)), files = set())
+      files = (stamp_files + runfiles)),
+      files = set(),
+      docker_images = images,
+      stamp = ctx.attr.stamp)
 
 docker_bundle_ = rule(
     attrs = {

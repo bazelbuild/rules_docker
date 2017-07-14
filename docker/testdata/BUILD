@@ -338,6 +338,26 @@ docker_build_with_tag(
     tag = "gcr.io/build/with:tag",
 )
 
+load(
+    "//docker/contrib:push-all.bzl",
+    docker_pushall = "docker_push",
+)
+
+docker_bundle(
+   name = "bundle_to_push",
+   images = {
+     "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
+     "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
+     "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
+   },
+   stamp = True
+)
+
+docker_pushall(
+    name = "push_bundle",
+    bundle = ":bundle_to_push",
+)
+
 load("//docker/contrib:passwd.bzl", "passwd_file")
 
 passwd_file(
@@ -393,7 +413,6 @@ PAUSE_LAYERS = [
     outs = ["%s.tar.gz" % id],
     srcs = [":pause.tar"],
 ) for id in PAUSE_LAYERS]
-
 
 docker_import(
    name = "pause_piecemeal",
