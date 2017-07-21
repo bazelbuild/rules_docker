@@ -688,8 +688,9 @@ function test_py_image() {
   # Don't check the full layer set because the base will vary,
   # but check the files in our top two layers.
   local layers=($(get_layers "py_image"))
-  local lib_layer=$(dirname "${layers[-2]}")
-  local bin_layer=$(dirname "${layers[-1]}")
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
 
   # TODO(mattmoor): The path normalization for symlinks should match
   # files to avoid this redundancy.
