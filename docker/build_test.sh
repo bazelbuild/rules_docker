@@ -732,6 +732,34 @@ function test_py_image() {
 /app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/py_image_library.py'
 }
 
+function test_cc_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local layers=($(get_layers "cc_image"))
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  # The linker pulls the object files into the final binary,
+  # so in C++ dependencies don't help when specified via `layers`.
+  check_listing "cc_image" "${lib_layer}" ''
+
+  check_listing "cc_image" "${bin_layer}" \
+    './
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/cc_image.binary.runfiles/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/cc_image.binary
+/app/
+/app/docker/
+/app/docker/testdata/
+/app/docker/testdata/cc_image.binary'
+}
+
 tests=$(grep "^function test_" "${BASH_SOURCE[0]}" \
           | cut -d' ' -f 2 | cut -d'(' -f 1)
 

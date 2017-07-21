@@ -39,3 +39,10 @@ load(
 )
 
 _py_image_repos()
+
+# Have the cc_image dependencies for testing.
+load(
+  "//docker/contrib/cc:image.bzl",
+  _cc_image_repos="repositories"
+)
+_cc_image_repos()

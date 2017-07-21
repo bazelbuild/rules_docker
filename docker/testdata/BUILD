@@ -438,3 +438,21 @@ py_image(
     ],
     main = "py_image.py",
 )
+
+load(
+    "//docker/contrib/cc:image.bzl",
+    "cc_image",
+)
+
+cc_library(
+    name = "cc_image_library",
+    srcs = ["cc_image_library.cc"],
+    hdrs = ["cc_image_library.h"],
+)
+
+cc_image(
+    name = "cc_image",
+    srcs = ["cc_image.cc"],
+    # This creates an empty layer, due to linking.
+    layers = [":cc_image_library"],
+)
