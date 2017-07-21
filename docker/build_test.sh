@@ -667,11 +667,29 @@ function test_build_with_passwd() {
   check_eq ${passwd_contents} "foobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell"
 }
 
+function get_layers() {
+  local tarball="${1}"
+  local test_data="${TEST_DATA_DIR}/${tarball}.tar"
+
+  python <<EOF
+import json
+import tarfile
+
+with tarfile.open("${test_data}", "r") as tar:
+  manifests = json.loads(tar.extractfile("manifest.json").read())
+  assert len(manifests) == 1
+  for m in manifests:
+    for l in m["Layers"]:
+      print l
+EOF
+}
+
 function test_py_image() {
   # Don't check the full layer set because the base will vary,
   # but check the files in our top two layers.
-  local lib_layer="e630f7fae644295272b97017c0720a9eef05ca669766777fcfa4c98be8ee8fca"
-  local bin_layer="f81fc255066d534e7b85acdc37b353ebf3cb818a263af108eca567a1ec29af4a"
+  local layers=($(get_layers "py_image"))
+  local lib_layer=$(dirname "${layers[-2]}")
+  local bin_layer=$(dirname "${layers[-1]}")
 
   # TODO(mattmoor): The path normalization for symlinks should match
   # files to avoid this redundancy.
