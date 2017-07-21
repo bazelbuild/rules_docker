@@ -256,7 +256,7 @@ docker_build_ = rule(
         ),
         "label_file_strings": attr.string_list(),
         "build_layer": attr.label(
-            default = Label("@bazel_tools//tools/build_defs/pkg:build_tar"),
+            default = Label("//docker:build_tar"),
             cfg = "host",
             executable = True,
             allow_files = True,
