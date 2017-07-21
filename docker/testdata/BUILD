@@ -344,13 +344,13 @@ load(
 )
 
 docker_bundle(
-   name = "bundle_to_push",
-   images = {
-     "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
-     "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
-     "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
-   },
-   stamp = True
+    name = "bundle_to_push",
+    images = {
+        "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
+        "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
+        "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
+    },
+    stamp = True,
 )
 
 docker_pushall(
@@ -395,10 +395,10 @@ PAUSE_CONFIG = "2b58359142b094165abfc9ad9c327c453a3eaa624d0c5ee8f0ed1ab50483603b
 
 genrule(
     name = "pause_config",
+    srcs = [":pause.tar"],
+    outs = ["pause_config.json"],
     cmd = ("tar xOf $(location :pause.tar) %s " +
            "> $(location :pause_config.json)") % PAUSE_CONFIG,
-    outs = ["pause_config.json"],
-    srcs = [":pause.tar"],
 )
 
 PAUSE_LAYERS = [
@@ -408,16 +408,16 @@ PAUSE_LAYERS = [
 
 [genrule(
     name = "extract_%s" % id,
+    srcs = [":pause.tar"],
+    outs = ["%s.tar.gz" % id],
     cmd = ("tar xOf $(location :pause.tar) %s/layer.tar " +
            "| gzip -n > $(location :%s.tar.gz)") % (id, id),
-    outs = ["%s.tar.gz" % id],
-    srcs = [":pause.tar"],
 ) for id in PAUSE_LAYERS]
 
 docker_import(
-   name = "pause_piecemeal",
-   config = ":pause_config.json",
-   layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
+    name = "pause_piecemeal",
+    config = ":pause_config.json",
+    layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
 )
 
 load(
@@ -433,8 +433,8 @@ py_library(
 py_image(
     name = "py_image",
     srcs = ["py_image.py"],
-    main = "py_image.py",
     layers = [
-        ":py_image_library"
+        ":py_image_library",
     ],
+    main = "py_image.py",
 )

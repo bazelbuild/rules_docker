@@ -268,46 +268,46 @@ def implementation(ctx, files=None, directory=None,
                 docker_parts = docker_parts)
 
 attrs = {
-  "base": attr.label(allow_files = docker_filetype),
-  "data_path": attr.string(),
-  "directory": attr.string(default = "/"),
-  "tars": attr.label_list(allow_files = tar_filetype),
-  "debs": attr.label_list(allow_files = deb_filetype),
-  "files": attr.label_list(allow_files = True),
-  "legacy_repository_naming": attr.bool(default = False),
-  "mode": attr.string(default = "0555"),
-  "symlinks": attr.string_dict(),
-  "entrypoint": attr.string_list(),
-  "cmd": attr.string_list(),
-  "user": attr.string(),
-  "env": attr.string_dict(),
-  "labels": attr.string_dict(),
-  "ports": attr.string_list(),  # Skylark doesn't support int_list...
-  "volumes": attr.string_list(),
-  "workdir": attr.string(),
-  "repository": attr.string(default = "bazel"),
-  # Implicit dependencies.
-  "label_files": attr.label_list(
-    allow_files = True,
-  ),
-  "label_file_strings": attr.string_list(),
-  "build_layer": attr.label(
-    default = Label("//docker:build_tar"),
-    cfg = "host",
-    executable = True,
-    allow_files = True,
-  ),
-  "create_image_config": attr.label(
-    default = Label("//docker:create_image_config"),
-    cfg = "host",
-    executable = True,
-    allow_files = True,
-  ),
+    "base": attr.label(allow_files = docker_filetype),
+    "data_path": attr.string(),
+    "directory": attr.string(default = "/"),
+    "tars": attr.label_list(allow_files = tar_filetype),
+    "debs": attr.label_list(allow_files = deb_filetype),
+    "files": attr.label_list(allow_files = True),
+    "legacy_repository_naming": attr.bool(default = False),
+    "mode": attr.string(default = "0555"),
+    "symlinks": attr.string_dict(),
+    "entrypoint": attr.string_list(),
+    "cmd": attr.string_list(),
+    "user": attr.string(),
+    "env": attr.string_dict(),
+    "labels": attr.string_dict(),
+    "ports": attr.string_list(),  # Skylark doesn't support int_list...
+    "volumes": attr.string_list(),
+    "workdir": attr.string(),
+    "repository": attr.string(default = "bazel"),
+    # Implicit dependencies.
+    "label_files": attr.label_list(
+        allow_files = True,
+    ),
+    "label_file_strings": attr.string_list(),
+    "build_layer": attr.label(
+        default = Label("//docker:build_tar"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "create_image_config": attr.label(
+        default = Label("//docker:create_image_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
 } + _hash_tools + _layer_tools
 
 outputs = {
-  "out": "%{name}.tar",
-  "layer": "%{name}-layer.tar",
+    "out": "%{name}.tar",
+    "layer": "%{name}-layer.tar",
 }
 
 docker_build_ = rule(

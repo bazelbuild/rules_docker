@@ -73,4 +73,3 @@ _docker_defaults = repository_rule(
 def docker_defaults(**kwargs):
   """Creates a version of docker_push with the specified defaults."""
   _docker_defaults(**kwargs)
-  

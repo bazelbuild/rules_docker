@@ -34,7 +34,8 @@ docker_pull(
 
 # Have the py_image dependencies for testing.
 load(
-  "//docker/contrib/python:image.bzl",
-  _py_image_repos="repositories"
+    "//docker/contrib/python:image.bzl",
+    _py_image_repos = "repositories",
 )
+
 _py_image_repos()
