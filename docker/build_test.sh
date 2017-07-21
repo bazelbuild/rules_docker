@@ -667,6 +667,52 @@ function test_build_with_passwd() {
   check_eq ${passwd_contents} "foobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell"
 }
 
+function test_py_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local lib_layer="e630f7fae644295272b97017c0720a9eef05ca669766777fcfa4c98be8ee8fca"
+  local bin_layer="f81fc255066d534e7b85acdc37b353ebf3cb818a263af108eca567a1ec29af4a"
+
+  # TODO(mattmoor): The path normalization for symlinks should match
+  # files to avoid this redundancy.
+  check_listing "py_image" "${lib_layer}" \
+    './
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/py_image_library.py
+/app/
+/app/docker/
+/app/docker/__init__.py
+/app/docker/testdata/
+/app/docker/testdata/__init__.py'
+
+  check_listing "py_image" "${bin_layer}" \
+    './
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/py_image.binary.runfiles/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image.binary
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image.py
+/app/
+/app/docker/
+/app/docker/testdata/
+/app/docker/testdata/py_image.binary
+/app/docker/testdata/py_image.binary.runfiles/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/__init__.py
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/__init__.py
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/py_image_library.py'
+}
+
 tests=$(grep "^function test_" "${BASH_SOURCE[0]}" \
           | cut -d' ' -f 2 | cut -d'(' -f 1)
 

@@ -419,3 +419,22 @@ docker_import(
    config = ":pause_config.json",
    layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
 )
+
+load(
+    "//docker/contrib/python:image.bzl",
+    "py_image",
+)
+
+py_library(
+    name = "py_image_library",
+    srcs = ["py_image_library.py"],
+)
+
+py_image(
+    name = "py_image",
+    srcs = ["py_image.py"],
+    main = "py_image.py",
+    layers = [
+        ":py_image_library"
+    ],
+)

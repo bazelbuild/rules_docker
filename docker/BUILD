@@ -63,6 +63,7 @@ TEST_DATA = [
     "//docker/testdata:base_based_warning.tar",
     "//docker/testdata:cc_based_warning.tar",
     "//docker/testdata:pause_piecemeal.tar",
+    "//docker/testdata:py_image.tar",
 ]
 
 sh_test(

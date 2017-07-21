@@ -31,3 +31,10 @@ docker_pull(
     registry = "gcr.io",
     repository = "distroless/cc",
 )
+
+# Have the py_image dependencies for testing.
+load(
+  "//docker/contrib/python:image.bzl",
+  _py_image_repos="repositories"
+)
+_py_image_repos()
