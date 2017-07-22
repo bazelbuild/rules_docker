@@ -120,6 +120,20 @@ function test_bazel_run_docker_import_incremental() {
   done
 }
 
+function test_py_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:py_image
+  docker run -ti --rm bazel/docker/testdata:py_image
+}
+
+function test_cc_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:cc_image
+  docker run -ti --rm bazel/docker/testdata:cc_image
+}
+
 test_top_level
 test_bazel_run_docker_build_clean
 test_bazel_run_docker_bundle_clean
@@ -127,3 +141,5 @@ test_bazel_run_docker_import_clean
 test_bazel_run_docker_build_incremental
 test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
+test_py_image
+test_cc_image
