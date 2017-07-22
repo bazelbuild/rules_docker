@@ -62,6 +62,77 @@ EOF
   bazel build --verbose_failures --spawn_strategy=standalone :pause_based
 }
 
+# We test this out-of-line because of the nonsense requiring go_prefix
+# to be defined in //:go_prefix.  This means we can't test Go in a repo
+# defining repository rules without requiring all downstream consumers
+# to import Go unnecessarily.
+function test_go_image() {
+  local directory=$(mktemp -d)
+
+  cd "${directory}"
+
+  cat > "WORKSPACE" <<EOF
+workspace(name = "go_image")
+
+local_repository(
+    name = "io_bazel_rules_docker",
+    path = "$ROOT",
+)
+load(
+  "@io_bazel_rules_docker//docker:docker.bzl",
+  "docker_repositories",
+)
+docker_repositories()
+
+# We must load these before the go_image rule.
+git_repository(
+    name = "io_bazel_rules_go",
+    remote = "https://github.com/bazelbuild/rules_go.git",
+    tag = "0.4.4",
+)
+load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+go_repositories()
+
+load(
+  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
+  "repositories",
+)
+repositories()
+EOF
+
+  cat > "BUILD" <<EOF
+package(default_visibility = ["//visibility:public"])
+
+# Go boilerplate
+load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
+go_prefix("github.com/bazelbuild/rules_docker/testing/go_image")
+
+load(
+  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
+  "go_image"
+)
+
+go_image(
+  name = "go_image",
+  srcs = ["main.go"],
+)
+EOF
+
+  cat > "main.go" <<EOF
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, world!")
+}
+EOF
+
+  bazel run --verbose_failures --spawn_strategy=standalone :go_image
+  docker run -ti --rm bazel:go_image
+}
+
+
 function clear_docker() {
   docker rmi -f $(docker images -aq) || true
 }
@@ -135,6 +206,7 @@ function test_cc_image() {
 }
 
 test_top_level
+test_go_image
 test_bazel_run_docker_build_clean
 test_bazel_run_docker_bundle_clean
 test_bazel_run_docker_import_clean
