@@ -172,7 +172,7 @@ These variables are specified on the CLI using:
 docker_build(
     name = "app",
     # References docker_pull from WORKSPACE (above)
-    base = "@java_base//image",
+    base = "@java_base//image:image.tar",
     files = ["//java/com/example/app:Hello_deploy.jar"],
     cmd = ["Hello_deploy.jar"]
 )
@@ -206,7 +206,7 @@ docker_pull(
 )
 ```
 
-This can then be referenced in `BUILD` files as `@base//image`.
+This can then be referenced in `BUILD` files as `@base//image:image.tar`.
 
 ### docker_push
 
@@ -235,7 +235,7 @@ docker_pull(
 )
 ```
 
-This can then be referenced in `BUILD` files as `@official_ubuntu//image`.
+This can then be referenced in `BUILD` files as `@official_ubuntu//image:image.tar`.
 
 ### docker_pull (Quay.io)
 
@@ -250,7 +250,7 @@ docker_pull(
 )
 ```
 
-This can then be referenced in `BUILD` files as `@etcd//image`.
+This can then be referenced in `BUILD` files as `@etcd//image:image.tar`.
 
 ### docker_pull (Bintray.io)
 
@@ -264,7 +264,7 @@ docker_pull(
 )
 ```
 
-This can then be referenced in `BUILD` files as `@artifactory//image`.
+This can then be referenced in `BUILD` files as `@artifactory//image:image.tar`.
 
 ### docker_pull (Gitlab)
 
@@ -279,7 +279,7 @@ docker_pull(
 )
 ```
 
-This can then be referenced in `BUILD` files as `@gitlab//image`.
+This can then be referenced in `BUILD` files as `@gitlab//image:image.tar`.
 
 **NOTE:** This will only work on systems with Python >2.7.6
 
