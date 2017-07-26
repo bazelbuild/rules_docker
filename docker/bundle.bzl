@@ -59,7 +59,7 @@ def _docker_bundle_impl(ctx):
 
   return struct(runfiles = ctx.runfiles(
       files = (stamp_files + runfiles)),
-      files = set(),
+      files = depset(),
       docker_images = images,
       stamp = ctx.attr.stamp)
 
@@ -101,9 +101,10 @@ def docker_bundle(**kwargs):
   for reserved in ["image_targets", "image_target_strings"]:
     if reserved in kwargs:
       fail("reserved for internal use by docker_bundle macro", attr=reserved)
-      
+
   if "images" in kwargs:
-    kwargs["image_targets"] = list(set(kwargs["images"].values()))
-    kwargs["image_target_strings"] = list(set(kwargs["images"].values()))
+    values = {value: None for value in kwargs["images"].values()}.keys()
+    kwargs["image_targets"] = values
+    kwargs["image_target_strings"] = values
 
   docker_bundle_(**kwargs)
