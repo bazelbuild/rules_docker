@@ -96,7 +96,7 @@ def _docker_import_impl(ctx):
                [docker_parts["config"],
                 docker_parts["config_digest"]]))
   return struct(runfiles = runfiles,
-                files = set([ctx.outputs.out]),
+                files = depset([ctx.outputs.out]),
                 docker_parts = docker_parts)
 
 docker_import_ = rule(

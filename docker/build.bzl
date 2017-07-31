@@ -227,7 +227,7 @@ def _docker_build_impl(ctx):
       files = unzipped_layers + diff_ids + [config_file, config_digest] +
       ([docker_parts["legacy"]] if docker_parts["legacy"] else []))
   return struct(runfiles = runfiles,
-                files = set([ctx.outputs.layer]),
+                files = depset([ctx.outputs.layer]),
                 docker_parts = docker_parts)
 
 docker_build_ = rule(
@@ -411,7 +411,7 @@ def docker_build(**kwargs):
     if reserved in kwargs:
       fail("reserved for internal use by docker_build macro", attr=reserved)
   if "labels" in kwargs:
-    files = sorted(set([v[1:] for v in kwargs["labels"].values() if v[0] == "@"]))
+    files = sorted({v[1:]: None for v in kwargs["labels"].values() if v[0] == "@"}.keys())
     kwargs["label_files"] = files
     kwargs["label_file_strings"] = files
   if "entrypoint" in kwargs:
