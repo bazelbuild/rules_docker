@@ -28,7 +28,7 @@ load("//docker:pull.bzl", "docker_pull")
 # TODO(mattmoor): If we can share this stuff with the other
 # languages, then factor out a helper.
 def _dep_layer_impl(ctx):
-  """Appends a layer for a single dependencies runfiles."""
+  """Appends a layer for a single dependency's runfiles."""
 
   return _build_implementation(
     ctx,
@@ -54,6 +54,7 @@ _dep_layer = rule(
         "dep": attr.label(mandatory = True),
 
         # Override the defaults.
+	# https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
     },
@@ -155,6 +156,7 @@ def cc_image(name, deps=[], layers=[], **kwargs):
   """Constructs a Docker image wrapping a cc_binary target.
 
   Args:
+    layers: Augments "deps" with dependencies that should be put into their own layers.
     **kwargs: See cc_binary.
   """
   binary_name = name + ".binary"

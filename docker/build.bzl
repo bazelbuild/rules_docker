@@ -80,7 +80,13 @@ load(
 )
 
 def _build_layer(ctx, files=None, directory=None, symlinks=None):
-  """Build the current layer for appending it the base layer."""
+  """Build the current layer for appending it the base layer.
+
+  Args:
+    files: File list, overrides ctx.files.files
+    directory: str, overrides ctx.attr.directory
+    symlinks: str Dict, overrides ctx.attr.symlinks
+  """
 
   layer = ctx.outputs.layer
   build_layer = ctx.executable.build_layer
@@ -104,6 +110,9 @@ def _build_layer(ctx, files=None, directory=None, symlinks=None):
 
   args += ["--tar=" + f.path for f in ctx.files.tars]
   args += ["--deb=" + f.path for f in ctx.files.debs if f.path.endswith(".deb")]
+  for k in symlinks:
+    if ':' in k:
+      fail("The source of a symlink cannot contain ':', got: %s" % k)
   args += ["--link=%s:%s" % (k, symlinks[k])
            for k in symlinks]
   arg_file = ctx.new_file(ctx.label.name + ".layer.args")
@@ -198,7 +207,16 @@ def _repository_name(ctx):
 
 def implementation(ctx, files=None, directory=None,
                    entrypoint=None, cmd=None, symlinks=None):
-  """Implementation for the docker_build rule."""
+  """Implementation for the docker_build rule.
+
+  Args:
+    ctx: The bazel rule context
+    files: File list, overrides ctx.files.files
+    directory: str, overrides ctx.attr.directory
+    entrypoint: str List, overrides ctx.attr.entrypoint
+    cmd: str List, overrides ctx.attr.cmd
+    symlinks: str Dict, overrides ctx.attr.symlinks
+  """
 
   files = files or ctx.files.files
   directory = directory or ctx.attr.directory
@@ -275,7 +293,7 @@ attrs = {
     "debs": attr.label_list(allow_files = deb_filetype),
     "files": attr.label_list(allow_files = True),
     "legacy_repository_naming": attr.bool(default = False),
-    "mode": attr.string(default = "0555"),
+    "mode": attr.string(default = "0555"),   # 0555 == a+rx
     "symlinks": attr.string_dict(),
     "entrypoint": attr.string_list(),
     "cmd": attr.string_list(),

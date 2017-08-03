@@ -25,7 +25,7 @@ load(
 load("//docker:pull.bzl", "docker_pull")
 
 def _dep_layer_impl(ctx):
-  """Appends a layer for a single dependencies runfiles."""
+  """Appends a layer for a single dependency's runfiles."""
 
   return _build_implementation(
     ctx,
@@ -34,11 +34,15 @@ def _dep_layer_impl(ctx):
     # then we symlink them into the appropriate place in the app layer.
     # This references the binary package because the file paths are
     # relative to it, and normalized by the tarball package.
-    directory="/app/" + ctx.label.package,
+    directory=ctx.attr.directory + "/" + ctx.label.package,
     files=list(ctx.attr.dep.default_runfiles.files),
     symlinks={
       # Handle empty files by linking to /dev/null
-      "/app/" + empty: "/dev/null"
+      # TODO(mattmoor): This doesn't work in Python3,
+      # so investigate how to properly create empty files.
+      #   bazelbuild/bazel#1458
+      #   http://bugs.python.org/issue28425
+      ctx.attr.directory + "/" + empty: "/dev/null"
       for empty in ctx.attr.dep.default_runfiles.empty_filenames
     }
   )
@@ -51,6 +55,7 @@ _dep_layer = rule(
         "dep": attr.label(mandatory = True),
 
         # Override the defaults.
+	# https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
     },
@@ -73,7 +78,7 @@ def _app_layer_impl(ctx):
   # this application layer.
   basename = ctx.attr.binary.label.name
   binary_name = "/".join([
-    "/app",
+    ctx.attr.directory,
     ctx.label.package,
     basename
   ])
@@ -90,6 +95,10 @@ def _app_layer_impl(ctx):
   # Compute the set of remaining runfiles to include into the
   # application layer.
   files = [f for f in ctx.attr.binary.default_runfiles.files
+           # It is notable that this assumes that our version of
+	   # this runfile matches that of the dependency.  It is
+	   # not clear at this time whether that is an invariant
+	   # broadly in Bazel.
            if f.short_path not in available]
 
   empty_files = [f for f in ctx.attr.binary.default_runfiles.empty_filenames
@@ -101,10 +110,14 @@ def _app_layer_impl(ctx):
   symlinks = {
     binary_name: directory + "/" + basename
   } + {
-    directory + "/" + input: "/app/" + input
+    directory + "/" + input: ctx.attr.directory + "/" + input
     for input in available
   } + {
     # Handle empty files by linking to /dev/null
+    # TODO(mattmoor): This doesn't work in Python3,
+    # so investigate how to properly create empty files.
+    #   bazelbuild/bazel#1458
+    #   http://bugs.python.org/issue28425
     base_directory + "/" + empty: "/dev/null"
     for empty in empty_files
   }
@@ -131,6 +144,7 @@ _app_layer = rule(
         # Override the defaults.
         "data_path": attr.string(default = "."),
         "workdir": attr.string(default = "/app"),
+        "directory": attr.string(default = "/app"),
     },
     executable = True,
     outputs = _build_outputs,
@@ -152,6 +166,7 @@ def py_image(name, deps=[], layers=[], **kwargs):
   """Constructs a Docker image wrapping a py_binary target.
 
   Args:
+    layers: Augments "deps" with dependencies that should be put into their own layers.
     **kwargs: See py_binary.
   """
   binary_name = name + ".binary"
@@ -160,7 +175,15 @@ def py_image(name, deps=[], layers=[], **kwargs):
   # a single target can be used for all three.
   native.py_binary(name=binary_name, deps=deps + layers, **kwargs)
 
+  # TODO(mattmoor): Consider what the right way to switch between
+  # Python 2/3 support might be.  Perhaps just overriding `base`,
+  # but perhaps we can be smarter about selecting a py2 vs. py3
+  # distroless base?
+
+  # TODO(mattmoor): Consider making the directory into which the app
+  # is placed configurable.
   index = 0
+  # TODO(mattmoor): Consider making the base configurable.
   base = None # Makes us use ctx.attr.base
   for dep in layers:
     this_name = "%s.%d" % (name, index)

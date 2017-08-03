@@ -15,10 +15,10 @@
 from docker.testdata import py_image_library
 
 def main():
-  print 'First: %d' % py_image_library.fn(1)
-  print 'Second: %d' % py_image_library.fn(2)
-  print 'Third: %d' % py_image_library.fn(3)
-  print 'Fourth: %d' % py_image_library.fn(4)
+  print('First: %d' % py_image_library.fn(1))
+  print('Second: %d' % py_image_library.fn(2))
+  print('Third: %d' % py_image_library.fn(3))
+  print('Fourth: %d' % py_image_library.fn(4))
 
 
 if __name__ == '__main__':

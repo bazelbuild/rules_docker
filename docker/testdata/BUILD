@@ -343,6 +343,8 @@ load(
     docker_pushall = "docker_push",
 )
 
+# This bundles up a bunch of images into a single tarball,
+# which is pushed as a unit below.
 docker_bundle(
     name = "bundle_to_push",
     images = {

@@ -33,7 +33,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 # TODO(mattmoor): If we can share this stuff with the other
 # languages, then factor out a helper.
 def _dep_layer_impl(ctx):
-  """Appends a layer for a single dependencies runfiles."""
+  """Appends a layer for a single dependency's runfiles."""
 
   return _build_implementation(
     ctx,
@@ -59,6 +59,7 @@ _dep_layer = rule(
         "dep": attr.label(mandatory = True),
 
         # Override the defaults.
+	# https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
     },
@@ -160,6 +161,7 @@ def go_image(name, deps=[], layers=[], **kwargs):
   """Constructs a Docker image wrapping a go_binary target.
 
   Args:
+    layers: Augments "deps" with dependencies that should be put into their own layers.
     **kwargs: See go_binary.
   """
   binary_name = name + ".binary"

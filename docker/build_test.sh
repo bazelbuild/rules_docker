@@ -680,7 +680,7 @@ with tarfile.open("${test_data}", "r") as tar:
   assert len(manifests) == 1
   for m in manifests:
     for l in m["Layers"]:
-      print l
+      print(l)
 EOF
 }
 
