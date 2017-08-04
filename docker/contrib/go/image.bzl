@@ -39,7 +39,7 @@ def repositories():
       digest = "sha256:06fcd3edcfeefe13b82fa8bdb9e3f4fa3bf4c7e8fe997bee0230e392f77d0e04",
     )
 
-def go_image(name, deps=[], layers=[], **kwargs):
+def go_image(name, base=None, deps=[], layers=[], **kwargs):
   """Constructs a Docker image wrapping a go_binary target.
 
   Args:
@@ -51,7 +51,7 @@ def go_image(name, deps=[], layers=[], **kwargs):
   go_binary(name=binary_name, deps=deps + layers, **kwargs)
 
   index = 0
-  base = "@go_image_base//image"
+  base = base or "@go_image_base//image"
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)

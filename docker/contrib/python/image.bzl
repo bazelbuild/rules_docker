@@ -34,7 +34,7 @@ def repositories():
       digest = "sha256:9c839437f182e4d93cb908b3177f72954a91893bd7120ec121846b69fc1cca4a",
     )
 
-def py_image(name, deps=[], layers=[], **kwargs):
+def py_image(name, base=None, deps=[], layers=[], **kwargs):
   """Constructs a Docker image wrapping a py_binary target.
 
   Args:
@@ -56,8 +56,7 @@ def py_image(name, deps=[], layers=[], **kwargs):
   # TODO(mattmoor): Consider making the directory into which the app
   # is placed configurable.
   index = 0
-  # TODO(mattmoor): Consider making the base configurable.
-  base = "@py_image_base//image"
+  base = base or "@py_image_base//image"
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)

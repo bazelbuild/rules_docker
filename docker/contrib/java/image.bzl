@@ -165,7 +165,7 @@ _jar_app_layer = rule(
     implementation = _jar_app_layer_impl,
 )
 
-def java_image(name, main_class=None, deps=[], layers=[], **kwargs):
+def java_image(name, base=None, main_class=None, deps=[], layers=[], **kwargs):
   """Builds a Docker image overlaying the java_binary.
 
   Args:
@@ -179,7 +179,7 @@ def java_image(name, main_class=None, deps=[], layers=[], **kwargs):
                      deps=deps + layers, **kwargs)
 
   index = 0
-  base = "@java_image_base//image"
+  base = base or "@java_image_base//image"
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     _jar_dep_layer(name=this_name, base=base, dep=dep)
@@ -239,7 +239,7 @@ _war_app_layer = rule(
     implementation = _war_app_layer_impl,
 )
 
-def war_image(name, deps=[], layers=[], **kwargs):
+def war_image(name, base=None, deps=[], layers=[], **kwargs):
   """Builds a Docker image overlaying the java_library as an exploded WAR.
 
   Args:
@@ -252,7 +252,7 @@ def war_image(name, deps=[], layers=[], **kwargs):
   native.java_library(name=library_name, deps=deps + layers, **kwargs)
 
   index = 0
-  base = "@jetty_image_base//image"
+  base = base or "@jetty_image_base//image"
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     _war_dep_layer(name=this_name, base=base, dep=dep)

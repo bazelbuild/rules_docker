@@ -34,7 +34,7 @@ def repositories():
       digest = "sha256:942eb947818e7e32200950b600cc94d5477b03e0b99bf732b4c1e2bba6eec717",
     )
 
-def cc_image(name, deps=[], layers=[], **kwargs):
+def cc_image(name, base=None, deps=[], layers=[], **kwargs):
   """Constructs a Docker image wrapping a cc_binary target.
 
   Args:
@@ -47,7 +47,7 @@ def cc_image(name, deps=[], layers=[], **kwargs):
   native.cc_binary(name=binary_name, deps=deps + layers, **kwargs)
 
   index = 0
-  base = "@cc_image_base//image"
+  base = base or "@cc_image_base//image"
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)
