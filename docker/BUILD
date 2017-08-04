@@ -65,6 +65,7 @@ TEST_DATA = [
     "//docker/testdata:pause_piecemeal.tar",
     "//docker/testdata:py_image.tar",
     "//docker/testdata:cc_image.tar",
+    "//docker/testdata:war_image.tar",
 ]
 
 sh_test(

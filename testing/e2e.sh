@@ -17,6 +17,14 @@
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
+function stop_containers() {
+  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || /bin/true
+}
+
+# Clean up any containers [before] we start.
+stop_containers
+trap "stop_containers" EXIT
+
 function test_top_level() {
   local directory=$(mktemp -d)
 
@@ -205,6 +213,24 @@ function test_cc_image() {
   docker run -ti --rm bazel/docker/testdata:cc_image
 }
 
+# TODO(mattmoor):
+# function test_java_image() {
+#   cd "${ROOT}"
+#   clear_docker
+#   bazel run docker/testdata:java_image
+#   docker run -ti --rm bazel/docker/testdata:java_image
+# }
+
+function test_war_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:war_image
+  ID=$(docker run -d -p 8080:8080 bazel/docker/testdata:war_image)
+  sleep 5
+  curl localhost:8080
+  docker rm -f "${ID}"
+}
+
 test_top_level
 test_go_image
 test_bazel_run_docker_build_clean
@@ -215,3 +241,5 @@ test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
 test_py_image
 test_cc_image
+# TODO(mattmoor): test_java_image
+test_war_image

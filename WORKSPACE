@@ -47,3 +47,11 @@ load(
 )
 
 _cc_image_repos()
+
+# Have the java_image dependencies for testing.
+load(
+    "//docker/contrib/java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()

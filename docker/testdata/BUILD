@@ -458,3 +458,32 @@ cc_image(
     # This creates an empty layer, due to linking.
     layers = [":cc_image_library"],
 )
+
+load(
+    "//docker/contrib/java:image.bzl",
+    # "java_image",
+    "war_image",
+)
+
+java_library(
+    name = "java_image_library",
+    srcs = ["Library.java"],
+)
+
+# TODO(mattmoor): Make this java_image
+java_binary(
+    name = "java_image",
+    srcs = ["Binary.java"],
+    main_class = "examples.images.Binary",
+    # TODO(mattmoor): Make this layers.
+    deps = [":java_image_library"],
+)
+
+war_image(
+    name = "war_image",
+    srcs = ["Servlet.java"],
+    layers = [
+        ":java_image_library",
+        "@javax_servlet_api//jar:jar",
+    ],
+)

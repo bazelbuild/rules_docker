@@ -760,6 +760,33 @@ function test_cc_image() {
 /app/docker/testdata/cc_image.binary'
 }
 
+function test_war_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local layers=($(get_layers "war_image"))
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  check_listing "war_image" "${lib_layer}" \
+'./
+./jetty/
+./jetty/webapps/
+./jetty/webapps/ROOT/
+./jetty/webapps/ROOT/WEB-INF/
+./jetty/webapps/ROOT/WEB-INF/lib/
+./jetty/webapps/ROOT/WEB-INF/lib/javax.servlet-api-3.0.1.jar'
+
+  check_listing "war_image" "${bin_layer}" \
+'./
+./jetty/
+./jetty/webapps/
+./jetty/webapps/ROOT/
+./jetty/webapps/ROOT/WEB-INF/
+./jetty/webapps/ROOT/WEB-INF/lib/
+./jetty/webapps/ROOT/WEB-INF/lib/libwar_image.library.jar'
+}
+
 tests=$(grep "^function test_" "${BASH_SOURCE[0]}" \
           | cut -d' ' -f 2 | cut -d'(' -f 1)
 
