@@ -48,6 +48,9 @@ def go_image(name, base=None, deps=[], layers=[], **kwargs):
   """
   binary_name = name + ".binary"
 
+  if layers:
+    print("go_image does not benefit from layers=[], got: %s" % layers)
+
   go_binary(name=binary_name, deps=deps + layers, **kwargs)
 
   index = 0
