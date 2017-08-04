@@ -461,7 +461,7 @@ cc_image(
 
 load(
     "//docker/contrib/java:image.bzl",
-    # "java_image",
+    "java_image",
     "war_image",
 )
 
@@ -470,13 +470,11 @@ java_library(
     srcs = ["Library.java"],
 )
 
-# TODO(mattmoor): Make this java_image
-java_binary(
+java_image(
     name = "java_image",
     srcs = ["Binary.java"],
+    layers = [":java_image_library"],
     main_class = "examples.images.Binary",
-    # TODO(mattmoor): Make this layers.
-    deps = [":java_image_library"],
 )
 
 war_image(

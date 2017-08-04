@@ -213,13 +213,12 @@ function test_cc_image() {
   docker run -ti --rm bazel/docker/testdata:cc_image
 }
 
-# TODO(mattmoor):
-# function test_java_image() {
-#   cd "${ROOT}"
-#   clear_docker
-#   bazel run docker/testdata:java_image
-#   docker run -ti --rm bazel/docker/testdata:java_image
-# }
+function test_java_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:java_image
+  docker run -ti --rm bazel/docker/testdata:java_image
+}
 
 function test_war_image() {
   cd "${ROOT}"
@@ -241,5 +240,5 @@ test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
 test_py_image
 test_cc_image
-# TODO(mattmoor): test_java_image
+test_java_image
 test_war_image

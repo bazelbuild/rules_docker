@@ -760,6 +760,30 @@ function test_cc_image() {
 /app/docker/testdata/cc_image.binary'
 }
 
+function test_java_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local layers=($(get_layers "java_image"))
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  check_listing "java_image" "${lib_layer}" \
+'./
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/libjava_image_library.jar'
+
+  check_listing "java_image" "${bin_layer}" \
+'./
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/java_image.binary
+./app/docker/testdata/java_image.binary.jar'
+}
+
 function test_war_image() {
   # Don't check the full layer set because the base will vary,
   # but check the files in our top two layers.

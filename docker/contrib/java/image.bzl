@@ -13,7 +13,7 @@
 # limitations under the License.
 """A rule for creating a Java Docker image.
 
-TODO(mattmoor): java_image
+The signature of java_image is compatible with java_binary.
 
 The signature of war_image is compatible with java_library.
 """
@@ -22,6 +22,14 @@ load("//docker:pull.bzl", "docker_pull")
 
 def repositories():
   excludes = native.existing_rules().keys()
+  if "java_image_base" not in excludes:
+    docker_pull(
+      name = "java_image_base",
+      registry = "gcr.io",
+      repository = "distroless/java",
+      # 'latest' circa 2017-08-04
+      digest = "sha256:786ae0562da4c6043f1d0dab513de108d645728bb09691acc8fdd1e05f745d8e",
+    )
   if "jetty_image_base" not in excludes:
     docker_pull(
       name = "jetty_image_base",
@@ -42,9 +50,8 @@ load(
     _build_implementation = "implementation",
     _build_outputs = "outputs",
 )
-load("@subpar//:debug.bzl", "dump")
 
-def _war_dep_layer_impl(ctx):
+def _dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
 
   transitive_deps = set()
@@ -53,14 +60,34 @@ def _war_dep_layer_impl(ctx):
   elif hasattr(ctx.attr.dep, "files"):  # a jar file
     transitive_deps += ctx.attr.dep.files
 
-  # This path could be more context agnostic, but with defaults
-  # the name doesn't change, so this is good enough for now.
-  directory = ctx.attr.directory + "/" + ctx.attr.servlet + "/WEB-INF/lib"
+  directory = ctx.attr.directory
+  if ctx.attr.data_path == ".":
+    # This signifies that we are preserving paths (JAR)
+    # vs. collapsing things (WAR).  For more info see:
+    # https://github.com/bazelbuild/bazel/issues/2176
+    directory += "/" + ctx.label.package
   return _build_implementation(
     ctx,
     directory=directory,
     files=list(transitive_deps),
   )
+
+_jar_dep_layer = rule(
+    attrs = _build_attrs + {
+        # The base image on which to overlay the dependency layers.
+        "base": attr.label(mandatory = True),
+        # The dependency whose runfiles we're appending.
+        "dep": attr.label(mandatory = True),
+
+        # Override the defaults.
+        "directory": attr.string(default = "/app"),
+        # https://github.com/bazelbuild/bazel/issues/2176
+        "data_path": attr.string(default = "."),
+    },
+    executable = True,
+    outputs = _build_outputs,
+    implementation = _dep_layer_impl,
+)
 
 _war_dep_layer = rule(
     attrs = _build_attrs + {
@@ -68,17 +95,99 @@ _war_dep_layer = rule(
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
-        "servlet": attr.string(default = "ROOT"),
 
         # Override the defaults.
-        "directory": attr.string(default = "/jetty/webapps/"),
+        "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
     },
     executable = True,
     outputs = _build_outputs,
-    implementation = _war_dep_layer_impl,
+    implementation = _dep_layer_impl,
 )
+
+def _jar_app_layer_impl(ctx):
+  """Appends the app layer with all remaining runfiles."""
+
+  available = set()
+  for jar in ctx.attr.layers:
+    if hasattr(jar, "java"):  # java_library, java_import
+      available += jar.java.transitive_runtime_deps
+    elif hasattr(jar, "files"):  # a jar file
+      available += jar.files
+
+  # We compute the set of unavailable stuff by walking deps
+  # in the same way, adding in our binary and then subtracting
+  # out what it available.
+  unavailable = set()
+  for jar in ctx.attr.deps:
+    if hasattr(jar, "java"):  # java_library, java_import
+      unavailable += jar.java.transitive_runtime_deps
+    elif hasattr(jar, "files"):  # a jar file
+      unavailable += jar.files
+
+  unavailable += ctx.attr.binary.files
+  unavailable = [x for x in unavailable if x not in available]
+  files = unavailable
+
+  classpath = ":".join([
+    ctx.attr.directory + "/" + x.short_path
+    for x in available + unavailable
+  ])
+  binary_path = ctx.attr.directory + "/" + (ctx.files.binary[0].short_path)
+  entrypoint = ['/usr/bin/java', '-cp', classpath, ctx.attr.main_class]
+
+  return _build_implementation(
+    ctx, files=files, entrypoint=entrypoint,
+    directory=ctx.attr.directory + "/" + ctx.label.package)
+
+_jar_app_layer = rule(
+    attrs = _build_attrs + {
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = True),
+        # The full list of dependencies that have their own layers
+        # factored into our base.
+        "layers": attr.label_list(),
+        # The rest of the dependencies.
+        "deps": attr.label_list(),
+        # The base image on which to overlay the dependency layers.
+        "base": attr.label(mandatory = True),
+        # The main class to invoke on startup.
+        "main_class": attr.string(mandatory = True),
+
+        # Override the defaults.
+        "directory": attr.string(default = "/app"),
+        # https://github.com/bazelbuild/bazel/issues/2176
+        "data_path": attr.string(default = "."),
+    },
+    executable = True,
+    outputs = _build_outputs,
+    implementation = _jar_app_layer_impl,
+)
+
+def java_image(name, main_class=None, deps=[], layers=[], **kwargs):
+  """Builds a Docker image overlaying the java_binary.
+
+  Args:
+    layers: Augments "deps" with dependencies that should be put into
+           their own layers.
+    **kwargs: See java_binary.
+  """
+  binary_name = name + ".binary"
+
+  native.java_binary(name=binary_name, main_class=main_class,
+                     deps=deps + layers, **kwargs)
+
+  index = 0
+  base = "@java_image_base//image"
+  for dep in layers:
+    this_name = "%s.%d" % (name, index)
+    _jar_dep_layer(name=this_name, base=base, dep=dep)
+    base = this_name
+    index += 1
+
+  _jar_app_layer(name=name, base=base, binary=binary_name,
+                 main_class=main_class, deps=deps, layers=layers)
 
 def _war_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
@@ -99,8 +208,6 @@ def _war_app_layer_impl(ctx):
 
   # TODO(mattmoor): Handle data files.
 
-  directory = ctx.attr.directory + "/" + ctx.attr.servlet + "/WEB-INF/lib"
-
   files = []
   for d in transitive_deps:
     if d not in available:
@@ -109,8 +216,7 @@ def _war_app_layer_impl(ctx):
       files += [d]
 
   return _build_implementation(
-    ctx, files=files,
-    directory=directory)
+    ctx, files=files, directory=ctx.attr.directory)
 
 _war_app_layer = rule(
     attrs = _build_attrs + {
@@ -119,13 +225,12 @@ _war_app_layer = rule(
         # The full list of dependencies that have their own layers
         # factored into our base.
         "layers": attr.label_list(),
-        "servlet": attr.string(default = "ROOT"),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),
 
         # Override the defaults.
-        "directory": attr.string(default = "/jetty/webapps/"),
+        "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
     },
