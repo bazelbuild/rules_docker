@@ -293,7 +293,7 @@ attrs = {
     "debs": attr.label_list(allow_files = deb_filetype),
     "files": attr.label_list(allow_files = True),
     "legacy_repository_naming": attr.bool(default = False),
-    "mode": attr.string(default = "0555"),   # 0555 == a+rx
+    "mode": attr.string(default = "0555"),  # 0555 == a+rx
     "symlinks": attr.string_dict(),
     "entrypoint": attr.string_list(),
     "cmd": attr.string_list(),

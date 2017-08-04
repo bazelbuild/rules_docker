@@ -17,12 +17,11 @@ The signature of this rule is compatible with cc_binary.
 """
 
 load(
-  "//docker:build.bzl",
-  _build_attrs="attrs",
-  _build_outputs="outputs",
-  _build_implementation="implementation",
+    "//docker:build.bzl",
+    _build_attrs = "attrs",
+    _build_implementation = "implementation",
+    _build_outputs = "outputs",
 )
-
 load("//docker:pull.bzl", "docker_pull")
 
 # TODO(mattmoor): If we can share this stuff with the other
@@ -48,13 +47,13 @@ def _dep_layer_impl(ctx):
 
 _dep_layer = rule(
     attrs = _build_attrs + {
-	# The base image on which to overlay the dependency layers.
+        # The base image on which to overlay the dependency layers.
         "base": attr.label(default = Label("@cc_image_base//image")),
-	# The dependency whose runfiles we're appending.
+        # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
 
         # Override the defaults.
-	# https://github.com/bazelbuild/bazel/issues/2176
+        # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
     },
@@ -126,10 +125,10 @@ _app_layer = rule(
     attrs = _build_attrs + {
         # The cc_binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
-	# The full list of dependencies that have their own layers
+        # The full list of dependencies that have their own layers
         # factored into our base.
         "layers": attr.label_list(),
-	# The base image on which to overlay the dependency layers.
+        # The base image on which to overlay the dependency layers.
         "base": attr.label(default = Label("@cc_image_base//image")),
 
         # Override the defaults.
@@ -172,4 +171,3 @@ def cc_image(name, deps=[], layers=[], **kwargs):
     index += 1
 
   _app_layer(name=name, base=base, binary=binary_name, layers=layers)
-

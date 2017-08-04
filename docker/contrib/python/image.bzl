@@ -55,7 +55,7 @@ _dep_layer = rule(
         "dep": attr.label(mandatory = True),
 
         # Override the defaults.
-	# https://github.com/bazelbuild/bazel/issues/2176
+        # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
     },
