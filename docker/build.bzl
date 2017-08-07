@@ -19,23 +19,21 @@ more specialized build leveraging the same implementation.  The
 expectation in such cases is that users will write something like:
 
   load(
-    "@io_bazel_rules_docker//docker:build.bzl",
-    _build_attrs="attrs",
-    _build_outputs="outputs",
-    _build_implementation="implementation",
+    "@io_bazel_rules_docker//docker:docker.bzl",
+    _docker="docker",
   )
 
   def _impl(ctx):
     ...
-    return _build_implementation(ctx, ... kwarg overrides ...)
+    return _docker.build.implementation(ctx, ... kwarg overrides ...)
 
   _foo_image = rule(
-      attrs = _build_attrs + {
+      attrs = _docker.build.attrs + {
          # My attributes, or overrides of _build_attrs defaults.
          ...
       },
       executable = True,
-      outputs = _build_outputs,
+      outputs = _docker.build.outputs,
       implementation = _impl,
   )
 
@@ -205,8 +203,8 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def implementation(ctx, files=None, directory=None,
-                   entrypoint=None, cmd=None, symlinks=None):
+def _impl(ctx, files=None, directory=None,
+          entrypoint=None, cmd=None, symlinks=None):
   """Implementation for the docker_build rule.
 
   Args:
@@ -285,7 +283,7 @@ def implementation(ctx, files=None, directory=None,
                 files = set([ctx.outputs.layer]),
                 docker_parts = docker_parts)
 
-attrs = {
+_attrs = {
     "base": attr.label(allow_files = docker_filetype),
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
@@ -323,16 +321,22 @@ attrs = {
     ),
 } + _hash_tools + _layer_tools
 
-outputs = {
+_outputs = {
     "out": "%{name}.tar",
     "layer": "%{name}-layer.tar",
 }
 
+build = struct(
+    attrs = _attrs,
+    outputs = _outputs,
+    implementation = _impl,
+)
+
 docker_build_ = rule(
-    attrs = attrs,
+    attrs = _attrs,
     executable = True,
-    outputs = outputs,
-    implementation = implementation,
+    outputs = _outputs,
+    implementation = _impl,
 )
 
 # This validates the two forms of value accepted by

@@ -45,10 +45,8 @@ def repositories():
     )
 
 load(
-    "//docker:build.bzl",
-    _build_attrs = "attrs",
-    _build_implementation = "implementation",
-    _build_outputs = "outputs",
+    "//docker:docker.bzl",
+    _docker = "docker",
 )
 
 def _dep_layer_impl(ctx):
@@ -66,14 +64,14 @@ def _dep_layer_impl(ctx):
     # vs. collapsing things (WAR).  For more info see:
     # https://github.com/bazelbuild/bazel/issues/2176
     directory += "/" + ctx.label.package
-  return _build_implementation(
+  return _docker.build.implementation(
     ctx,
     directory=directory,
     files=list(transitive_deps),
   )
 
 _jar_dep_layer = rule(
-    attrs = _build_attrs + {
+    attrs = _docker.build.attrs + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -85,12 +83,12 @@ _jar_dep_layer = rule(
         "data_path": attr.string(default = "."),
     },
     executable = True,
-    outputs = _build_outputs,
+    outputs = _docker.build.outputs,
     implementation = _dep_layer_impl,
 )
 
 _war_dep_layer = rule(
-    attrs = _build_attrs + {
+    attrs = _docker.build.attrs + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -102,7 +100,7 @@ _war_dep_layer = rule(
         # "data_path": attr.string(default = "."),
     },
     executable = True,
-    outputs = _build_outputs,
+    outputs = _docker.build.outputs,
     implementation = _dep_layer_impl,
 )
 
@@ -137,12 +135,12 @@ def _jar_app_layer_impl(ctx):
   binary_path = ctx.attr.directory + "/" + (ctx.files.binary[0].short_path)
   entrypoint = ['/usr/bin/java', '-cp', classpath, ctx.attr.main_class]
 
-  return _build_implementation(
+  return _docker.build.implementation(
     ctx, files=files, entrypoint=entrypoint,
     directory=ctx.attr.directory + "/" + ctx.label.package)
 
 _jar_app_layer = rule(
-    attrs = _build_attrs + {
+    attrs = _docker.build.attrs + {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -161,7 +159,7 @@ _jar_app_layer = rule(
         "data_path": attr.string(default = "."),
     },
     executable = True,
-    outputs = _build_outputs,
+    outputs = _docker.build.outputs,
     implementation = _jar_app_layer_impl,
 )
 
@@ -215,11 +213,11 @@ def _war_app_layer_impl(ctx):
       # then consider adding symlinks here.
       files += [d]
 
-  return _build_implementation(
+  return _docker.build.implementation(
     ctx, files=files, directory=ctx.attr.directory)
 
 _war_app_layer = rule(
-    attrs = _build_attrs + {
+    attrs = _docker.build.attrs + {
         # The library target for which we are synthesizing an image.
         "library": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -235,7 +233,7 @@ _war_app_layer = rule(
         # "data_path": attr.string(default = "."),
     },
     executable = True,
-    outputs = _build_outputs,
+    outputs = _docker.build.outputs,
     implementation = _war_app_layer_impl,
 )
 

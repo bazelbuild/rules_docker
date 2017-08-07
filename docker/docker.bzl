@@ -15,7 +15,7 @@
 
 # Alias docker_build and docker_bundle for now, so folks can move to
 # referencing this before it becomes the source of truth.
-load(":build.bzl", "docker_build")
+load(":build.bzl", "docker_build", "build")
 load(":bundle.bzl", "docker_bundle")
 
 # Expose the docker_import rule.
@@ -26,6 +26,10 @@ load(":pull.bzl", "docker_pull")
 
 # Expose the docker_push rule.
 load(":push.bzl", "docker_push")
+
+docker = struct(
+    build = build,
+)
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.12"

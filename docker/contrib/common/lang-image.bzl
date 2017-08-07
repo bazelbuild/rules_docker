@@ -15,17 +15,15 @@
 """
 
 load(
-    "//docker:build.bzl",
-    _build_attrs = "attrs",
-    _build_implementation = "implementation",
-    _build_outputs = "outputs",
+    "//docker:docker.bzl",
+    _docker = "docker",
 )
 load("//docker:pull.bzl", "docker_pull")
 
 def _dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
 
-  return _build_implementation(
+  return _docker.build.implementation(
     ctx,
     # We put the files from dependency layers into a binary-agnostic
     # path to increase the likelihood of layer sharing across images,
@@ -46,7 +44,7 @@ def _dep_layer_impl(ctx):
   )
 
 dep_layer = rule(
-    attrs = _build_attrs + {
+    attrs = _docker.build.attrs + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -58,7 +56,7 @@ dep_layer = rule(
         "directory": attr.string(default = "/app"),
     },
     executable = True,
-    outputs = _build_outputs,
+    outputs = _docker.build.outputs,
     implementation = _dep_layer_impl,
 )
 
@@ -120,7 +118,7 @@ def _app_layer_impl(ctx):
     for empty in empty_files
   }
 
-  return _build_implementation(
+  return _docker.build.implementation(
     ctx, files=files,
     # Use entrypoint so we can easily add arguments when the resulting
     # image is `docker run ...`.
@@ -130,7 +128,7 @@ def _app_layer_impl(ctx):
     directory=directory, symlinks=symlinks)
 
 app_layer = rule(
-    attrs = _build_attrs + {
+    attrs = _docker.build.attrs + {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -146,6 +144,6 @@ app_layer = rule(
         "directory": attr.string(default = "/app"),
     },
     executable = True,
-    outputs = _build_outputs,
+    outputs = _docker.build.outputs,
     implementation = _app_layer_impl,
 )
