@@ -88,11 +88,16 @@ def assemble(ctx, images, output, stamp=False):
       mnemonic = "JoinLayers"
   )
 
-def incremental_load(ctx, images, output, stamp=False, run=False):
+def incremental_load(ctx, images, output,
+                     stamp=False, run=False, run_flags=None):
   """Generate the incremental load statement."""
   stamp_files = []
   if stamp:
     stamp_files = [ctx.info_file, ctx.version_file]
+
+  # Default to interactively launching the container,
+  # and cleaning up when it exits.
+  run_flags = run_flags or "-i --rm"
 
   if len(images) > 1 and run:
     fail("Bazel run does not currently support execution of " +
@@ -135,9 +140,10 @@ def incremental_load(ctx, images, output, stamp=False, run=False):
             tag_reference,
             _get_runfile_path(ctx, image["config_digest"]))
     ]
-    run_statements += [
-        "docker run -i --rm %s \"$@\"" % tag_reference
-    ]
+    if run:
+      run_statements += [
+          "docker run %s %s \"$@\"" % (run_flags, tag_reference)
+      ]
 
   ctx.template_action(
       template = ctx.file.incremental_load_template,

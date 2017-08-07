@@ -234,6 +234,12 @@ _war_app_layer = rule(
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
+        # Run the container using host networking, so that the service is
+        # available to the developer without having to poke around with
+        # docker inspect.
+        "docker_run_flags": attr.string(
+            default = "-i --rm --network=host"
+        ),
     },
     executable = True,
     outputs = _docker.build.outputs,
@@ -242,10 +248,6 @@ _war_app_layer = rule(
 
 def war_image(name, base=None, deps=[], layers=[], **kwargs):
   """Builds a Docker image overlaying the java_library as an exploded WAR.
-
-  TODO(mattmoor): For `bazel run` of this to be useful, we need to expose
-  a port on a local network interface, or the user will have to use
-  `docker inspect` to get the container's IP every time.
 
   TODO(mattmoor): For `bazel run` of this to be useful, we need to be able
   to ctrl-C it and have the container actually terminate.  More information:
