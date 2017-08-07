@@ -88,14 +88,19 @@ def assemble(ctx, images, output, stamp=False):
       mnemonic = "JoinLayers"
   )
 
-def incremental_load(ctx, images, output, stamp=False):
+def incremental_load(ctx, images, output, stamp=False, run=False):
   """Generate the incremental load statement."""
   stamp_files = []
   if stamp:
     stamp_files = [ctx.info_file, ctx.version_file]
 
+  if len(images) > 1 and run:
+    fail("Bazel run does not currently support execution of " +
+         "multiple containers (only loading).")
+
   load_statements = []
   tag_statements = []
+  run_statements = []
   # TODO(mattmoor): Consider adding cleanup_statements.
   for tag in images:
     image = images[tag]
@@ -121,13 +126,17 @@ def incremental_load(ctx, images, output, stamp=False):
     ]
 
     # Now tag the imported config with the specified tag.
+    tag_reference = tag if not stamp else tag.replace("{", "${")
     tag_statements += [
         "tag_layer \"%s\" '%s'" % (
             # Turn stamp variable references into bash variables.
             # It is notable that the only legal use of '{' in a
             # tag would be for stamp variables, '$' is not allowed.
-            tag if not stamp else tag.replace("{", "${"),
+            tag_reference,
             _get_runfile_path(ctx, image["config_digest"]))
+    ]
+    run_statements += [
+        "docker run -i --rm %s \"$@\"" % tag_reference
     ]
 
   ctx.template_action(
@@ -140,7 +149,8 @@ def incremental_load(ctx, images, output, stamp=False):
               "read_variables %s" % _get_runfile_path(ctx, f)
               for f in stamp_files]),
           "%{load_statements}": "\n".join(load_statements),
-          "%{tag_statements}": "\n".join(tag_statements)
+          "%{tag_statements}": "\n".join(tag_statements),
+          "%{run_statements}": "\n".join(run_statements),
       },
       output = output,
       executable = True)

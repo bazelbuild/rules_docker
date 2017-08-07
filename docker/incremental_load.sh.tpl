@@ -237,3 +237,7 @@ function read_variables() {
 # List of 'tag_layer' statements for all tags.
 # This generated and injected by docker_*.
 %{tag_statements}
+
+# An optional "docker run" statement for invoking a loaded container.
+# This generated and injected by docker_*.
+%{run_statements}

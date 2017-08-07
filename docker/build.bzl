@@ -282,7 +282,8 @@ def _impl(ctx, files=None, empty_files=None, directory=None,
       tag_name: docker_parts
   }
 
-  _incr_load(ctx, images, ctx.outputs.executable)
+  _incr_load(ctx, images, ctx.outputs.executable,
+             run=not ctx.attr.legacy_run_behavior)
   _assemble_image(ctx, images, ctx.outputs.out)
 
   runfiles = ctx.runfiles(
@@ -300,6 +301,8 @@ _attrs = {
     "debs": attr.label_list(allow_files = deb_filetype),
     "files": attr.label_list(allow_files = True),
     "legacy_repository_naming": attr.bool(default = False),
+    # TODO(mattmoor): Default this to False.
+    "legacy_run_behavior": attr.bool(default = True),
     "mode": attr.string(default = "0555"),  # 0555 == a+rx
     "symlinks": attr.string_dict(),
     "entrypoint": attr.string_list(),

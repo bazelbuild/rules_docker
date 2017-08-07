@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 # Copyright 2015 The Bazel Authors. All rights reserved.
 #
@@ -16,6 +16,27 @@
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
+
+function fail() {
+  echo "FAILURE: $1"
+  exit 1
+}
+
+function CONTAINS() {
+  local complete="${1}"
+  local substring="${2}"
+
+  echo "${complete}" | grep -Fsq -- "${substring}"
+}
+
+function EXPECT_CONTAINS() {
+  local complete="${1}"
+  local substring="${2}"
+  local message="${3:-Expected '${substring}' not found in '${complete}'}"
+
+  echo Checking "$1" contains "$2"
+  CONTAINS "${complete}" "${substring}" || fail "$message"
+}
 
 function stop_containers() {
   docker rm -f $(docker ps -aq) > /dev/null 2>&1 || /bin/true
@@ -136,8 +157,7 @@ func main() {
 }
 EOF
 
-  bazel run --verbose_failures --spawn_strategy=standalone :go_image
-  docker run -ti --rm bazel:go_image
+  EXPECT_CONTAINS "$(bazel run :go_image)" "Hello, world!"
 }
 
 
@@ -202,31 +222,36 @@ function test_bazel_run_docker_import_incremental() {
 function test_py_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run docker/testdata:py_image
-  docker run -ti --rm bazel/docker/testdata:py_image
+  cat > output.txt <<EOF
+$(bazel run docker/testdata:py_image)
+EOF
+  EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
+  EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
+  EXPECT_CONTAINS "$(cat output.txt)" "Third: 6"
+  EXPECT_CONTAINS "$(cat output.txt)" "Fourth: 7"
+  rm -f output.txt
 }
 
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run docker/testdata:cc_image
-  docker run -ti --rm bazel/docker/testdata:cc_image
+  EXPECT_CONTAINS "$(bazel run docker/testdata:cc_image)" "Hello World"
 }
 
 function test_java_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run docker/testdata:java_image
-  docker run -ti --rm bazel/docker/testdata:java_image
+  EXPECT_CONTAINS "$(bazel run docker/testdata:java_image)" "Hello World"
 }
 
 function test_war_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run docker/testdata:war_image
+  bazel build docker/testdata:war_image.tar
+  docker load -i bazel-bin/docker/testdata/war_image.tar
   ID=$(docker run -d -p 8080:8080 bazel/docker/testdata:war_image)
   sleep 5
-  curl localhost:8080
+  EXPECT_CONTAINS "$(curl localhost:8080)" "Hello World"
   docker rm -f "${ID}"
 }
 

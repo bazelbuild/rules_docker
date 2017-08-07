@@ -158,6 +158,7 @@ _jar_app_layer = rule(
         "directory": attr.string(default = "/app"),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
+        "legacy_run_behavior": attr.bool(default = False),
     },
     executable = True,
     outputs = _docker.build.outputs,
@@ -232,6 +233,7 @@ _war_app_layer = rule(
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
+        "legacy_run_behavior": attr.bool(default = False),
     },
     executable = True,
     outputs = _docker.build.outputs,
@@ -240,6 +242,14 @@ _war_app_layer = rule(
 
 def war_image(name, base=None, deps=[], layers=[], **kwargs):
   """Builds a Docker image overlaying the java_library as an exploded WAR.
+
+  TODO(mattmoor): For `bazel run` of this to be useful, we need to expose
+  a port on a local network interface, or the user will have to use
+  `docker inspect` to get the container's IP every time.
+
+  TODO(mattmoor): For `bazel run` of this to be useful, we need to be able
+  to ctrl-C it and have the container actually terminate.  More information:
+  https://github.com/bazelbuild/bazel/issues/3519
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
