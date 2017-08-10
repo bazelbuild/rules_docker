@@ -48,7 +48,6 @@ load(
     "//docker:docker.bzl",
     _docker = "docker",
 )
-
 load("//docker:build.bzl", "magic_path")
 
 def _dep_layer_impl(ctx):

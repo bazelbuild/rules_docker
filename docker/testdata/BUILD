@@ -468,7 +468,7 @@ load(
 java_library(
     name = "java_image_library",
     srcs = ["Library.java"],
-    deps = ["@com_google_guava_guava//jar"]
+    deps = ["@com_google_guava_guava//jar"],
 )
 
 java_image(
