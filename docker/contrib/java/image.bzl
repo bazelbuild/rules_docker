@@ -105,8 +105,6 @@ _war_dep_layer = rule(
     implementation = _dep_layer_impl,
 )
 
-load("@subpar//:debug.bzl", "dump")
-
 def _jar_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
 
