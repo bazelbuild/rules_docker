@@ -14,8 +14,11 @@
 
 package examples;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+
 public class Library {
     public static String SayHello() {
-	return "Hello World";
+	return Joiner.on(" ").join(ImmutableList.of("Hello", "World"));
     }
 }

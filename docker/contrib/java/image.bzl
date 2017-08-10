@@ -49,6 +49,8 @@ load(
     _docker = "docker",
 )
 
+load("//docker:build.bzl", "magic_path")
+
 def _dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
 
@@ -104,6 +106,8 @@ _war_dep_layer = rule(
     implementation = _dep_layer_impl,
 )
 
+load("@subpar//:debug.bzl", "dump")
+
 def _jar_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
 
@@ -126,18 +130,18 @@ def _jar_app_layer_impl(ctx):
 
   unavailable += ctx.attr.binary.files
   unavailable = [x for x in unavailable if x not in available]
+  directory = ctx.attr.directory + "/" + ctx.label.package
   files = unavailable
 
   classpath = ":".join([
-    ctx.attr.directory + "/" + x.short_path
+    directory + "/" + magic_path(ctx, x)
     for x in available + unavailable
   ])
-  binary_path = ctx.attr.directory + "/" + (ctx.files.binary[0].short_path)
+  binary_path = directory + "/" + magic_path(ctx, ctx.files.binary[0])
   entrypoint = ['/usr/bin/java', '-cp', classpath, ctx.attr.main_class]
 
   return _docker.build.implementation(
-    ctx, files=files, entrypoint=entrypoint,
-    directory=ctx.attr.directory + "/" + ctx.label.package)
+    ctx, files=files, entrypoint=entrypoint, directory=directory)
 
 _jar_app_layer = rule(
     attrs = _docker.build.attrs + {

@@ -768,10 +768,15 @@ function test_java_image() {
   local lib_layer=$(dirname "${layers[$((length-2))]}")
   local bin_layer=$(dirname "${layers[$((length-1))]}")
 
+  # The path here for Guava is *really* weird, which is a function
+  # of the bug linked from build.bzl's magic_path function.
   check_listing "java_image" "${lib_layer}" \
 './
 ./app/
 ./app/docker/
+./app/docker/com_google_guava_guava/
+./app/docker/com_google_guava_guava/jar/
+./app/docker/com_google_guava_guava/jar/guava-18.0.jar
 ./app/docker/testdata/
 ./app/docker/testdata/libjava_image_library.jar'
 

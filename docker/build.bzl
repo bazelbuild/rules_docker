@@ -77,6 +77,22 @@ load(
     _serialize_dict = "dict_to_associative_list",
 )
 
+def magic_path(ctx, f):
+  # Right now the logic this uses is a bit crazy/buggy, so to support
+  # bug-for-bug compatibility in the foo_image rules, expose the logic.
+  # See also: https://github.com/bazelbuild/rules_docker/issues/106
+  # See also: https://groups.google.com/forum/#!topic/bazel-discuss/1lX3aiTZX3Y
+
+  if ctx.attr.data_path:
+    # If data_prefix is specified, then add files relative to that.
+    data_path = _join_path(
+        dirname(ctx.outputs.out.short_path),
+        _canonicalize_path(ctx.attr.data_path))
+    return strip_prefix(f.short_path, data_path)
+  else:
+    # Otherwise, files are added without a directory prefix at all.
+    return f.basename
+
 def _build_layer(ctx, files=None, directory=None, symlinks=None):
   """Build the current layer for appending it the base layer.
 
@@ -94,17 +110,8 @@ def _build_layer(ctx, files=None, directory=None, symlinks=None):
       "--mode=" + ctx.attr.mode,
   ]
 
-  if ctx.attr.data_path:
-    # If data_prefix is specified, then add files relative to that.
-    data_path = _join_path(
-        dirname(ctx.outputs.out.short_path),
-        _canonicalize_path(ctx.attr.data_path))
-    args += ["--file=%s=%s" % (f.path, strip_prefix(f.short_path, data_path))
-             for f in files]
-  else:
-    # Otherwise, files are added without a directory prefix at all.
-    args += ["--file=%s=%s" % (f.path, f.basename)
-             for f in files]
+  args += ["--file=%s=%s" % (f.path, magic_path(ctx, f))
+           for f in files]
 
   args += ["--tar=" + f.path for f in ctx.files.tars]
   args += ["--deb=" + f.path for f in ctx.files.debs if f.path.endswith(".deb")]
