@@ -31,3 +31,34 @@ docker_pull(
     registry = "gcr.io",
     repository = "distroless/cc",
 )
+
+# Have the py_image dependencies for testing.
+load(
+    "//docker/contrib/python:image.bzl",
+    _py_image_repos = "repositories",
+)
+
+_py_image_repos()
+
+# Have the cc_image dependencies for testing.
+load(
+    "//docker/contrib/cc:image.bzl",
+    _cc_image_repos = "repositories",
+)
+
+_cc_image_repos()
+
+# Have the java_image dependencies for testing.
+load(
+    "//docker/contrib/java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()
+
+# For our java_image test.
+maven_jar(
+    name = "com_google_guava_guava",
+    artifact = "com.google.guava:guava:18.0",
+    sha1 = "cce0823396aa693798f8882e64213b1772032b09",
+)

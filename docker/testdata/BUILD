@@ -343,14 +343,16 @@ load(
     docker_pushall = "docker_push",
 )
 
+# This bundles up a bunch of images into a single tarball,
+# which is pushed as a unit below.
 docker_bundle(
-   name = "bundle_to_push",
-   images = {
-     "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
-     "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
-     "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
-   },
-   stamp = True
+    name = "bundle_to_push",
+    images = {
+        "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
+        "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
+        "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
+    },
+    stamp = True,
 )
 
 docker_pushall(
@@ -395,10 +397,10 @@ PAUSE_CONFIG = "2b58359142b094165abfc9ad9c327c453a3eaa624d0c5ee8f0ed1ab50483603b
 
 genrule(
     name = "pause_config",
+    srcs = [":pause.tar"],
+    outs = ["pause_config.json"],
     cmd = ("tar xOf $(location :pause.tar) %s " +
            "> $(location :pause_config.json)") % PAUSE_CONFIG,
-    outs = ["pause_config.json"],
-    srcs = [":pause.tar"],
 )
 
 PAUSE_LAYERS = [
@@ -408,14 +410,79 @@ PAUSE_LAYERS = [
 
 [genrule(
     name = "extract_%s" % id,
+    srcs = [":pause.tar"],
+    outs = ["%s.tar.gz" % id],
     cmd = ("tar xOf $(location :pause.tar) %s/layer.tar " +
            "| gzip -n > $(location :%s.tar.gz)") % (id, id),
-    outs = ["%s.tar.gz" % id],
-    srcs = [":pause.tar"],
 ) for id in PAUSE_LAYERS]
 
 docker_import(
-   name = "pause_piecemeal",
-   config = ":pause_config.json",
-   layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
+    name = "pause_piecemeal",
+    config = ":pause_config.json",
+    layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
+)
+
+load(
+    "//docker/contrib/python:image.bzl",
+    "py_image",
+)
+
+py_library(
+    name = "py_image_library",
+    srcs = ["py_image_library.py"],
+)
+
+py_image(
+    name = "py_image",
+    srcs = ["py_image.py"],
+    layers = [
+        ":py_image_library",
+    ],
+    main = "py_image.py",
+)
+
+load(
+    "//docker/contrib/cc:image.bzl",
+    "cc_image",
+)
+
+cc_library(
+    name = "cc_image_library",
+    srcs = ["cc_image_library.cc"],
+    hdrs = ["cc_image_library.h"],
+)
+
+cc_image(
+    name = "cc_image",
+    srcs = ["cc_image.cc"],
+    # This creates an empty layer, due to linking.
+    layers = [":cc_image_library"],
+)
+
+load(
+    "//docker/contrib/java:image.bzl",
+    "java_image",
+    "war_image",
+)
+
+java_library(
+    name = "java_image_library",
+    srcs = ["Library.java"],
+    deps = ["@com_google_guava_guava//jar"],
+)
+
+java_image(
+    name = "java_image",
+    srcs = ["Binary.java"],
+    layers = [":java_image_library"],
+    main_class = "examples.images.Binary",
+)
+
+war_image(
+    name = "war_image",
+    srcs = ["Servlet.java"],
+    layers = [
+        ":java_image_library",
+        "@javax_servlet_api//jar:jar",
+    ],
 )

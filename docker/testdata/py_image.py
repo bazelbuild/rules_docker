@@ -11,23 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Filetype constants."""
 
-tgz = [
-    ".tar.gz",
-    ".tgz",
-]
+from docker.testdata import py_image_library
 
-# Filetype to restrict inputs
-tar = [
-    ".tar",
-    ".tar.xz",
-] + tgz
+def main():
+  print('First: %d' % py_image_library.fn(1))
+  print('Second: %d' % py_image_library.fn(2))
+  print('Third: %d' % py_image_library.fn(3))
+  print('Fourth: %d' % py_image_library.fn(4))
 
-deb = [
-    ".deb",
-    ".udeb",
-]
 
-# Docker files are tarballs, should we allow other extensions than tar?
-docker = tar
+if __name__ == '__main__':
+  main()

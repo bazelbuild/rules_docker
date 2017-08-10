@@ -667,6 +667,152 @@ function test_build_with_passwd() {
   check_eq ${passwd_contents} "foobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell"
 }
 
+function get_layers() {
+  local tarball="${1}"
+  local test_data="${TEST_DATA_DIR}/${tarball}.tar"
+
+  python <<EOF
+import json
+import tarfile
+
+with tarfile.open("${test_data}", "r") as tar:
+  manifests = json.loads(tar.extractfile("manifest.json").read())
+  assert len(manifests) == 1
+  for m in manifests:
+    for l in m["Layers"]:
+      print(l)
+EOF
+}
+
+function test_py_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local layers=($(get_layers "py_image"))
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  # TODO(mattmoor): The path normalization for symlinks should match
+  # files to avoid this redundancy.
+  check_listing "py_image" "${lib_layer}" \
+    './
+./app/
+./app/docker/
+./app/docker/__init__.py
+./app/docker/testdata/
+./app/docker/testdata/__init__.py
+./app/docker/testdata/py_image_library.py'
+
+  check_listing "py_image" "${bin_layer}" \
+    './
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/py_image.binary.runfiles/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image.binary
+./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image.py
+/app/
+/app/docker/
+/app/docker/testdata/
+/app/docker/testdata/py_image.binary
+/app/docker/testdata/py_image.binary.runfiles/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/__init__.py
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/__init__.py
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/py_image_library.py'
+}
+
+function test_cc_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local layers=($(get_layers "cc_image"))
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  # The linker pulls the object files into the final binary,
+  # so in C++ dependencies don't help when specified via `layers`.
+  check_listing "cc_image" "${lib_layer}" ''
+
+  check_listing "cc_image" "${bin_layer}" \
+    './
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/cc_image.binary.runfiles/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
+./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/cc_image.binary
+/app/
+/app/docker/
+/app/docker/testdata/
+/app/docker/testdata/cc_image.binary'
+}
+
+function test_java_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local layers=($(get_layers "java_image"))
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  # The path here for Guava is *really* weird, which is a function
+  # of the bug linked from build.bzl's magic_path function.
+  check_listing "java_image" "${lib_layer}" \
+'./
+./app/
+./app/docker/
+./app/docker/com_google_guava_guava/
+./app/docker/com_google_guava_guava/jar/
+./app/docker/com_google_guava_guava/jar/guava-18.0.jar
+./app/docker/testdata/
+./app/docker/testdata/libjava_image_library.jar'
+
+  check_listing "java_image" "${bin_layer}" \
+'./
+./app/
+./app/docker/
+./app/docker/testdata/
+./app/docker/testdata/java_image.binary
+./app/docker/testdata/java_image.binary.jar'
+}
+
+function test_war_image() {
+  # Don't check the full layer set because the base will vary,
+  # but check the files in our top two layers.
+  local layers=($(get_layers "war_image"))
+  local length="${#layers[@]}"
+  local lib_layer=$(dirname "${layers[$((length-2))]}")
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  check_listing "war_image" "${lib_layer}" \
+'./
+./jetty/
+./jetty/webapps/
+./jetty/webapps/ROOT/
+./jetty/webapps/ROOT/WEB-INF/
+./jetty/webapps/ROOT/WEB-INF/lib/
+./jetty/webapps/ROOT/WEB-INF/lib/javax.servlet-api-3.0.1.jar'
+
+  check_listing "war_image" "${bin_layer}" \
+'./
+./jetty/
+./jetty/webapps/
+./jetty/webapps/ROOT/
+./jetty/webapps/ROOT/WEB-INF/
+./jetty/webapps/ROOT/WEB-INF/lib/
+./jetty/webapps/ROOT/WEB-INF/lib/libwar_image.library.jar'
+}
+
 tests=$(grep "^function test_" "${BASH_SOURCE[0]}" \
           | cut -d' ' -f 2 | cut -d'(' -f 1)
 

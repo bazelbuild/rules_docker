@@ -17,6 +17,14 @@
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
+function stop_containers() {
+  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || /bin/true
+}
+
+# Clean up any containers [before] we start.
+stop_containers
+trap "stop_containers" EXIT
+
 function test_top_level() {
   local directory=$(mktemp -d)
 
@@ -61,6 +69,77 @@ EOF
 
   bazel build --verbose_failures --spawn_strategy=standalone :pause_based
 }
+
+# We test this out-of-line because of the nonsense requiring go_prefix
+# to be defined in //:go_prefix.  This means we can't test Go in a repo
+# defining repository rules without requiring all downstream consumers
+# to import Go unnecessarily.
+function test_go_image() {
+  local directory=$(mktemp -d)
+
+  cd "${directory}"
+
+  cat > "WORKSPACE" <<EOF
+workspace(name = "go_image")
+
+local_repository(
+    name = "io_bazel_rules_docker",
+    path = "$ROOT",
+)
+load(
+  "@io_bazel_rules_docker//docker:docker.bzl",
+  "docker_repositories",
+)
+docker_repositories()
+
+# We must load these before the go_image rule.
+git_repository(
+    name = "io_bazel_rules_go",
+    remote = "https://github.com/bazelbuild/rules_go.git",
+    tag = "0.4.4",
+)
+load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+go_repositories()
+
+load(
+  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
+  "repositories",
+)
+repositories()
+EOF
+
+  cat > "BUILD" <<EOF
+package(default_visibility = ["//visibility:public"])
+
+# Go boilerplate
+load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
+go_prefix("github.com/bazelbuild/rules_docker/testing/go_image")
+
+load(
+  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
+  "go_image"
+)
+
+go_image(
+  name = "go_image",
+  srcs = ["main.go"],
+)
+EOF
+
+  cat > "main.go" <<EOF
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, world!")
+}
+EOF
+
+  bazel run --verbose_failures --spawn_strategy=standalone :go_image
+  docker run -ti --rm bazel:go_image
+}
+
 
 function clear_docker() {
   docker rmi -f $(docker images -aq) || true
@@ -120,10 +199,46 @@ function test_bazel_run_docker_import_incremental() {
   done
 }
 
+function test_py_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:py_image
+  docker run -ti --rm bazel/docker/testdata:py_image
+}
+
+function test_cc_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:cc_image
+  docker run -ti --rm bazel/docker/testdata:cc_image
+}
+
+function test_java_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:java_image
+  docker run -ti --rm bazel/docker/testdata:java_image
+}
+
+function test_war_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:war_image
+  ID=$(docker run -d -p 8080:8080 bazel/docker/testdata:war_image)
+  sleep 5
+  curl localhost:8080
+  docker rm -f "${ID}"
+}
+
 test_top_level
+test_go_image
 test_bazel_run_docker_build_clean
 test_bazel_run_docker_bundle_clean
 test_bazel_run_docker_import_clean
 test_bazel_run_docker_build_incremental
 test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
+test_py_image
+test_cc_image
+test_java_image
+test_war_image

@@ -24,7 +24,7 @@ load(
 load(
     ":layers.bzl",
     _get_layers = "get_from_target",
-    _layer_tools = "tools"
+    _layer_tools = "tools",
 )
 
 def _impl(ctx):
