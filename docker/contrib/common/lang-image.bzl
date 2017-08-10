@@ -32,15 +32,10 @@ def _dep_layer_impl(ctx):
     # relative to it, and normalized by the tarball package.
     directory=ctx.attr.directory + "/" + ctx.label.package,
     files=list(ctx.attr.dep.default_runfiles.files),
-    symlinks={
-      # Handle empty files by linking to /dev/null
-      # TODO(mattmoor): This doesn't work in Python3,
-      # so investigate how to properly create empty files.
-      #   bazelbuild/bazel#1458
-      #   http://bugs.python.org/issue28425
-      ctx.attr.directory + "/" + empty: "/dev/null"
+    empty_files=[
+      ctx.attr.directory + "/" + empty
       for empty in ctx.attr.dep.default_runfiles.empty_filenames
-    }
+    ]
   )
 
 dep_layer = rule(
@@ -97,8 +92,11 @@ def _app_layer_impl(ctx):
 	   # broadly in Bazel.
            if f.short_path not in available]
 
-  empty_files = [f for f in ctx.attr.binary.default_runfiles.empty_filenames
-                 if f not in available]
+  empty_files = [
+    base_directory + "/" + f
+    for f in ctx.attr.binary.default_runfiles.empty_filenames
+    if f not in available
+  ]
 
   # For each of the runfiles we aren't including directly into
   # the application layer, link to their binary-agnostic
@@ -108,18 +106,10 @@ def _app_layer_impl(ctx):
   } + {
     directory + "/" + input: ctx.attr.directory + "/" + input
     for input in available
-  } + {
-    # Handle empty files by linking to /dev/null
-    # TODO(mattmoor): This doesn't work in Python3,
-    # so investigate how to properly create empty files.
-    #   bazelbuild/bazel#1458
-    #   http://bugs.python.org/issue28425
-    base_directory + "/" + empty: "/dev/null"
-    for empty in empty_files
   }
 
   return _docker.build.implementation(
-    ctx, files=files,
+    ctx, files=files, empty_files=empty_files,
     # Use entrypoint so we can easily add arguments when the resulting
     # image is `docker run ...`.
     # Per: https://docs.docker.com/engine/reference/builder/#entrypoint

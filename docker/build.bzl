@@ -93,7 +93,8 @@ def magic_path(ctx, f):
     # Otherwise, files are added without a directory prefix at all.
     return f.basename
 
-def _build_layer(ctx, files=None, directory=None, symlinks=None):
+def _build_layer(ctx, files=None, empty_files=None,
+                 directory=None, symlinks=None):
   """Build the current layer for appending it the base layer.
 
   Args:
@@ -110,9 +111,8 @@ def _build_layer(ctx, files=None, directory=None, symlinks=None):
       "--mode=" + ctx.attr.mode,
   ]
 
-  args += ["--file=%s=%s" % (f.path, magic_path(ctx, f))
-           for f in files]
-
+  args += ["--file=%s=%s" % (f.path, magic_path(ctx, f)) for f in files]
+  args += ["--empty_file=%s" % f for f in empty_files or []]
   args += ["--tar=" + f.path for f in ctx.files.tars]
   args += ["--deb=" + f.path for f in ctx.files.debs if f.path.endswith(".deb")]
   for k in symlinks:
@@ -210,13 +210,14 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _impl(ctx, files=None, directory=None,
+def _impl(ctx, files=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None):
   """Implementation for the docker_build rule.
 
   Args:
     ctx: The bazel rule context
     files: File list, overrides ctx.files.files
+    empty_files: str list, overrides ctx.attr.empty_files
     directory: str, overrides ctx.attr.directory
     entrypoint: str List, overrides ctx.attr.entrypoint
     cmd: str List, overrides ctx.attr.cmd
@@ -224,13 +225,14 @@ def _impl(ctx, files=None, directory=None,
   """
 
   files = files or ctx.files.files
+  empty_files = empty_files or ctx.attr.empty_files
   directory = directory or ctx.attr.directory
   entrypoint = entrypoint or ctx.attr.entrypoint
   cmd = cmd or ctx.attr.cmd
   symlinks = symlinks or ctx.attr.symlinks
 
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id).
-  unzipped_layer, diff_id = _build_layer(ctx, files=files,
+  unzipped_layer, diff_id = _build_layer(ctx, files=files, empty_files=empty_files,
                                          directory=directory, symlinks=symlinks)
 
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
@@ -309,11 +311,12 @@ _attrs = {
     "volumes": attr.string_list(),
     "workdir": attr.string(),
     "repository": attr.string(default = "bazel"),
-    # Implicit dependencies.
+    # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
         allow_files = True,
     ),
     "label_file_strings": attr.string_list(),
+    "empty_files": attr.string_list(),
     "build_layer": attr.label(
         default = Label("//docker:build_tar"),
         cfg = "host",

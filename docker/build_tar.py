@@ -27,6 +27,8 @@ gflags.MarkFlagAsRequired('output')
 
 gflags.DEFINE_multistring('file', [], 'A file to add to the layer')
 
+gflags.DEFINE_multistring('empty_file', [], 'An empty file to add to the layer')
+
 gflags.DEFINE_string(
     'mode', None, 'Force the mode on the added files (in octal).')
 
@@ -115,6 +117,36 @@ class TarFile(object):
     self.tarfile.add_file(
         dest,
         file_content=f,
+        mode=mode,
+        uid=ids[0],
+        gid=ids[1],
+        uname=names[0],
+        gname=names[1])
+
+  def add_empty_file(self, destfile, mode=None, ids=None, names=None):
+    """Add a file to the tar file.
+
+    Args:
+       destfile: the name of the file in the layer
+       mode: force to set the specified mode, by
+          default the value from the source is taken.
+       ids: (uid, gid) for the file to set ownership
+       names: (username, groupname) for the file to set ownership.
+
+    An empty file will be created as `destfile` in the layer.
+    """
+    dest = destfile.lstrip('/')  # Remove leading slashes
+    # If mode is unspecified, assume read only
+    if mode is None:
+      mode = 0o644
+    if ids is None:
+      ids = (0, 0)
+    if names is None:
+      names = ('', '')
+    dest = os.path.normpath(dest)
+    self.tarfile.add_file(
+        dest,
+        content='',
         mode=mode,
         uid=ids[0],
         gid=ids[1],
@@ -227,6 +259,8 @@ def main(unused_argv):
       if map_filename in names_map:
         names = names_map[map_filename]
       output.add_file(inf, tof, mode, ids, names)
+    for f in FLAGS.empty_file:
+      output.add_empty_file(f)
     for tar in FLAGS.tar:
       output.add_tar(tar)
     for deb in FLAGS.deb:

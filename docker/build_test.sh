@@ -698,13 +698,10 @@ function test_py_image() {
     './
 ./app/
 ./app/docker/
+./app/docker/__init__.py
 ./app/docker/testdata/
-./app/docker/testdata/py_image_library.py
-/app/
-/app/docker/
-/app/docker/__init__.py
-/app/docker/testdata/
-/app/docker/testdata/__init__.py'
+./app/docker/testdata/__init__.py
+./app/docker/testdata/py_image_library.py'
 
   check_listing "py_image" "${bin_layer}" \
     './
