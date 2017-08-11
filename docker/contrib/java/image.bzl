@@ -119,7 +119,7 @@ def _jar_app_layer_impl(ctx):
   # in the same way, adding in our binary and then subtracting
   # out what it available.
   unavailable = set()
-  for jar in ctx.attr.deps:
+  for jar in ctx.attr.deps + ctx.attr.runtime_deps:
     if hasattr(jar, "java"):  # java_library, java_import
       unavailable += jar.java.transitive_runtime_deps
     elif hasattr(jar, "files"):  # a jar file
@@ -149,6 +149,7 @@ _jar_app_layer = rule(
         "layers": attr.label_list(),
         # The rest of the dependencies.
         "deps": attr.label_list(),
+        "runtime_deps": attr.label_list(),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The main class to invoke on startup.
@@ -164,7 +165,8 @@ _jar_app_layer = rule(
     implementation = _jar_app_layer_impl,
 )
 
-def java_image(name, base=None, main_class=None, deps=[], layers=[], **kwargs):
+def java_image(name, base=None, main_class=None,
+               deps=[], runtime_deps=[], layers=[], **kwargs):
   """Builds a Docker image overlaying the java_binary.
 
   Args:
@@ -179,7 +181,8 @@ def java_image(name, base=None, main_class=None, deps=[], layers=[], **kwargs):
                      # a binary, then it will appear in runtime_deps.  We are
                      # not allowed to pass deps (even []) if there is no srcs
                      # kwarg.
-                     deps=(deps + layers) or None, **kwargs)
+                     deps=(deps + layers) or None, runtime_deps=runtime_deps,
+                     **kwargs)
 
   index = 0
   base = base or "@java_image_base//image"
@@ -190,7 +193,8 @@ def java_image(name, base=None, main_class=None, deps=[], layers=[], **kwargs):
     index += 1
 
   _jar_app_layer(name=name, base=base, binary=binary_name,
-                 main_class=main_class, deps=deps, layers=layers)
+                 main_class=main_class,
+                 deps=deps, runtime_deps=runtime_deps, layers=layers)
 
 def _war_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
