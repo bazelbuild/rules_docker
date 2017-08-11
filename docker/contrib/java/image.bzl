@@ -175,7 +175,11 @@ def java_image(name, base=None, main_class=None, deps=[], layers=[], **kwargs):
   binary_name = name + ".binary"
 
   native.java_binary(name=binary_name, main_class=main_class,
-                     deps=deps + layers, **kwargs)
+                     # If the rule is turning a JAR built with java_library into
+                     # a binary, then it will appear in runtime_deps.  We are
+                     # not allowed to pass deps (even []) if there is no srcs
+                     # kwarg.
+                     deps=(deps + layers) or None, **kwargs)
 
   index = 0
   base = base or "@java_image_base//image"
