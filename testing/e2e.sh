@@ -220,6 +220,13 @@ function test_java_image() {
   docker run -ti --rm bazel/docker/testdata:java_image
 }
 
+function test_java_bin_as_lib_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run docker/testdata:java_bin_as_lib_image
+  docker run -ti --rm bazel/docker/testdata:java_bin_as_lib_image
+}
+
 function test_war_image() {
   cd "${ROOT}"
   clear_docker
@@ -241,4 +248,5 @@ test_bazel_run_docker_import_incremental
 test_py_image
 test_cc_image
 test_java_image
+test_java_bin_as_lib_image
 test_war_image

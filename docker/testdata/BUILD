@@ -478,6 +478,18 @@ java_image(
     main_class = "examples.images.Binary",
 )
 
+java_library(
+    name = "java_bin_as_lib",
+    srcs = ["Binary.java"],
+    deps = [":java_image_library"],
+)
+
+java_image(
+    name = "java_bin_as_lib_image",
+    runtime_deps = [":java_bin_as_lib"],
+    main_class = "examples.images.Binary",
+)
+
 war_image(
     name = "war_image",
     srcs = ["Servlet.java"],
