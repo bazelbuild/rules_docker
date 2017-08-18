@@ -53,7 +53,7 @@ load("//docker:build.bzl", "magic_path")
 def _dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
 
-  transitive_deps = set()
+  transitive_deps = depset()
   if hasattr(ctx.attr.dep, "java"):  # java_library, java_import
     transitive_deps += ctx.attr.dep.java.transitive_runtime_deps
   elif hasattr(ctx.attr.dep, "files"):  # a jar file
@@ -108,7 +108,7 @@ _war_dep_layer = rule(
 def _jar_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
 
-  available = set()
+  available = depset()
   for jar in ctx.attr.layers:
     if hasattr(jar, "java"):  # java_library, java_import
       available += jar.java.transitive_runtime_deps
@@ -118,7 +118,7 @@ def _jar_app_layer_impl(ctx):
   # We compute the set of unavailable stuff by walking deps
   # in the same way, adding in our binary and then subtracting
   # out what it available.
-  unavailable = set()
+  unavailable = depset()
   for jar in ctx.attr.deps + ctx.attr.runtime_deps:
     if hasattr(jar, "java"):  # java_library, java_import
       unavailable += jar.java.transitive_runtime_deps
@@ -199,7 +199,7 @@ def java_image(name, base=None, main_class=None,
 def _war_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
 
-  available = set()
+  available = depset()
   for jar in ctx.attr.layers:
     if hasattr(jar, "java"):  # java_library, java_import
       available += jar.java.transitive_runtime_deps
@@ -207,7 +207,7 @@ def _war_app_layer_impl(ctx):
       available += jar.files
 
   # This is based on rules_appengine's WAR rules.
-  transitive_deps = set()
+  transitive_deps = depset()
   if hasattr(ctx.attr.library, "java"):  # java_library, java_import
     transitive_deps += ctx.attr.library.java.transitive_runtime_deps
   elif hasattr(ctx.attr.library, "files"):  # a jar file
