@@ -60,7 +60,7 @@ def _app_layer_impl(ctx):
 
   # Compute the set of runfiles that have been made available
   # in our base image.
-  available = set()
+  available = depset()
   for dep in ctx.attr.layers:
     available += [f.short_path for f in dep.default_runfiles.files]
     available += [f for f in dep.default_runfiles.empty_filenames]
