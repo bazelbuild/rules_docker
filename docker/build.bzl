@@ -283,7 +283,8 @@ def _impl(ctx, files=None, empty_files=None, directory=None,
   }
 
   _incr_load(ctx, images, ctx.outputs.executable)
-  _assemble_image(ctx, images, ctx.outputs.out)
+  _assemble_image(ctx, images, ctx.outputs.out,
+                  precompress_layers=ctx.attr.precompress_layers)
 
   runfiles = ctx.runfiles(
       files = unzipped_layers + diff_ids + [config_file, config_digest] +
@@ -311,6 +312,7 @@ _attrs = {
     "volumes": attr.string_list(),
     "workdir": attr.string(),
     "repository": attr.string(default = "bazel"),
+    "precompress_layers": attr.bool(default=False),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
         allow_files = True,

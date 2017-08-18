@@ -45,7 +45,7 @@ def get_from_target(ctx, attr_target, file_target):
     target = file_target[0]
     return _extract_layers(ctx, target)
 
-def assemble(ctx, images, output, stamp=False):
+def assemble(ctx, images, output, stamp=False, precompress_layers=False):
   """Create the full image from the list of layers."""
   args = [
       "--output=" + output.path,
@@ -80,6 +80,8 @@ def assemble(ctx, images, output, stamp=False):
   if stamp:
     args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
     inputs += [ctx.info_file, ctx.version_file]
+  if precompress_layers:
+    args += ["--precompress"]
   ctx.action(
       executable = ctx.executable.join_layers,
       arguments = args,

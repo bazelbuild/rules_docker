@@ -52,6 +52,9 @@ parser.add_argument('--stamp-info-file', action='append', required=False,
                     help=('If stamping these layers, the list of files from '
                           'which to obtain workspace information'))
 
+parser.add_argument('--precompress', action='store_true', default=False,
+                    help='Precompress layers in the joined tarball.')
+
 
 class FromParts(v2_2_image.DockerImage):
   """This accesses a more efficient on-disk format than FromTarball.
@@ -125,7 +128,8 @@ class FromParts(v2_2_image.DockerImage):
 
 
 def create_bundle(output, tag_to_config, diffid_to_blobsum,
-                  blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy):
+                  blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy,
+                  precompress):
   """Creates a Docker image from a list of layers.
 
   Args:
@@ -134,6 +138,7 @@ def create_bundle(output, tag_to_config, diffid_to_blobsum,
     tag_to_layer: a map from docker_name.Tag to the layer id it references.
     layer_to_tags: a map from the name of the layer tarball as it appears
             in our archives to the list of tags applied to it.
+    precompress: Precompress layers in the joined tarball.
   """
 
   with tarfile.open(output, 'w') as tar:
@@ -148,7 +153,8 @@ def create_bundle(output, tag_to_config, diffid_to_blobsum,
           config, diffid_to_blobsum,
           blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy)
 
-    v2_2_save.multi_image_tarball(tag_to_image, tar)
+    v2_2_save.multi_image_tarball(tag_to_image, tar,
+                                  precompress_layers=precompress)
 
 
 def main():
@@ -212,7 +218,8 @@ def main():
 
   create_bundle(
       args.output, tag_to_config, diffid_to_blobsum,
-      blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy)
+      blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy,
+      args.precompress)
 
 
 if __name__ == '__main__':
