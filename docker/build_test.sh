@@ -783,7 +783,8 @@ function test_java_image() {
 ./app/docker/
 ./app/docker/testdata/
 ./app/docker/testdata/java_image.binary
-./app/docker/testdata/java_image.binary.jar'
+./app/docker/testdata/java_image.binary.jar
+./app/docker/testdata/java_image.classpath'
 }
 
 function test_war_image() {

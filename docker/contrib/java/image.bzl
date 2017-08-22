@@ -134,11 +134,25 @@ def _jar_app_layer_impl(ctx):
     directory + "/" + magic_path(ctx, x)
     for x in available + unavailable
   ])
+
+  # Classpaths can grow long and there is a limit on the length of a
+  # command line, so mitigate this by always writing the classpath out
+  # to a file instead.
+  classpath_file = ctx.new_file(ctx.attr.name + ".classpath")
+  ctx.actions.write(classpath_file, classpath)
+
   binary_path = directory + "/" + magic_path(ctx, ctx.files.binary[0])
-  entrypoint = ['/usr/bin/java', '-cp', classpath, ctx.attr.main_class]
+  classpath_path = directory + "/" + magic_path(ctx, classpath_file)
+  entrypoint = [
+      '/usr/bin/java',
+      '-cp',
+      # Support optionally passing the classpath as a file.
+      '@' + classpath_path if ctx.attr._classpath_as_file else classpath,
+      ctx.attr.main_class
+   ]
 
   return _docker.build.implementation(
-    ctx, files=files, entrypoint=entrypoint, directory=directory)
+    ctx, files=files + [classpath_file], entrypoint=entrypoint, directory=directory)
 
 _jar_app_layer = rule(
     attrs = _docker.build.attrs + {
@@ -154,6 +168,9 @@ _jar_app_layer = rule(
         "base": attr.label(mandatory = True),
         # The main class to invoke on startup.
         "main_class": attr.string(mandatory = True),
+
+        # Whether the classpath should be passed as a file.
+        "_classpath_as_file": attr.bool(default=False),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
