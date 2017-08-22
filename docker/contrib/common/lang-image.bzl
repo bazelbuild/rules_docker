@@ -132,6 +132,7 @@ app_layer = rule(
         "data_path": attr.string(default = "."),
         "workdir": attr.string(default = "/app"),
         "directory": attr.string(default = "/app"),
+        "legacy_run_behavior": attr.bool(default = False),
     },
     executable = True,
     outputs = _docker.build.outputs,
