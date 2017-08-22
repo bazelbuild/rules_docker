@@ -243,4 +243,6 @@ function read_variables() {
 if [ "a$@" != "a--norun" ]; then
   # This generated and injected by docker_*.
   %{run_statements}
+  # Empty if blocks can be problematic.
+  echo > /dev/null
 fi
