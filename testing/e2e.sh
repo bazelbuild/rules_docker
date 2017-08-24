@@ -91,75 +91,6 @@ EOF
   bazel build --verbose_failures --spawn_strategy=standalone :pause_based
 }
 
-# We test this out-of-line because of the nonsense requiring go_prefix
-# to be defined in //:go_prefix.  This means we can't test Go in a repo
-# defining repository rules without requiring all downstream consumers
-# to import Go unnecessarily.
-function test_go_image() {
-  local directory=$(mktemp -d)
-
-  cd "${directory}"
-
-  cat > "WORKSPACE" <<EOF
-workspace(name = "go_image")
-
-local_repository(
-    name = "io_bazel_rules_docker",
-    path = "$ROOT",
-)
-load(
-  "@io_bazel_rules_docker//docker:docker.bzl",
-  "docker_repositories",
-)
-docker_repositories()
-
-# We must load these before the go_image rule.
-git_repository(
-    name = "io_bazel_rules_go",
-    remote = "https://github.com/bazelbuild/rules_go.git",
-    tag = "0.4.4",
-)
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
-go_repositories()
-
-load(
-  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
-  "repositories",
-)
-repositories()
-EOF
-
-  cat > "BUILD" <<EOF
-package(default_visibility = ["//visibility:public"])
-
-# Go boilerplate
-load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
-go_prefix("github.com/bazelbuild/rules_docker/testing/go_image")
-
-load(
-  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
-  "go_image"
-)
-
-go_image(
-  name = "go_image",
-  srcs = ["main.go"],
-)
-EOF
-
-  cat > "main.go" <<EOF
-package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello, world!")
-}
-EOF
-
-  EXPECT_CONTAINS "$(bazel run :go_image)" "Hello, world!"
-}
-
 
 function clear_docker() {
   docker rmi -f $(docker images -aq) || true
@@ -238,6 +169,12 @@ function test_cc_image() {
   EXPECT_CONTAINS "$(bazel run docker/testdata:cc_image)" "Hello World"
 }
 
+function test_go_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run docker/testdata:go_image)" "Hello, world!"
+}
+
 function test_java_image() {
   cd "${ROOT}"
   clear_docker
@@ -263,7 +200,6 @@ function test_war_image() {
 }
 
 test_top_level
-test_go_image
 test_bazel_run_docker_build_clean
 test_bazel_run_docker_bundle_clean
 test_bazel_run_docker_import_clean
@@ -272,6 +208,7 @@ test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
 test_py_image
 test_cc_image
+test_go_image
 test_java_image
 test_java_bin_as_lib_image
 test_war_image

@@ -498,3 +498,14 @@ war_image(
         "@javax_servlet_api//jar:jar",
     ],
 )
+
+load(
+  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
+  "go_image"
+)
+
+go_image(
+  name = "go_image",
+  importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
+  srcs = ["main.go"],
+)

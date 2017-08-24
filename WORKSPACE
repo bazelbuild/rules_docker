@@ -62,3 +62,22 @@ maven_jar(
     artifact = "com.google.guava:guava:18.0",
     sha1 = "cce0823396aa693798f8882e64213b1772032b09",
 )
+
+# For our go_image test.
+git_repository(
+    name = "io_bazel_rules_go",
+    remote = "https://github.com/bazelbuild/rules_go.git",
+    commit = "4be196cc186da9dd396d5a45a3a7f343b6abe2b0",
+)
+
+load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+
+go_repositories()
+
+# Have the go_image dependencies for testing.
+load(
+    "//docker/contrib/go:image.bzl",
+    _go_image_repos = "repositories",
+)
+
+_go_image_repos()
