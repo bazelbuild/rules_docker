@@ -500,7 +500,7 @@ war_image(
 )
 
 load(
-  "@io_bazel_rules_docker//docker/contrib/go:image.bzl",
+  "//docker/contrib/go:image.bzl",
   "go_image"
 )
 
