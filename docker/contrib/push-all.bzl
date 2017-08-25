@@ -72,9 +72,9 @@ def _impl(ctx):
 
   ctx.file_action(
     content = "\n".join(["#!/bin/bash -e"] + [
-      command.short_path
+      command.short_path + "&"
       for command in scripts
-    ]),
+    ] + ["wait"]),
     output = ctx.outputs.executable,
     executable=True,
   )
