@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main tells the linter to shut up.
 package main
 
 import "fmt"
