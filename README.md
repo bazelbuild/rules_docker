@@ -804,10 +804,11 @@ A rule that imports a docker image into our intermediate form.
       <td><code>layers</code></td>
       <td>
         <p><code>The list of layer `.tar.gz`s; required</code></p>
-        <p>The list of layer `.tar.gz` files in the order they appear
-           in the `config.json`'s layer section, or in the order that
-           they appear in `docker save` tarballs' `manifest.json`
-           `Layers` field (although these are gzipped).</p>
+        <p>The list of layer <code>.tar.gz</code> files in the order they
+           appear in the <code>config.json</code>'s layer section, or in the
+           order that they appear in <code>docker save</code> tarballs'
+           <code>manifest.json</code> <code>Layers</code> field (although
+           these are gzipped).</p>
       </td>
     </tr>
   </tbody>
