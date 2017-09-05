@@ -486,8 +486,8 @@ java_library(
 
 java_image(
     name = "java_bin_as_lib_image",
-    runtime_deps = [":java_bin_as_lib"],
     main_class = "examples.images.Binary",
+    runtime_deps = [":java_bin_as_lib"],
 )
 
 war_image(
@@ -500,12 +500,12 @@ war_image(
 )
 
 load(
-  "//docker/contrib/go:image.bzl",
-  "go_image"
+    "//docker/contrib/go:image.bzl",
+    "go_image",
 )
 
 go_image(
-  name = "go_image",
-  importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
-  srcs = ["main.go"],
+    name = "go_image",
+    srcs = ["main.go"],
+    importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
 )

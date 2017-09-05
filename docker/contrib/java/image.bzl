@@ -170,7 +170,7 @@ _jar_app_layer = rule(
         "main_class": attr.string(mandatory = True),
 
         # Whether the classpath should be passed as a file.
-        "_classpath_as_file": attr.bool(default=False),
+        "_classpath_as_file": attr.bool(default = False),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
@@ -263,7 +263,7 @@ _war_app_layer = rule(
         # available to the developer without having to poke around with
         # docker inspect.
         "docker_run_flags": attr.string(
-            default = "-i --rm --network=host"
+            default = "-i --rm --network=host",
         ),
     },
     executable = True,

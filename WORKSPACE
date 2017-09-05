@@ -66,8 +66,8 @@ maven_jar(
 # For our go_image test.
 git_repository(
     name = "io_bazel_rules_go",
-    remote = "https://github.com/bazelbuild/rules_go.git",
     commit = "4be196cc186da9dd396d5a45a3a7f343b6abe2b0",
+    remote = "https://github.com/bazelbuild/rules_go.git",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
