@@ -499,13 +499,14 @@ war_image(
     ],
 )
 
-load(
-    "//docker/contrib/go:image.bzl",
-    "go_image",
-)
+# TODO(mattmoor): rules_go + Windows
+# load(
+#     "//docker/contrib/go:image.bzl",
+#     "go_image",
+# )
 
-go_image(
-    name = "go_image",
-    srcs = ["main.go"],
-    importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
-)
+# go_image(
+#     name = "go_image",
+#     srcs = ["main.go"],
+#     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
+# )

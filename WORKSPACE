@@ -63,21 +63,22 @@ maven_jar(
     sha1 = "cce0823396aa693798f8882e64213b1772032b09",
 )
 
-# For our go_image test.
-git_repository(
-    name = "io_bazel_rules_go",
-    commit = "4be196cc186da9dd396d5a45a3a7f343b6abe2b0",
-    remote = "https://github.com/bazelbuild/rules_go.git",
-)
+# TODO(mattmoor): rules_go + Windows
+# # For our go_image test.
+# git_repository(
+#     name = "io_bazel_rules_go",
+#     commit = "4be196cc186da9dd396d5a45a3a7f343b6abe2b0",
+#     remote = "https://github.com/bazelbuild/rules_go.git",
+# )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+# load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
 
-go_repositories()
+# go_repositories()
 
-# Have the go_image dependencies for testing.
-load(
-    "//docker/contrib/go:image.bzl",
-    _go_image_repos = "repositories",
-)
+# # Have the go_image dependencies for testing.
+# load(
+#     "//docker/contrib/go:image.bzl",
+#     _go_image_repos = "repositories",
+# )
 
-_go_image_repos()
+# _go_image_repos()
