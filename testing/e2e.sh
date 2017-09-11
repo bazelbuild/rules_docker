@@ -208,7 +208,7 @@ test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
 test_py_image
 test_cc_image
-test_go_image
+# test_go_image
 test_java_image
 test_java_bin_as_lib_image
 test_war_image
