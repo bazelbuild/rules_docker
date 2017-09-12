@@ -104,7 +104,6 @@ def _build_layer(ctx, files=None, empty_files=None,
   """
 
   layer = ctx.outputs.layer
-  build_layer = ctx.executable.build_layer
   args = [
       "--output=" + layer.path,
       "--directory=" + directory,
@@ -124,9 +123,13 @@ def _build_layer(ctx, files=None, empty_files=None,
   ctx.file_action(arg_file, "\n".join(args))
 
   ctx.action(
-      executable = build_layer,
-      arguments = ["--flagfile=" + arg_file.path],
-      inputs = files + ctx.files.tars + ctx.files.debs + [arg_file],
+      executable = ctx.executable._python,
+      arguments = [
+          ctx.executable.build_layer.path,
+          "--flagfile=" + arg_file.path
+      ],
+      inputs = files + ctx.files.tars + ctx.files.debs + [
+          ctx.executable.build_layer, arg_file],
       outputs = [layer],
       use_default_shell_env=True,
       mnemonic="DockerLayer"
@@ -193,9 +196,9 @@ def _image_config(ctx, layer_name, entrypoint=None, cmd=None):
     inputs += [base]
 
   ctx.action(
-      executable = ctx.executable.create_image_config,
-      arguments = args,
-      inputs = inputs,
+      executable = ctx.executable._python,
+      arguments = [ctx.executable.create_image_config.path] + args,
+      inputs = [ctx.executable.create_image_config] + inputs,
       outputs = [config],
       use_default_shell_env=True,
       mnemonic = "ImageConfig")
@@ -330,6 +333,12 @@ _attrs = {
     ),
     "create_image_config": attr.label(
         default = Label("//docker:create_image_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "_python": attr.label(
+        default = Label("@rules_docker_python//:python"),
         cfg = "host",
         executable = True,
         allow_files = True,

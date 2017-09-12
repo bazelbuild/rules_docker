@@ -21,11 +21,12 @@ load(
 def _extract_layers(ctx, artifact):
   config_file = ctx.new_file(ctx.label.name + "." + artifact.basename + ".config")
   ctx.action(
-      executable = ctx.executable.extract_config,
+      executable = ctx.executable._python,
       arguments = [
+          ctx.executable.extract_config.path,
           "--tarball", artifact.path,
           "--output", config_file.path],
-      inputs = [artifact],
+      inputs = [ctx.executable.extract_config, artifact],
       outputs = [config_file],
       mnemonic = "ExtractConfig")
   return {
@@ -81,9 +82,9 @@ def assemble(ctx, images, output, stamp=False):
     args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
     inputs += [ctx.info_file, ctx.version_file]
   ctx.action(
-      executable = ctx.executable.join_layers,
-      arguments = args,
-      inputs = inputs,
+      executable = ctx.executable._python,
+      arguments = [ctx.executable.join_layers.path] + args,
+      inputs = [ctx.executable.join_layers] + inputs,
       outputs = [output],
       mnemonic = "JoinLayers"
   )
@@ -175,6 +176,12 @@ tools = {
     ),
     "extract_config": attr.label(
         default = Label("//docker:extract_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "_python": attr.label(
+        default = Label("@rules_docker_python//:python"),
         cfg = "host",
         executable = True,
         allow_files = True,

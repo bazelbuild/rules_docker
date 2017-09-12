@@ -37,7 +37,7 @@ docker_import(
 """)
 
   args = [
-      "python",
+      repository_ctx.path(repository_ctx.attr._python),
       repository_ctx.path(repository_ctx.attr._puller),
       "--directory", repository_ctx.path("image")
   ]
@@ -71,6 +71,11 @@ _docker_pull = repository_rule(
         "_puller": attr.label(
             executable = True,
             default = Label("@puller//file:puller.par"),
+            cfg = "host",
+        ),
+        "_python": attr.label(
+            executable = True,
+            default = Label("@rules_docker_python//:python"),
             cfg = "host",
         ),
     },
