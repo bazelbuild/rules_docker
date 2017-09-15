@@ -30,8 +30,8 @@ def repositories():
       name = "cc_image_base",
       registry = "gcr.io",
       repository = "distroless/cc",
-      # 'latest' circa 2017-07-21
-      digest = "sha256:942eb947818e7e32200950b600cc94d5477b03e0b99bf732b4c1e2bba6eec717",
+      # 'latest' circa 2017-09-15
+      digest = "sha256:84d70ebb1baee21424894a23e90f4c40c6f7f7ec747396525b57e4ae432edaeb",
     )
 
 def cc_image(name, base=None, deps=[], layers=[], **kwargs):

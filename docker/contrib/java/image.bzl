@@ -27,16 +27,16 @@ def repositories():
       name = "java_image_base",
       registry = "gcr.io",
       repository = "distroless/java",
-      # 'latest' circa 2017-08-04
-      digest = "sha256:786ae0562da4c6043f1d0dab513de108d645728bb09691acc8fdd1e05f745d8e",
+      # 'latest' circa 2017-09-15
+      digest = "sha256:22bd88ce795258f9d976334abcb071a99b1b4fb9229b86e7d085a7114a2dc565",
     )
   if "jetty_image_base" not in excludes:
     docker_pull(
       name = "jetty_image_base",
       registry = "gcr.io",
       repository = "distroless/java/jetty",
-      # 'latest' circa 2017-08-04
-      digest = "sha256:09dfe023367b743ee01ec5e51245014ba1b43c1a4f5ff7a314be821e7314baf1",
+      # 'latest' circa 2017-09-15
+      digest = "sha256:952fc35b45801e07ff189de1d856efc14256e446bff2617da1fd348434ee4e7b",
     )
   if "servlet_api" not in excludes:
     native.maven_jar(
