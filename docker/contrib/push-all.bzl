@@ -81,7 +81,7 @@ def _impl(ctx):
 
   return struct(runfiles = ctx.runfiles(files = [
     ctx.executable._pusher
-  ] + stamp_inputs + runfiles))
+  ] + stamp_inputs + runfiles + list(ctx.attr._pusher.default_runfiles.files)))
 
 docker_push = rule(
     attrs = {
@@ -92,7 +92,7 @@ docker_push = rule(
             allow_files = True,
         ),
         "_pusher": attr.label(
-            default = Label("@pusher//file"),
+            default = Label("@containerregistry//:pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,
