@@ -30,8 +30,8 @@ def repositories():
       name = "py_image_base",
       registry = "gcr.io",
       repository = "distroless/python2.7",
-      # 'latest' circa 2017-07-21
-      digest = "sha256:9c839437f182e4d93cb908b3177f72954a91893bd7120ec121846b69fc1cca4a",
+      # 'latest' circa 2017-09-15
+      digest = "sha256:61477696140326e1192dc6ce1a5f8dfe7e99591dbd7934f19141b4a303023600",
     )
 
 def py_image(name, base=None, deps=[], layers=[], **kwargs):

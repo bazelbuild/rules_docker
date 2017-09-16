@@ -35,8 +35,8 @@ def repositories():
       name = "go_image_base",
       registry = "gcr.io",
       repository = "distroless/base",
-      # 'latest' circa 2017-07-21
-      digest = "sha256:06fcd3edcfeefe13b82fa8bdb9e3f4fa3bf4c7e8fe997bee0230e392f77d0e04",
+      # 'latest' circa 2017-09-15
+      digest = "sha256:872f258db0668e5cabfe997d4076b2fe5337e5b73cdd9ca47c7dbccd87e71341",
     )
 
 def go_image(name, base=None, deps=[], layers=[], **kwargs):
