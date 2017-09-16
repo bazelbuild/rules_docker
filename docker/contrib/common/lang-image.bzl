@@ -20,6 +20,32 @@ load(
 )
 load("//docker:pull.bzl", "docker_pull")
 
+def _binary_name(ctx):
+  return "/".join([
+      ctx.attr.directory,
+      ctx.label.package,
+      ctx.attr.binary.label.name
+  ])
+
+# The directory relative to which all ".short_path" paths are relative.
+def _reference_dir(ctx):
+  return "/".join([
+    _binary_name(ctx) + ".runfiles",
+    ctx.workspace_name,
+  ])
+
+def _fix_empty_file(ctx, name):
+  if not name.startswith('external/'):
+    return _reference_dir(ctx) + "/" + name
+  # References to workspace-external dependencies, which are identifiable
+  # because their path begins with external/, are inconsistent with the
+  # form of their File counterparts, whose ".short_form" is relative to
+  #    .../foo.runfiles/workspace-name/
+  # whereas we see:
+  #    external/foreign-workspace/...
+  # so we "fix" the empty files paths by replacing "external/" with "../"
+  return "../" + name[len("external/"):]
+
 def _dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
 
@@ -68,20 +94,10 @@ def _app_layer_impl(ctx):
   # The name of the binary target for which we are populating
   # this application layer.
   basename = ctx.attr.binary.label.name
-  binary_name = "/".join([
-    ctx.attr.directory,
-    ctx.label.package,
-    basename
-  ])
+  binary_name = _binary_name(ctx)
 
-  # Empty filenames are relative to this base.
-  base_directory = "/".join([
-    binary_name + ".runfiles",
-    ctx.workspace_name,
-  ])
-  # All of the files are included with paths relative to
-  # this directory.
-  directory = "/".join([base_directory, ctx.label.package])
+  # ".short_path" is relative to this directory.
+  base_directory = _reference_dir(ctx)
 
   # Compute the set of remaining runfiles to include into the
   # application layer.
@@ -93,29 +109,38 @@ def _app_layer_impl(ctx):
            if f.short_path not in available]
 
   empty_files = [
-    base_directory + "/" + f
+    _fix_empty_file(ctx, f)
     for f in ctx.attr.binary.default_runfiles.empty_filenames
-    if f not in available
+    if _fix_empty_file(ctx, f) not in available
   ]
 
   # For each of the runfiles we aren't including directly into
   # the application layer, link to their binary-agnostic
   # location from the runfiles path.
   symlinks = {
-    binary_name: directory + "/" + basename
+    binary_name: "/".join([base_directory, ctx.label.package, basename])
   } + {
     directory + "/" + input: ctx.attr.directory + "/" + input
     for input in available
   }
 
+  # Use file_map to lay the files out very explicitly.
+  # All ".short_path" references are expected to be relative to the directory:
+  #   .../foo.runfiles/workspace-name/
+  # which we have in `base_directory`.
+  file_map = {
+      base_directory + "/" + f.short_path: f
+      for f in files
+  }
+
   return _docker.build.implementation(
-    ctx, files=files, empty_files=empty_files,
+    ctx, file_map=file_map, empty_files=empty_files,
     # Use entrypoint so we can easily add arguments when the resulting
     # image is `docker run ...`.
     # Per: https://docs.docker.com/engine/reference/builder/#entrypoint
     # we should use the "exec" (list) form of entrypoint.
     entrypoint=ctx.attr.entrypoint + [binary_name],
-    directory=directory, symlinks=symlinks)
+    directory="/", symlinks=symlinks)
 
 app_layer = rule(
     attrs = _docker.build.attrs + {
