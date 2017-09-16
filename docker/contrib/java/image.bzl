@@ -48,6 +48,15 @@ load(
     "//docker:docker.bzl",
     _docker = "docker",
 )
+
+# TODO(mattmoor): Rather than continuing to rely on the magic_path nonsense, we
+# should refactor these rules to use files_map like common/lang-image.bzl.  It
+# is less necessary to do this for Java because the directory structure doesn't
+# communicate the namespace of the artifacts like it does in (e.g.) Python.
+# There could still be a bug here if we carefully craft paths such that two
+# different jars get the same path, but that is unlikely to happen in practice
+# making this a largely cosmetic issue w.r.t. the final image's filesystem
+# layout.
 load("//docker:build.bzl", "magic_path")
 
 def _dep_layer_impl(ctx):
