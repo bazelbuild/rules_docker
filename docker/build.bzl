@@ -93,7 +93,7 @@ def magic_path(ctx, f):
     # Otherwise, files are added without a directory prefix at all.
     return f.basename
 
-def _build_layer(ctx, files=None, empty_files=None,
+def _build_layer(ctx, files=None, file_map=None, empty_files=None,
                  directory=None, symlinks=None):
   """Build the current layer for appending it the base layer.
 
@@ -112,6 +112,7 @@ def _build_layer(ctx, files=None, empty_files=None,
   ]
 
   args += ["--file=%s=%s" % (f.path, magic_path(ctx, f)) for f in files]
+  args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
   args += ["--empty_file=%s" % f for f in empty_files or []]
   args += ["--tar=" + f.path for f in ctx.files.tars]
   args += ["--deb=" + f.path for f in ctx.files.debs if f.path.endswith(".deb")]
@@ -126,7 +127,7 @@ def _build_layer(ctx, files=None, empty_files=None,
   ctx.action(
       executable = build_layer,
       arguments = ["--flagfile=" + arg_file.path],
-      inputs = files + ctx.files.tars + ctx.files.debs + [arg_file],
+      inputs = files + file_map.values() + ctx.files.tars + ctx.files.debs + [arg_file],
       outputs = [layer],
       use_default_shell_env=True,
       mnemonic="DockerLayer"
@@ -210,13 +211,14 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _impl(ctx, files=None, empty_files=None, directory=None,
+def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None):
   """Implementation for the docker_build rule.
 
   Args:
     ctx: The bazel rule context
     files: File list, overrides ctx.files.files
+    file_map: Dict[str, File], defaults to {}
     empty_files: str list, overrides ctx.attr.empty_files
     directory: str, overrides ctx.attr.directory
     entrypoint: str List, overrides ctx.attr.entrypoint
@@ -224,6 +226,7 @@ def _impl(ctx, files=None, empty_files=None, directory=None,
     symlinks: str Dict, overrides ctx.attr.symlinks
   """
 
+  file_map = file_map or {}
   files = files or ctx.files.files
   empty_files = empty_files or ctx.attr.empty_files
   directory = directory or ctx.attr.directory
@@ -232,7 +235,8 @@ def _impl(ctx, files=None, empty_files=None, directory=None,
   symlinks = symlinks or ctx.attr.symlinks
 
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id).
-  unzipped_layer, diff_id = _build_layer(ctx, files=files, empty_files=empty_files,
+  unzipped_layer, diff_id = _build_layer(ctx, files=files, file_map=file_map,
+                                         empty_files=empty_files,
                                          directory=directory, symlinks=symlinks)
 
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)

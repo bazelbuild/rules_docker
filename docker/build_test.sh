@@ -697,11 +697,12 @@ function test_py_image() {
   check_listing "py_image" "${lib_layer}" \
     './
 ./app/
-./app/docker/
-./app/docker/__init__.py
-./app/docker/testdata/
-./app/docker/testdata/__init__.py
-./app/docker/testdata/py_image_library.py'
+./app/io_bazel_rules_docker/
+./app/io_bazel_rules_docker/docker/
+./app/io_bazel_rules_docker/docker/__init__.py
+./app/io_bazel_rules_docker/docker/testdata/
+./app/io_bazel_rules_docker/docker/testdata/__init__.py
+./app/io_bazel_rules_docker/docker/testdata/py_image_library.py'
 
   check_listing "py_image" "${bin_layer}" \
     './
@@ -721,12 +722,10 @@ function test_py_image() {
 /app/docker/testdata/py_image.binary.runfiles/
 /app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
 /app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/__init__.py
 /app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/__init__.py
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/__init__.py
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/docker/testdata/py_image_library.py'
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/__init__.py
+/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image_library.py'
 }
 
 function test_cc_image() {
