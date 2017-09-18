@@ -24,6 +24,8 @@ load(":import.bzl", "docker_import")
 # Expose the docker_pull repository rule.
 load(":pull.bzl", "docker_pull")
 
+load(":finding-python.bzl", "finding_python")
+
 # Expose the docker_push rule.
 load(":push.bzl", "docker_push")
 
@@ -151,3 +153,6 @@ py_library(
       remote = "https://github.com/google/subpar",
       commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
     )
+
+  # This defines how we reference the python interpreter from our rules.
+  finding_python(name = "rules_docker_python")

@@ -17,9 +17,13 @@ def sha256(ctx, artifact):
   """Create an action to compute the SHA-256 of an artifact."""
   out = ctx.new_file(artifact.basename + ".sha256")
   ctx.action(
-      executable = ctx.executable.sha256,
-      arguments = [artifact.path, out.path],
-      inputs = [artifact],
+      executable = ctx.executable._python,
+      arguments = [
+          ctx.executable.sha256.path,
+          artifact.path,
+          out.path
+      ],
+      inputs = [ctx.executable.sha256, artifact],
       outputs = [out],
       mnemonic = "SHA256")
   return out
@@ -27,6 +31,12 @@ def sha256(ctx, artifact):
 tools = {
     "sha256": attr.label(
         default = Label("//docker:sha256"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "_python": attr.label(
+        default = Label("@rules_docker_python//:python"),
         cfg = "host",
         executable = True,
         allow_files = True,

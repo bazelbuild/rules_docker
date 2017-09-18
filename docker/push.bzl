@@ -65,6 +65,7 @@ def _impl(ctx):
               "tag", ctx.attr.tag, {}),
           "%{image}": "%s %s %s %s" % (
               legacy_base_arg, config_arg, digest_arg, layer_arg),
+          "%{python}": ctx.executable._python.short_path,
           "%{docker_pusher}": ctx.executable._pusher.short_path,
       },
       output = ctx.outputs.executable,
@@ -72,6 +73,7 @@ def _impl(ctx):
   )
 
   return struct(runfiles = ctx.runfiles(files = [
+      ctx.executable._python,
       ctx.executable._pusher,
       image["config"]
   ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
@@ -94,6 +96,12 @@ _docker_push = rule(
         ),
         "_pusher": attr.label(
             default = Label("@pusher//file"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
+        "_python": attr.label(
+            default = Label("@rules_docker_python//:python"),
             cfg = "host",
             executable = True,
             allow_files = True,
