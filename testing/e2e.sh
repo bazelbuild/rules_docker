@@ -96,6 +96,17 @@ function clear_docker() {
   docker rmi -f $(docker images -aq) || true
 }
 
+function test_bazel_build_then_run_docker_build_clean() {
+  cd "${ROOT}"
+  for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
+  do
+    clear_docker
+    bazel build $target
+    # Replace : with /
+    ./bazel-bin/${target/://}
+  done
+}
+
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
   for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
@@ -200,6 +211,7 @@ function test_war_image() {
 }
 
 test_top_level
+test_bazel_build_then_run_docker_build_clean
 test_bazel_run_docker_build_clean
 test_bazel_run_docker_bundle_clean
 test_bazel_run_docker_import_clean

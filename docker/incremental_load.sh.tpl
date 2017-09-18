@@ -18,7 +18,13 @@ set -eu
 
 # This is a generated file that loads all docker layers built by "docker_build".
 
-RUNFILES="${PYTHON_RUNFILES:-${BASH_SOURCE[0]}.runfiles}"
+function guess_runfiles() {
+    pushd ${BASH_SOURCE[0]}.runfiles > /dev/null 2>&1
+    pwd
+    popd > /dev/null 2>&1
+}
+
+RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
 DOCKER="${DOCKER:-docker}"
 
