@@ -67,6 +67,7 @@ TEST_DATA = [
     "//docker/testdata:cc_image.tar",
     "//docker/testdata:java_image.tar",
     "//docker/testdata:war_image.tar",
+    "//docker/testdata:flat.tar",
 ]
 
 sh_test(

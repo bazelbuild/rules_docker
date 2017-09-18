@@ -563,6 +563,17 @@ function test_data_path() {
 ./docker/testdata/test/test"
 }
 
+function test_flattened_link_with_files_base() {
+  local test_data="${TEST_DATA_DIR}/flat.tar"
+  local actual_listing=""
+  check_eq "$(tar tf ${test_data})" \
+    "./
+/usr/
+/usr/bin/
+/usr/bin/java
+./foo"
+}
+
 # TODO(mattmoor): Needs a visibility change.
 # function test_extras_with_deb() {
 #   local test_data="${TEST_DATA_DIR}/extras_with_deb.tar"
