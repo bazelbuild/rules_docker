@@ -93,6 +93,12 @@ $ gcloud components install docker-credential-gcr
 $ docker-credential-gcr configure-docker
 ```
 
+See also:
+ * [Amazon ECR Docker Credential Helper](
+ https://github.com/awslabs/amazon-ecr-credential-helper)
+ * [Azure Docker Credential Helper](
+ https://github.com/Azure/acr-docker-credential-helper)
+
 ## Varying image names
 
 A common request from folks using `docker_push` or `docker_bundle` is to
