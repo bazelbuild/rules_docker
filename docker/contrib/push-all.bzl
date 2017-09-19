@@ -17,6 +17,14 @@ This variant of docker_push accepts a docker_bundle target and publishes
 the embedded image references.
 """
 
+load(
+    "//docker:path.bzl",
+    "runfile",
+)
+
+def _get_runfile_path(ctx, f):
+  return "${RUNFILES}/%s" % runfile(ctx, f)
+
 def _impl(ctx):
   """Core implementation of docker_push."""
   stamp = ctx.attr.bundle.stamp
@@ -26,7 +34,7 @@ def _impl(ctx):
   if stamp:
     stamp_inputs = [ctx.info_file, ctx.version_file]
 
-  stamp_arg = " ".join(["--stamp-info-file=%s" % f.short_path for f in stamp_inputs])
+  stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
 
   scripts = []
   runfiles = []
@@ -41,14 +49,14 @@ def _impl(ctx):
             "docker_build, consider dropping the '.tar' extension. " +
             "If the image is checked in, consider using " +
             "docker_import instead.")
-      legacy_base_arg = "--tarball=%s" % image["legacy"].short_path
+      legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
       runfiles += [image["legacy"]]
 
     blobsums = image.get("blobsum", [])
-    digest_arg = " ".join(["--digest=%s" % f.short_path for f in blobsums])
+    digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
     blobs = image.get("zipped_layer", [])
-    layer_arg = " ".join(["--layer=%s" % f.short_path for f in blobs])
-    config_arg = "--config=%s" % image["config"].short_path
+    layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
+    config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
 
     runfiles += [image["config"]] + blobsums + blobs
 
@@ -60,7 +68,7 @@ def _impl(ctx):
             "%{tag}": ctx.expand_make_variables("tag", tag, {}),
             "%{image}": "%s %s %s %s" % (
                 legacy_base_arg, config_arg, digest_arg, layer_arg),
-            "%{docker_pusher}": ctx.executable._pusher.short_path,
+            "%{docker_pusher}": _get_runfile_path(ctx, ctx.executable._pusher)
         },
         output = out,
         executable=True,
@@ -70,11 +78,14 @@ def _impl(ctx):
     runfiles += [out]
     index += 1
 
-  ctx.file_action(
-    content = "\n".join(["#!/bin/bash -e"] + [
-      command.short_path + "&"
-      for command in scripts
-    ] + ["wait"]),
+  ctx.template_action(
+    template = ctx.file._all_tpl,
+    substitutions = {
+      "%{push_statements}": "\n".join([
+        _get_runfile_path(ctx, command) + "&"
+        for command in scripts
+      ]),
+    },
     output = ctx.outputs.executable,
     executable=True,
   )
@@ -86,8 +97,13 @@ def _impl(ctx):
 docker_push = rule(
     attrs = {
         "bundle": attr.label(mandatory = True),
+        "_all_tpl": attr.label(
+            default = Label("//docker/contrib:push-all.sh.tpl"),
+            single_file = True,
+            allow_files = True,
+        ),
         "_tag_tpl": attr.label(
-            default = Label("//docker/contrib:push-tag.sh.tpl"),
+            default = Label("//docker:push-tag.sh.tpl"),
             single_file = True,
             allow_files = True,
         ),
