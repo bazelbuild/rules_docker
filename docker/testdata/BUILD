@@ -17,6 +17,7 @@ load(
     "//docker:docker.bzl",
     "docker_build",
     "docker_bundle",
+    "docker_flatten",
     "docker_import",
     "docker_push",
 )
@@ -250,6 +251,11 @@ docker_build(
     symlinks = {
         "/usr/bin/java": "/bar",
     },
+)
+
+docker_flatten(
+    name = "flat",
+    image = ":link_with_files_base",
 )
 
 docker_push(
