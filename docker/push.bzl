@@ -19,13 +19,16 @@ Bazel rule for publishing base images without a Docker client.
 
 load(
     ":path.bzl",
-    _get_runfile_path = "runfile",
+    "runfile",
 )
 load(
     ":layers.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
+
+def _get_runfile_path(ctx, f):
+  return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
   """Core implementation of docker_push."""
@@ -35,7 +38,7 @@ def _impl(ctx):
 
   image = _get_layers(ctx, ctx.attr.image, ctx.files.image)
 
-  stamp_arg = " ".join(["--stamp-info-file=%s" % f.short_path for f in stamp_inputs])
+  stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
 
   # Leverage our efficient intermediate representation to push.
   legacy_base_arg = ""
@@ -45,27 +48,28 @@ def _impl(ctx):
           "docker_build, consider dropping the '.tar' extension. " +
           "If the image is checked in, consider using " +
           "docker_import instead.")
-    legacy_base_arg = "--tarball=%s" % image["legacy"].short_path
+    legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
 
   blobsums = image.get("blobsum", [])
-  digest_arg = " ".join(["--digest=%s" % f.short_path for f in blobsums])
+  digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
   blobs = image.get("zipped_layer", [])
-  layer_arg = " ".join(["--layer=%s" % f.short_path for f in blobs])
-  config_arg = "--config=%s" % image["config"].short_path
+  layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
+  config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
 
   ctx.template_action(
       template = ctx.file._tag_tpl,
       substitutions = {
-          "%{registry}": ctx.expand_make_variables(
+          "%{tag}": "{registry}/{repository}:{tag}".format(
+            registry=ctx.expand_make_variables(
               "registry", ctx.attr.registry, {}),
-          "%{repository}": ctx.expand_make_variables(
+            repository=ctx.expand_make_variables(
               "repository", ctx.attr.repository, {}),
+            tag=ctx.expand_make_variables(
+              "tag", ctx.attr.tag, {})),
           "%{stamp}": stamp_arg,
-          "%{tag}": ctx.expand_make_variables(
-              "tag", ctx.attr.tag, {}),
           "%{image}": "%s %s %s %s" % (
               legacy_base_arg, config_arg, digest_arg, layer_arg),
-          "%{docker_pusher}": ctx.executable._pusher.short_path,
+          "%{docker_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
       },
       output = ctx.outputs.executable,
       executable=True,

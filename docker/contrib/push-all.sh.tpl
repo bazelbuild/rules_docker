@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,4 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-%{docker_pusher} --name=%{tag} %{stamp} %{image} "$@"
+set -eu
+
+function guess_runfiles() {
+    pushd ${BASH_SOURCE[0]}.runfiles > /dev/null 2>&1
+    pwd
+    popd > /dev/null 2>&1
+}
+
+RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
+
+%{push_statements}
+wait
