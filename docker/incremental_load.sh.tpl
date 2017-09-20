@@ -103,7 +103,7 @@ EOF
 EOF
 
   set -o pipefail
-  tar c config.json manifest.json | "${DOCKER}" load | cut -d':' -f 2- >> "${TEMP_IMAGES}" 2>/dev/null
+  tar c config.json manifest.json | "${DOCKER}" load 2>/dev/null | cut -d':' -f 2- >> "${TEMP_IMAGES}"
 }
 
 function find_diffbase() {
