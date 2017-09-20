@@ -59,15 +59,22 @@ load(
 # layout.
 load("//docker:build.bzl", "magic_path")
 
+def java_files(f):
+  if hasattr(f, "java"):  # java_library, java_import
+    return f.java.transitive_runtime_deps
+  if hasattr(f, "files"):  # a jar file
+    return f.files
+  return []
+
 def _dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
 
   transitive_deps = depset()
-  if hasattr(ctx.attr.dep, "java"):  # java_library, java_import
-    transitive_deps += ctx.attr.dep.java.transitive_runtime_deps
-  elif hasattr(ctx.attr.dep, "files"):  # a jar file
-    transitive_deps += ctx.attr.dep.files
+  transitive_deps += java_files(ctx.attr.dep)
 
+  # TODO(mattmoor): Switch this over to using a files_map over
+  # transitive_deps, but allow the caller to provide the target
+  # path construction and add distinct impls for WAR/JAR
   directory = ctx.attr.directory
   if ctx.attr.data_path == ".":
     # This signifies that we are preserving paths (JAR)
@@ -119,20 +126,14 @@ def _jar_app_layer_impl(ctx):
 
   available = depset()
   for jar in ctx.attr.layers:
-    if hasattr(jar, "java"):  # java_library, java_import
-      available += jar.java.transitive_runtime_deps
-    elif hasattr(jar, "files"):  # a jar file
-      available += jar.files
+    available += java_files(jar)
 
   # We compute the set of unavailable stuff by walking deps
   # in the same way, adding in our binary and then subtracting
   # out what it available.
   unavailable = depset()
   for jar in ctx.attr.deps + ctx.attr.runtime_deps:
-    if hasattr(jar, "java"):  # java_library, java_import
-      unavailable += jar.java.transitive_runtime_deps
-    elif hasattr(jar, "files"):  # a jar file
-      unavailable += jar.files
+    unavailable += java_files(jar)
 
   unavailable += ctx.attr.binary.files
   unavailable = [x for x in unavailable if x not in available]
@@ -228,17 +229,11 @@ def _war_app_layer_impl(ctx):
 
   available = depset()
   for jar in ctx.attr.layers:
-    if hasattr(jar, "java"):  # java_library, java_import
-      available += jar.java.transitive_runtime_deps
-    elif hasattr(jar, "files"):  # a jar file
-      available += jar.files
+    available += java_files(jar)
 
   # This is based on rules_appengine's WAR rules.
   transitive_deps = depset()
-  if hasattr(ctx.attr.library, "java"):  # java_library, java_import
-    transitive_deps += ctx.attr.library.java.transitive_runtime_deps
-  elif hasattr(ctx.attr.library, "files"):  # a jar file
-    transitive_deps += ctx.attr.library.files
+  transitive_deps += java_files(ctx.attr.library)
 
   # TODO(mattmoor): Handle data files.
 
