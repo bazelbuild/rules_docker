@@ -50,15 +50,6 @@ def docker_repositories():
       executable = True,
     )
 
-  if "pusher" not in excludes:
-    native.http_file(
-      name = "pusher",
-      url = ("https://storage.googleapis.com/containerregistry-releases/" +
-             CONTAINERREGISTRY_RELEASE + "/pusher.par"),
-      sha256 = "a1dca5bd0cc762a13b94d84d9e3ea3d99280da83a49aea2e4681c68788af9c99",
-      executable = True,
-    )
-
   if "containerregistry" not in excludes:
     native.git_repository(
       name = "containerregistry",

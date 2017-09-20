@@ -79,7 +79,8 @@ def _impl(ctx):
       ctx.executable._pusher,
       image["config"]
   ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-  stamp_inputs +  ([image["legacy"]] if image.get("legacy") else [])))
+  stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
+  list(ctx.attr._pusher.default_runfiles.files)))
 
 _docker_push = rule(
     attrs = {
@@ -97,7 +98,7 @@ _docker_push = rule(
             allow_files = True,
         ),
         "_pusher": attr.label(
-            default = Label("@pusher//file"),
+            default = Label("@containerregistry//:pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,
