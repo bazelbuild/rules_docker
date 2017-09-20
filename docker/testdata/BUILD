@@ -230,6 +230,15 @@ docker_build(
     },
 )
 
+docker_build(
+    name = "with_stamp_label",
+    base = ":base_with_volume",
+    labels = {
+        "BUILDER": "{BUILD_USER}",
+    },
+    stamp = True,
+)
+
 [genrule(
     name = "label-" + n,
     outs = ["%s.json" % n],

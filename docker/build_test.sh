@@ -641,6 +641,22 @@ function test_stamped_bundle() {
   EXPECT_CONTAINS "${script}" '${BUILD_USER}'
 }
 
+function test_with_stamped_label() {
+  # Don't check the layer hashes because they will vary,
+  # but check the top layer's metadata
+  local layers=($(get_layers "with_stamp_label"))
+  local length="${#layers[@]}"
+  local bin_layer=$(dirname "${layers[$((length-1))]}")
+
+  check_label "with_stamp_label" \
+    "${bin_layer}" "{\"BUILDER\": \"${USER}\"}"
+}
+
+function test_stamped_label() {
+  check_manifest_property "RepoTags" "stamped_bundle_test" \
+    "[\"example.com/aaaaa$USER:stamped\"]"
+}
+
 function test_pause_based() {
   # Check that when we add a single layer on top of a checked in tarball, that
   # all of the layers from the original tarball are included.  We omit the
