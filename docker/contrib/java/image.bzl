@@ -59,7 +59,7 @@ def java_files(f):
 load(
     "//docker/contrib/common:lang-image.bzl",
     "dep_layer_impl",
-    "layer_file_path"
+    "layer_file_path",
 )
 
 def _jar_dep_layer_impl(ctx):
