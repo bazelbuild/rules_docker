@@ -398,6 +398,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td>
         <p><code>Registry Domain; required</code></p>
         <p>The registry to which to publish the image.</p>
+	<p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -405,6 +406,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td>
         <p><code>Repository; required</code></p>
         <p>The `repository` of images to which to push.</p>
+	<p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -413,6 +415,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
         <p><code>string; optional</code></p>
         <p>The `tag` of the Docker image to push to the specified `repository`.
            This attribute defaults to `latest`.</p>
+	<p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -618,6 +621,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <p>Because building the image never happens inside a Docker container,
                this user does not affect the other actions (e.g.,
                adding files).</p>
+	<p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -626,6 +630,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#entrypoint">List
                of entrypoints to add in the image.</a></p>
+	<p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -634,6 +639,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
                of commands to execute in the image.</a></p>
+	<p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -651,6 +657,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
           },
           </code>
         </p>
+	<p>The values of this field support stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -670,6 +677,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
           },
           </code>
         </p>
+	<p>The values of this field support stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -697,6 +705,7 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
         <p>Because building the image never happens inside a Docker container,
                this working directory does not affect the other actions (e.g.,
                adding files).</p>
+	<p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -709,6 +718,18 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
            `//package/name:target`. Setting this attribute to
            `gcr.io/dummy` would set the default tag to
            `gcr.io/dummy/package_name:target`.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>stamp</code></td>
+      <td>
+        <p><code>Bool; optional</code></p>
+        <p>If true, enable use of workspace status variables
+        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
+        and custom values set using <code>--workspace_status_command</code>)
+        in tags.</p>
+        <p>These fields are specified in attributes using using Python format
+        syntax, e.g. <code>foo{BUILD_USER}bar</code>.</p>
       </td>
     </tr>
   </tbody>

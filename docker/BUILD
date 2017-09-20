@@ -36,6 +36,7 @@ TEST_TARGETS = [
     "with_double_env",
     "with_label",
     "with_double_label",
+    "with_stamp_label",
     "with_user",
     "workdir_with_tar_base",
     "link_with_files_base",

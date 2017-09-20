@@ -193,6 +193,11 @@ def _image_config(ctx, layer_name, entrypoint=None, cmd=None):
     args += ["--base=%s" % base.path]
     inputs += [base]
 
+  if ctx.attr.stamp:
+    stamp_inputs = [ctx.info_file, ctx.version_file]
+    args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
+    inputs += stamp_inputs
+
   ctx.action(
       executable = ctx.executable.create_image_config,
       arguments = args,
@@ -320,6 +325,7 @@ _attrs = {
     "volumes": attr.string_list(),
     "workdir": attr.string(),
     "repository": attr.string(default = "bazel"),
+    "stamp": attr.bool(default = False),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
         allow_files = True,

@@ -56,6 +56,10 @@ parser.add_argument('--workdir', action='store',
 parser.add_argument('--env', action='append', default=[],
                     help='Augment the "Env" of the previous layer.')
 
+parser.add_argument('--stamp-info-file', action='append', required=False,
+                    help=('A list of files from which to read substitutions '
+                          'to make in the provided fields, e.g. {BUILD_USER}'))
+
 _PROCESSOR_ARCHITECTURE = 'amd64'
 
 _OPERATING_SYSTEM = 'linux'
@@ -77,9 +81,25 @@ def fix_dashdash(l):
     for x in l
   ]
 
-
 def main():
   args = parser.parse_args()
+
+  def Stamp(inp):
+    """Perform substitutions in the provided value."""
+    if not args.stamp_info_file or not inp:
+      return inp
+    format_args = {}
+    for infofile in args.stamp_info_file:
+      with open(infofile) as info:
+        for line in info:
+          line = line.strip('\n')
+          key, value = line.split(' ', 1)
+          if key in format_args:
+            print ('WARNING: Duplicate value for key "%s": '
+                   'using "%s"' % (key, value))
+          format_args[key] = value
+
+    return inp.format(**format_args)
 
   base_json = '{}'
   if args.base:
@@ -96,13 +116,18 @@ def main():
     if value.startswith('@'):
       with open(value[1:], 'r') as f:
         labels[label] = f.read()
+    elif '{' in value:
+      labels[label] = Stamp(value)
 
   output = v2_2_metadata.Override(data, v2_2_metadata.Overrides(
       author='Bazel', created_by='bazel build ...',
-      layers=layers, entrypoint=fix_dashdash(args.entrypoint),
-      cmd=fix_dashdash(args.command), user=args.user,
-      labels=labels, env=KeyValueToDict(args.env),
-      ports=args.ports, volumes=args.volumes, workdir=args.workdir),
+      layers=layers, entrypoint=map(Stamp, fix_dashdash(args.entrypoint)),
+      cmd=map(Stamp, fix_dashdash(args.command)), user=Stamp(args.user),
+      labels=labels, env={
+        k: Stamp(v)
+        for (k, v) in KeyValueToDict(args.env).iteritems()
+      },
+      ports=args.ports, volumes=args.volumes, workdir=Stamp(args.workdir)),
                                   architecture=_PROCESSOR_ARCHITECTURE,
                                   operating_system=_OPERATING_SYSTEM)
 
