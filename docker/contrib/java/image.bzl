@@ -49,16 +49,6 @@ load(
     _docker = "docker",
 )
 
-# TODO(mattmoor): Rather than continuing to rely on the magic_path nonsense, we
-# should refactor these rules to use files_map like common/lang-image.bzl.  It
-# is less necessary to do this for Java because the directory structure doesn't
-# communicate the namespace of the artifacts like it does in (e.g.) Python.
-# There could still be a bug here if we carefully craft paths such that two
-# different jars get the same path, but that is unlikely to happen in practice
-# making this a largely cosmetic issue w.r.t. the final image's filesystem
-# layout.
-load("//docker:build.bzl", "magic_path")
-
 def java_files(f):
   if hasattr(f, "java"):  # java_library, java_import
     return f.java.transitive_runtime_deps
@@ -66,26 +56,15 @@ def java_files(f):
     return f.files
   return []
 
-def _dep_layer_impl(ctx):
+load(
+    "//docker/contrib/common:lang-image.bzl",
+    "dep_layer_impl",
+    "layer_file_path"
+)
+
+def _jar_dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
-
-  transitive_deps = depset()
-  transitive_deps += java_files(ctx.attr.dep)
-
-  # TODO(mattmoor): Switch this over to using a files_map over
-  # transitive_deps, but allow the caller to provide the target
-  # path construction and add distinct impls for WAR/JAR
-  directory = ctx.attr.directory
-  if ctx.attr.data_path == ".":
-    # This signifies that we are preserving paths (JAR)
-    # vs. collapsing things (WAR).  For more info see:
-    # https://github.com/bazelbuild/bazel/issues/2176
-    directory += "/" + ctx.label.package
-  return _docker.build.implementation(
-    ctx,
-    directory=directory,
-    files=list(transitive_deps),
-  )
+  return dep_layer_impl(ctx, runfiles=java_files)
 
 _jar_dep_layer = rule(
     attrs = _docker.build.attrs + {
@@ -101,24 +80,7 @@ _jar_dep_layer = rule(
     },
     executable = True,
     outputs = _docker.build.outputs,
-    implementation = _dep_layer_impl,
-)
-
-_war_dep_layer = rule(
-    attrs = _docker.build.attrs + {
-        # The base image on which to overlay the dependency layers.
-        "base": attr.label(mandatory = True),
-        # The dependency whose runfiles we're appending.
-        "dep": attr.label(mandatory = True),
-
-        # Override the defaults.
-        "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
-        # WE WANT PATHS FLATTENED
-        # "data_path": attr.string(default = "."),
-    },
-    executable = True,
-    outputs = _docker.build.outputs,
-    implementation = _dep_layer_impl,
+    implementation = _jar_dep_layer_impl,
 )
 
 def _jar_app_layer_impl(ctx):
@@ -137,12 +99,9 @@ def _jar_app_layer_impl(ctx):
 
   unavailable += ctx.attr.binary.files
   unavailable = [x for x in unavailable if x not in available]
-  directory = ctx.attr.directory + "/" + ctx.label.package
-  files = unavailable
 
   classpath = ":".join([
-    directory + "/" + magic_path(ctx, x)
-    for x in available + unavailable
+    layer_file_path(ctx, x) for x in available + unavailable
   ])
 
   # Classpaths can grow long and there is a limit on the length of a
@@ -151,8 +110,8 @@ def _jar_app_layer_impl(ctx):
   classpath_file = ctx.new_file(ctx.attr.name + ".classpath")
   ctx.actions.write(classpath_file, classpath)
 
-  binary_path = directory + "/" + magic_path(ctx, ctx.files.binary[0])
-  classpath_path = directory + "/" + magic_path(ctx, classpath_file)
+  binary_path = layer_file_path(ctx, ctx.files.binary[0])
+  classpath_path = layer_file_path(ctx, classpath_file)
   entrypoint = [
       '/usr/bin/java',
       '-cp',
@@ -161,8 +120,16 @@ def _jar_app_layer_impl(ctx):
       ctx.attr.main_class
    ]
 
+  file_map = {
+    layer_file_path(ctx, f): f
+    for f in unavailable + [classpath_file]
+  }
+
   return _docker.build.implementation(
-    ctx, files=files + [classpath_file], entrypoint=entrypoint, directory=directory)
+    ctx,
+    # We use all absolute paths.
+    directory="/", file_map=file_map,
+    entrypoint=entrypoint)
 
 _jar_app_layer = rule(
     attrs = _docker.build.attrs + {
@@ -224,6 +191,32 @@ def java_image(name, base=None, main_class=None,
                  main_class=main_class,
                  deps=deps, runtime_deps=runtime_deps, layers=layers)
 
+def _war_dep_layer_impl(ctx):
+  """Appends a layer for a single dependency's runfiles."""
+  # TODO(mattmoor): Today we run the risk of filenames colliding when
+  # they get flattened.  Instead of just flattening and using basename
+  # we should use a file_map based scheme.
+  return _docker.build.implementation(
+    ctx, files=java_files(ctx.attr.dep),
+  )
+
+_war_dep_layer = rule(
+    attrs = _docker.build.attrs + {
+        # The base image on which to overlay the dependency layers.
+        "base": attr.label(mandatory = True),
+        # The dependency whose runfiles we're appending.
+        "dep": attr.label(mandatory = True),
+
+        # Override the defaults.
+        "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
+        # WE WANT PATHS FLATTENED
+        # "data_path": attr.string(default = "."),
+    },
+    executable = True,
+    outputs = _docker.build.outputs,
+    implementation = _war_dep_layer_impl,
+)
+
 def _war_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
 
@@ -237,15 +230,11 @@ def _war_app_layer_impl(ctx):
 
   # TODO(mattmoor): Handle data files.
 
-  files = []
-  for d in transitive_deps:
-    if d not in available:
-      # If we start putting libs in servlet-agnostic paths,
-      # then consider adding symlinks here.
-      files += [d]
+  # If we start putting libs in servlet-agnostic paths,
+  # then consider adding symlinks here.
+  files = [d for d in transitive_deps if d not in available]
 
-  return _docker.build.implementation(
-    ctx, files=files, directory=ctx.attr.directory)
+  return _docker.build.implementation(ctx, files=files)
 
 _war_app_layer = rule(
     attrs = _docker.build.attrs + {

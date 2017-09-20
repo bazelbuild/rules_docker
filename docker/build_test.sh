@@ -796,21 +796,23 @@ function test_java_image() {
   check_listing "java_image" "${lib_layer}" \
 './
 ./app/
-./app/docker/
-./app/docker/com_google_guava_guava/
-./app/docker/com_google_guava_guava/jar/
-./app/docker/com_google_guava_guava/jar/guava-18.0.jar
-./app/docker/testdata/
-./app/docker/testdata/libjava_image_library.jar'
+./app/com_google_guava_guava/
+./app/com_google_guava_guava/jar/
+./app/com_google_guava_guava/jar/guava-18.0.jar
+./app/io_bazel_rules_docker/
+./app/io_bazel_rules_docker/docker/
+./app/io_bazel_rules_docker/docker/testdata/
+./app/io_bazel_rules_docker/docker/testdata/libjava_image_library.jar'
 
   check_listing "java_image" "${bin_layer}" \
 './
 ./app/
-./app/docker/
-./app/docker/testdata/
-./app/docker/testdata/java_image.binary
-./app/docker/testdata/java_image.binary.jar
-./app/docker/testdata/java_image.classpath'
+./app/io_bazel_rules_docker/
+./app/io_bazel_rules_docker/docker/
+./app/io_bazel_rules_docker/docker/testdata/
+./app/io_bazel_rules_docker/docker/testdata/java_image.binary
+./app/io_bazel_rules_docker/docker/testdata/java_image.binary.jar
+./app/io_bazel_rules_docker/docker/testdata/java_image.classpath'
 }
 
 function test_war_image() {
