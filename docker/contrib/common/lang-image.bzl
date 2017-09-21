@@ -81,11 +81,20 @@ def _layer_emptyfile_path(ctx, name):
 
 # The foo_binary independent location in which we store a particular dependency's
 # file such that it can be shared.
-def _layer_file_path(ctx, f):
+def layer_file_path(ctx, f):
   return "/".join([ctx.attr.directory, ctx.workspace_name, f.short_path])
 
-def _dep_layer_impl(ctx):
+def _default_runfiles(dep):
+  return dep.default_runfiles.files
+
+def _default_emptyfiles(dep):
+  return dep.default_runfiles.empty_filenames
+
+def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
   """Appends a layer for a single dependency's runfiles."""
+
+  runfiles = runfiles or _default_runfiles
+  emptyfiles = emptyfiles or _default_emptyfiles
 
   return _docker.build.implementation(
     ctx,
@@ -97,12 +106,12 @@ def _dep_layer_impl(ctx):
     # This references the binary package because the file paths are
     # relative to it, and normalized by the tarball package.
     file_map={
-        _layer_file_path(ctx, f): f
-        for f in ctx.attr.dep.default_runfiles.files
+        layer_file_path(ctx, f): f
+        for f in runfiles(ctx.attr.dep)
     },
     empty_files=[
         _layer_emptyfile_path(ctx, empty)
-        for empty in ctx.attr.dep.default_runfiles.empty_filenames
+        for empty in emptyfiles(ctx.attr.dep)
     ]
   )
 
@@ -120,30 +129,33 @@ dep_layer = rule(
     },
     executable = True,
     outputs = _docker.build.outputs,
-    implementation = _dep_layer_impl,
+    implementation = dep_layer_impl,
 )
 
-def _app_layer_impl(ctx):
+def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   """Appends the app layer with all remaining runfiles."""
+
+  runfiles = runfiles or _default_runfiles
+  emptyfiles = emptyfiles or _default_emptyfiles
 
   # Compute the set of runfiles that have been made available
   # in our base image, tracking absolute paths.
   available = {}
   for dep in ctx.attr.layers:
     available += {
-        _final_file_path(ctx, f): _layer_file_path(ctx, f)
-        for f in dep.default_runfiles.files
+        _final_file_path(ctx, f): layer_file_path(ctx, f)
+        for f in runfiles(dep)
     }
     available += {
         _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
-        for f in dep.default_runfiles.empty_filenames
+        for f in emptyfiles(dep)
     }
 
   # Compute the set of remaining runfiles to include into the
   # application layer.
   file_map = {
     _final_file_path(ctx, f): f
-    for f in ctx.attr.binary.default_runfiles.files
+    for f in runfiles(ctx.attr.binary)
     # It is notable that this assumes that our version of
     # this runfile matches that of the dependency.  It is
     # not clear at this time whether that is an invariant
@@ -153,7 +165,7 @@ def _app_layer_impl(ctx):
 
   empty_files = [
     _final_emptyfile_path(ctx, f)
-    for f in ctx.attr.binary.default_runfiles.empty_filenames
+    for f in emptyfiles(ctx.attr.binary)
     if _final_emptyfile_path(ctx, f) not in available
   ]
 
