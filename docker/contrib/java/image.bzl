@@ -117,8 +117,7 @@ def _jar_app_layer_impl(ctx):
       '-cp',
       # Support optionally passing the classpath as a file.
       '@' + classpath_path if ctx.attr._classpath_as_file else classpath,
-      ctx.attr.main_class
-   ]
+   ] + ctx.attr.jvm_flags + [ctx.attr.main_class]
 
   file_map = {
     layer_file_path(ctx, f): f
@@ -141,6 +140,7 @@ _jar_app_layer = rule(
         # The rest of the dependencies.
         "deps": attr.label_list(),
         "runtime_deps": attr.label_list(),
+        "jvm_flags": attr.string_list(),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The main class to invoke on startup.
@@ -161,7 +161,8 @@ _jar_app_layer = rule(
 )
 
 def java_image(name, base=None, main_class=None,
-               deps=[], runtime_deps=[], layers=[], **kwargs):
+               deps=[], runtime_deps=[], layers=[], jvm_flags=[],
+               **kwargs):
   """Builds a Docker image overlaying the java_binary.
 
   Args:
@@ -177,7 +178,7 @@ def java_image(name, base=None, main_class=None,
                      # not allowed to pass deps (even []) if there is no srcs
                      # kwarg.
                      deps=(deps + layers) or None, runtime_deps=runtime_deps,
-                     **kwargs)
+                     jvm_flags=jvm_flags, **kwargs)
 
   index = 0
   base = base or "@java_image_base//image"
@@ -188,7 +189,7 @@ def java_image(name, base=None, main_class=None,
     index += 1
 
   _jar_app_layer(name=name, base=base, binary=binary_name,
-                 main_class=main_class,
+                 main_class=main_class, jvm_flags=jvm_flags,
                  deps=deps, runtime_deps=runtime_deps, layers=layers)
 
 def _war_dep_layer_impl(ctx):

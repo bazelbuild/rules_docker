@@ -489,6 +489,7 @@ java_library(
 java_image(
     name = "java_image",
     srcs = ["Binary.java"],
+    jvm_flags = ["-XX:MaxPermSize=128M"],
     layers = [":java_image_library"],
     main_class = "examples.images.Binary",
 )
