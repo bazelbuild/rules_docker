@@ -783,6 +783,12 @@ function test_cc_image() {
 /app/docker/testdata/cc_image.binary'
 }
 
+function join_by() {
+    local IFS="$1"
+    shift
+    echo "$*"
+}
+
 function test_java_image() {
   # Don't check the full layer set because the base will vary,
   # but check the files in our top two layers.
@@ -813,6 +819,16 @@ function test_java_image() {
 ./app/io_bazel_rules_docker/docker/testdata/java_image.binary
 ./app/io_bazel_rules_docker/docker/testdata/java_image.binary.jar
 ./app/io_bazel_rules_docker/docker/testdata/java_image.classpath'
+
+  class_path=$(join_by : \
+      "/app/io_bazel_rules_docker/docker/testdata/libjava_image_library.jar" \
+      "/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar" \
+      "/app/io_bazel_rules_docker/docker/testdata/java_image.binary.jar" \
+      "/app/io_bazel_rules_docker/docker/testdata/java_image.binary")
+
+  check_entrypoint "java_image" \
+      "${bin_layer}" \
+      "[\"/usr/bin/java\", \"-cp\", \"${class_path}\", \"-XX:MaxPermSize=128M\", \"examples.images.Binary\"]"
 }
 
 function test_war_image() {
