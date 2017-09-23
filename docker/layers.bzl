@@ -14,7 +14,7 @@
 """Tools for dealing with Docker Image layers."""
 
 load(
-    ":path.bzl",
+    "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
 

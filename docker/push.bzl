@@ -18,7 +18,7 @@ Bazel rule for publishing base images without a Docker client.
 """
 
 load(
-    ":path.bzl",
+    "//skylib:path.bzl",
     "runfile",
 )
 load(

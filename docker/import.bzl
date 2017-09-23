@@ -23,7 +23,7 @@ load(
     _sha256 = "sha256",
 )
 load(
-    ":zip.bzl",
+    "//skylib:zip.bzl",
     _gunzip = "gunzip",
 )
 load(
@@ -33,7 +33,7 @@ load(
     _layer_tools = "tools",
 )
 load(
-    ":path.bzl",
+    "//skylib:path.bzl",
     "dirname",
     "strip_prefix",
     _canonicalize_path = "canonicalize",
