@@ -111,7 +111,7 @@ container_push = rule(
             allow_files = True,
         ),
         "_tag_tpl": attr.label(
-            default = Label("//docker:push-tag.sh.tpl"),
+            default = Label("//container:push-tag.sh.tpl"),
             single_file = True,
             allow_files = True,
         ),

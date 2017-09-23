@@ -13,23 +13,23 @@
 # limitations under the License.
 """This defines a repository rule for configuring the rules' defaults.
 
-For now, this is limited to docker_push, where the default can be
+For now, this is limited to "push", where the default can be
 specified as follows:
 
 ```python
   === WORKSPACE ===
   load(
     "@io_bazel_rules_docker//docker/contrib:with-defaults.bzl",
-    "docker_defaults",
+    docker_defaults="defaults",
   )
   docker_defaults(
-      name = "defaults",
+      name = "my_defaults",
       registry = "us.gcr.io",
       tag = "{BUILD_USER}"
   )
 
   === BUILD ===
-  load("@defaults//:defaults.bzl", "docker_push")
+  load("@my_defaults//:defaults.bzl", "docker_push")
 ```
 
 Any of "registry", "repository" or "tag" may be given a new default.
@@ -42,11 +42,11 @@ def _impl(repository_ctx):
 
   repository_ctx.file("defaults.bzl", """
 load(
-  "@io_bazel_rules_docker//docker:push.bzl",
-  _docker_push="docker_push"
+  "@io_bazel_rules_docker//container:push.bzl",
+  _container_push="container_push"
 )
 
-def docker_push(**kwargs):
+def container_push(**kwargs):
   if "registry" not in kwargs:
     kwargs["registry"] = "{registry}" or None
   if "repository" not in kwargs:
@@ -54,14 +54,28 @@ def docker_push(**kwargs):
   if "tag" not in kwargs:
     kwargs["tag"] = "{tag}" or None
 
-  _docker_push(**kwargs)
+  _container_push(**kwargs)
+
+def docker_push(*args, **kwargs):
+  if "format" in kwargs:
+    fail("Cannot override 'format' attribute on docker_push",
+         attr="format")
+  kwargs["format"] = "Docker"
+  container_push(*args, **kwargs)
+
+def oci_push(*args, **kwargs):
+  if "format" in kwargs:
+    fail("Cannot override 'format' attribute on oci_push",
+         attr="format")
+  kwargs["format"] = "OCI"
+  container_push(*args, **kwargs)
 """.format(
   registry=repository_ctx.attr.registry or "",
   repository=repository_ctx.attr.repository or "",
   tag=repository_ctx.attr.tag or "",
 ))
 
-_docker_defaults = repository_rule(
+defaults = repository_rule(
     attrs = {
         "registry": attr.string(),
         "repository": attr.string(),
@@ -69,7 +83,3 @@ _docker_defaults = repository_rule(
     },
     implementation = _impl,
 )
-
-def docker_defaults(**kwargs):
-  """Creates a version of docker_push with the specified defaults."""
-  _docker_defaults(**kwargs)

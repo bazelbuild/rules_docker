@@ -277,7 +277,7 @@ docker_push(
 )
 
 load(
-    "//docker:push.bzl",
+    "//oci:oci.bzl",
     "oci_push",
 )
 

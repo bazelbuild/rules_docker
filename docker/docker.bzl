@@ -25,10 +25,20 @@ load(":flatten.bzl", "docker_flatten")
 load(":import.bzl", "docker_import")
 
 # Expose the docker_pull repository rule.
-load(":pull.bzl", "docker_pull")
+load(
+    "//container:pull.bzl",
+    docker_pull = "container_pull",
+)
 
 # Expose the docker_push rule.
-load(":push.bzl", "docker_push")
+load("//container:push.bzl", "container_push")
+
+def docker_push(*args, **kwargs):
+  if "format" in kwargs:
+    fail("Cannot override 'format' attribute on docker_push",
+         attr="format")
+  kwargs["format"] = "Docker"
+  container_push(*args, **kwargs)
 
 docker = struct(
     build = build,

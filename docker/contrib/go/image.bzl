@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A rule for creating a Go Docker image.
+"""A rule for creating a Go container image.
 
 The signature of this rule is compatible with go_binary.
 """
@@ -21,7 +21,7 @@ load(
     "dep_layer",
     "app_layer",
 )
-load("//docker:pull.bzl", "docker_pull")
+load("//container:pull.bzl", "container_pull")
 
 # It is expected that the Go rules have been properly
 # initialized before loading this file to initialize
@@ -31,7 +31,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 def repositories():
   excludes = native.existing_rules().keys()
   if "go_image_base" not in excludes:
-    docker_pull(
+    container_pull(
       name = "go_image_base",
       registry = "gcr.io",
       repository = "distroless/base",
@@ -40,7 +40,7 @@ def repositories():
     )
 
 def go_image(name, base=None, deps=[], layers=[], **kwargs):
-  """Constructs a Docker image wrapping a go_binary target.
+  """Constructs a container image wrapping a go_binary target.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into their own layers.

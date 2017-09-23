@@ -18,7 +18,6 @@ load(
     "//docker:docker.bzl",
     _docker = "docker",
 )
-load("//docker:pull.bzl", "docker_pull")
 
 def _binary_name(ctx):
   # For //foo/bar/baz:blah this would translate to

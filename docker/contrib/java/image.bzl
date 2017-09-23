@@ -11,19 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A rule for creating a Java Docker image.
+"""A rule for creating a Java container image.
 
 The signature of java_image is compatible with java_binary.
 
 The signature of war_image is compatible with java_library.
 """
 
-load("//docker:pull.bzl", "docker_pull")
+load("//container:pull.bzl", "container_pull")
 
 def repositories():
   excludes = native.existing_rules().keys()
   if "java_image_base" not in excludes:
-    docker_pull(
+    container_pull(
       name = "java_image_base",
       registry = "gcr.io",
       repository = "distroless/java",
@@ -31,7 +31,7 @@ def repositories():
       digest = "sha256:22bd88ce795258f9d976334abcb071a99b1b4fb9229b86e7d085a7114a2dc565",
     )
   if "jetty_image_base" not in excludes:
-    docker_pull(
+    container_pull(
       name = "jetty_image_base",
       registry = "gcr.io",
       repository = "distroless/java/jetty",
@@ -163,7 +163,7 @@ _jar_app_layer = rule(
 def java_image(name, base=None, main_class=None,
                deps=[], runtime_deps=[], layers=[], jvm_flags=[],
                **kwargs):
-  """Builds a Docker image overlaying the java_binary.
+  """Builds a container image overlaying the java_binary.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
@@ -266,7 +266,7 @@ _war_app_layer = rule(
 )
 
 def war_image(name, base=None, deps=[], layers=[], **kwargs):
-  """Builds a Docker image overlaying the java_library as an exploded WAR.
+  """Builds a container image overlaying the java_library as an exploded WAR.
 
   TODO(mattmoor): For `bazel run` of this to be useful, we need to be able
   to ctrl-C it and have the container actually terminate.  More information:

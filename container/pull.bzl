@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of {docker,oci}_pull based on google/containerregistry.
+"""An implementation of container_pull based on google/containerregistry.
 
 This wraps the containerregistry.tools.fast_puller executable in a
 Bazel rule for downloading base images without a Docker client to
-construct new images with docker_build.
+construct new images.
 """
 
 def _python(repository_ctx):
@@ -103,8 +103,3 @@ Args:
        and 'digest' remain unspecified.
   digest: (optional) the digest of the image to pull.
 """
-
-# Pull works with either format.
-docker_pull = container_pull
-
-oci_pull = container_pull

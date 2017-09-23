@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A rule for creating a Python Docker image.
+"""A rule for creating a Python container image.
 
 The signature of this rule is compatible with py_binary.
 """
@@ -21,12 +21,12 @@ load(
     "dep_layer",
     "app_layer",
 )
-load("//docker:pull.bzl", "docker_pull")
+load("//container:pull.bzl", "container_pull")
 
 def repositories():
   excludes = native.existing_rules().keys()
   if "py_image_base" not in excludes:
-    docker_pull(
+    container_pull(
       name = "py_image_base",
       registry = "gcr.io",
       repository = "distroless/python2.7",
@@ -35,7 +35,7 @@ def repositories():
     )
 
 def py_image(name, base=None, deps=[], layers=[], **kwargs):
-  """Constructs a Docker image wrapping a py_binary target.
+  """Constructs a container image wrapping a py_binary target.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into

@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of {docker,oci}_push based on google/containerregistry.
+"""An implementation of container_push based on google/containerregistry.
 
 This wraps the containerregistry.tools.fast_pusher executable in a
-Bazel rule for publishing base images without a Docker client.
+Bazel rule for publishing images.
 """
 
 load(
@@ -22,7 +22,7 @@ load(
     "runfile",
 )
 load(
-    ":layers.bzl",
+    "//docker:layers.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
@@ -101,7 +101,7 @@ container_push = rule(
             ],
         ),
         "_tag_tpl": attr.label(
-            default = Label("//docker:push-tag.sh.tpl"),
+            default = Label("//container:push-tag.sh.tpl"),
             single_file = True,
             allow_files = True,
         ),
@@ -132,17 +132,3 @@ Args:
   repository: the name of the image.
   tag: (optional) the tag of the image, default to 'latest'.
 """
-
-def docker_push(*args, **kwargs):
-  if "format" in kwargs:
-    fail("Cannot override 'format' attribute on docker_push",
-         attr="format")
-  kwargs["format"] = "Docker"
-  container_push(*args, **kwargs)
-
-def oci_push(*args, **kwargs):
-  if "format" in kwargs:
-    fail("Cannot override 'format' attribute on oci_push",
-         attr="format")
-  kwargs["format"] = "OCI"
-  container_push(*args, **kwargs)

@@ -15,8 +15,6 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files(["push-tag.sh.tpl"])
-
 TEST_TARGETS = [
     "base_with_entrypoint",
     "base_with_volume",
