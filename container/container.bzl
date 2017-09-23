@@ -14,5 +14,6 @@
 """Rules for manipulation container images."""
 
 load("//container:flatten.bzl", "container_flatten")
+load("//container:import.bzl", "container_import")
 load("//container:pull.bzl", "container_pull")
 load("//container:push.bzl", "container_push")

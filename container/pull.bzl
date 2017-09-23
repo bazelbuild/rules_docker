@@ -32,7 +32,7 @@ def _python(repository_ctx):
        "Please set BAZEL_PYTHON, or put it on your path.")
 
 def _impl(repository_ctx):
-  """Core implementation of {docker,oci}_pull."""
+  """Core implementation of container_pull."""
 
   # Add an empty top-level BUILD file.
   repository_ctx.file("BUILD", "")
@@ -40,9 +40,9 @@ def _impl(repository_ctx):
   repository_ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//docker:import.bzl", "docker_import")
+load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
-docker_import(
+container_import(
   name = "image",
   config = "config.json",
   layers = glob(["*.tar.gz"]),

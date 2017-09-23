@@ -14,7 +14,16 @@
 """Rules for manipulation OCI images."""
 
 # Expose the oci_flatten rule.
-load("//container:flatten.bzl", oci_flatten="container_flatten")
+load(
+    "//container:flatten.bzl",
+    oci_flatten = "container_flatten",
+)
+
+# Expose the oci_import rule.
+load(
+    "//container:import.bzl",
+    oci_import = "container_import",
+)
 
 # Expose the oci_pull repository rule.
 load(

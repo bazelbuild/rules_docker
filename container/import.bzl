@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for building a Docker image."""
+"""Rule for importing a container image."""
 
 load(
-    ":filetype.bzl",
+    "//docker:filetype.bzl",
     tgz_filetype = "tgz",
 )
 load(
@@ -27,7 +27,7 @@ load(
     _gunzip = "gunzip",
 )
 load(
-    ":layers.bzl",
+    "//docker:layers.bzl",
     _assemble_image = "assemble",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
@@ -48,8 +48,8 @@ def _repository_name(ctx):
   """Compute the repository name for the current rule."""
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _docker_import_impl(ctx):
-  """Implementation for the docker_import rule."""
+def _container_import_impl(ctx):
+  """Implementation for the container_import rule."""
 
   blobsums = []
   unzipped_layers = []
@@ -60,9 +60,9 @@ def _docker_import_impl(ctx):
     unzipped_layers += [unzipped]
     diff_ids += [diff_id]
 
-  # These are the constituent parts of the Docker image, which each
+  # These are the constituent parts of the Container image, which each
   # rule in the chain must preserve.
-  docker_parts = {
+  container_parts = {
       # The path to the v2.2 configuration file.
       "config": ctx.files.config[0],
       "config_digest": _sha256(ctx, ctx.files.config[0]),
@@ -84,22 +84,22 @@ def _docker_import_impl(ctx):
   # We support incrementally loading or assembling this single image
   # with a temporary name given by its build rule.
   images = {
-      _repository_name(ctx) + ":" + ctx.label.name: docker_parts
+      _repository_name(ctx) + ":" + ctx.label.name: container_parts
   }
 
   _incr_load(ctx, images, ctx.outputs.executable)
   _assemble_image(ctx, images, ctx.outputs.out)
 
   runfiles = ctx.runfiles(
-      files = (docker_parts["unzipped_layer"] +
-               docker_parts["diff_id"] +
-               [docker_parts["config"],
-                docker_parts["config_digest"]]))
+      files = (container_parts["unzipped_layer"] +
+               container_parts["diff_id"] +
+               [container_parts["config"],
+                container_parts["config_digest"]]))
   return struct(runfiles = runfiles,
                 files = depset([ctx.outputs.out]),
-                docker_parts = docker_parts)
+                docker_parts = container_parts)
 
-docker_import_ = rule(
+container_import = rule(
     attrs = {
         "config": attr.label(allow_files = [".json"]),
         "layers": attr.label_list(allow_files = tgz_filetype),
@@ -109,9 +109,5 @@ docker_import_ = rule(
     outputs = {
         "out": "%{name}.tar",
     },
-    implementation = _docker_import_impl,
+    implementation = _container_import_impl,
 )
-
-def docker_import(**kwargs):
-  """Imports a Docker image into our model's intermediate form."""
-  docker_import_(**kwargs)
