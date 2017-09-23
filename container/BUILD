@@ -16,3 +16,28 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["push-tag.sh.tpl"])
+
+filegroup(
+    name = "incremental_load_template",
+    srcs = ["incremental_load.sh.tpl"],
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "extract_config",
+    srcs = ["extract_config.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@containerregistry//:containerregistry",
+    ],
+)
+
+py_binary(
+    name = "join_layers",
+    srcs = ["join_layers.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//docker:utils",
+        "@containerregistry//:containerregistry",
+    ],
+)

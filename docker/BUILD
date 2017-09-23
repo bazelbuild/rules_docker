@@ -87,30 +87,9 @@ sh_test(
     data = TEST_DATA + ["testenv.sh"],
 )
 
-# Used by docker_build and friends
-
 py_binary(
     name = "create_image_config",
     srcs = ["create_image_config.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":utils",
-        "@containerregistry//:containerregistry",
-    ],
-)
-
-py_binary(
-    name = "extract_config",
-    srcs = ["extract_config.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "@containerregistry//:containerregistry",
-    ],
-)
-
-py_binary(
-    name = "join_layers",
-    srcs = ["join_layers.py"],
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
@@ -124,12 +103,6 @@ py_library(
         "__init__.py",
         "utils.py",
     ],
-)
-
-filegroup(
-    name = "incremental_load_template",
-    srcs = ["incremental_load.sh.tpl"],
-    visibility = ["//visibility:public"],
 )
 
 py_binary(

@@ -163,18 +163,18 @@ def incremental_load(ctx, images, output,
 
 tools = {
     "incremental_load_template": attr.label(
-        default = Label("//docker:incremental_load_template"),
+        default = Label("//container:incremental_load_template"),
         single_file = True,
         allow_files = True,
     ),
     "join_layers": attr.label(
-        default = Label("//docker:join_layers"),
+        default = Label("//container:join_layers"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
     "extract_config": attr.label(
-        default = Label("//docker:extract_config"),
+        default = Label("//container:extract_config"),
         cfg = "host",
         executable = True,
         allow_files = True,

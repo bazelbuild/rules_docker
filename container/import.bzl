@@ -27,7 +27,7 @@ load(
     _gunzip = "gunzip",
 )
 load(
-    "//docker:layers.bzl",
+    "//container:layers.bzl",
     _assemble_image = "assemble",
     _incr_load = "incremental_load",
     _layer_tools = "tools",

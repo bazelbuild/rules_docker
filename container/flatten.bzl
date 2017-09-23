@@ -18,7 +18,7 @@ load(
     _get_runfile_path = "runfile",
 )
 load(
-    "//docker:layers.bzl",
+    "//container:layers.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )

@@ -13,9 +13,6 @@
 # limitations under the License.
 """This package contains various functions used when building containers."""
 
-import json
-import tarfile
-
 
 def ExtractValue(value):
   """Return the contents of a file point to by value if it starts with an @.
@@ -30,40 +27,3 @@ def ExtractValue(value):
     with open(value[1:], 'r') as f:
       value = f.read()
   return value
-
-
-def GetTarFile(f, name):
-  """Returns the content of a file inside a tar file.
-
-  This method looks for ./f, /f and f file entry in a tar file and if found,
-  return its content. This allows to read file with various path prefix.
-
-  Args:
-    f: The tar file to read.
-    name: The name of the file inside the tar file.
-
-  Returns:
-    The content of the file, or None if not found.
-  """
-  with tarfile.open(f, 'r') as tar:
-    members = [tarinfo.name for tarinfo in tar.getmembers()]
-    for i in ['', './', '/']:
-      if i + name in members:
-        return tar.extractfile(i + name).read()
-    return None
-
-
-def GetManifestFromTar(f=None):
-  """Returns the manifest array from a tar file.
-
-  Args:
-    f: The tar file to read.
-
-  Returns:
-    The content of the manifest file or an empty array if not found.
-  """
-  if f:
-    raw_manifest_data = GetTarFile(f, 'manifest.json')
-    if raw_manifest_data:
-      return json.loads(raw_manifest_data)
-  return []

@@ -18,7 +18,7 @@ load(
     _string_to_label = "string_to_label",
 )
 load(
-    "//docker:layers.bzl",
+    "//container:layers.bzl",
     _assemble_image = "assemble",
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
