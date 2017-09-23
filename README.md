@@ -37,7 +37,7 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 git_repository(
     name = "io_bazel_rules_docker",
     remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.2.0",
+    tag = "v0.2.1",
 )
 
 load(
