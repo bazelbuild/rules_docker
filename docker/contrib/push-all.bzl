@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of docker_push based on google/containerregistry.
+"""An implementation of {docker,oci}_push based on google/containerregistry.
 
-This variant of docker_push accepts a docker_bundle target and publishes
+This variant of container_push accepts a docker_bundle target and publishes
 the embedded image references.
 """
 
@@ -26,7 +26,7 @@ def _get_runfile_path(ctx, f):
   return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
-  """Core implementation of docker_push."""
+  """Core implementation of container_push."""
   stamp = ctx.attr.bundle.stamp
   images = ctx.attr.bundle.docker_images
 
@@ -68,7 +68,8 @@ def _impl(ctx):
             "%{tag}": ctx.expand_make_variables("tag", tag, {}),
             "%{image}": "%s %s %s %s" % (
                 legacy_base_arg, config_arg, digest_arg, layer_arg),
-            "%{docker_pusher}": _get_runfile_path(ctx, ctx.executable._pusher)
+            "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+            "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
         },
         output = out,
         executable=True,
@@ -94,9 +95,16 @@ def _impl(ctx):
     ctx.executable._pusher
   ] + stamp_inputs + runfiles + list(ctx.attr._pusher.default_runfiles.files)))
 
-docker_push = rule(
+container_push = rule(
     attrs = {
         "bundle": attr.label(mandatory = True),
+        "format": attr.string(
+            mandatory = True,
+            values = [
+                "OCI",
+                "Docker",
+            ],
+        ),
         "_all_tpl": attr.label(
             default = Label("//docker/contrib:push-all.sh.tpl"),
             single_file = True,
@@ -117,3 +125,25 @@ docker_push = rule(
     executable = True,
     implementation = _impl,
 )
+
+"""Pushes a bundle of container images.
+
+Args:
+  name: name of the rule.
+  bundle: the bundle of tagged images to publish.
+  format: the form to push: Docker or OCI.
+"""
+
+def docker_push(*args, **kwargs):
+  if "format" in kwargs:
+    fail("Cannot override 'format' attribute on docker_push",
+         attr="format")
+  kwargs["format"] = "Docker"
+  container_push(*args, **kwargs)
+
+def oci_push(*args, **kwargs):
+  if "format" in kwargs:
+    fail("Cannot override 'format' attribute on oci_push",
+         attr="format")
+  kwargs["format"] = "OCI"
+  container_push(*args, **kwargs)

@@ -276,6 +276,20 @@ docker_push(
     tag = "{BUILD_USER}",
 )
 
+load(
+    "//docker:push.bzl",
+    "oci_push",
+)
+
+oci_push(
+    name = "push_stamp_oci",
+    image = ":link_with_files_base",
+    registry = "gcr.io",
+    repository = "convoy-adapter/bazel-oci-test",
+    stamp = True,
+    tag = "{BUILD_USER}",
+)
+
 docker_build(
     name = "pause_based",
     base = ":pause.tar",
@@ -356,6 +370,7 @@ docker_build_with_tag(
 load(
     "//docker/contrib:push-all.bzl",
     docker_pushall = "docker_push",
+    oci_pushall = "oci_push",
 )
 
 # This bundles up a bunch of images into a single tarball,
@@ -372,6 +387,11 @@ docker_bundle(
 
 docker_pushall(
     name = "push_bundle",
+    bundle = ":bundle_to_push",
+)
+
+oci_pushall(
+    name = "push_bundle_oci",
     bundle = ":bundle_to_push",
 )
 

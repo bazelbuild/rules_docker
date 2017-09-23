@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of docker_pull based on google/containerregistry.
+"""An implementation of {docker,oci}_pull based on google/containerregistry.
 
-This wraps the containerregistry.tools.docker_puller executable in a
+This wraps the containerregistry.tools.fast_puller executable in a
 Bazel rule for downloading base images without a Docker client to
 construct new images with docker_build.
 """
@@ -32,7 +32,7 @@ def _python(repository_ctx):
        "Please set BAZEL_PYTHON, or put it on your path.")
 
 def _impl(repository_ctx):
-  """Core implementation of docker_pull."""
+  """Core implementation of {docker,oci}_pull."""
 
   # Add an empty top-level BUILD file.
   repository_ctx.file("BUILD", "")
@@ -75,7 +75,7 @@ docker_import(
   if result.return_code:
     fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
 
-_docker_pull = repository_rule(
+container_pull = repository_rule(
     attrs = {
         "registry": attr.string(mandatory = True),
         "repository": attr.string(mandatory = True),
@@ -90,17 +90,21 @@ _docker_pull = repository_rule(
     implementation = _impl,
 )
 
-def docker_pull(**kwargs):
-  """Pulls a docker image.
+"""Pulls a container image.
 
-  This rule pulls a docker image into the 'docker save' format.  The
-  output of this rule can be used interchangeably with `docker_build`.
-  Args:
-    name: name of the rule
-    registry: the registry from which we are pulling.
-    repository: the name of the image.
-    tag: (optional) the tag of the image, default to 'latest' if this
-         and 'digest' remain unspecified.
-    digest: (optional) the digest of the image to pull.
-  """
-  _docker_pull(**kwargs)
+This rule pulls a container image into our intermediate format.  The
+output of this rule can be used interchangeably with `docker_build`.
+
+Args:
+  name: name of the rule.
+  registry: the registry from which we are pulling.
+  repository: the name of the image.
+  tag: (optional) the tag of the image, default to 'latest' if this
+       and 'digest' remain unspecified.
+  digest: (optional) the digest of the image to pull.
+"""
+
+# Pull works with either format.
+docker_pull = container_pull
+
+oci_pull = container_pull
