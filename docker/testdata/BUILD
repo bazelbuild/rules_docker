@@ -271,7 +271,21 @@ docker_push(
     name = "push_stamp",
     image = ":link_with_files_base",
     registry = "gcr.io",
-    repository = "convoy-adapter/bazel-test",
+    repository = "convoy-adapter/bazel-oci-test",
+    stamp = True,
+    tag = "{BUILD_USER}",
+)
+
+load(
+    "//docker:push.bzl",
+    "oci_push",
+)
+
+oci_push(
+    name = "push_stamp_oci",
+    image = ":link_with_files_base",
+    registry = "gcr.io",
+    repository = "convoy-adapter/bazel-oci-test",
     stamp = True,
     tag = "{BUILD_USER}",
 )
