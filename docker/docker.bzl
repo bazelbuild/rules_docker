@@ -19,7 +19,7 @@ load(":build.bzl", "docker_build", "build")
 load(":bundle.bzl", "docker_bundle")
 
 # Expose the docker_flatten rule.
-load(":flatten.bzl", "docker_flatten")
+load("//container:flatten.bzl", docker_flatten="container_flatten")
 
 # Expose the docker_import rule.
 load(":import.bzl", "docker_import")

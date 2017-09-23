@@ -11,20 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A rule to flatten docker_build images."""
+"""A rule to flatten container images."""
 
 load(
     "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
 load(
-    ":layers.bzl",
+    "//docker:layers.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
 
 def _impl(ctx):
-  """Core implementation of docker_flatten."""
+  """Core implementation of container_flatten."""
 
   image = _get_layers(ctx, ctx.attr.image, ctx.files.image)
 
@@ -56,7 +56,7 @@ def _impl(ctx):
   )
   return struct()
 
-docker_flatten = rule(
+container_flatten = rule(
     attrs = {
         "image": attr.label(
             allow_files = [".tar"],

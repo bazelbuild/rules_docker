@@ -13,6 +13,9 @@
 # limitations under the License.
 """Rules for manipulation OCI images."""
 
+# Expose the oci_flatten rule.
+load("//container:flatten.bzl", oci_flatten="container_flatten")
+
 # Expose the oci_pull repository rule.
 load(
     "//container:pull.bzl",
