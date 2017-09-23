@@ -120,13 +120,6 @@ py_binary(
     ],
 )
 
-# TODO(mattmoor): Remove this once Bazel releases the centralized copy.
-py_binary(
-    name = "sha256",
-    srcs = ["sha256.py"],
-    visibility = ["//visibility:public"],
-)
-
 py_library(
     name = "utils",
     srcs = [

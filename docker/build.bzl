@@ -46,7 +46,7 @@ load(
     tar_filetype = "tar",
 )
 load(
-    ":hash.bzl",
+    "@bazel_tools//tools/build_defs/hash:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
