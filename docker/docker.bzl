@@ -13,24 +13,19 @@
 # limitations under the License.
 """Rules for manipulation Docker images."""
 
-# Alias docker_build and docker_bundle for now, so folks can move to
-# referencing this before it becomes the source of truth.
 load(":build.bzl", "docker_build", "build")
-load(":bundle.bzl", "docker_bundle")
-
-# Expose the docker_flatten rule.
+load(
+    "//container:bundle.bzl",
+    docker_bundle = "container_bundle",
+)
 load(
     "//container:flatten.bzl",
     docker_flatten = "container_flatten",
 )
-
-# Expose the docker_import rule.
 load(
     "//container:import.bzl",
     docker_import = "container_import",
 )
-
-# Expose the docker_pull repository rule.
 load(
     "//container:pull.bzl",
     docker_pull = "container_pull",

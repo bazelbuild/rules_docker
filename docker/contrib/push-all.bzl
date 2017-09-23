@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of {docker,oci}_push based on google/containerregistry.
+"""An implementation of container_push based on google/containerregistry.
 
-This variant of container_push accepts a docker_bundle target and publishes
+This variant of container_push accepts a container_bundle target and publishes
 the embedded image references.
 """
 
@@ -28,7 +28,7 @@ def _get_runfile_path(ctx, f):
 def _impl(ctx):
   """Core implementation of container_push."""
   stamp = ctx.attr.bundle.stamp
-  images = ctx.attr.bundle.docker_images
+  images = ctx.attr.bundle.container_images
 
   stamp_inputs = []
   if stamp:

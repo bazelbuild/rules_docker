@@ -11,22 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for bundling Docker images into a tarball."""
+"""Rule for bundling Container images into a tarball."""
 
 load(
     "//skylib:label.bzl",
     _string_to_label = "string_to_label",
 )
 load(
-    ":layers.bzl",
+    "//docker:layers.bzl",
     _assemble_image = "assemble",
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
 
-def _docker_bundle_impl(ctx):
-  """Implementation for the docker_bundle rule."""
+def _container_bundle_impl(ctx):
+  """Implementation for the container_bundle rule."""
 
   # Compute the set of layers from the image_targets.
   image_target_dict = _string_to_label(
@@ -60,10 +60,10 @@ def _docker_bundle_impl(ctx):
   return struct(runfiles = ctx.runfiles(
       files = (stamp_files + runfiles)),
       files = depset(),
-      docker_images = images,
+      container_images = images,
       stamp = ctx.attr.stamp)
 
-docker_bundle_ = rule(
+container_bundle_ = rule(
     attrs = {
         "images": attr.string_dict(),
         # Implicit dependencies.
@@ -78,33 +78,33 @@ docker_bundle_ = rule(
     outputs = {
         "out": "%{name}.tar",
     },
-    implementation = _docker_bundle_impl,
+    implementation = _container_bundle_impl,
 )
 
-# Produces a new docker image tarball compatible with 'docker load', which
+# Produces a new container image tarball compatible with 'docker load', which
 # contains the N listed 'images', each aliased with their key.
 #
 # Example:
-#   docker_bundle(
+#   container_bundle(
 #     name = "foo",
 #     images = {
 #       "ubuntu:latest": ":blah",
 #       "foo.io/bar:canary": "//baz:asdf",
 #     }
 #   )
-def docker_bundle(**kwargs):
-  """Package several docker images into a single tarball.
+def container_bundle(**kwargs):
+  """Package several container images into a single tarball.
 
   Args:
     **kwargs: See above.
   """
   for reserved in ["image_targets", "image_target_strings"]:
     if reserved in kwargs:
-      fail("reserved for internal use by docker_bundle macro", attr=reserved)
+      fail("reserved for internal use by container_bundle macro", attr=reserved)
 
   if "images" in kwargs:
     values = {value: None for value in kwargs["images"].values()}.keys()
     kwargs["image_targets"] = values
     kwargs["image_target_strings"] = values
 
-  docker_bundle_(**kwargs)
+  container_bundle_(**kwargs)

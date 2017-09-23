@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules for manipulation container images."""
 
+load("//container:bundle.bzl", "container_bundle")
 load("//container:flatten.bzl", "container_flatten")
 load("//container:import.bzl", "container_import")
 load("//container:pull.bzl", "container_pull")
