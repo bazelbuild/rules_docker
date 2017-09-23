@@ -13,7 +13,11 @@
 # limitations under the License.
 """Rules for manipulation Docker images."""
 
-load(":build.bzl", "docker_build", "build")
+load(
+    "//container:image.bzl",
+    docker_build = "container_image",
+    docker_image = "container_image",
+)
 load(
     "//container:bundle.bzl",
     docker_bundle = "container_bundle",
@@ -40,10 +44,6 @@ def docker_push(*args, **kwargs):
          attr="format")
   kwargs["format"] = "Docker"
   container_push(*args, **kwargs)
-
-docker = struct(
-    build = build,
-)
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.17"

@@ -45,8 +45,8 @@ def repositories():
     )
 
 load(
-    "//docker:docker.bzl",
-    _docker = "docker",
+    "//container:container.bzl",
+    _container = "container",
 )
 
 def java_files(f):
@@ -67,7 +67,7 @@ def _jar_dep_layer_impl(ctx):
   return dep_layer_impl(ctx, runfiles=java_files)
 
 _jar_dep_layer = rule(
-    attrs = _docker.build.attrs + {
+    attrs = _container.image.attrs + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -79,7 +79,7 @@ _jar_dep_layer = rule(
         "data_path": attr.string(default = "."),
     },
     executable = True,
-    outputs = _docker.build.outputs,
+    outputs = _container.image.outputs,
     implementation = _jar_dep_layer_impl,
 )
 
@@ -124,14 +124,14 @@ def _jar_app_layer_impl(ctx):
     for f in unavailable + [classpath_file]
   }
 
-  return _docker.build.implementation(
+  return _container.image.implementation(
     ctx,
     # We use all absolute paths.
     directory="/", file_map=file_map,
     entrypoint=entrypoint)
 
 _jar_app_layer = rule(
-    attrs = _docker.build.attrs + {
+    attrs = _container.image.attrs + {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -156,7 +156,7 @@ _jar_app_layer = rule(
         "legacy_run_behavior": attr.bool(default = False),
     },
     executable = True,
-    outputs = _docker.build.outputs,
+    outputs = _container.image.outputs,
     implementation = _jar_app_layer_impl,
 )
 
@@ -197,12 +197,12 @@ def _war_dep_layer_impl(ctx):
   # TODO(mattmoor): Today we run the risk of filenames colliding when
   # they get flattened.  Instead of just flattening and using basename
   # we should use a file_map based scheme.
-  return _docker.build.implementation(
+  return _container.image.implementation(
     ctx, files=java_files(ctx.attr.dep),
   )
 
 _war_dep_layer = rule(
-    attrs = _docker.build.attrs + {
+    attrs = _container.image.attrs + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -214,7 +214,7 @@ _war_dep_layer = rule(
         # "data_path": attr.string(default = "."),
     },
     executable = True,
-    outputs = _docker.build.outputs,
+    outputs = _container.image.outputs,
     implementation = _war_dep_layer_impl,
 )
 
@@ -235,10 +235,10 @@ def _war_app_layer_impl(ctx):
   # then consider adding symlinks here.
   files = [d for d in transitive_deps if d not in available]
 
-  return _docker.build.implementation(ctx, files=files)
+  return _container.image.implementation(ctx, files=files)
 
 _war_app_layer = rule(
-    attrs = _docker.build.attrs + {
+    attrs = _container.image.attrs + {
         # The library target for which we are synthesizing an image.
         "library": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -261,7 +261,7 @@ _war_app_layer = rule(
         ),
     },
     executable = True,
-    outputs = _docker.build.outputs,
+    outputs = _container.image.outputs,
     implementation = _war_app_layer_impl,
 )
 

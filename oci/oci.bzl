@@ -13,6 +13,12 @@
 # limitations under the License.
 """Rules for manipulation OCI images."""
 
+# Expose the oci_image rule.
+load(
+    "//container:image.bzl",
+    oci_image = "container_image",
+)
+
 # Expose the oci_bundle rule.
 load(
     "//container:bundle.bzl",

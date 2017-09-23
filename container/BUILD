@@ -32,12 +32,41 @@ py_binary(
     ],
 )
 
+py_library(
+    name = "utils",
+    srcs = [
+        "__init__.py",
+        "utils.py",
+    ],
+)
+
 py_binary(
     name = "join_layers",
     srcs = ["join_layers.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "//docker:utils",
+        ":utils",
         "@containerregistry//:containerregistry",
+    ],
+)
+
+py_binary(
+    name = "create_image_config",
+    srcs = ["create_image_config.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":utils",
+        "@containerregistry//:containerregistry",
+    ],
+)
+
+py_binary(
+    name = "build_tar",
+    srcs = ["build_tar.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@bazel_tools//third_party/py/gflags",
+        "@bazel_tools//tools/build_defs/pkg:archive",
     ],
 )

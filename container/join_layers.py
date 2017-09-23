@@ -21,7 +21,7 @@ import os
 import sys
 import tarfile
 
-from docker import utils
+from container import utils
 from containerregistry.client import docker_name
 from containerregistry.client.v1 import docker_image as v1_image
 from containerregistry.client.v1 import save as v1_save

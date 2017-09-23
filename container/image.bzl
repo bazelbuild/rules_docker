@@ -11,36 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for building a Docker image.
+"""Rule for building a Container image.
 
-In addition to the base docker_build rule, we expose its constituents
+In addition to the base container_image rule, we expose its constituents
 (attr, outputs, implementation) directly so that others may expose a
 more specialized build leveraging the same implementation.  The
 expectation in such cases is that users will write something like:
 
   load(
-    "@io_bazel_rules_docker//docker:docker.bzl",
-    _docker="docker",
+    "@io_bazel_rules_docker//container:container.bzl",
+    _container="container",
   )
 
   def _impl(ctx):
     ...
-    return _docker.build.implementation(ctx, ... kwarg overrides ...)
+    return _container.image.implementation(ctx, ... kwarg overrides ...)
 
   _foo_image = rule(
-      attrs = _docker.build.attrs + {
-         # My attributes, or overrides of _build_attrs defaults.
+      attrs = _container.image.attrs + {
+         # My attributes, or overrides of _container.image.attrs defaults.
          ...
       },
       executable = True,
-      outputs = _docker.build.outputs,
+      outputs = _container.image.outputs,
       implementation = _impl,
   )
 
 """
 
 load(
-    ":filetype.bzl",
+    "//docker:filetype.bzl",
     deb_filetype = "deb",
     docker_filetype = "docker",
     tar_filetype = "tar",
@@ -130,7 +130,7 @@ def _build_layer(ctx, files=None, file_map=None, empty_files=None,
       inputs = files + file_map.values() + ctx.files.tars + ctx.files.debs + [arg_file],
       outputs = [layer],
       use_default_shell_env=True,
-      mnemonic="DockerLayer"
+      mnemonic="ImageLayer"
   )
   return layer, _sha256(ctx, layer)
 
@@ -145,7 +145,7 @@ def _get_base_config(ctx):
     return l.get("config")
 
 def _image_config(ctx, layer_name, entrypoint=None, cmd=None):
-  """Create the configuration for a new docker image."""
+  """Create the configuration for a new container image."""
   config = ctx.new_file(ctx.label.name + ".config")
 
   label_file_dict = _string_to_label(
@@ -218,7 +218,7 @@ def _repository_name(ctx):
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None):
-  """Implementation for the docker_build rule.
+  """Implementation for the container_image rule.
 
   Args:
     ctx: The bazel rule context
@@ -263,9 +263,9 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   unzipped_layers = parent_parts.get("unzipped_layer", []) + [unzipped_layer]
   diff_ids = parent_parts.get("diff_id", []) + [diff_id]
 
-  # These are the constituent parts of the Docker image, which each
+  # These are the constituent parts of the Container image, which each
   # rule in the chain must preserve.
-  docker_parts = {
+  container_parts = {
       # The path to the v2.2 configuration file.
       "config": config_file,
       "config_digest": config_digest,
@@ -288,7 +288,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   # We support incrementally loading or assembling this single image
   # with a temporary name given by its build rule.
   images = {
-      tag_name: docker_parts
+      tag_name: container_parts
   }
 
   _incr_load(ctx, images, ctx.outputs.executable,
@@ -298,10 +298,10 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
 
   runfiles = ctx.runfiles(
       files = unzipped_layers + diff_ids + [config_file, config_digest] +
-      ([docker_parts["legacy"]] if docker_parts["legacy"] else []))
+      ([container_parts["legacy"]] if container_parts["legacy"] else []))
   return struct(runfiles = runfiles,
                 files = depset([ctx.outputs.layer]),
-                docker_parts = docker_parts)
+                docker_parts = container_parts)
 
 _attrs = {
     "base": attr.label(allow_files = docker_filetype),
@@ -333,13 +333,13 @@ _attrs = {
     "label_file_strings": attr.string_list(),
     "empty_files": attr.string_list(),
     "build_layer": attr.label(
-        default = Label("//docker:build_tar"),
+        default = Label("//container:build_tar"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
     "create_image_config": attr.label(
-        default = Label("//docker:create_image_config"),
+        default = Label("//container:create_image_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
@@ -351,13 +351,13 @@ _outputs = {
     "layer": "%{name}-layer.tar",
 }
 
-build = struct(
+image = struct(
     attrs = _attrs,
     outputs = _outputs,
     implementation = _impl,
 )
 
-docker_build_ = rule(
+container_image_ = rule(
     attrs = _attrs,
     executable = True,
     outputs = _outputs,
@@ -394,16 +394,16 @@ def _validate_command(name, argument):
   else:
     return None
 
-# Produces a new docker image tarball compatible with 'docker load', which
+# Produces a new container image tarball compatible with 'docker load', which
 # is a single additional layer atop 'base'.  The goal is to have relatively
-# complete support for building docker image, from the Dockerfile spec.
+# complete support for building container image, from the Dockerfile spec.
 #
 # For more information see the 'Config' section of the image specification:
 # https://github.com/opencontainers/image-spec/blob/v0.2.0/serialization.md
 #
 # Only 'name' is required. All other fields have sane defaults.
 #
-#   docker_build(
+#   container_image(
 #      name="...",
 #      visibility="...",
 #
@@ -468,7 +468,7 @@ def _validate_command(name, argument):
 #         "varN": "valN",
 #      },
 #   )
-def docker_build(**kwargs):
+def container_image(**kwargs):
   """Package a docker image.
 
   This rule generates a sequence of genrules the last of which is named 'name',
@@ -497,11 +497,11 @@ def docker_build(**kwargs):
     kwargs["cmd"] = _validate_command("cmd", kwargs["cmd"])
   for reserved in ["label_files", "label_file_strings"]:
     if reserved in kwargs:
-      fail("reserved for internal use by docker_build macro", attr=reserved)
+      fail("reserved for internal use by container_image macro", attr=reserved)
   if "labels" in kwargs:
     files = sorted({v[1:]: None for v in kwargs["labels"].values() if v[0] == "@"}.keys())
     kwargs["label_files"] = files
     kwargs["label_file_strings"] = files
   if "entrypoint" in kwargs:
     kwargs["entrypoint"] = _validate_command("entrypoint", kwargs["entrypoint"])
-  docker_build_(**kwargs)
+  container_image_(**kwargs)

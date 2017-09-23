@@ -17,7 +17,7 @@ import argparse
 import json
 import sys
 
-from docker import utils
+from container import utils
 from containerregistry.transform.v2_2 import metadata as v2_2_metadata
 
 parser = argparse.ArgumentParser(

@@ -15,8 +15,8 @@
 """
 
 load(
-    "//docker:docker.bzl",
-    _docker = "docker",
+    "//container:container.bzl",
+    _container = "container",
 )
 
 def _binary_name(ctx):
@@ -95,7 +95,7 @@ def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
   runfiles = runfiles or _default_runfiles
   emptyfiles = emptyfiles or _default_emptyfiles
 
-  return _docker.build.implementation(
+  return _container.image.implementation(
     ctx,
     # We use all absolute paths.
     directory="/",
@@ -115,7 +115,7 @@ def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
   )
 
 dep_layer = rule(
-    attrs = _docker.build.attrs + {
+    attrs = _container.image.attrs + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -127,7 +127,7 @@ dep_layer = rule(
         "directory": attr.string(default = "/app"),
     },
     executable = True,
-    outputs = _docker.build.outputs,
+    outputs = _container.image.outputs,
     implementation = dep_layer_impl,
 )
 
@@ -178,7 +178,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
                                  ctx.attr.binary.label.name])
   }
 
-  return _docker.build.implementation(
+  return _container.image.implementation(
     ctx,
     # We use all absolute paths.
     directory="/", file_map=file_map,
@@ -190,7 +190,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     entrypoint=ctx.attr.entrypoint + [_binary_name(ctx)])
 
 app_layer = rule(
-    attrs = _docker.build.attrs + {
+    attrs = _container.image.attrs + {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -207,6 +207,6 @@ app_layer = rule(
         "legacy_run_behavior": attr.bool(default = False),
     },
     executable = True,
-    outputs = _docker.build.outputs,
+    outputs = _container.image.outputs,
     implementation = _app_layer_impl,
 )
