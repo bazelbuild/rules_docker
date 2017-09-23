@@ -82,7 +82,7 @@ def _impl(ctx):
     template = ctx.file._all_tpl,
     substitutions = {
       "%{push_statements}": "\n".join([
-        _get_runfile_path(ctx, command) + "&"
+        "PYTHON_RUNFILES=${RUNFILES} " + _get_runfile_path(ctx, command) + "&"
         for command in scripts
       ]),
     },
