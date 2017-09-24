@@ -51,11 +51,11 @@ load(
     _sha256 = "sha256",
 )
 load(
-    ":zip.bzl",
+    "//skylib:zip.bzl",
     _gzip = "gzip",
 )
 load(
-    ":label.bzl",
+    "//skylib:label.bzl",
     _string_to_label = "string_to_label",
 )
 load(
@@ -66,14 +66,14 @@ load(
     _layer_tools = "tools",
 )
 load(
-    ":path.bzl",
+    "//skylib:path.bzl",
     "dirname",
     "strip_prefix",
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
 load(
-    ":serialize.bzl",
+    "//skylib:serialize.bzl",
     _serialize_dict = "dict_to_associative_list",
 )
 

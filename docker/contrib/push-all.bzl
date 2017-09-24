@@ -18,7 +18,7 @@ the embedded image references.
 """
 
 load(
-    "//docker:path.bzl",
+    "//skylib:path.bzl",
     "runfile",
 )
 

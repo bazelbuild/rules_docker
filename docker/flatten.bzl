@@ -14,7 +14,7 @@
 """A rule to flatten docker_build images."""
 
 load(
-    ":path.bzl",
+    "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
 load(
