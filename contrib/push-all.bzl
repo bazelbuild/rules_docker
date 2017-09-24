@@ -106,7 +106,7 @@ container_push = rule(
             ],
         ),
         "_all_tpl": attr.label(
-            default = Label("//docker/contrib:push-all.sh.tpl"),
+            default = Label("//contrib:push-all.sh.tpl"),
             single_file = True,
             allow_files = True,
         ),

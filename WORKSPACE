@@ -34,7 +34,7 @@ docker_pull(
 
 # Have the py_image dependencies for testing.
 load(
-    "//docker/contrib/python:image.bzl",
+    "//contrib/python:image.bzl",
     _py_image_repos = "repositories",
 )
 
@@ -42,7 +42,7 @@ _py_image_repos()
 
 # Have the cc_image dependencies for testing.
 load(
-    "//docker/contrib/cc:image.bzl",
+    "//contrib/cc:image.bzl",
     _cc_image_repos = "repositories",
 )
 
@@ -50,7 +50,7 @@ _cc_image_repos()
 
 # Have the java_image dependencies for testing.
 load(
-    "//docker/contrib/java:image.bzl",
+    "//contrib/java:image.bzl",
     _java_image_repos = "repositories",
 )
 
@@ -76,7 +76,7 @@ go_repositories()
 
 # Have the go_image dependencies for testing.
 load(
-    "//docker/contrib/go:image.bzl",
+    "//contrib/go:image.bzl",
     _go_image_repos = "repositories",
 )
 

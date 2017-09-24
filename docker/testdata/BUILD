@@ -370,7 +370,7 @@ genrule(
 # )
 
 load(
-    "//docker/contrib:with-tag.bzl",
+    "//contrib:with-tag.bzl",
     docker_build_with_tag = "docker_build",
 )
 
@@ -382,7 +382,7 @@ docker_build_with_tag(
 )
 
 load(
-    "//docker/contrib:push-all.bzl",
+    "//contrib:push-all.bzl",
     docker_pushall = "docker_push",
     oci_pushall = "oci_push",
 )
@@ -409,7 +409,7 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//docker/contrib:passwd.bzl", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_file")
 
 passwd_file(
     name = "testpasswd",
@@ -472,7 +472,7 @@ docker_import(
 )
 
 load(
-    "//docker/contrib/python:image.bzl",
+    "//contrib/python:image.bzl",
     "py_image",
 )
 
@@ -491,7 +491,7 @@ py_image(
 )
 
 load(
-    "//docker/contrib/cc:image.bzl",
+    "//contrib/cc:image.bzl",
     "cc_image",
 )
 
@@ -509,7 +509,7 @@ cc_image(
 )
 
 load(
-    "//docker/contrib/java:image.bzl",
+    "//contrib/java:image.bzl",
     "java_image",
     "war_image",
 )
@@ -550,7 +550,7 @@ war_image(
 )
 
 load(
-    "//docker/contrib/go:image.bzl",
+    "//contrib/go:image.bzl",
     "go_image",
 )
 

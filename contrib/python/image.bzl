@@ -17,7 +17,7 @@ The signature of this rule is compatible with py_binary.
 """
 
 load(
-    "//docker/contrib/common:lang-image.bzl",
+    "//contrib/common:lang-image.bzl",
     "dep_layer",
     "app_layer",
 )

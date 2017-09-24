@@ -98,7 +98,7 @@ function clear_docker() {
 
 function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
+  for target in $(bazel query 'kind("container_image", "docker/testdata/...")');
   do
     clear_docker
     bazel build $target
@@ -109,7 +109,7 @@ function test_bazel_build_then_run_docker_build_clean() {
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
+  for target in $(bazel query 'kind("container_image", "docker/testdata/...")');
   do
     clear_docker
     bazel run $target
@@ -137,7 +137,7 @@ function test_bazel_run_docker_import_clean() {
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
+  for target in $(bazel query 'kind("container_image", "docker/testdata/...")');
   do
     bazel run $target
   done

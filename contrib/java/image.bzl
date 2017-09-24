@@ -57,7 +57,7 @@ def java_files(f):
   return []
 
 load(
-    "//docker/contrib/common:lang-image.bzl",
+    "//contrib/common:lang-image.bzl",
     "dep_layer_impl",
     "layer_file_path",
 )
