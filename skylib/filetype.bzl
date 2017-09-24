@@ -29,5 +29,5 @@ deb = [
     ".udeb",
 ]
 
-# Docker files are tarballs, should we allow other extensions than tar?
-docker = tar
+# Container images are tarballs (when exported).
+container = tar

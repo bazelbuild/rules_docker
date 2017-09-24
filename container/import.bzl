@@ -14,7 +14,7 @@
 """Rule for importing a container image."""
 
 load(
-    "//docker:filetype.bzl",
+    "//skylib:filetype.bzl",
     tgz_filetype = "tgz",
 )
 load(

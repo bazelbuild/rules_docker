@@ -40,9 +40,9 @@ expectation in such cases is that users will write something like:
 """
 
 load(
-    "//docker:filetype.bzl",
+    "//skylib:filetype.bzl",
+    container_filetype = "container",
     deb_filetype = "deb",
-    docker_filetype = "docker",
     tar_filetype = "tar",
 )
 load(
@@ -304,7 +304,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                 docker_parts = container_parts)
 
 _attrs = {
-    "base": attr.label(allow_files = docker_filetype),
+    "base": attr.label(allow_files = container_filetype),
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
     "tars": attr.label_list(allow_files = tar_filetype),
