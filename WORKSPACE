@@ -13,20 +13,24 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
-load("//docker:docker.bzl", "docker_pull", "docker_repositories")
+load(
+    "//container:container.bzl",
+    "container_pull",
+    container_repositories="repositories"
+)
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
 # instantiated recursively.
-docker_repositories()
+container_repositories()
 
 # These are for testing.
-docker_pull(
+container_pull(
     name = "distroless_base",
     registry = "gcr.io",
     repository = "distroless/base",
 )
 
-docker_pull(
+container_pull(
     name = "distroless_cc",
     registry = "gcr.io",
     repository = "distroless/cc",
