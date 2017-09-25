@@ -23,5 +23,16 @@ function guess_runfiles() {
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
+PIDS=()
+function async() {
+    # Launch the command asynchronously and track its process id.
+    PYTHON_RUNFILES=${RUNFILES} "$@" &
+    PIDS+=($!)
+}
+
 %{push_statements}
-wait
+
+# Wait for all of the subprocesses, failing the script if any of them failed.
+for pid in ${PIDS[@]}; do
+    wait ${pid}
+done
