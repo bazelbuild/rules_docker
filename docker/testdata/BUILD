@@ -290,20 +290,6 @@ oci_push(
     tag = "{BUILD_USER}",
 )
 
-load(
-    "//docker:push.bzl",
-    "oci_push",
-)
-
-oci_push(
-    name = "push_stamp_oci",
-    image = ":link_with_files_base",
-    registry = "gcr.io",
-    repository = "convoy-adapter/bazel-oci-test",
-    stamp = True,
-    tag = "{BUILD_USER}",
-)
-
 docker_build(
     name = "pause_based",
     base = ":pause.tar",
