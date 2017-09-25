@@ -37,8 +37,8 @@ def _extract_layers(ctx, artifact):
   }
 
 def get_from_target(ctx, attr_target, file_target):
-  if hasattr(attr_target, "docker_parts"):
-    return attr_target.docker_parts
+  if hasattr(attr_target, "container_parts"):
+    return attr_target.container_parts
   else:
     if not file_target:
       return {}

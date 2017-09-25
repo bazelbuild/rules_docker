@@ -140,7 +140,7 @@ def _zip_layer(ctx, layer):
 
 def _get_base_config(ctx):
   if ctx.files.base:
-    # The base is the first layer in docker_parts if provided.
+    # The base is the first layer in container_parts if provided.
     l = _get_layers(ctx, ctx.attr.base, ctx.files.base)
     return l.get("config")
 
@@ -301,7 +301,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
       ([container_parts["legacy"]] if container_parts["legacy"] else []))
   return struct(runfiles = runfiles,
                 files = depset([ctx.outputs.layer]),
-                docker_parts = container_parts)
+                container_parts = container_parts)
 
 _attrs = {
     "base": attr.label(allow_files = container_filetype),
