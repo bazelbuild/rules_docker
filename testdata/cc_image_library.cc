@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-#include "docker/testdata/cc_image_library.h"
+#include "testdata/cc_image_library.h"
 
 void SayHello() {
   std::cout << "Hello World" << std::endl;

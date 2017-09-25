@@ -33,6 +33,6 @@ check_eq () {
     [ "$1" = "$2" ] || fail "Check failed: '$1' == '$2' ${3:+ ($3)}"
 }
 
-readonly TEST_DATA_DIR="${TEST_SRCDIR}/io_bazel_rules_docker/docker/testdata"
+readonly TEST_DATA_DIR="${TEST_SRCDIR}/io_bazel_rules_docker/testdata"
 
-readonly TEST_DATA_TARGET_BASE="docker/testdata"
+readonly TEST_DATA_TARGET_BASE="testdata"

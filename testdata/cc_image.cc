@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "docker/testdata/cc_image_library.h"
+#include "testdata/cc_image_library.h"
 
 int main() {
   SayHello();

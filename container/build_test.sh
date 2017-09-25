@@ -254,7 +254,7 @@ function test_dummy_repository() {
   local repositories="$(tar xOf "${test_data}" "repositories")"
   # This would really need to use `jq` instead.
   echo "${repositories}" | \
-    grep -Esq -- "\"gcr.io/dummy/[a-zA-Z_/]*/testdata\": {" \
+    grep -Esq -- "\"gcr.io/dummy/[a-zA-Z_/]*testdata\": {" \
     || fail "Cannot find image in repository gcr.io/dummy in '${repositories}'"
   EXPECT_CONTAINS "${repositories}" "\"dummy_repository\": \"$layer\""
 }
@@ -521,8 +521,8 @@ function test_with_user() {
 function test_data_path() {
   local no_data_path_sha="171db1e2bb7a5728972e742baa9161dd3972e6ec9fc3cf12cc274b22885c3f22"
   local data_path_sha="78d0d05dd43edd60e9e5257377fedd1694ddeecf31a5e8098649cf2b4ae2120a"
-  local absolute_data_path_sha="973ef07a5fd59eeb307bf6e9e22ae8ed3ac3a0c4ceeef765d7fbd4bc9f7c754e"
-  local root_data_path_sha="973ef07a5fd59eeb307bf6e9e22ae8ed3ac3a0c4ceeef765d7fbd4bc9f7c754e"
+  local absolute_data_path_sha="21fc5e122cef459089086b61663dd1aac77de7f741e7285c1b4b312215100d7e"
+  local root_data_path_sha="21fc5e122cef459089086b61663dd1aac77de7f741e7285c1b4b312215100d7e"
 
   check_layers_aux "check_parent" "check_timestamp" "no_data_path_image" "${no_data_path_sha}"
   check_layers_aux "check_parent" "check_timestamp" "data_path_image" "${data_path_sha}"
@@ -543,24 +543,22 @@ function test_data_path() {
 
   # With an absolute path for data_path, we should strip that prefix
   # from the files' paths. Since the testdata images are in
-  # //docker/testdata and data_path is set to
+  # //testdata and data_path is set to
   # "/tools/build_defs", we should have `docker` as the top-level
   # directory.
   check_listing "absolute_data_path_image" "${absolute_data_path_sha}" \
     './
-./docker/
-./docker/testdata/
-./docker/testdata/test/
-./docker/testdata/test/test'
+./testdata/
+./testdata/test/
+./testdata/test/test'
 
   # With data_path = "/", we expect the entire path from the repository
   # root.
   check_listing "root_data_path_image" "${root_data_path_sha}" \
     "./
-./docker/
-./docker/testdata/
-./docker/testdata/test/
-./docker/testdata/test/test"
+./testdata/
+./testdata/test/
+./testdata/test/test"
 }
 
 function test_flattened_link_with_files_base() {
@@ -725,34 +723,27 @@ function test_py_image() {
     './
 ./app/
 ./app/io_bazel_rules_docker/
-./app/io_bazel_rules_docker/docker/
-./app/io_bazel_rules_docker/docker/__init__.py
-./app/io_bazel_rules_docker/docker/testdata/
-./app/io_bazel_rules_docker/docker/testdata/__init__.py
-./app/io_bazel_rules_docker/docker/testdata/py_image_library.py'
+./app/io_bazel_rules_docker/testdata/
+./app/io_bazel_rules_docker/testdata/__init__.py
+./app/io_bazel_rules_docker/testdata/py_image_library.py'
 
   check_listing "py_image" "${bin_layer}" \
     './
 ./app/
-./app/docker/
-./app/docker/testdata/
-./app/docker/testdata/py_image.binary.runfiles/
-./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
-./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/
-./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
-./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image.binary
-./app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image.py
+./app/testdata/
+./app/testdata/py_image.binary.runfiles/
+./app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
+./app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/
+./app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary
+./app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py
 /app/
-/app/docker/
-/app/docker/testdata/
-/app/docker/testdata/py_image.binary
-/app/docker/testdata/py_image.binary.runfiles/
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/__init__.py
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/__init__.py
-/app/docker/testdata/py_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/py_image_library.py'
+/app/testdata/
+/app/testdata/py_image.binary
+/app/testdata/py_image.binary.runfiles/
+/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/
+/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/
+/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py
+/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py'
 }
 
 function test_cc_image() {
@@ -770,17 +761,14 @@ function test_cc_image() {
   check_listing "cc_image" "${bin_layer}" \
     './
 ./app/
-./app/docker/
-./app/docker/testdata/
-./app/docker/testdata/cc_image.binary.runfiles/
-./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/
-./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/
-./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/
-./app/docker/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/docker/testdata/cc_image.binary
+./app/testdata/
+./app/testdata/cc_image.binary.runfiles/
+./app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/
+./app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/
+./app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/cc_image.binary
 /app/
-/app/docker/
-/app/docker/testdata/
-/app/docker/testdata/cc_image.binary'
+/app/testdata/
+/app/testdata/cc_image.binary'
 }
 
 function join_by() {
@@ -806,25 +794,23 @@ function test_java_image() {
 ./app/com_google_guava_guava/jar/
 ./app/com_google_guava_guava/jar/guava-18.0.jar
 ./app/io_bazel_rules_docker/
-./app/io_bazel_rules_docker/docker/
-./app/io_bazel_rules_docker/docker/testdata/
-./app/io_bazel_rules_docker/docker/testdata/libjava_image_library.jar'
+./app/io_bazel_rules_docker/testdata/
+./app/io_bazel_rules_docker/testdata/libjava_image_library.jar'
 
   check_listing "java_image" "${bin_layer}" \
 './
 ./app/
 ./app/io_bazel_rules_docker/
-./app/io_bazel_rules_docker/docker/
-./app/io_bazel_rules_docker/docker/testdata/
-./app/io_bazel_rules_docker/docker/testdata/java_image.binary
-./app/io_bazel_rules_docker/docker/testdata/java_image.binary.jar
-./app/io_bazel_rules_docker/docker/testdata/java_image.classpath'
+./app/io_bazel_rules_docker/testdata/
+./app/io_bazel_rules_docker/testdata/java_image.binary
+./app/io_bazel_rules_docker/testdata/java_image.binary.jar
+./app/io_bazel_rules_docker/testdata/java_image.classpath'
 
   class_path=$(join_by : \
-      "/app/io_bazel_rules_docker/docker/testdata/libjava_image_library.jar" \
+      "/app/io_bazel_rules_docker/testdata/libjava_image_library.jar" \
       "/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar" \
-      "/app/io_bazel_rules_docker/docker/testdata/java_image.binary.jar" \
-      "/app/io_bazel_rules_docker/docker/testdata/java_image.binary")
+      "/app/io_bazel_rules_docker/testdata/java_image.binary.jar" \
+      "/app/io_bazel_rules_docker/testdata/java_image.binary")
 
   check_entrypoint "java_image" \
       "${bin_layer}" \

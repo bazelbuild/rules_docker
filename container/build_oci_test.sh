@@ -409,8 +409,8 @@ function get_layer_listing() {
 function test_data_path() {
   local no_data_path_sha="171db1e2bb7a5728972e742baa9161dd3972e6ec9fc3cf12cc274b22885c3f22"
   local data_path_sha="78d0d05dd43edd60e9e5257377fedd1694ddeecf31a5e8098649cf2b4ae2120a"
-  local absolute_data_path_sha="973ef07a5fd59eeb307bf6e9e22ae8ed3ac3a0c4ceeef765d7fbd4bc9f7c754e"
-  local root_data_path_sha="973ef07a5fd59eeb307bf6e9e22ae8ed3ac3a0c4ceeef765d7fbd4bc9f7c754e"
+  local absolute_data_path_sha="21fc5e122cef459089086b61663dd1aac77de7f741e7285c1b4b312215100d7e"
+  local root_data_path_sha="21fc5e122cef459089086b61663dd1aac77de7f741e7285c1b4b312215100d7e"
 
   check_layers_aux "no_data_path_image" "${no_data_path_sha}"
   check_layers_aux "data_path_image" "${data_path_sha}"
@@ -431,24 +431,22 @@ function test_data_path() {
 
   # With an absolute path for data_path, we should strip that prefix
   # from the files' paths. Since the testdata images are in
-  # //docker/testdata and data_path is set to
+  # //testdata and data_path is set to
   # "/tools/build_defs", we should have `docker` as the top-level
   # directory.
   check_eq "$(get_layer_listing "absolute_data_path_image" "${absolute_data_path_sha}")" \
     './
-./docker/
-./docker/testdata/
-./docker/testdata/test/
-./docker/testdata/test/test'
+./testdata/
+./testdata/test/
+./testdata/test/test'
 
   # With data_path = "/", we expect the entire path from the repository
   # root.
   check_eq "$(get_layer_listing "root_data_path_image" "${root_data_path_sha}")" \
     "./
-./docker/
-./docker/testdata/
-./docker/testdata/test/
-./docker/testdata/test/test"
+./testdata/
+./testdata/test/
+./testdata/test/test"
 }
 
 # TODO(mattmoor): Needs a visibility change.

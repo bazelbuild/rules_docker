@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//docker:__subpackages__"])
 
-filegroup(
-    name = "srcs",
-    srcs = glob(["**"]),
-)
+from testdata import py_image_library
 
-filegroup(
-    name = "test-data",
-    srcs = ["test"],
-)
+def main():
+  print('First: %d' % py_image_library.fn(1))
+  print('Second: %d' % py_image_library.fn(2))
+  print('Third: %d' % py_image_library.fn(3))
+  print('Fourth: %d' % py_image_library.fn(4))
+
+
+if __name__ == '__main__':
+  main()

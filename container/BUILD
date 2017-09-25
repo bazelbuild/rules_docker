@@ -70,3 +70,75 @@ py_binary(
         "@bazel_tools//tools/build_defs/pkg:archive",
     ],
 )
+
+TEST_TARGETS = [
+    "base_with_entrypoint",
+    "base_with_volume",
+    "derivative_with_cmd",
+    "derivative_with_shadowed_cmd",
+    "derivative_with_volume",
+    "directory_with_tar_base",
+    "files_base",
+    "files_with_files_base",
+    "files_with_tar_base",
+    "tar_base",
+    "tar_with_files_base",
+    "tar_with_tar_base",
+    # TODO(mattmoor): Re-enable once archive is visible
+    # "generated_tarball",
+    "with_env",
+    "with_double_env",
+    "with_label",
+    "with_double_label",
+    "with_stamp_label",
+    "with_user",
+    "workdir_with_tar_base",
+    "link_with_files_base",
+    "build_with_tag",
+    "with_passwd",
+    "gen_image",
+    "data_path_image",
+    "no_data_path_image",
+    "absolute_data_path_image",
+    "root_data_path_image",
+    "dummy_repository",
+    # TODO(mattmoor): Re-enable once archive is visible
+    # "extras_with_deb",
+    "bundle_test",
+    "stamped_bundle_test",
+    "pause_based",
+    "dashdash_entrypoint",
+    "base_based_warning",
+    "cc_based_warning",
+    "pause_piecemeal",
+    "py_image",
+    "cc_image",
+    "java_image",
+    "war_image",
+    "flat",
+]
+
+TEST_DATA = [
+    "//testdata:%s.tar" % t
+    for t in TEST_TARGETS
+] + [
+    "//testdata:stamped_bundle_test",
+]
+
+sh_test(
+    name = "build_test",
+    size = "medium",
+    srcs = [
+        "build_test.sh",
+    ],
+    data = TEST_DATA + ["testenv.sh"],
+)
+
+sh_test(
+    name = "build_oci_test",
+    size = "medium",
+    srcs = [
+        "build_oci_test.sh",
+    ],
+    data = TEST_DATA + ["testenv.sh"],
+)

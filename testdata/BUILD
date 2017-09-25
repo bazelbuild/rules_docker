@@ -14,12 +14,11 @@
 package(default_visibility = ["//visibility:public"])
 
 load(
-    "//docker:docker.bzl",
-    "docker_build",
-    "docker_bundle",
-    "docker_flatten",
-    "docker_import",
-    "docker_push",
+    "//container:container.bzl",
+    "container_bundle",
+    "container_flatten",
+    "container_image",
+    "container_import",
 )
 
 genrule(
@@ -28,97 +27,97 @@ genrule(
     cmd = "echo generated > $@",
 )
 
-docker_build(
+container_image(
     name = "dummy_repository",
     files = ["foo"],
     repository = "gcr.io/dummy",
 )
 
-docker_build(
+container_image(
     name = "no_data_path_image",
-    files = ["//docker/testdata/test:test-data"],
+    files = ["//testdata/test:test-data"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "data_path_image",
     data_path = ".",
-    files = ["//docker/testdata/test:test-data"],
+    files = ["//testdata/test:test-data"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "absolute_data_path_image",
     data_path = "/tools/build_defs",
-    files = ["//docker/testdata/test:test-data"],
+    files = ["//testdata/test:test-data"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "root_data_path_image",
     data_path = "/",
-    files = ["//docker/testdata/test:test-data"],
+    files = ["//testdata/test:test-data"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "gen_image",
     files = [":gen"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "files_base",
     files = ["foo"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "files_with_files_base",
     base = ":files_base",
     files = ["bar"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "tar_base",
     tars = ["one.tar"],
 )
 
-docker_build(
+container_image(
     name = "tar_with_tar_base",
     base = ":tar_base",
     tars = ["two.tar"],
 )
 
-docker_build(
+container_image(
     name = "directory_with_tar_base",
     base = ":tar_base",
     directory = "/foo",
     tars = ["two.tar"],
 )
 
-docker_build(
+container_image(
     name = "workdir_with_tar_base",
     base = ":tar_base",
     workdir = "/tmp",
 )
 
-docker_build(
+container_image(
     name = "files_with_tar_base",
     base = ":tar_base",
     files = ["bar"],
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "tar_with_files_base",
     base = ":files_base",
     tars = ["two.tar"],
 )
 
 # TODO(mattmoor): Test scalar entrypoint
-docker_build(
+container_image(
     name = "base_with_entrypoint",
     entrypoint = ["/bar"],
     files = ["bar"],
@@ -127,7 +126,7 @@ docker_build(
     tars = ["two.tar"],
 )
 
-docker_build(
+container_image(
     name = "dashdash_entrypoint",
     entrypoint = [
         "/bar",
@@ -136,7 +135,7 @@ docker_build(
 )
 
 # TODO(mattmoor): Test scalar cmd
-docker_build(
+container_image(
     name = "derivative_with_shadowed_cmd",
     base = ":base_with_entrypoint",
     cmd = ["shadowed-arg"],
@@ -144,7 +143,7 @@ docker_build(
     mode = "0644",
 )
 
-docker_build(
+container_image(
     name = "derivative_with_cmd",
     base = ":derivative_with_shadowed_cmd",
     cmd = [
@@ -155,7 +154,7 @@ docker_build(
     tars = ["one.tar"],
 )
 
-docker_build(
+container_image(
     name = "base_with_volume",
     files = [
         "bar",
@@ -165,7 +164,7 @@ docker_build(
     volumes = ["/logs"],
 )
 
-docker_build(
+container_image(
     name = "derivative_with_volume",
     base = ":base_with_volume",
     volumes = [
@@ -188,14 +187,14 @@ docker_build(
 #     tools = [":extras_gen"],
 # )
 
-# docker_build(
+# container_image(
 #     name = "generated_tarball",
 #     tars = [
 #         ":extras",
 #     ],
 # )
 
-docker_build(
+container_image(
     name = "with_env",
     base = ":base_with_volume",
     env = {
@@ -204,7 +203,7 @@ docker_build(
     },
 )
 
-docker_build(
+container_image(
     name = "with_double_env",
     base = ":with_env",
     env = {
@@ -212,7 +211,7 @@ docker_build(
     },
 )
 
-docker_build(
+container_image(
     name = "with_label",
     base = ":base_with_volume",
     labels = {
@@ -222,7 +221,7 @@ docker_build(
     },
 )
 
-docker_build(
+container_image(
     name = "with_double_label",
     base = ":with_label",
     labels = {
@@ -230,7 +229,7 @@ docker_build(
     },
 )
 
-docker_build(
+container_image(
     name = "with_stamp_label",
     base = ":base_with_volume",
     labels = {
@@ -248,13 +247,13 @@ docker_build(
     "blah-blah",
 ]]
 
-docker_build(
+container_image(
     name = "with_user",
     base = ":base_with_volume",
     user = "nobody",
 )
 
-docker_build(
+container_image(
     name = "link_with_files_base",
     base = ":files_base",
     symlinks = {
@@ -262,10 +261,12 @@ docker_build(
     },
 )
 
-docker_flatten(
+container_flatten(
     name = "flat",
     image = ":link_with_files_base",
 )
+
+load("//docker:docker.bzl", "docker_push")
 
 docker_push(
     name = "push_stamp",
@@ -276,10 +277,7 @@ docker_push(
     tag = "{BUILD_USER}",
 )
 
-load(
-    "//oci:oci.bzl",
-    "oci_push",
-)
+load("//oci:oci.bzl", "oci_push")
 
 oci_push(
     name = "push_stamp_oci",
@@ -290,7 +288,7 @@ oci_push(
     tag = "{BUILD_USER}",
 )
 
-docker_build(
+container_image(
     name = "pause_based",
     base = ":pause.tar",
     files = ["foo"],
@@ -314,7 +312,7 @@ docker_push(
     tag = "pause_based",
 )
 
-docker_bundle(
+container_bundle(
     name = "bundle_test",
     images = {
         "docker.io/ubuntu:latest": ":base_with_entrypoint",
@@ -323,7 +321,7 @@ docker_bundle(
     },
 )
 
-docker_bundle(
+container_bundle(
     name = "stamped_bundle_test",
     images = {
         # Pad username so that it is long enough.
@@ -348,7 +346,7 @@ genrule(
 # TODO(mattmoor): re-enable once extras.tar works.
 # # Both gen.deb and test-data has a test directory, it should appear
 # # only once in the resulting layer.
-# docker_build(
+# container_image(
 #     name = "extras_with_deb",
 #     data_path = ".",
 #     debs = [":gen.deb"],
@@ -357,10 +355,10 @@ genrule(
 
 load(
     "//contrib:with-tag.bzl",
-    docker_build_with_tag = "docker_build",
+    container_image_with_tag = "container_image",
 )
 
-docker_build_with_tag(
+container_image_with_tag(
     name = "build_with_tag",
     base = ":with_user",
     files = ["foo"],
@@ -375,7 +373,7 @@ load(
 
 # This bundles up a bunch of images into a single tarball,
 # which is pushed as a unit below.
-docker_bundle(
+container_bundle(
     name = "bundle_to_push",
     images = {
         "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
@@ -407,23 +405,23 @@ passwd_file(
     username = "foobar",
 )
 
-docker_build(
+container_image(
     name = "with_passwd",
     tars = [":testpasswd.passwd.tar"],
 )
 
-docker_build(
+container_image(
     name = "base_based_warning",
     base = "@distroless_base//image:image.tar",
 )
 
-docker_build(
+container_image(
     name = "cc_based_warning",
     base = "@distroless_cc//image:image.tar",
 )
 
 # Tests loading a docker_pull'd base.
-docker_build(
+container_image(
     name = "cc_based",
     base = "@distroless_cc//image",
 )
@@ -451,7 +449,7 @@ PAUSE_LAYERS = [
            "| gzip -n > $(location :%s.tar.gz)") % (id, id),
 ) for id in PAUSE_LAYERS]
 
-docker_import(
+container_import(
     name = "pause_piecemeal",
     config = ":pause_config.json",
     layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
