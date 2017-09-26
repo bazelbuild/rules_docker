@@ -54,7 +54,7 @@ https://docs.bazel.build/versions/master/be/java.html#java_library))
 In addition to low-level rules for building containers, this repository
 provides a set of higher-level rules for containerizing applications.  The idea
 behind these rules is to make containerizing an application built via a
-`foo_binary` rule as simple as changing it to `foo_image`.
+`lang_binary` rule as simple as changing it to `lang_image`.
 
 By default these higher level rules make use of the [`distroless`](
 https://github.com/googlecloudplatform/distroless) language runtimes, but these
@@ -80,7 +80,7 @@ load(
     container_repositories = "repositories",
 )
 
-# This is NOT needed when going through the language foo_image
+# This is NOT needed when going through the language lang_image
 # "repositories" function(s).
 container_repositories()
 
@@ -107,21 +107,21 @@ container_image(
 You can load this into your local Docker client by running:
 `bazel run my/image:helloworld`.
 
-For the language `foo_image` targets, this will also **run** the container
-to maximize compatibility with `foo_binary` rules.  You can suppress this
-behavior by passing the single flag: `bazel run :foo -- --norun`
+For the `lang_image` targets, this will also **run** the
+container to maximize compatibility with `lang_binary` rules.  You can suppress
+this behavior by passing the single flag: `bazel run :foo -- --norun`
 
-Alternately, you can build a `docker load` compatible bundle with:
+Alternatively, you can build a `docker load` compatible bundle with:
 `bazel build my/image:helloworld.tar`.  This will produce the file:
 `bazel-genfiles/my/image/helloworld.tar`, which you can load into
 your local Docker client by running:
 `docker load -i bazel-genfiles/my/image/helloworld.tar`.  Building
 this target can be expensive for large images.
 
-These work with both `container_image`, `container_bundle`, and the language
-`foo_image` rules.  For everything except `container_bundle`, the image name
-will be `bazel/my/image:helloworld`.  For `container_bundle`, it will apply
-the tags you have specified.
+These work with both `container_image`, `container_bundle`, and the
+`lang_image` rules.  For everything except
+`container_bundle`, the image name will be `bazel/my/image:helloworld`.
+For `container_bundle`, it will apply the tags you have specified.
 
 ## Authorization
 
@@ -282,9 +282,9 @@ py_image(
 
 ### py_image (fine layering)
 
-For Python and Java's language `foo_image` rules, you can factor dependencies
-that don't change into their own layers by overriding the `layers=[]` attribute.
-Consider this sample from the `rules_k8s` repository:
+For Python and Java's `lang_image` rules, you can factor
+dependencies that don't change into their own layers by overriding the
+`layers=[]` attribute.  Consider this sample from the `rules_k8s` repository:
 ```python
 py_image(
     name = "server",
@@ -340,9 +340,9 @@ go_image(
 
 ### go_image (custom base)
 
-To use a custom base image, with any of the language `foo_image` rules, you
-can override the default `base="..."` attribute.  Consider this modified sample
-from the `distroless` repository:
+To use a custom base image, with any of the `lang_image`
+rules, you can override the default `base="..."` attribute.  Consider this
+modified sample from the `distroless` repository:
 ```python
 # Create a passwd file with a nonroot user and uid.
 passwd_file(
