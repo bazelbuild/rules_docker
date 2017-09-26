@@ -21,7 +21,11 @@ load(
     "dep_layer",
     "app_layer",
 )
-load("//container:pull.bzl", "container_pull")
+load(
+    "//container:container.bzl",
+    "container_pull",
+    _repositories = "repositories",
+)
 
 # It is expected that the Go rules have been properly
 # initialized before loading this file to initialize
@@ -29,6 +33,10 @@ load("//container:pull.bzl", "container_pull")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
 def repositories():
+  # Call the core "repositories" function to reduce boilerplate.
+  # This is idempotent if folks call it themselves.
+  _repositories()
+
   excludes = native.existing_rules().keys()
   if "go_image_base" not in excludes:
     container_pull(

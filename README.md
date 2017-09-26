@@ -77,9 +77,11 @@ git_repository(
 load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
-    container_repositories="repositories",
+    container_repositories = "repositories",
 )
 
+# This is NOT needed when going through the language foo_image
+# "repositories" function(s).
 container_repositories()
 
 container_pull(
