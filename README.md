@@ -107,6 +107,10 @@ container_image(
 You can load this into your local Docker client by running:
 `bazel run my/image:helloworld`.
 
+For the language `foo_image` targets, this will also **run** the container
+to maximize compatibility with `foo_binary` rules.  You can suppress this
+behavior by passing the single flag: `bazel run :foo -- --norun`
+
 Alternately, you can build a `docker load` compatible bundle with:
 `bazel build my/image:helloworld.tar`.  This will produce the file:
 `bazel-genfiles/my/image/helloworld.tar`, which you can load into
@@ -114,9 +118,10 @@ your local Docker client by running:
 `docker load -i bazel-genfiles/my/image/helloworld.tar`.  Building
 this target can be expensive for large images.
 
-These work with both `container_image` and `container_bundle`.  For
-`container_image`, the image name will be `bazel/my/image:helloworld`.
-For `container_bundle`, it will apply the tags you have specified.
+These work with both `container_image`, `container_bundle`, and the language
+`foo_image` rules.  For everything except `container_bundle`, the image name
+will be `bazel/my/image:helloworld`.  For `container_bundle`, it will apply
+the tags you have specified.
 
 ## Authorization
 
