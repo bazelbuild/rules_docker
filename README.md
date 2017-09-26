@@ -4,7 +4,7 @@ Travis CI | Bazel CI
 :---: | :---:
 [![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_docker)](http://ci.bazel.io/job/rules_docker)
 
-## Rules
+## Basic Rules
 
 * [container_image](#container_image-1) ([example](#container_image))
 * [container_bundle](#container_bundle-1) ([example](#container_bundle))
@@ -19,7 +19,7 @@ enjoy the consistency of a consistent rule prefix.  The only place the
 format-specific names currently do any more than alias things is in `foo_push`,
 where they also specify the appropriate format as which to publish the image.
 
-## Overview
+### Overview
 
 This repository contains a set of rules for pulling down base images, augmenting
 them with build artifacts and assets, and publishing those images.
@@ -35,6 +35,31 @@ produced by `container_image` are deterministic / reproducible.
 __NOTE:__ `container_push` and `container_pull` make use of
 [google/containerregistry](https://github.com/google/containerregistry) for
 registry interactions.
+
+## Language Rules
+
+* [cc_image](#cc_image) ([signature](
+https://docs.bazel.build/versions/master/be/c-cpp.html#cc_binary))
+* [go_image](#go_image) ([signature](
+https://github.com/bazelbuild/rules_go#go_binary))
+* [py_image](#py_image) ([signature](
+https://docs.bazel.build/versions/master/be/python.html#py_binary))
+* [java_image](#java_image) ([signature](
+https://docs.bazel.build/versions/master/be/java.html#java_binary))
+* [war_image](#war_image) ([signature](
+https://docs.bazel.build/versions/master/be/java.html#java_library))
+
+### Overview
+
+In addition to low-level rules for building containers, this repository
+provides a set of higher-level rules for containerizing applications.  The idea
+behind these rules is to make containerizing an application built via a
+`foo_binary` rule as simple as changing it to `foo_image`.
+
+By default these higher level rules make use of the [`distroless`](
+https://github.com/googlecloudplatform/distroless) language runtimes, but these
+can be overridden via the `base="..."` attribute (e.g. with a `container_pull`
+or `container_image` target).
 
 ## Setup
 
@@ -194,6 +219,203 @@ container_image(
     base = "@java_base//image",
     files = ["//java/com/example/app:Hello_deploy.jar"],
     cmd = ["Hello_deploy.jar"]
+)
+```
+
+### cc_image
+
+To use `cc_image`, add the following to `WORKSPACE`:
+
+```python
+load(
+    "@io_bazel_rules_docker//cc:image.bzl",
+    _cc_image_repos = "repositories",
+)
+
+_cc_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `cc_binary` to `cc_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//cc:image.bzl", "cc_image")
+
+cc_image(
+    name = "cc_image",
+    srcs = ["cc_image.cc"],
+    deps = [":cc_image_library"],
+)
+```
+
+### py_image
+
+To use `py_image`, add the following to `WORKSPACE`:
+
+```python
+load(
+    "@io_bazel_rules_docker//python:image.bzl",
+    _py_image_repos = "repositories",
+)
+
+_py_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `py_binary` to `py_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//python:image.bzl", "py_image")
+
+py_image(
+    name = "py_image",
+    srcs = ["py_image.py"],
+    deps = [":py_image_library"],
+    main = "py_image.py",
+)
+```
+
+### py_image (fine layering)
+
+For Python and Java's language `foo_image` rules, you can factor dependencies
+that don't change into their own layers by overriding the `layers=[]` attribute.
+Consider this sample from the `rules_k8s` repository:
+```python
+py_image(
+    name = "server",
+    srcs = ["server.py"],
+    # "layers" is just like "deps", but it also moves the dependencies each into
+    # their own layer, which can dramatically improve developer cycle time.  For
+    # example here, the grpcio layer is ~40MB, but the rest of the app is only
+    # ~400KB.  By partitioning things this way, the large grpcio layer remains
+    # unchanging and we can reduce the amount of image data we repush by ~99%!
+    layers = [
+        requirement("grpcio"),
+        "//examples/hellogrpc/proto:py",
+    ],
+    main = "server.py",
+)
+```
+
+### go_image
+
+To use `go_image`, add the following to `WORKSPACE`:
+
+```python
+# You *must* import the Go rules before setting up the go_image rules.
+git_repository(
+    name = "io_bazel_rules_go",
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_go.git",
+)
+
+load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+
+go_repositories()
+
+load(
+    "@io_bazel_rules_docker//go:image.bzl",
+    _go_image_repos = "repositories",
+)
+
+_go_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `go_binary` to `go_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+go_image(
+    name = "go_image",
+    srcs = ["main.go"],
+    importpath = "github.com/your/path/here",
+)
+```
+
+### go_image (custom base)
+
+To use a custom base image, with any of the language `foo_image` rules, you
+can override the default `base="..."` attribute.  Consider this modified sample
+from the `distroless` repository:
+```python
+# Create a passwd file with a nonroot user and uid.
+passwd_file(
+    name = "nonroot",
+    info = "nonroot",
+    uid = 1002,
+    username = "nonroot",
+)
+
+# Include it in our base image as a tar.
+container_image(
+    name = "passwd_image",
+    base = "@go_image_base//image",
+    tars = [":nonroot.passwd.tar"],
+    user = "nonroot",
+)
+
+# Simple go program to print out the username and uid.
+go_image(
+    name = "user",
+    srcs = ["user.go"],
+    # Override the base image.
+    base = ":passwd_image",
+)
+```
+
+
+### java_image
+
+To use `java_image`, add the following to `WORKSPACE`:
+
+```python
+load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `java_binary` to `java_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//java:image.bzl", "java_image")
+
+java_image(
+    name = "java_image",
+    srcs = ["Binary.java"],
+    # Put these runfiles into their own layer.
+    layers = [":java_image_library"],
+    main_class = "examples.images.Binary",
+)
+```
+
+### war_image
+
+To use `war_image`, add the following to `WORKSPACE`:
+
+```python
+load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `java_war` to `war_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//java:image.bzl", "war_image")
+
+war_image(
+    name = "war_image",
+    srcs = ["Servlet.java"],
+    # Put these JARs into their own layers.
+    layers = [
+        ":java_image_library",
+        "@javax_servlet_api//jar:jar",
+    ],
 )
 ```
 

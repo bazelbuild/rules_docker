@@ -455,10 +455,7 @@ container_import(
     layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
 )
 
-load(
-    "//contrib/python:image.bzl",
-    "py_image",
-)
+load("//python:image.bzl", "py_image")
 
 py_library(
     name = "py_image_library",
@@ -474,10 +471,7 @@ py_image(
     main = "py_image.py",
 )
 
-load(
-    "//contrib/cc:image.bzl",
-    "cc_image",
-)
+load("//cc:image.bzl", "cc_image")
 
 cc_library(
     name = "cc_image_library",
@@ -493,7 +487,7 @@ cc_image(
 )
 
 load(
-    "//contrib/java:image.bzl",
+    "//java:image.bzl",
     "java_image",
     "war_image",
 )
@@ -533,10 +527,7 @@ war_image(
     ],
 )
 
-load(
-    "//contrib/go:image.bzl",
-    "go_image",
-)
+load("//go:image.bzl", "go_image")
 
 go_image(
     name = "go_image",

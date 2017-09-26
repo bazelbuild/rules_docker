@@ -17,7 +17,7 @@ The signature of this rule is compatible with go_binary.
 """
 
 load(
-    "//contrib/common:lang-image.bzl",
+    "//lang:image.bzl",
     "dep_layer",
     "app_layer",
 )

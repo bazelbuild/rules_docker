@@ -57,7 +57,7 @@ def java_files(f):
   return []
 
 load(
-    "//contrib/common:lang-image.bzl",
+    "//lang:image.bzl",
     "dep_layer_impl",
     "layer_file_path",
 )

@@ -16,7 +16,7 @@ workspace(name = "io_bazel_rules_docker")
 load(
     "//container:container.bzl",
     "container_pull",
-    container_repositories="repositories"
+    container_repositories = "repositories",
 )
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
@@ -38,7 +38,7 @@ container_pull(
 
 # Have the py_image dependencies for testing.
 load(
-    "//contrib/python:image.bzl",
+    "//python:image.bzl",
     _py_image_repos = "repositories",
 )
 
@@ -46,7 +46,7 @@ _py_image_repos()
 
 # Have the cc_image dependencies for testing.
 load(
-    "//contrib/cc:image.bzl",
+    "//cc:image.bzl",
     _cc_image_repos = "repositories",
 )
 
@@ -54,7 +54,7 @@ _cc_image_repos()
 
 # Have the java_image dependencies for testing.
 load(
-    "//contrib/java:image.bzl",
+    "//java:image.bzl",
     _java_image_repos = "repositories",
 )
 
@@ -80,7 +80,7 @@ go_repositories()
 
 # Have the go_image dependencies for testing.
 load(
-    "//contrib/go:image.bzl",
+    "//go:image.bzl",
     _go_image_repos = "repositories",
 )
 
