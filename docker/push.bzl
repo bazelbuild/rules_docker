@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of docker_push based on google/containerregistry.
+"""An implementation of {docker,oci}_push based on google/containerregistry.
 
-This wraps the containerregistry.tools.docker_pusher executable in a
+This wraps the containerregistry.tools.fast_pusher executable in a
 Bazel rule for publishing base images without a Docker client.
 """
 
@@ -31,7 +31,7 @@ def _get_runfile_path(ctx, f):
   return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
-  """Core implementation of docker_push."""
+  """Core implementation of container_push."""
   stamp_inputs = []
   if ctx.attr.stamp:
     stamp_inputs = [ctx.info_file, ctx.version_file]
@@ -69,7 +69,8 @@ def _impl(ctx):
           "%{stamp}": stamp_arg,
           "%{image}": "%s %s %s %s" % (
               legacy_base_arg, config_arg, digest_arg, layer_arg),
-          "%{docker_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
+          "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+          "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
       },
       output = ctx.outputs.executable,
       executable=True,
@@ -82,7 +83,7 @@ def _impl(ctx):
   stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
   list(ctx.attr._pusher.default_runfiles.files)))
 
-_docker_push = rule(
+container_push = rule(
     attrs = {
         "image": attr.label(
             allow_files = [".tar"],
@@ -92,6 +93,13 @@ _docker_push = rule(
         "registry": attr.string(mandatory = True),
         "repository": attr.string(mandatory = True),
         "tag": attr.string(default = "latest"),
+        "format": attr.string(
+            mandatory = True,
+            values = [
+                "OCI",
+                "Docker",
+            ],
+        ),
         "_tag_tpl": attr.label(
             default = Label("//docker:push-tag.sh.tpl"),
             single_file = True,
@@ -112,16 +120,29 @@ _docker_push = rule(
     implementation = _impl,
 )
 
-def docker_push(image=None, **kwargs):
-  """Pushes a docker image.
+"""Pushes a container image.
 
-  This rule pushes a docker image to a Docker registry.
+This rule pushes a container image to a registry.
 
-  Args:
-    name: name of the rule
-    image: the label of the image to push.
-    registry: the registry to which we are pushing.
-    repository: the name of the image.
-    tag: (optional) the tag of the image, default to 'latest'.
-  """
-  _docker_push(image=image, **kwargs)
+Args:
+  name: name of the rule
+  image: the label of the image to push.
+  format: The form to push: Docker or OCI.
+  registry: the registry to which we are pushing.
+  repository: the name of the image.
+  tag: (optional) the tag of the image, default to 'latest'.
+"""
+
+def docker_push(*args, **kwargs):
+  if "format" in kwargs:
+    fail("Cannot override 'format' attribute on docker_push",
+         attr="format")
+  kwargs["format"] = "Docker"
+  container_push(*args, **kwargs)
+
+def oci_push(*args, **kwargs):
+  if "format" in kwargs:
+    fail("Cannot override 'format' attribute on oci_push",
+         attr="format")
+  kwargs["format"] = "OCI"
+  container_push(*args, **kwargs)
