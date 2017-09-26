@@ -29,7 +29,7 @@ images.**  This means:
 `boot2docker` or `docker-machine` installed.
 * They do not require root access on your workstation.
 
-Also, unlike traditional container build (e.g. Dockerfile), the Docker images
+Also, unlike traditional container builds (e.g. Dockerfile), the Docker images
 produced by `container_image` are deterministic / reproducible.
 
 __NOTE:__ `container_push` and `container_pull` make use of
@@ -88,7 +88,7 @@ your local Docker client by running:
 this target can be expensive for large images.
 
 These work with both `container_image` and `container_bundle`.  For
-`container_image` the image name will be `bazel/my/image:helloworld`.
+`container_image`, the image name will be `bazel/my/image:helloworld`.
 For `container_bundle`, it will apply the tags you have specified.
 
 ## Authorization
@@ -407,7 +407,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td><code>format</code></td>
       <td>
         <p><code>Kind, required</code></p>
-        <p>The format as which to publish the image.  Currently, this supports
+        <p>The desired format of the published image.  Currently, this supports
 	   <code>Docker</code> and <code>OCI</code></p>
       </td>
     </tr>

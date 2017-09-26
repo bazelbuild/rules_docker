@@ -15,7 +15,7 @@
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
 def _impl(ctx):
-  """Core implementation of docker_push."""
+  """Core implementation of passwd_file."""
 
   f = "%s:x:%s:%s:%s:%s:%s\n" % (
       ctx.attr.username,
