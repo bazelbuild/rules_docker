@@ -14,29 +14,16 @@
 """Rules for manipulation Docker images."""
 
 load(
-    "//container:image.bzl",
+    "//container:container.bzl",
+    "container_push",
     docker_build = "container_image",
-    docker_image = "container_image",
-)
-load(
-    "//container:bundle.bzl",
     docker_bundle = "container_bundle",
-)
-load(
-    "//container:flatten.bzl",
     docker_flatten = "container_flatten",
-)
-load(
-    "//container:import.bzl",
+    docker_image = "container_image",
     docker_import = "container_import",
-)
-load(
-    "//container:pull.bzl",
     docker_pull = "container_pull",
+    docker_repositories = "repositories",
 )
-
-# Expose the docker_push rule.
-load("//container:push.bzl", "container_push")
 
 def docker_push(*args, **kwargs):
   if "format" in kwargs:
@@ -44,9 +31,3 @@ def docker_push(*args, **kwargs):
          attr="format")
   kwargs["format"] = "Docker"
   container_push(*args, **kwargs)
-
-# Backwards-compatibility alias.
-load(
-    "//container:container.bzl",
-    docker_repositories = "repositories",
-)
