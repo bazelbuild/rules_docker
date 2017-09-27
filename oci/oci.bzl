@@ -13,38 +13,15 @@
 # limitations under the License.
 """Rules for manipulation OCI images."""
 
-# Expose the oci_image rule.
 load(
-    "//container:image.bzl",
-    oci_image = "container_image",
-)
-
-# Expose the oci_bundle rule.
-load(
-    "//container:bundle.bzl",
+    "//container:container.bzl",
+    "container_push",
     oci_bundle = "container_bundle",
-)
-
-# Expose the oci_flatten rule.
-load(
-    "//container:flatten.bzl",
     oci_flatten = "container_flatten",
-)
-
-# Expose the oci_import rule.
-load(
-    "//container:import.bzl",
+    oci_image = "container_image",
     oci_import = "container_import",
-)
-
-# Expose the oci_pull repository rule.
-load(
-    "//container:pull.bzl",
     oci_pull = "container_pull",
 )
-
-# Expose the oci_push rule.
-load("//container:push.bzl", "container_push")
 
 def oci_push(*args, **kwargs):
   if "format" in kwargs:
