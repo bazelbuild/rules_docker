@@ -81,3 +81,9 @@ load(
 )
 
 _go_image_repos()
+
+git_repository(
+    name = "container_diff",
+    remote = "https://github.com/GoogleCloudPlatform/container-diff",
+    commit = "b089b9b1c90e74b7faaf971ca795155c7076f522",
+)
