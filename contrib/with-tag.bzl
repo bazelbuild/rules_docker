@@ -11,6 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+load(
+    "//container:container.bzl",
+    "container_bundle",
+    _container_image = "container_image",
+)
+
+def container_image(name=None, tag=None, **kwargs):
+    _container_image(name=name + '-internal', **kwargs)
+    container_bundle(name=name, images={
+      tag: ':' + name + '-internal'
+    })
+
+docker_build = container_image
+
+docker_image = container_image
+
+oci_image = container_image

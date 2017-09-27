@@ -13,20 +13,24 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
-load("//docker:docker.bzl", "docker_pull", "docker_repositories")
+load(
+    "//container:container.bzl",
+    "container_pull",
+    container_repositories = "repositories",
+)
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
 # instantiated recursively.
-docker_repositories()
+container_repositories()
 
 # These are for testing.
-docker_pull(
+container_pull(
     name = "distroless_base",
     registry = "gcr.io",
     repository = "distroless/base",
 )
 
-docker_pull(
+container_pull(
     name = "distroless_cc",
     registry = "gcr.io",
     repository = "distroless/cc",
@@ -34,7 +38,7 @@ docker_pull(
 
 # Have the py_image dependencies for testing.
 load(
-    "//docker/contrib/python:image.bzl",
+    "//python:image.bzl",
     _py_image_repos = "repositories",
 )
 
@@ -42,7 +46,7 @@ _py_image_repos()
 
 # Have the cc_image dependencies for testing.
 load(
-    "//docker/contrib/cc:image.bzl",
+    "//cc:image.bzl",
     _cc_image_repos = "repositories",
 )
 
@@ -50,7 +54,7 @@ _cc_image_repos()
 
 # Have the java_image dependencies for testing.
 load(
-    "//docker/contrib/java:image.bzl",
+    "//java:image.bzl",
     _java_image_repos = "repositories",
 )
 
@@ -76,7 +80,7 @@ go_repositories()
 
 # Have the go_image dependencies for testing.
 load(
-    "//docker/contrib/go:image.bzl",
+    "//go:image.bzl",
     _go_image_repos = "repositories",
 )
 

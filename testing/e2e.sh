@@ -98,7 +98,7 @@ function clear_docker() {
 
 function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
+  for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
     clear_docker
     bazel build $target
@@ -109,7 +109,7 @@ function test_bazel_build_then_run_docker_build_clean() {
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
+  for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
     clear_docker
     bazel run $target
@@ -118,7 +118,7 @@ function test_bazel_run_docker_build_clean() {
 
 function test_bazel_run_docker_bundle_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_bundle", "docker/testdata/...")');
+  for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
   do
     clear_docker
     bazel run $target
@@ -127,7 +127,7 @@ function test_bazel_run_docker_bundle_clean() {
 
 function test_bazel_run_docker_import_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_import", "docker/testdata/...")');
+  for target in $(bazel query 'kind("docker_import", "testdata/...")');
   do
     clear_docker
     bazel run $target
@@ -137,7 +137,7 @@ function test_bazel_run_docker_import_clean() {
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("docker_build", "docker/testdata/...")');
+  for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
     bazel run $target
   done
@@ -146,7 +146,7 @@ function test_bazel_run_docker_build_incremental() {
 function test_bazel_run_docker_bundle_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("docker_bundle", "docker/testdata/...")');
+  for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
   do
     bazel run $target
   done
@@ -155,7 +155,7 @@ function test_bazel_run_docker_bundle_incremental() {
 function test_bazel_run_docker_import_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("docker_import", "docker/testdata/...")');
+  for target in $(bazel query 'kind("docker_import", "testdata/...")');
   do
     bazel run $target
   done
@@ -165,7 +165,7 @@ function test_py_image() {
   cd "${ROOT}"
   clear_docker
   cat > output.txt <<EOF
-$(bazel run docker/testdata:py_image)
+$(bazel run testdata:py_image)
 EOF
   EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
   EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
@@ -177,34 +177,34 @@ EOF
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run docker/testdata:cc_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run testdata:cc_image)" "Hello World"
 }
 
 function test_go_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run docker/testdata:go_image)" "Hello, world!"
+  EXPECT_CONTAINS "$(bazel run testdata:go_image)" "Hello, world!"
 }
 
 function test_java_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run docker/testdata:java_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run testdata:java_image)" "Hello World"
 }
 
 function test_java_bin_as_lib_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run docker/testdata:java_bin_as_lib_image
-  docker run -ti --rm bazel/docker/testdata:java_bin_as_lib_image
+  bazel run testdata:java_bin_as_lib_image
+  docker run -ti --rm bazel/testdata:java_bin_as_lib_image
 }
 
 function test_war_image() {
   cd "${ROOT}"
   clear_docker
-  bazel build docker/testdata:war_image.tar
-  docker load -i bazel-bin/docker/testdata/war_image.tar
-  ID=$(docker run -d -p 8080:8080 bazel/docker/testdata:war_image)
+  bazel build testdata:war_image.tar
+  docker load -i bazel-bin/testdata/war_image.tar
+  ID=$(docker run -d -p 8080:8080 bazel/testdata:war_image)
   sleep 5
   EXPECT_CONTAINS "$(curl localhost:8080)" "Hello World"
   docker rm -f "${ID}"

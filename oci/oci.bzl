@@ -11,42 +11,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules for manipulation Docker images."""
+"""Rules for manipulation OCI images."""
 
+# Expose the oci_image rule.
 load(
     "//container:image.bzl",
-    docker_build = "container_image",
-    docker_image = "container_image",
+    oci_image = "container_image",
 )
+
+# Expose the oci_bundle rule.
 load(
     "//container:bundle.bzl",
-    docker_bundle = "container_bundle",
+    oci_bundle = "container_bundle",
 )
+
+# Expose the oci_flatten rule.
 load(
     "//container:flatten.bzl",
-    docker_flatten = "container_flatten",
+    oci_flatten = "container_flatten",
 )
+
+# Expose the oci_import rule.
 load(
     "//container:import.bzl",
-    docker_import = "container_import",
+    oci_import = "container_import",
 )
+
+# Expose the oci_pull repository rule.
 load(
     "//container:pull.bzl",
-    docker_pull = "container_pull",
+    oci_pull = "container_pull",
 )
 
-# Expose the docker_push rule.
+# Expose the oci_push rule.
 load("//container:push.bzl", "container_push")
 
-def docker_push(*args, **kwargs):
+def oci_push(*args, **kwargs):
   if "format" in kwargs:
-    fail("Cannot override 'format' attribute on docker_push",
+    fail("Cannot override 'format' attribute on oci_push",
          attr="format")
-  kwargs["format"] = "Docker"
+  kwargs["format"] = "OCI"
   container_push(*args, **kwargs)
-
-# Backwards-compatibility alias.
-load(
-    "//container:container.bzl",
-    docker_repositories = "repositories",
-)

@@ -1,18 +1,25 @@
-# Bazel Docker Rules
+# Bazel Container Image Rules
 
 Travis CI | Bazel CI
 :---: | :---:
 [![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_docker)](http://ci.bazel.io/job/rules_docker)
 
-## Rules
+## Basic Rules
 
-* [docker_build](#docker_build-1) ([example](#docker_build))
-* [docker_bundle](#docker_bundle-1) ([example](#docker_bundle))
-* [docker_import](#docker_import)
-* [docker_pull](#docker_pull-1) ([example](#docker_pull))
-* [docker_push](#docker_push-1) ([example](#docker_push))
+* [container_image](#container_image-1) ([example](#container_image))
+* [container_bundle](#container_bundle-1) ([example](#container_bundle))
+* [container_import](#container_import)
+* [container_pull](#container_pull-1) ([example](#container_pull))
+* [container_push](#container_push-1) ([example](#container_push))
 
-## Overview
+These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
+these (mostly) legacy names still exist largely for backwards-compatibility.  We
+also have **early-stage** `oci_image`, `oci_push`, etc. aliases for folks that
+enjoy the consistency of a consistent rule prefix.  The only place the
+format-specific names currently do any more than alias things is in `foo_push`,
+where they also specify the appropriate format as which to publish the image.
+
+### Overview
 
 This repository contains a set of rules for pulling down base images, augmenting
 them with build artifacts and assets, and publishing those images.
@@ -22,12 +29,37 @@ images.**  This means:
 `boot2docker` or `docker-machine` installed.
 * They do not require root access on your workstation.
 
-Also, unlike traditional Docker builds, the Docker images produced by
-`docker_build` are deterministic / reproducible.
+Also, unlike traditional container builds (e.g. Dockerfile), the Docker images
+produced by `container_image` are deterministic / reproducible.
 
-__NOTE:__ `docker_push` and `docker_pull` make use of
+__NOTE:__ `container_push` and `container_pull` make use of
 [google/containerregistry](https://github.com/google/containerregistry) for
 registry interactions.
+
+## Language Rules
+
+* [cc_image](#cc_image) ([signature](
+https://docs.bazel.build/versions/master/be/c-cpp.html#cc_binary))
+* [go_image](#go_image) ([signature](
+https://github.com/bazelbuild/rules_go#go_binary))
+* [py_image](#py_image) ([signature](
+https://docs.bazel.build/versions/master/be/python.html#py_binary))
+* [java_image](#java_image) ([signature](
+https://docs.bazel.build/versions/master/be/java.html#java_binary))
+* [war_image](#war_image) ([signature](
+https://docs.bazel.build/versions/master/be/java.html#java_library))
+
+### Overview
+
+In addition to low-level rules for building containers, this repository
+provides a set of higher-level rules for containerizing applications.  The idea
+behind these rules is to make containerizing an application built via a
+`lang_binary` rule as simple as changing it to `lang_image`.
+
+By default these higher level rules make use of the [`distroless`](
+https://github.com/googlecloudplatform/distroless) language runtimes, but these
+can be overridden via the `base="..."` attribute (e.g. with a `container_pull`
+or `container_image` target).
 
 ## Setup
 
@@ -37,16 +69,22 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 git_repository(
     name = "io_bazel_rules_docker",
     remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.2.1",
+    # TODO(mattmoor): Update with a release once the major changes
+    # have landed in one.
+    tag = "{HEAD}",
 )
 
 load(
-  "@io_bazel_rules_docker//docker:docker.bzl",
-  "docker_repositories", "docker_pull"
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+    container_repositories = "repositories",
 )
-docker_repositories()
 
-docker_pull(
+# This is NOT needed when going through the language lang_image
+# "repositories" function(s).
+container_repositories()
+
+container_pull(
   name = "java_base",
   registry = "gcr.io",
   repository = "distroless/java",
@@ -57,10 +95,10 @@ docker_pull(
 
 ## Using with Docker locally.
 
-Suppose you have a `docker_build` target `//my/image:helloworld`:
+Suppose you have a `container_image` target `//my/image:helloworld`:
 
 ```python
-docker_build(
+container_image(
     name = "helloworld",
     ...
 )
@@ -69,16 +107,21 @@ docker_build(
 You can load this into your local Docker client by running:
 `bazel run my/image:helloworld`.
 
-Alternately, you can build a `docker load` compatible bundle with:
+For the `lang_image` targets, this will also **run** the
+container to maximize compatibility with `lang_binary` rules.  You can suppress
+this behavior by passing the single flag: `bazel run :foo -- --norun`
+
+Alternatively, you can build a `docker load` compatible bundle with:
 `bazel build my/image:helloworld.tar`.  This will produce the file:
 `bazel-genfiles/my/image/helloworld.tar`, which you can load into
 your local Docker client by running:
 `docker load -i bazel-genfiles/my/image/helloworld.tar`.  Building
 this target can be expensive for large images.
 
-These work with both `docker_build` and `docker_bundle`.  For
-`docker_build` the image name will be `bazel/my/image:helloworld`.
-For `docker_bundle`, it will apply the tags you have specified.
+These work with both `container_image`, `container_bundle`, and the
+`lang_image` rules.  For everything except
+`container_bundle`, the image name will be `bazel/my/image:helloworld`.
+For `container_bundle`, it will apply the tags you have specified.
 
 ## Authorization
 
@@ -101,7 +144,7 @@ See also:
 
 ## Varying image names
 
-A common request from folks using `docker_push` or `docker_bundle` is to
+A common request from folks using `container_push` or `container_bundle` is to
 be able to vary the tag that is pushed or embedded.  There are two options
 at present for doing this.
 
@@ -112,8 +155,10 @@ The first option is to use `stamp = True`.
 ```python
 # A common pattern when users want to avoid trampling
 # on each other's images during development.
-docker_push(
+container_push(
   name = "publish",
+
+  format = "Docker",
 
   # Any of these components may have variables.
   registry = "gcr.io",
@@ -153,7 +198,7 @@ including through the use of [`.bazelrc`](https://github.com/kubernetes/kubernet
 The second option is to employ `Makefile`-style variables:
 
 ```python
-docker_bundle(
+container_bundle(
   name = "bundle",
 
   images = {
@@ -172,22 +217,219 @@ These variables are specified on the CLI using:
 
 ## Examples
 
-### docker_build
+### container_image
 
 ```python
-docker_build(
+container_image(
     name = "app",
-    # References docker_pull from WORKSPACE (above)
+    # References container_pull from WORKSPACE (above)
     base = "@java_base//image",
     files = ["//java/com/example/app:Hello_deploy.jar"],
     cmd = ["Hello_deploy.jar"]
 )
 ```
 
-### docker_bundle
+### cc_image
+
+To use `cc_image`, add the following to `WORKSPACE`:
 
 ```python
-docker_bundle(
+load(
+    "@io_bazel_rules_docker//cc:image.bzl",
+    _cc_image_repos = "repositories",
+)
+
+_cc_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `cc_binary` to `cc_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//cc:image.bzl", "cc_image")
+
+cc_image(
+    name = "cc_image",
+    srcs = ["cc_image.cc"],
+    deps = [":cc_image_library"],
+)
+```
+
+### py_image
+
+To use `py_image`, add the following to `WORKSPACE`:
+
+```python
+load(
+    "@io_bazel_rules_docker//python:image.bzl",
+    _py_image_repos = "repositories",
+)
+
+_py_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `py_binary` to `py_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//python:image.bzl", "py_image")
+
+py_image(
+    name = "py_image",
+    srcs = ["py_image.py"],
+    deps = [":py_image_library"],
+    main = "py_image.py",
+)
+```
+
+### py_image (fine layering)
+
+For Python and Java's `lang_image` rules, you can factor
+dependencies that don't change into their own layers by overriding the
+`layers=[]` attribute.  Consider this sample from the `rules_k8s` repository:
+```python
+py_image(
+    name = "server",
+    srcs = ["server.py"],
+    # "layers" is just like "deps", but it also moves the dependencies each into
+    # their own layer, which can dramatically improve developer cycle time.  For
+    # example here, the grpcio layer is ~40MB, but the rest of the app is only
+    # ~400KB.  By partitioning things this way, the large grpcio layer remains
+    # unchanging and we can reduce the amount of image data we repush by ~99%!
+    layers = [
+        requirement("grpcio"),
+        "//examples/hellogrpc/proto:py",
+    ],
+    main = "server.py",
+)
+```
+
+### go_image
+
+To use `go_image`, add the following to `WORKSPACE`:
+
+```python
+# You *must* import the Go rules before setting up the go_image rules.
+git_repository(
+    name = "io_bazel_rules_go",
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_go.git",
+)
+
+load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+
+go_repositories()
+
+load(
+    "@io_bazel_rules_docker//go:image.bzl",
+    _go_image_repos = "repositories",
+)
+
+_go_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `go_binary` to `go_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+go_image(
+    name = "go_image",
+    srcs = ["main.go"],
+    importpath = "github.com/your/path/here",
+)
+```
+
+### go_image (custom base)
+
+To use a custom base image, with any of the `lang_image`
+rules, you can override the default `base="..."` attribute.  Consider this
+modified sample from the `distroless` repository:
+```python
+# Create a passwd file with a nonroot user and uid.
+passwd_file(
+    name = "nonroot",
+    info = "nonroot",
+    uid = 1002,
+    username = "nonroot",
+)
+
+# Include it in our base image as a tar.
+container_image(
+    name = "passwd_image",
+    base = "@go_image_base//image",
+    tars = [":nonroot.passwd.tar"],
+    user = "nonroot",
+)
+
+# Simple go program to print out the username and uid.
+go_image(
+    name = "user",
+    srcs = ["user.go"],
+    # Override the base image.
+    base = ":passwd_image",
+)
+```
+
+
+### java_image
+
+To use `java_image`, add the following to `WORKSPACE`:
+
+```python
+load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `java_binary` to `java_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//java:image.bzl", "java_image")
+
+java_image(
+    name = "java_image",
+    srcs = ["Binary.java"],
+    # Put these runfiles into their own layer.
+    layers = [":java_image_library"],
+    main_class = "examples.images.Binary",
+)
+```
+
+### war_image
+
+To use `war_image`, add the following to `WORKSPACE`:
+
+```python
+load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `java_war` to `war_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//java:image.bzl", "war_image")
+
+war_image(
+    name = "war_image",
+    srcs = ["Servlet.java"],
+    # Put these JARs into their own layers.
+    layers = [
+        ":java_image_library",
+        "@javax_servlet_api//jar:jar",
+    ],
+)
+```
+
+### container_bundle
+
+```python
+container_bundle(
     name = "bundle",
     images = {
         # A set of images to bundle up into a single tarball.
@@ -198,12 +440,12 @@ docker_bundle(
 )
 ```
 
-### docker_pull
+### container_pull
 
 In `WORKSPACE`:
 
 ```python
-docker_pull(
+container_pull(
     name = "base",
     registry = "gcr.io",
     repository = "my-project/my-base",
@@ -214,26 +456,30 @@ docker_pull(
 
 This can then be referenced in `BUILD` files as `@base//image`.
 
-### docker_push
+### container_push
 
 This target pushes on `bazel run :push_foo`:
 
 ``` python
-docker_push(
+container_push(
    name = "push_foo",
    image = ":foo",
+   format = "Docker",
    registry = "gcr.io",
    repository = "my-project/my-image",
    tag = "dev",
 )
 ```
 
-### docker_pull (DockerHub)
+We also support the `docker_push` (from `docker/docker.bzl`) and `oci_push`
+(from `oci/oci.bzl`) aliases, which bake in the `format = "..."` attribute.
+
+### container_pull (DockerHub)
 
 In `WORKSPACE`:
 
 ```python
-docker_pull(
+container_pull(
     name = "official_ubuntu",
     registry = "index.docker.io",
     repository = "library/ubuntu",
@@ -243,12 +489,12 @@ docker_pull(
 
 This can then be referenced in `BUILD` files as `@official_ubuntu//image`.
 
-### docker_pull (Quay.io)
+### container_pull (Quay.io)
 
 In `WORKSPACE`:
 
 ```python
-docker_pull(
+container_pull(
     name = "etcd",
     registry = "quay.io",
     repository = "coreos/etcd",
@@ -258,12 +504,12 @@ docker_pull(
 
 This can then be referenced in `BUILD` files as `@etcd//image`.
 
-### docker_pull (Bintray.io)
+### container_pull (Bintray.io)
 
 In `WORKSPACE`:
 
 ```python
-docker_pull(
+container_pull(
     name = "artifactory",
     registry = "docker.bintray.io",
     repository = "jfrog/artifactory-pro",
@@ -272,12 +518,12 @@ docker_pull(
 
 This can then be referenced in `BUILD` files as `@artifactory//image`.
 
-### docker_pull (Gitlab)
+### container_pull (Gitlab)
 
 In `WORKSPACE`:
 
 ```python
-docker_pull(
+container_pull(
     name = "gitlab",
     registry = "registry.gitlab.com",
     repository = "username/project/image",
@@ -289,15 +535,15 @@ This can then be referenced in `BUILD` files as `@gitlab//image`.
 
 **NOTE:** This will only work on systems with Python >2.7.6
 
-<a name="docker_pull"></a>
-## docker_pull
+<a name="container_pull"></a>
+## container_pull
 
 ```python
-docker_pull(name, registry, repository, digest, tag)
+container_pull(name, registry, repository, digest, tag)
 ```
 
 A repository rule that pulls down a Docker base image in a manner suitable for
-use with `docker_build`'s `base` attribute.
+use with `container_image`'s `base` attribute.
 
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
@@ -359,11 +605,11 @@ use with `docker_build`'s `base` attribute.
   </tbody>
 </table>
 
-<a name="docker_push"></a>
-## docker_push
+<a name="container_push"></a>
+## container_push
 
 ```python
-docker_push(name, image, registry, repository, tag)
+container_push(name, image, registry, repository, tag)
 ```
 
 An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
@@ -384,6 +630,14 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td>
         <p><code>Name, required</code></p>
         <p>Unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td>
+        <p><code>Kind, required</code></p>
+        <p>The desired format of the published image.  Currently, this supports
+	   <code>Docker</code> and <code>OCI</code></p>
       </td>
     </tr>
     <tr>
@@ -434,11 +688,11 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
   </tbody>
 </table>
 
-<a name="docker_build"></a>
-## docker_build
+<a name="container_image"></a>
+## container_image
 
 ```python
-docker_build(name, base, data_path, directory, files, legacy_repository_naming, mode, tars, debs, symlinks, entrypoint, cmd, env, labels, ports, volumes, workdir, repository)
+container_image(name, base, data_path, directory, files, legacy_repository_naming, mode, tars, debs, symlinks, entrypoint, cmd, env, labels, ports, volumes, workdir, repository)
 ```
 
 <table class="table table-condensed table-bordered table-implicit">
@@ -713,8 +967,8 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
       <td>
         <code>String, default to `bazel`</code>
         <p>The repository for the default tag for the image.</a></p>
-        <p>Images generated by `docker_build` are tagged by default to
-           `bazel/package_name:target` for a `docker_build` target at
+        <p>Images generated by `container_image` are tagged by default to
+           `bazel/package_name:target` for a `container_image` target at
            `//package/name:target`. Setting this attribute to
            `gcr.io/dummy` would set the default tag to
            `gcr.io/dummy/package_name:target`.</p>
@@ -735,11 +989,11 @@ docker_build(name, base, data_path, directory, files, legacy_repository_naming, 
   </tbody>
 </table>
 
-<a name="docker_bundle"></a>
-## docker_bundle
+<a name="container_bundle"></a>
+## container_bundle
 
 ```python
-docker_bundle(name, images)
+container_bundle(name, images)
 ```
 
 A rule that aliases and saves N images into a single `docker save` tarball.
@@ -771,8 +1025,8 @@ A rule that aliases and saves N images into a single `docker save` tarball.
            value. These tags may contain make variables (<code>$FOO</code>),
            and if <code>stamp</code> is set to true, may also contain workspace
            status variables (<code>{BAR}</code>).</p>
-        <p>The values may be the output of <code>docker_pull</code>,
-           <code>docker_build</code>, or a <code>docker save</code> tarball.</p>
+        <p>The values may be the output of <code>container_pull</code>,
+           <code>container_image</code>, or a <code>docker save</code> tarball.</p>
       </td>
     </tr>
     <tr>
@@ -791,11 +1045,11 @@ A rule that aliases and saves N images into a single `docker save` tarball.
   </tbody>
 </table>
 
-<a name="docker_import"></a>
-## docker_import
+<a name="container_import"></a>
+## container_import
 
 ```python
-docker_import(name, config, layers)
+container_import(name, config, layers)
 ```
 
 A rule that imports a docker image into our intermediate form.
