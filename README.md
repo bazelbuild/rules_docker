@@ -4,6 +4,10 @@ Travis CI | Bazel CI
 :---: | :---:
 [![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_docker)](http://ci.bazel.io/job/rules_docker)
 
+
+DO NOT MERGE
+
+
 ## Basic Rules
 
 * [container_image](#container_image-1) ([example](#container_image))
