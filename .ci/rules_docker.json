@@ -4,7 +4,19 @@
            "configurations": [
                 {"node": "linux-x86_64"},
                 {"node": "ubuntu_16.04-x86_64"},
-                {"node": "darwin-x86_64"}
+                {"node": "darwin-x86_64"},
+                {
+                     "toolchain": "msvc",
+                     "node": "windows-x86_64",
+                     "parameters": {
+                         "build_opts": [
+	                      "--python_path=\"C:/Program Files/Anaconda3/python.exe\""
+                         ],
+                         "test_opts": [
+                             "--python_path=\"C:/Program Files/Anaconda3/python.exe\""
+                         ],
+                     }
+                }
            ]
     }
 ]
