@@ -125,20 +125,10 @@ TEST_DATA = [
     "//testdata:stamped_bundle_test",
 ]
 
-sh_test(
-    name = "build_test",
+py_test(
+    name = "image_test",
     size = "medium",
-    srcs = [
-        "build_test.sh",
-    ],
-    data = TEST_DATA + ["testenv.sh"],
-)
-
-sh_test(
-    name = "build_oci_test",
-    size = "medium",
-    srcs = [
-        "build_oci_test.sh",
-    ],
-    data = TEST_DATA + ["testenv.sh"],
+    srcs = ["image_test.py"],
+    data = TEST_DATA,
+    deps = ["@containerregistry//:containerregistry"],
 )
