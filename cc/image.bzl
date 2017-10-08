@@ -27,6 +27,9 @@ load(
     _repositories = "repositories",
 )
 
+# Load the resolved digests.
+load(":cc.bzl", "DIGESTS")
+
 def repositories():
   # Call the core "repositories" function to reduce boilerplate.
   # This is idempotent if folks call it themselves.
@@ -38,9 +41,22 @@ def repositories():
       name = "cc_image_base",
       registry = "gcr.io",
       repository = "distroless/cc",
-      # 'latest' circa 2017-09-15
-      digest = "sha256:84d70ebb1baee21424894a23e90f4c40c6f7f7ec747396525b57e4ae432edaeb",
+      digest = DIGESTS["latest"],
     )
+  if "cc_debug_image_base" not in excludes:
+    container_pull(
+      name = "cc_debug_image_base",
+      registry = "gcr.io",
+      repository = "distroless/cc",
+      digest = DIGESTS["debug"],
+    )
+
+DEFAULT_BASE = select({
+    "//:fastbuild": "@cc_image_base//image",
+    "//:debug": "@cc_debug_image_base//image",
+    "//:optimized": "@cc_image_base//image",
+    "//conditions:default": "@cc_image_base//image",
+})
 
 def cc_image(name, base=None, deps=[], layers=[], **kwargs):
   """Constructs a container image wrapping a cc_binary target.
@@ -58,7 +74,7 @@ def cc_image(name, base=None, deps=[], layers=[], **kwargs):
   native.cc_binary(name=binary_name, deps=deps + layers, **kwargs)
 
   index = 0
-  base = base or "@cc_image_base//image"
+  base = base or DEFAULT_BASE
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)

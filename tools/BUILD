@@ -11,23 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//visibility:private"])
 
-licenses(["notice"])  # Apache 2.0
-
-exports_files(["LICENSE"])
-
-config_setting(
-    name = "fastbuild",
-    values = {"compilation_mode": "fastbuild"},
-)
-
-config_setting(
-    name = "debug",
-    values = {"compilation_mode": "dbg"},
-)
-
-config_setting(
-    name = "optimized",
-    values = {"compilation_mode": "opt"},
+py_binary(
+    name = "update_deps",
+    srcs = ["update_deps.py"],
+    deps = [
+        "@containerregistry//:containerregistry",
+    ],
 )

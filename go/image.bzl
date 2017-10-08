@@ -32,6 +32,9 @@ load(
 # go_image.
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
+# Load the resolved digests.
+load(":go.bzl", "DIGESTS")
+
 def repositories():
   # Call the core "repositories" function to reduce boilerplate.
   # This is idempotent if folks call it themselves.
@@ -43,9 +46,22 @@ def repositories():
       name = "go_image_base",
       registry = "gcr.io",
       repository = "distroless/base",
-      # 'latest' circa 2017-09-15
-      digest = "sha256:872f258db0668e5cabfe997d4076b2fe5337e5b73cdd9ca47c7dbccd87e71341",
+      digest = DIGESTS["latest"],
     )
+  if "go_debug_image_base" not in excludes:
+    container_pull(
+      name = "go_debug_image_base",
+      registry = "gcr.io",
+      repository = "distroless/base",
+      digest = DIGESTS["debug"],
+    )
+
+DEFAULT_BASE = select({
+    "//:fastbuild": "@go_image_base//image",
+    "//:debug": "@go_debug_image_base//image",
+    "//:optimized": "@go_image_base//image",
+    "//conditions:default": "@go_image_base//image",
+})
 
 def go_image(name, base=None, deps=[], layers=[], **kwargs):
   """Constructs a container image wrapping a go_binary target.
@@ -62,7 +78,7 @@ def go_image(name, base=None, deps=[], layers=[], **kwargs):
   go_binary(name=binary_name, deps=deps + layers, **kwargs)
 
   index = 0
-  base = base or "@go_image_base//image"
+  base = base or DEFAULT_BASE
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)

@@ -11,23 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+# !!!! THIS IS A GENERATED FILE TO NOT EDIT IT BY HAND !!!!
+#
+# To regenerate this file, run ./update_deps.sh from the root of the
+# git repository.
 
-exports_files(["LICENSE"])
-
-config_setting(
-    name = "fastbuild",
-    values = {"compilation_mode": "fastbuild"},
-)
-
-config_setting(
-    name = "debug",
-    values = {"compilation_mode": "dbg"},
-)
-
-config_setting(
-    name = "optimized",
-    values = {"compilation_mode": "opt"},
-)
+DIGESTS = {
+    # "gcr.io/distroless/cc:debug" circa 2017-10-10 04:09 +0000
+    "debug": "sha256:21e38594fa41bf10526184c097f3c32ce10932c0944ac3780534bf2ad2c0d320",
+    # "gcr.io/distroless/cc:latest" circa 2017-10-10 04:09 +0000
+    "latest": "sha256:69efccbe4d1318955a884a7b85c192804d0d5df7da00cc5be193a177f6f5cee1",
+}
