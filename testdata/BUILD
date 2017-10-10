@@ -559,3 +559,10 @@ rust_image(
     name = "rust_image",
     srcs = ["main.rs"],
 )
+
+load("//d:image.bzl", "d_image")
+
+d_image(
+    name = "d_image",
+    srcs = ["main.d"],
+)
