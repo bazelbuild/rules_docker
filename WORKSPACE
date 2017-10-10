@@ -78,6 +78,17 @@ load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
 
 scala_repositories()
 
+# For our groovy_image test.
+git_repository(
+    name = "io_bazel_rules_groovy",
+    commit = "6b8e32ce0f7e33ae1b859706c2dc0c169b966e7e",
+    remote = "https://github.com/bazelbuild/rules_groovy.git",
+)
+
+load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
+
+groovy_repositories()
+
 # For our go_image test.
 git_repository(
     name = "io_bazel_rules_go",

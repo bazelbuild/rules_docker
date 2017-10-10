@@ -224,6 +224,12 @@ function test_scala_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:scala_image)" "Hello World"
 }
 
+function test_groovy_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:groovy_image)" "Hello World"
+}
+
 test_top_level
 test_bazel_build_then_run_docker_build_clean
 test_bazel_run_docker_build_clean
@@ -245,3 +251,5 @@ test_java_bin_as_lib_image
 test_war_image
 test_scala_image -c opt
 test_scala_image -c dbg
+test_groovy_image -c opt
+test_groovy_image -c dbg
