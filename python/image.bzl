@@ -27,6 +27,9 @@ load(
     _repositories = "repositories",
 )
 
+# Load the resolved digests.
+load(":python.bzl", "DIGESTS")
+
 def repositories():
   # Call the core "repositories" function to reduce boilerplate.
   # This is idempotent if folks call it themselves.
@@ -38,9 +41,22 @@ def repositories():
       name = "py_image_base",
       registry = "gcr.io",
       repository = "distroless/python2.7",
-      # 'latest' circa 2017-09-15
-      digest = "sha256:61477696140326e1192dc6ce1a5f8dfe7e99591dbd7934f19141b4a303023600",
+      digest = DIGESTS["latest"],
     )
+  if "py_debug_image_base" not in excludes:
+    container_pull(
+      name = "py_debug_image_base",
+      registry = "gcr.io",
+      repository = "distroless/python2.7",
+      digest = DIGESTS["debug"],
+    )
+
+DEFAULT_BASE = select({
+    "//:fastbuild": "@py_image_base//image",
+    "//:debug": "@py_debug_image_base//image",
+    "//:optimized": "@py_image_base//image",
+    "//conditions:default": "@py_image_base//image",
+})
 
 def py_image(name, base=None, deps=[], layers=[], **kwargs):
   """Constructs a container image wrapping a py_binary target.
@@ -64,7 +80,7 @@ def py_image(name, base=None, deps=[], layers=[], **kwargs):
   # TODO(mattmoor): Consider making the directory into which the app
   # is placed configurable.
   index = 0
-  base = base or "@py_image_base//image"
+  base = base or DEFAULT_BASE
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)

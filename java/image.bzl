@@ -24,6 +24,16 @@ load(
     _repositories = "repositories",
 )
 
+# Load the resolved digests.
+load(
+    ":java.bzl",
+    _JAVA_DIGESTS = "DIGESTS",
+)
+load(
+    ":jetty.bzl",
+    _JETTY_DIGESTS = "DIGESTS",
+)
+
 def repositories():
   # Call the core "repositories" function to reduce boilerplate.
   # This is idempotent if folks call it themselves.
@@ -35,22 +45,48 @@ def repositories():
       name = "java_image_base",
       registry = "gcr.io",
       repository = "distroless/java",
-      # 'latest' circa 2017-09-15
-      digest = "sha256:22bd88ce795258f9d976334abcb071a99b1b4fb9229b86e7d085a7114a2dc565",
+      digest = _JAVA_DIGESTS["latest"],
+    )
+  if "java_debug_image_base" not in excludes:
+    container_pull(
+      name = "java_debug_image_base",
+      registry = "gcr.io",
+      repository = "distroless/java",
+      digest = _JAVA_DIGESTS["debug"],
     )
   if "jetty_image_base" not in excludes:
     container_pull(
       name = "jetty_image_base",
       registry = "gcr.io",
       repository = "distroless/java/jetty",
-      # 'latest' circa 2017-09-15
-      digest = "sha256:952fc35b45801e07ff189de1d856efc14256e446bff2617da1fd348434ee4e7b",
+      digest = _JETTY_DIGESTS["latest"],
+    )
+  if "jetty_debug_image_base" not in excludes:
+    container_pull(
+      name = "jetty_debug_image_base",
+      registry = "gcr.io",
+      repository = "distroless/java/jetty",
+      digest = _JETTY_DIGESTS["debug"],
     )
   if "servlet_api" not in excludes:
     native.maven_jar(
         name = "javax_servlet_api",
         artifact = "javax.servlet:javax.servlet-api:3.0.1",
     )
+
+DEFAULT_JAVA_BASE = select({
+    "//:fastbuild": "@java_image_base//image",
+    "//:debug": "@java_debug_image_base//image",
+    "//:optimized": "@java_image_base//image",
+    "//conditions:default": "@java_image_base//image",
+})
+
+DEFAULT_JETTY_BASE = select({
+    "//:fastbuild": "@jetty_image_base//image",
+    "//:debug": "@jetty_debug_image_base//image",
+    "//:optimized": "@jetty_image_base//image",
+    "//conditions:default": "@jetty_image_base//image",
+})
 
 load(
     "//container:container.bzl",
@@ -189,7 +225,7 @@ def java_image(name, base=None, main_class=None,
                      jvm_flags=jvm_flags, **kwargs)
 
   index = 0
-  base = base or "@java_image_base//image"
+  base = base or DEFAULT_JAVA_BASE
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     _jar_dep_layer(name=this_name, base=base, dep=dep)
@@ -290,7 +326,7 @@ def war_image(name, base=None, deps=[], layers=[], **kwargs):
   native.java_library(name=library_name, deps=deps + layers, **kwargs)
 
   index = 0
-  base = base or "@jetty_image_base//image"
+  base = base or DEFAULT_JETTY_BASE
   for dep in layers:
     this_name = "%s.%d" % (name, index)
     _war_dep_layer(name=this_name, base=base, dep=dep)

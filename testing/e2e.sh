@@ -165,7 +165,7 @@ function test_py_image() {
   cd "${ROOT}"
   clear_docker
   cat > output.txt <<EOF
-$(bazel run testdata:py_image)
+$(bazel run "$@" testdata:py_image)
 EOF
   EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
   EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
@@ -177,19 +177,27 @@ EOF
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run testdata:cc_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image)" "Hello World"
 }
 
 function test_go_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run testdata:go_image)" "Hello, world!"
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:go_image)" "Hello, world!"
+}
+
+function test_go_image_busybox() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run -c dbg testdata:go_image -- --norun
+  local number=$RANDOM
+  EXPECT_CONTAINS "$(docker run -ti --rm --entrypoint=sh bazel/testdata:go_image -c \"echo aa${number}bb\")" "aa${number}bb"
 }
 
 function test_java_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run testdata:java_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image)" "Hello World"
 }
 
 function test_java_bin_as_lib_image() {
@@ -218,9 +226,14 @@ test_bazel_run_docker_import_clean
 test_bazel_run_docker_build_incremental
 test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
-test_py_image
-test_cc_image
-test_go_image
-test_java_image
+test_py_image -c opt
+test_py_image -c dbg
+test_cc_image -c opt
+test_cc_image -c dbg
+test_go_image -c opt
+test_go_image -c dbg
+test_go_image_busybox
+test_java_image -c opt
+test_java_image -c dbg
 test_java_bin_as_lib_image
 test_war_image
