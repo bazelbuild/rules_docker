@@ -552,3 +552,10 @@ go_image(
     srcs = ["main.go"],
     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
 )
+
+load("//rust:image.bzl", "rust_image")
+
+rust_image(
+    name = "rust_image",
+    srcs = ["main.rs"],
+)
