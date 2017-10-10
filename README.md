@@ -54,6 +54,8 @@ https://github.com/bazelbuild/rules_scala#scala_binary))
 https://github.com/bazelbuild/rules_groovy#groovy_binary))
 * [rust_image](#rust_image) ([signature](
 https://github.com/bazelbuild/rules_rust#rust_binary))
+* [d_image](#d_image) ([signature](
+https://github.com/bazelbuild/rules_d#d_binary))
 
 ### Overview
 
@@ -560,6 +562,41 @@ load("@io_bazel_rules_docker//rust:image.bzl", "rust_image")
 rust_image(
     name = "rust_image",
     srcs = ["main.rs"],
+)
+```
+
+### d_image
+
+To use `d_image`, add the following to `WORKSPACE`:
+
+```python
+# You *must* import the D rules before setting up the d_image rules.
+git_repository(
+    name = "io_bazel_rules_d",
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_d.git",
+)
+
+load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
+
+d_repositories()
+
+load(
+    "@io_bazel_rules_docker//d:image.bzl",
+    _d_image_repos = "repositories",
+)
+
+_d_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `d_binary` to `d_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//d:image.bzl", "d_image")
+
+d_image(
+    name = "d_image",
+    srcs = ["main.d"],
 )
 ```
 

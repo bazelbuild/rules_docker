@@ -118,3 +118,14 @@ git_repository(
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
 
 rust_repositories()
+
+# For our d_image test
+git_repository(
+    name = "io_bazel_rules_d",
+    commit = "0400b9b054013274cee2ed15679da19e1fc94e07",
+    remote = "https://github.com/bazelbuild/rules_d.git",
+)
+
+load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
+
+d_repositories()
