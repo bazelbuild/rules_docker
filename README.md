@@ -48,6 +48,8 @@ https://docs.bazel.build/versions/master/be/python.html#py_binary))
 https://docs.bazel.build/versions/master/be/java.html#java_binary))
 * [war_image](#war_image) ([signature](
 https://docs.bazel.build/versions/master/be/java.html#java_library))
+* [scala_image](#scala_image) ([signature](
+https://github.com/bazelbuild/rules_scala#scala_binary))
 
 ### Overview
 
@@ -447,6 +449,42 @@ war_image(
         ":java_image_library",
         "@javax_servlet_api//jar:jar",
     ],
+)
+```
+
+### scala_image
+
+To use `scala_image`, add the following to `WORKSPACE`:
+
+```python
+# You *must* import the Scala rules before setting up the scalal_image rules.
+git_repository(
+    name = "io_bazel_rules_scala",
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_scala.git",
+)
+
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
+
+scala_repositories()
+
+load(
+    "@io_bazel_rules_docker//scala:image.bzl",
+    _scala_image_repos = "repositories",
+)
+
+_scala_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `scala_binary` to `scala_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//scala:image.bzl", "scala_image")
+
+scala_image(
+    name = "scala_image",
+    srcs = ["Binary.scala"],
+    main_class = "examples.images.Binary",
 )
 ```
 

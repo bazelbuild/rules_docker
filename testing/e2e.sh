@@ -218,6 +218,12 @@ function test_war_image() {
   docker rm -f "${ID}"
 }
 
+function test_scala_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:scala_image)" "Hello World"
+}
+
 test_top_level
 test_bazel_build_then_run_docker_build_clean
 test_bazel_run_docker_build_clean
@@ -237,3 +243,5 @@ test_java_image -c opt
 test_java_image -c dbg
 test_java_bin_as_lib_image
 test_war_image
+test_scala_image -c opt
+test_scala_image -c dbg
