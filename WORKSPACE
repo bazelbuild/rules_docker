@@ -67,6 +67,17 @@ maven_jar(
     sha1 = "cce0823396aa693798f8882e64213b1772032b09",
 )
 
+# For our scala_image test.
+git_repository(
+    name = "io_bazel_rules_scala",
+    commit = "0bac7fe86fdde1cfba3bb2c8a04de5e12de47bcd",
+    remote = "https://github.com/bazelbuild/rules_scala.git",
+)
+
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
+
+scala_repositories()
+
 # For our go_image test.
 git_repository(
     name = "io_bazel_rules_go",

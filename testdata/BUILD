@@ -527,6 +527,15 @@ war_image(
     ],
 )
 
+load("//scala:image.bzl", "scala_image")
+
+scala_image(
+    name = "scala_image",
+    srcs = ["Binary.scala"],
+    main_class = "examples.images.Binary",
+    deps = [":java_image_library"],
+)
+
 load("//go:image.bzl", "go_image")
 
 go_image(
