@@ -527,10 +527,10 @@ war_image(
     ],
 )
 
-load("//go:image.bzl", "go_image")
+# load("//go:image.bzl", "go_image")
 
-go_image(
-    name = "go_image",
-    srcs = ["main.go"],
-    importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
-)
+# go_image(
+#     name = "go_image",
+#     srcs = ["main.go"],
+#     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
+# )
