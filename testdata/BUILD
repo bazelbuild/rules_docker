@@ -536,6 +536,15 @@ scala_image(
     deps = [":java_image_library"],
 )
 
+load("//groovy:image.bzl", "groovy_image")
+
+groovy_image(
+    name = "groovy_image",
+    srcs = ["Binary.groovy"],
+    main_class = "examples.images.Binary",
+    deps = [":java_image_library"],
+)
+
 load("//go:image.bzl", "go_image")
 
 go_image(

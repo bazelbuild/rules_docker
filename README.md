@@ -50,6 +50,8 @@ https://docs.bazel.build/versions/master/be/java.html#java_binary))
 https://docs.bazel.build/versions/master/be/java.html#java_library))
 * [scala_image](#scala_image) ([signature](
 https://github.com/bazelbuild/rules_scala#scala_binary))
+* [groovy_image](#groovy_image) ([signature](
+https://github.com/bazelbuild/rules_groovy#groovy_binary))
 
 ### Overview
 
@@ -457,7 +459,7 @@ war_image(
 To use `scala_image`, add the following to `WORKSPACE`:
 
 ```python
-# You *must* import the Scala rules before setting up the scalal_image rules.
+# You *must* import the Scala rules before setting up the scala_image rules.
 git_repository(
     name = "io_bazel_rules_scala",
     commit = "{HEAD}",
@@ -484,6 +486,42 @@ load("@io_bazel_rules_docker//scala:image.bzl", "scala_image")
 scala_image(
     name = "scala_image",
     srcs = ["Binary.scala"],
+    main_class = "examples.images.Binary",
+)
+```
+
+### groovy_image
+
+To use `groovy_image`, add the following to `WORKSPACE`:
+
+```python
+# You *must* import the Groovy rules before setting up the groovy_image rules.
+git_repository(
+    name = "io_bazel_rules_groovy",
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_groovy.git",
+)
+
+load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
+
+groovy_repositories()
+
+load(
+    "@io_bazel_rules_docker//groovy:image.bzl",
+    _groovy_image_repos = "repositories",
+)
+
+_groovy_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `groovy_binary` to `groovy_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//groovy:image.bzl", "groovy_image")
+
+groovy_image(
+    name = "groovy_image",
+    srcs = ["Binary.groovy"],
     main_class = "examples.images.Binary",
 )
 ```
