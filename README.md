@@ -52,6 +52,8 @@ https://docs.bazel.build/versions/master/be/java.html#java_library))
 https://github.com/bazelbuild/rules_scala#scala_binary))
 * [groovy_image](#groovy_image) ([signature](
 https://github.com/bazelbuild/rules_groovy#groovy_binary))
+* [rust_image](#rust_image) ([signature](
+https://github.com/bazelbuild/rules_rust#rust_binary))
 
 ### Overview
 
@@ -523,6 +525,41 @@ groovy_image(
     name = "groovy_image",
     srcs = ["Binary.groovy"],
     main_class = "examples.images.Binary",
+)
+```
+
+### rust_image
+
+To use `rust_image`, add the following to `WORKSPACE`:
+
+```python
+# You *must* import the Rust rules before setting up the rust_image rules.
+git_repository(
+    name = "io_bazel_rules_rust",
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_rust.git",
+)
+
+load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
+
+rust_repositories()
+
+load(
+    "@io_bazel_rules_docker//rust:image.bzl",
+    _rust_image_repos = "repositories",
+)
+
+_rust_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `rust_binary` to `rust_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//rust:image.bzl", "rust_image")
+
+rust_image(
+    name = "rust_image",
+    srcs = ["main.rs"],
 )
 ```
 

@@ -107,3 +107,14 @@ load(
 )
 
 _go_image_repos()
+
+# For our rust_image test
+git_repository(
+    name = "io_bazel_rules_rust",
+    commit = "7b1ba1f2a89006fbe358e97011cb1c1516435806",
+    remote = "https://github.com/bazelbuild/rules_rust.git",
+)
+
+load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
+
+rust_repositories()
