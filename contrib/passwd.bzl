@@ -60,11 +60,12 @@ passwd_file = rule(
             executable = True,
             allow_files = True,
         ),
+        "output_name": attr.string(default = "passwd"),
     },
     executable = False,
     outputs = {
-        "out": "%{name}.passwd",
-        "tar": "%{name}.passwd.tar",
+        "out": "%{output_name}",
+        "tar": "%{output_name}.tar",
     },
     implementation = _impl,
 )

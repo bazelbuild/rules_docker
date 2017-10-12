@@ -396,7 +396,7 @@ oci_pushall(
 load("//contrib:passwd.bzl", "passwd_file")
 
 passwd_file(
-    name = "testpasswd",
+    name = "password_file",
     gid = 2345,
     home = "/myhomedir",
     info = "myusernameinfo",
@@ -407,7 +407,7 @@ passwd_file(
 
 container_image(
     name = "with_passwd",
-    tars = [":testpasswd.passwd.tar"],
+    tars = [":passwd.tar"],
 )
 
 container_image(
