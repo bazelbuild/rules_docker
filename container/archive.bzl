@@ -16,6 +16,7 @@
 This extracts the tarball, examines the layers and creates a
 container_import target for use with container_image.
 """
+
 def _container_archive_impl(ctx):
   result = ctx.execute([
       ctx.path(ctx.attr._importer),
