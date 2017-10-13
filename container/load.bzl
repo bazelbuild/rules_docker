@@ -17,7 +17,10 @@ This extracts the tarball, examines the layers and creates a
 container_import target for use with container_image.
 """
 
-load("//container:pull.bzl", _python = "python")
+load(
+    "//container:pull.bzl",
+    _python = "python",
+)
 
 def _impl(repository_ctx):
   """Core implementation of container_load."""
