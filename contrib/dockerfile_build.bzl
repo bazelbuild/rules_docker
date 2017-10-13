@@ -55,10 +55,11 @@ Params:
 Returns:
   @name//:image: a docker_import target that contains the builded image.
 """
+
 dockerfile_build = repository_rule(
-    implementation = _impl,
     attrs = {
-        "tag": attr.string(mandatory=True),
-        "dockerfile": attr.label(mandatory=True),
+        "tag": attr.string(mandatory = True),
+        "dockerfile": attr.label(mandatory = True),
     },
+    implementation = _impl,
 )
