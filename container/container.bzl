@@ -13,11 +13,11 @@
 # limitations under the License.
 """Rules for manipulation container images."""
 
-load("//container:image.bzl", "container_image", "image")
+load("//container:archive.bzl", "container_archive")
 load("//container:bundle.bzl", "container_bundle")
 load("//container:flatten.bzl", "container_flatten")
+load("//container:image.bzl", "container_image", "image")
 load("//container:import.bzl", "container_import")
-load("//container:archive.bzl", "container_archive")
 load("//container:pull.bzl", "container_pull")
 load("//container:push.bzl", "container_push")
 

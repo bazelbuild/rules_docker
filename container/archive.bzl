@@ -16,70 +16,14 @@
 This extracts the tarball, examines the layers and creates a
 container_import target for use with container_image.
 """
-
-def _manifest_layers(manifest):
-  # Extracts layers, preserving order, from the manifest.
-
-  layers_begin_marker = "\"Layers\":["
-  start = manifest.index(layers_begin_marker)
-  end = manifest.index("]", start)
-
-  start += len(layers_begin_marker)
-  layers = manifest[start:end].replace("\"", "").split(",")
-
-  if not layers:
-    fail("Failed to extract layers from manifest.json")
-
-  return layers
-
-def _gzip_layers(ctx):
-  # Returns an array of gzipped layers, preserving order.
-
-  manifest = ctx.execute(["cat", "manifest.json"])
-  if manifest.return_code:
-    fail("Could not read manifest: %s" % manifest.stderr)
-
-  zipped_layers = []
-  layers = _manifest_layers(manifest.stdout)
-  for layer in layers:
-    zipped_layer = layer.split("/")[0] + ".tar.gz"
-    result = ctx.execute(["gzip", "-n", layer])
-    if result.return_code:
-      fail("Failed to gzip image layer %s: %s" % (layer, result.stderr))
-    result = ctx.execute(["mv", layer + ".gz", zipped_layer])
-    if result.return_code:
-      fail("Failed to gzip image layer %s: %s" % (layer, result.stderr))
-    zipped_layers += ["\"" + zipped_layer + "\","]
-
-  return zipped_layers
-
-def _config_json(ctx):
-  # Identifies the image config json file in the root directory.
-
-  config_candidates = ctx.execute(["ls", "-1"])
-  if config_candidates.return_code:
-    fail("Failed to list contents: %s" % config_candidates.stderr)
-
-  config = None
-  for candidate in config_candidates.stdout.splitlines():
-    if candidate.endswith(".json") and candidate != "manifest.json":
-      config = candidate
-      break
-
-  if not config:
-    fail("Failed to find config file")
-
-  return config
-
 def _container_archive_impl(ctx):
-  ctx.download_and_extract(url=ctx.attr.urls,
-                           sha256=ctx.attr.sha256,
-                           type=ctx.attr.type,
-                           stripPrefix=ctx.attr.strip_prefix)
+  result = ctx.execute([
+      ctx.path(ctx.attr._importer),
+      "--directory", ".",
+      "--tarball", ctx.path(ctx.attr.file)])
 
-  zipped_layers = _gzip_layers(ctx)
-
-  config = _config_json(ctx)
+  if result.return_code:
+    fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
 
   ctx.file("BUILD", """
 package(default_visibility = ["//visibility:public"])
@@ -88,23 +32,25 @@ load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
 container_import(
   name = \"""" + ctx.attr.image_tag + """\",
-  config = \"""" + config + """\",
-  layers = [
-    """ + "\n    ".join(zipped_layers) + """
-  ],
+  config = "config.json",
+  layers = glob(["*.tar.gz"]),
   repository = \"""" + ctx.attr.image_repository + """\",
 )
 """, executable=False)
-    
 
 container_archive = repository_rule(
     attrs = {
-        "urls": attr.string_list(allow_empty = False),
-        "sha256": attr.string(),
-        "type": attr.string(),
-        "strip_prefix": attr.string(),
+        "file": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+        ),
         "image_repository": attr.string(default = "bazel"),
         "image_tag": attr.string(default = "image"),
+        "_importer": attr.label(
+            executable = True,
+            default = Label("@importer//file:importer.par"),
+            cfg = "host",
+        ),
     },
     implementation = _container_archive_impl,
 )

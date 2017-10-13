@@ -16,11 +16,11 @@
 load(
     "//container:container.bzl",
     "container_push",
+    docker_archive = "container_archive",
     docker_build = "container_image",
     docker_bundle = "container_bundle",
     docker_flatten = "container_flatten",
     docker_image = "container_image",
-    docker_archive = "container_archive",
     docker_import = "container_import",
     docker_pull = "container_pull",
     docker_repositories = "repositories",

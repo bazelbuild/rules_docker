@@ -16,6 +16,7 @@
 load(
     "//container:container.bzl",
     "container_push",
+    oci_archive = "container_archive",
     oci_bundle = "container_bundle",
     oci_flatten = "container_flatten",
     oci_image = "container_image",
