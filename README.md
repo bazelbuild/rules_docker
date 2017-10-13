@@ -1278,7 +1278,8 @@ A rule that imports a docker image into our intermediate form.
            appear in the <code>config.json</code>'s layer section, or in the
            order that they appear in <code>docker save</code> tarballs'
            <code>manifest.json</code> <code>Layers</code> field (these may or
-           may not be gzipped).</p>
+           may not be gzipped). Note that the layers should each have a
+           different basename.</p>
       </td>
     </tr>
   </tbody>
