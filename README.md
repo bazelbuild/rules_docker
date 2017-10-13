@@ -1273,12 +1273,13 @@ A rule that imports a docker image into our intermediate form.
     <tr>
       <td><code>layers</code></td>
       <td>
-        <p><code>The list of layer `.tar.gz`s; required</code></p>
+        <p><code>The list of layer `.tar`s or `.tar.gz`s; required</code></p>
         <p>The list of layer <code>.tar.gz</code> files in the order they
            appear in the <code>config.json</code>'s layer section, or in the
            order that they appear in <code>docker save</code> tarballs'
-           <code>manifest.json</code> <code>Layers</code> field (although
-           these are gzipped).</p>
+           <code>manifest.json</code> <code>Layers</code> field (these may or
+           may not be gzipped). Note that the layers should each have a
+           different basename.</p>
       </td>
     </tr>
   </tbody>

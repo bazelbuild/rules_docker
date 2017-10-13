@@ -453,6 +453,14 @@ PAUSE_LAYERS = [
 [genrule(
     name = "extract_%s" % id,
     srcs = [":pause.tar"],
+    outs = ["%s.tar" % id],
+    cmd = ("tar xOf $(location :pause.tar) %s/layer.tar " +
+           "> $(location :%s.tar)") % (id, id),
+) for id in PAUSE_LAYERS]
+
+[genrule(
+    name = "extract_%s_gz" % id,
+    srcs = [":pause.tar"],
     outs = ["%s.tar.gz" % id],
     cmd = ("tar xOf $(location :pause.tar) %s/layer.tar " +
            "| gzip -n > $(location :%s.tar.gz)") % (id, id),
@@ -460,6 +468,12 @@ PAUSE_LAYERS = [
 
 container_import(
     name = "pause_piecemeal",
+    config = ":pause_config.json",
+    layers = ["%s.tar" % x for x in PAUSE_LAYERS],
+)
+
+container_import(
+    name = "pause_piecemeal_gz",
     config = ":pause_config.json",
     layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
 )
