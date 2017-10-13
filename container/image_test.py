@@ -265,6 +265,15 @@ class ImageTest(unittest.TestCase):
       self.assertDigest(img, 'fdd4eeea8ad631006ba52058b2dbf8356adae8dcee16e431e9a407f5ef79d25f')
       self.assertEqual(3, len(img.fs_layers()))
 
+  def test_pause_piecemeal(self):
+    with TestImage('pause_piecemeal') as img:
+      self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
+      self.assertEqual(2, len(img.fs_layers()))
+
+  def test_pause_piecemeal_gz(self):
+    with TestImage('pause_piecemeal_gz') as img:
+      self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
+
   def test_build_with_tag(self):
     with TestBundleImage('build_with_tag', 'gcr.io/build/with:tag') as img:
       self.assertDigest(img, '1db3c9f3076f811a8d311ac6ee88251d621706ba8a80985685023b7e62b6cc14')

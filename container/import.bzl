@@ -15,6 +15,7 @@
 
 load(
     "//skylib:filetype.bzl",
+    tar_filetype = "tar",
     tgz_filetype = "tgz",
 )
 load(
@@ -25,6 +26,7 @@ load(
 load(
     "//skylib:zip.bzl",
     _gunzip = "gunzip",
+    _gzip = "gzip",
 )
 load(
     "//container:layers.bzl",
@@ -40,9 +42,16 @@ load(
     _join_path = "join",
 )
 
-def _unzip_layer(ctx, zipped_layer):
-  unzipped_layer = _gunzip(ctx, zipped_layer)
-  return unzipped_layer, _sha256(ctx, unzipped_layer)
+def _layer_pair(ctx, layer):
+  zipped = False
+  for filetype in tgz_filetype:
+    if layer.basename.endswith(filetype):
+      zipped = True
+      break
+
+  zipped_layer = _gzip(ctx, layer) if not zipped else layer
+  unzipped_layer = _gunzip(ctx, layer) if zipped else layer
+  return zipped_layer, unzipped_layer, _sha256(ctx, unzipped_layer)
 
 def _repository_name(ctx):
   """Compute the repository name for the current rule."""
@@ -52,11 +61,13 @@ def _container_import_impl(ctx):
   """Implementation for the container_import rule."""
 
   blobsums = []
+  zipped_layers = []
   unzipped_layers = []
   diff_ids = []
   for layer in ctx.files.layers:
     blobsums += [_sha256(ctx, layer)]
-    unzipped, diff_id = _unzip_layer(ctx, layer)
+    zipped, unzipped, diff_id = _layer_pair(ctx, layer)
+    zipped_layers += [zipped]
     unzipped_layers += [unzipped]
     diff_ids += [diff_id]
 
@@ -68,7 +79,7 @@ def _container_import_impl(ctx):
       "config_digest": _sha256(ctx, ctx.files.config[0]),
 
       # A list of paths to the layer .tar.gz files
-      "zipped_layer": ctx.files.layers,
+      "zipped_layer": zipped_layers,
       # A list of paths to the layer digests.
       "blobsum": blobsums,
 
@@ -102,7 +113,7 @@ def _container_import_impl(ctx):
 container_import = rule(
     attrs = {
         "config": attr.label(allow_files = [".json"]),
-        "layers": attr.label_list(allow_files = tgz_filetype),
+        "layers": attr.label_list(allow_files = tar_filetype),
         "repository": attr.string(default = "bazel"),
     } + _hash_tools + _layer_tools,
     executable = True,

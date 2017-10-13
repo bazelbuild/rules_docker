@@ -112,6 +112,7 @@ TEST_TARGETS = [
     "base_based_warning",
     "cc_based_warning",
     "pause_piecemeal",
+    "pause_piecemeal_gz",
     "py_image",
     "cc_image",
     "java_image",
