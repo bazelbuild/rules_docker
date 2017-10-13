@@ -20,6 +20,7 @@ load(
     oci_flatten = "container_flatten",
     oci_image = "container_image",
     oci_import = "container_import",
+    oci_load = "container_load",
     oci_pull = "container_pull",
 )
 

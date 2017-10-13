@@ -18,7 +18,7 @@ Bazel rule for downloading base images without a Docker client to
 construct new images.
 """
 
-def _python(repository_ctx):
+def python(repository_ctx):
   if "BAZEL_PYTHON" in repository_ctx.os.environ:
     return repository_ctx.os.environ.get("BAZEL_PYTHON")
 
@@ -50,7 +50,7 @@ container_import(
 """)
 
   args = [
-      _python(repository_ctx),
+      python(repository_ctx),
       repository_ctx.path(repository_ctx.attr._puller),
       "--directory", repository_ctx.path("image")
   ]

@@ -16,6 +16,7 @@ workspace(name = "io_bazel_rules_docker")
 load(
     "//container:container.bzl",
     "container_pull",
+    "container_load",
     container_repositories = "repositories",
 )
 
@@ -34,6 +35,11 @@ container_pull(
     name = "distroless_cc",
     registry = "gcr.io",
     repository = "distroless/cc",
+)
+
+container_load(
+    name = "pause_tar",
+    file = "//testdata:pause.tar",
 )
 
 # Have the py_image dependencies for testing.

@@ -21,6 +21,8 @@ load(
     "container_import",
 )
 
+exports_files(["pause.tar"])
+
 genrule(
     name = "gen",
     outs = ["gen.out"],
@@ -114,6 +116,13 @@ container_image(
     name = "tar_with_files_base",
     base = ":files_base",
     tars = ["two.tar"],
+)
+
+container_image(
+    name = "docker_tarball_base",
+    base = "@pause_tar//image",
+    files = ["foo"],
+    mode = "0644",
 )
 
 # TODO(mattmoor): Test scalar entrypoint

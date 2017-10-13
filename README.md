@@ -9,6 +9,7 @@ Travis CI | Bazel CI
 * [container_image](#container_image-1) ([example](#container_image))
 * [container_bundle](#container_bundle-1) ([example](#container_bundle))
 * [container_import](#container_import)
+* [container_load](#container_load)
 * [container_pull](#container_pull-1) ([example](#container_pull))
 * [container_push](#container_push-1) ([example](#container_push))
 
@@ -1278,6 +1279,46 @@ A rule that imports a docker image into our intermediate form.
            order that they appear in <code>docker save</code> tarballs'
            <code>manifest.json</code> <code>Layers</code> field (although
            these are gzipped).</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="container_load"></a>
+## container_load
+
+```python
+container_load(name, file)
+```
+
+A repository rule that examines the contents of a `docker save` tarball and
+creates a `container_import` target. The created target can be referenced as
+`@label_name//image`.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name, required</code></p>
+        <p>Unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>file</code></td>
+      <td>
+        <p><code>The `docker save` tarball file; required</code></p>
+        <p>A label targetting a single file which is a compressed or
+           uncompressed tar, as obtained through `docker save IMAGE`.</p>
       </td>
     </tr>
   </tbody>
