@@ -42,15 +42,25 @@ load(
     _join_path = "join",
 )
 
-def _layer_pair(ctx, layer):
-  zipped = False
-  for filetype in tgz_filetype:
-    if layer.basename.endswith(filetype):
-      zipped = True
-      break
+def _is_filetype(filename, extensions):
+  for filetype in extensions:
+    if filename.endswith(filetype):
+      return True
 
-  zipped_layer = _gzip(ctx, layer) if not zipped else layer
-  unzipped_layer = _gunzip(ctx, layer) if zipped else layer
+def _is_tgz(layer):
+  return _is_filetype(layer.basename, tgz_filetype)
+
+def _is_tar(layer):
+  return _is_filetype(layer.basename, tar_filetype)
+
+def _layer_pair(ctx, layer):
+  zipped = _is_tgz(layer)
+  unzipped = not zipped and _is_tar(layer)
+  if not (zipped or unzipped):
+    fail("Unknown filetype provided (need .tar or .tar.gz): %s" % layer)
+
+  zipped_layer = layer if zipped else _gzip(ctx, layer)
+  unzipped_layer = layer if unzipped else _gunzip(ctx, layer)
   return zipped_layer, unzipped_layer, _sha256(ctx, unzipped_layer)
 
 def _repository_name(ctx):
@@ -113,7 +123,7 @@ def _container_import_impl(ctx):
 container_import = rule(
     attrs = {
         "config": attr.label(allow_files = [".json"]),
-        "layers": attr.label_list(allow_files = tar_filetype),
+        "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype),
         "repository": attr.string(default = "bazel"),
     } + _hash_tools + _layer_tools,
     executable = True,
