@@ -17,20 +17,15 @@ This extracts the tarball, examines the layers and creates a
 container_import target for use with container_image.
 """
 
-def _container_load_impl(ctx):
-  result = ctx.execute(["mkdir", "image"])
-  if result.return_code:
-    fail("Creating directory failed (status %s): %s" % (result.return_code, result.stderr))
+load("//container:pull.bzl", _python = "python")
 
-  result = ctx.execute([
-      ctx.path(ctx.attr._importer),
-      "--directory", "image",
-      "--tarball", ctx.path(ctx.attr.file)])
+def _impl(repository_ctx):
+  """Core implementation of container_load."""
 
-  if result.return_code:
-    fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
+  # Add an empty top-level BUILD file.
+  repository_ctx.file("BUILD", "")
 
-  ctx.file("image/BUILD", """
+  repository_ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
@@ -41,6 +36,15 @@ container_import(
   layers = glob(["*.tar.gz"]),
 )
 """, executable=False)
+
+  result = repository_ctx.execute([
+      _python(repository_ctx),
+      repository_ctx.path(repository_ctx.attr._importer),
+      "--directory", repository_ctx.path("image"),
+      "--tarball", repository_ctx.path(repository_ctx.attr.file)])
+
+  if result.return_code:
+    fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
 
 container_load = repository_rule(
     attrs = {
@@ -54,5 +58,5 @@ container_load = repository_rule(
             cfg = "host",
         ),
     },
-    implementation = _container_load_impl,
+    implementation = _impl,
 )

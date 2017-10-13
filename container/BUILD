@@ -84,6 +84,7 @@ TEST_TARGETS = [
     "tar_base",
     "tar_with_files_base",
     "tar_with_tar_base",
+    "docker_tarball_base",
     # TODO(mattmoor): Re-enable once archive is visible
     # "generated_tarball",
     "with_env",

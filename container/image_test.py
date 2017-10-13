@@ -113,6 +113,12 @@ class ImageTest(unittest.TestCase):
         './asdf', './usr', './usr/bin',
         './usr/bin/miraclegrow'])
 
+  def test_docker_tarball_base(self):
+    with TestImage('docker_tarball_base') as img:
+      self.assertDigest(img, '8737088f29110bcbbf8f65df5151b8148ab3c6adc3568b612f1326711f73b8a0')
+      self.assertEqual(3, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './foo'])
+
   def test_base_with_entrypoint(self):
     with TestImage('base_with_entrypoint') as img:
       self.assertDigest(img, '813cb4af1c3f73cc2b5f837a61dca6a62335b87e5cd762e780286ca99f71ac83')
