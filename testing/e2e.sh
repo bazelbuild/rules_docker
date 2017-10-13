@@ -39,7 +39,7 @@ function EXPECT_CONTAINS() {
 }
 
 function stop_containers() {
-  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || /bin/true
+  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || true
 }
 
 # Clean up any containers [before] we start.
@@ -64,6 +64,11 @@ docker_build(
   base = "@pause//image",
   workdir = "/tmp",
 )
+
+docker_build(
+  name = "pause_load_based",
+  base = "@pause_load//image",
+)
 EOF
 
   cat > "WORKSPACE" <<EOF
@@ -76,7 +81,8 @@ local_repository(
 
 load(
   "@io_bazel_rules_docker//docker:docker.bzl",
-  "docker_repositories", "docker_pull"
+  "docker_repositories",
+  "docker_pull", "docker_load",
 )
 docker_repositories()
 
@@ -86,9 +92,20 @@ docker_pull(
   repository = "google-containers/pause",
   tag = "2.0",
 )
+
+http_file(
+  name = "pause_tar",
+  urls = ["file://$ROOT/testdata/pause.tar"],
+)
+
+docker_load(
+  name = "pause_load",
+  file = "@pause_tar//file:pause.tar",
+)
 EOF
 
   bazel build --verbose_failures --spawn_strategy=standalone :pause_based
+  bazel build --verbose_failures --spawn_strategy=standalone :pause_load_based
 }
 
 

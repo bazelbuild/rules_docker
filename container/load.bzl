@@ -17,41 +17,42 @@ This extracts the tarball, examines the layers and creates a
 container_import target for use with container_image.
 """
 
-def _container_archive_impl(ctx):
+def _container_load_impl(ctx):
+  result = ctx.execute(["mkdir", "image"])
+  if result.return_code:
+    fail("Creating directory failed (status %s): %s" % (result.return_code, result.stderr))
+
   result = ctx.execute([
       ctx.path(ctx.attr._importer),
-      "--directory", ".",
+      "--directory", "image",
       "--tarball", ctx.path(ctx.attr.file)])
 
   if result.return_code:
     fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
 
-  ctx.file("BUILD", """
+  ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
 container_import(
-  name = \"""" + ctx.attr.image_tag + """\",
+  name = "image",
   config = "config.json",
   layers = glob(["*.tar.gz"]),
-  repository = \"""" + ctx.attr.image_repository + """\",
 )
 """, executable=False)
 
-container_archive = repository_rule(
+container_load = repository_rule(
     attrs = {
         "file": attr.label(
             allow_single_file = True,
             mandatory = True,
         ),
-        "image_repository": attr.string(default = "bazel"),
-        "image_tag": attr.string(default = "image"),
         "_importer": attr.label(
             executable = True,
             default = Label("@importer//file:importer.par"),
             cfg = "host",
         ),
     },
-    implementation = _container_archive_impl,
+    implementation = _container_load_impl,
 )
