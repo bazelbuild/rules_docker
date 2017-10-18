@@ -393,11 +393,27 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_tar")
 
-passwd_file(
-    name = "password_file",
+passwd_tar(
+    name = "testpasswd",
     gid = 2345,
+    home = "/myhomedir",
+    info = "myusernameinfo",
+    shell = "/myshell",
+    uid = 1234,
+    username = "foobar",
+    passwd_file_nm = "passwd",
+)
+
+container_image(
+    name = "with_passwd",
+    tars = [":testpasswd.tar"],
+)
+
+passwd_tar(
+    name = "testpasswddefault",
+    gid = 2456,
     home = "/myhomedir",
     info = "myusernameinfo",
     shell = "/myshell",
@@ -406,8 +422,8 @@ passwd_file(
 )
 
 container_image(
-    name = "with_passwd",
-    tars = [":passwd.tar"],
+    name = "with_passwddefault",
+    tars = [":testpasswddefault.tar"],
 )
 
 container_image(

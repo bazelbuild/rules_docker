@@ -30,21 +30,6 @@ def _impl(ctx):
       content = f,
       executable=False
   )
-  build_tar = ctx.executable.build_tar
-  args = [
-      "--output=" + ctx.outputs.tar.path,
-      "--file=%s=/etc/passwd" % ctx.outputs.out.path
-  ]
-  arg_file = ctx.new_file(ctx.attr.name + ".args")
-  ctx.file_action(arg_file, "\n".join(args))
-
-  ctx.action(
-      executable = build_tar,
-      arguments = ["--flagfile=" + arg_file.path],
-      inputs = [ctx.outputs.out, arg_file],
-      outputs = [ctx.outputs.tar],
-      use_default_shell_env = True
-  )
 
 passwd_file = rule(
     attrs = {
@@ -54,18 +39,28 @@ passwd_file = rule(
         "info": attr.string(default = "user"),
         "home": attr.string(default = "/home"),
         "shell": attr.string(default = "/bin/bash"),
-        "build_tar": attr.label(
-            default = Label("@bazel_tools//tools/build_defs/pkg:build_tar"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "output_name": attr.string(default = "passwd"),
     },
     executable = False,
     outputs = {
-        "out": "%{output_name}",
-        "tar": "%{output_name}.tar",
+        "out": "%{name}",
     },
     implementation = _impl,
 )
+
+def passwd_tar(name, username, uid, gid, info, home, shell, passwd_file_nm=""):
+    tar_name = "%s" %name
+    file_name = passwd_file_nm or "%s.file" %name
+    passwd_file(
+        name = file_name,
+        username = username,
+        uid = uid,
+        gid = gid,
+        info = info,
+        home = home,
+        shell = shell,
+    )
+    pkg_tar(
+        name = tar_name,
+        srcs =  [ file_name ]
+    )
+
