@@ -113,6 +113,12 @@ class ImageTest(unittest.TestCase):
         './asdf', './usr', './usr/bin',
         './usr/bin/miraclegrow'])
 
+  def test_docker_tarball_base(self):
+    with TestImage('docker_tarball_base') as img:
+      self.assertDigest(img, '8737088f29110bcbbf8f65df5151b8148ab3c6adc3568b612f1326711f73b8a0')
+      self.assertEqual(3, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './foo'])
+
   def test_base_with_entrypoint(self):
     with TestImage('base_with_entrypoint') as img:
       self.assertDigest(img, '813cb4af1c3f73cc2b5f837a61dca6a62335b87e5cd762e780286ca99f71ac83')
@@ -258,6 +264,15 @@ class ImageTest(unittest.TestCase):
     with TestImage('pause_based') as img:
       self.assertDigest(img, 'fdd4eeea8ad631006ba52058b2dbf8356adae8dcee16e431e9a407f5ef79d25f')
       self.assertEqual(3, len(img.fs_layers()))
+
+  def test_pause_piecemeal(self):
+    with TestImage('pause_piecemeal') as img:
+      self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
+      self.assertEqual(2, len(img.fs_layers()))
+
+  def test_pause_piecemeal_gz(self):
+    with TestImage('pause_piecemeal_gz') as img:
+      self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
 
   def test_build_with_tag(self):
     with TestBundleImage('build_with_tag', 'gcr.io/build/with:tag') as img:

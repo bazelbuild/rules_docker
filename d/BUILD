@@ -11,22 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules for manipulation OCI images."""
+package(default_visibility = ["//visibility:public"])
 
-load(
-    "//container:container.bzl",
-    "container_push",
-    oci_bundle = "container_bundle",
-    oci_flatten = "container_flatten",
-    oci_image = "container_image",
-    oci_import = "container_import",
-    oci_load = "container_load",
-    oci_pull = "container_pull",
-)
-
-def oci_push(*args, **kwargs):
-  if "format" in kwargs:
-    fail("Cannot override 'format' attribute on oci_push",
-         attr="format")
-  kwargs["format"] = "OCI"
-  container_push(*args, **kwargs)
+licenses(["notice"])  # Apache 2.0
