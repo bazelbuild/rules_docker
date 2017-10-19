@@ -94,7 +94,7 @@ def magic_path(ctx, f):
     return f.basename
 
 def _build_layer(ctx, files=None, file_map=None, empty_files=None,
-                 debs=None, directory=None, symlinks=None):
+                 directory=None, symlinks=None):
   """Build the current layer for appending it the base layer.
 
   Args:
@@ -115,7 +115,7 @@ def _build_layer(ctx, files=None, file_map=None, empty_files=None,
   args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
   args += ["--empty_file=%s" % f for f in empty_files or []]
   args += ["--tar=" + f.path for f in ctx.files.tars]
-  args += ["--deb=" + f.path for f in debs if f.path.endswith(".deb")]
+  args += ["--deb=" + f.path for f in ctx.files.debs if f.path.endswith(".deb")]
   for k in symlinks:
     if ':' in k:
       fail("The source of a symlink cannot contain ':', got: %s" % k)
@@ -127,7 +127,7 @@ def _build_layer(ctx, files=None, file_map=None, empty_files=None,
   ctx.action(
       executable = build_layer,
       arguments = ["--flagfile=" + arg_file.path],
-      inputs = files + file_map.values() + ctx.files.tars + debs + [arg_file],
+      inputs = files + file_map.values() + ctx.files.tars + ctx.files.debs + [arg_file],
       outputs = [layer],
       use_default_shell_env=True,
       mnemonic="ImageLayer"
@@ -144,7 +144,7 @@ def _get_base_config(ctx):
     l = _get_layers(ctx, ctx.attr.base, ctx.files.base)
     return l.get("config")
 
-def _image_config(ctx, layer_name, entrypoint=None, cmd=None, env=None):
+def _image_config(ctx, layer_name, entrypoint=None, cmd=None):
   """Create the configuration for a new container image."""
   config = ctx.new_file(ctx.label.name + ".config")
 
@@ -173,7 +173,7 @@ def _image_config(ctx, layer_name, entrypoint=None, cmd=None, env=None):
   _labels = _serialize_dict(labels)
   if _labels:
     args += ["--labels=%s" % x for x in _labels.split(',')]
-  _env = _serialize_dict(env)
+  _env = _serialize_dict(ctx.attr.env)
   if _env:
     args += ["--env=%s" % x for x in _env.split(',')]
 
@@ -217,7 +217,7 @@ def _repository_name(ctx):
   return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
-          entrypoint=None, cmd=None, symlinks=None, env=None, debs=None, output=None):
+          entrypoint=None, cmd=None, symlinks=None, output=None):
   """Implementation for the container_image rule.
 
   Args:
@@ -229,8 +229,6 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
     entrypoint: str List, overrides ctx.attr.entrypoint
     cmd: str List, overrides ctx.attr.cmd
     symlinks: str Dict, overrides ctx.attr.symlinks
-    env: str Dict overrides ctx.attr.env
-    debs: File list, overrides ctx.files.debs
     output: File to use as output for script to load docker image
   """
 
@@ -241,13 +239,11 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   entrypoint = entrypoint or ctx.attr.entrypoint
   cmd = cmd or ctx.attr.cmd
   symlinks = symlinks or ctx.attr.symlinks
-  env = env or ctx.attr.env
-  debs = debs or ctx.files.debs
   output = output or ctx.outputs.executable
 
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id).
   unzipped_layer, diff_id = _build_layer(ctx, files=files, file_map=file_map,
-                                         empty_files=empty_files, debs=debs,
+                                         empty_files=empty_files,
                                          directory=directory, symlinks=symlinks)
 
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
@@ -255,7 +251,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
 
   # Generate the new config using the attributes specified and the diff_id
   config_file, config_digest = _image_config(
-      ctx, diff_id, entrypoint=entrypoint, cmd=cmd, env=env)
+    ctx, diff_id, entrypoint=entrypoint, cmd=cmd)
 
   # Construct a temporary name based on the build target.
   tag_name = _repository_name(ctx) + ":" + ctx.label.name
