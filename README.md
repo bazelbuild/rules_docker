@@ -9,6 +9,7 @@ Travis CI | Bazel CI
 * [container_image](#container_image-1) ([example](#container_image))
 * [container_bundle](#container_bundle-1) ([example](#container_bundle))
 * [container_import](#container_import)
+* [container_load](#container_load)
 * [container_pull](#container_pull-1) ([example](#container_pull))
 * [container_push](#container_push-1) ([example](#container_push))
 
@@ -54,6 +55,8 @@ https://github.com/bazelbuild/rules_scala#scala_binary))
 https://github.com/bazelbuild/rules_groovy#groovy_binary))
 * [rust_image](#rust_image) ([signature](
 https://github.com/bazelbuild/rules_rust#rust_binary))
+* [d_image](#d_image) ([signature](
+https://github.com/bazelbuild/rules_d#d_binary))
 
 ### Overview
 
@@ -560,6 +563,41 @@ load("@io_bazel_rules_docker//rust:image.bzl", "rust_image")
 rust_image(
     name = "rust_image",
     srcs = ["main.rs"],
+)
+```
+
+### d_image
+
+To use `d_image`, add the following to `WORKSPACE`:
+
+```python
+# You *must* import the D rules before setting up the d_image rules.
+git_repository(
+    name = "io_bazel_rules_d",
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_d.git",
+)
+
+load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
+
+d_repositories()
+
+load(
+    "@io_bazel_rules_docker//d:image.bzl",
+    _d_image_repos = "repositories",
+)
+
+_d_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `d_binary` to `d_image` with the
+following import:
+```python
+load("@io_bazel_rules_docker//d:image.bzl", "d_image")
+
+d_image(
+    name = "d_image",
+    srcs = ["main.d"],
 )
 ```
 
@@ -1235,12 +1273,53 @@ A rule that imports a docker image into our intermediate form.
     <tr>
       <td><code>layers</code></td>
       <td>
-        <p><code>The list of layer `.tar.gz`s; required</code></p>
+        <p><code>The list of layer `.tar`s or `.tar.gz`s; required</code></p>
         <p>The list of layer <code>.tar.gz</code> files in the order they
            appear in the <code>config.json</code>'s layer section, or in the
            order that they appear in <code>docker save</code> tarballs'
-           <code>manifest.json</code> <code>Layers</code> field (although
-           these are gzipped).</p>
+           <code>manifest.json</code> <code>Layers</code> field (these may or
+           may not be gzipped). Note that the layers should each have a
+           different basename.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="container_load"></a>
+## container_load
+
+```python
+container_load(name, file)
+```
+
+A repository rule that examines the contents of a `docker save` tarball and
+creates a `container_import` target. The created target can be referenced as
+`@label_name//image`.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name, required</code></p>
+        <p>Unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>file</code></td>
+      <td>
+        <p><code>The `docker save` tarball file; required</code></p>
+        <p>A label targetting a single file which is a compressed or
+           uncompressed tar, as obtained through `docker save IMAGE`.</p>
       </td>
     </tr>
   </tbody>
