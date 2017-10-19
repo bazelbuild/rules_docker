@@ -47,9 +47,9 @@ passwd_file = rule(
     implementation = _impl,
 )
 
-def passwd_tar(name, username, uid, gid, info, home, shell, passwd_file_nm=""):
+def passwd_tar(name, username, uid, gid, info, home, shell, passwd_file_name=""):
     tar_name = "%s" %name
-    file_name = passwd_file_nm or "%s.file" %name
+    file_name = passwd_file_name or "%s.file" %name
     passwd_file(
         name = file_name,
         username = username,

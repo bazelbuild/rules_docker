@@ -403,7 +403,7 @@ passwd_tar(
     shell = "/myshell",
     uid = 1234,
     username = "foobar",
-    passwd_file_nm = "passwd",
+    passwd_file_name = "passwd",
 )
 
 container_image(
