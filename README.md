@@ -2,7 +2,7 @@
 
 Travis CI | Bazel CI
 :---: | :---:
-[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_docker)](http://ci.bazel.io/job/rules_docker)
+[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build Status](https://ci.bazel.io/buildStatus/icon?job=rules_docker)](https://ci.bazel.io/job/rules_docker)
 
 ## Basic Rules
 
