@@ -63,7 +63,7 @@ def runfile(ctx, f):
   else:
     return f.short_path
 
-def filename(path):
+def basename(path):
   """Returns the file name for the specified path."""
   last_sep = path.rfind("/")
   if last_sep == -1:
