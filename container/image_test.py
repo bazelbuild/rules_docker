@@ -281,7 +281,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_passwd(self):
     with TestImage('with_passwd') as img:
-      self.assertDigest(img, '9fd1e04ef3070dc98b3b305e9e6091fd9e5fbf4a36d0928b5798a2d9ec2508ba')
+      self.assertDigest(img, '7de06a352108df247a4b5a1cea2eb3e80ee39ddc1192decbca8038427b4a2da6')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
 
