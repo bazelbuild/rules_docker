@@ -62,3 +62,11 @@ def runfile(ctx, f):
     return ctx.workspace_name + "/" + f.short_path
   else:
     return f.short_path
+
+def filename(path):
+  """Returns the file name for the specified path."""
+  last_sep = path.rfind("/")
+  if last_sep == -1:
+    return path  # The artifact is at the top level.
+  return path[last_sep+1:]
+
