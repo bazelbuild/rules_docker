@@ -217,7 +217,7 @@ def _repository_name(ctx):
   return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
-          entrypoint=None, cmd=None, symlinks=None):
+          entrypoint=None, cmd=None, symlinks=None, output=None):
   """Implementation for the container_image rule.
 
   Args:
@@ -229,6 +229,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
     entrypoint: str List, overrides ctx.attr.entrypoint
     cmd: str List, overrides ctx.attr.cmd
     symlinks: str Dict, overrides ctx.attr.symlinks
+    output: File to use as output for script to load docker image
   """
 
   file_map = file_map or {}
@@ -238,6 +239,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   entrypoint = entrypoint or ctx.attr.entrypoint
   cmd = cmd or ctx.attr.cmd
   symlinks = symlinks or ctx.attr.symlinks
+  output = output or ctx.outputs.executable
 
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id).
   unzipped_layer, diff_id = _build_layer(ctx, files=files, file_map=file_map,
@@ -291,7 +293,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
       tag_name: container_parts
   }
 
-  _incr_load(ctx, images, ctx.outputs.executable,
+  _incr_load(ctx, images, output,
              run=not ctx.attr.legacy_run_behavior,
              run_flags=ctx.attr.docker_run_flags)
   _assemble_image(ctx, images, ctx.outputs.out)
