@@ -422,12 +422,12 @@ container_image(
 
 passwd_tar(
     name = "testpasswddefault",
-    gid = 2456,
-    home = "/myhomedir",
-    info = "myusernameinfo",
-    shell = "/myshell",
-    uid = 1234,
-    username = "foobar",
+    gid = 5345,
+    home = "/dummy",
+    info = "dumpster",
+    shell = "/dumb",
+    uid = 5678,
+    username = "default",
 )
 
 container_image(
@@ -435,6 +435,37 @@ container_image(
     tars = [":testpasswddefault.tar"],
 )
 
+passwd_file(
+    name = "testpasswdfile"
+    gid = 1234,
+    home = "/dummy",
+    info = "dumpster",
+    shell = "/dumb",
+    uid = 5678,
+    username = "default",
+    output_file = "foo",
+)
+
+container_image(
+    name = "with_password_file",
+    files = "foo"
+)
+
+passwd_file(
+    name = "testpasswdfile_default"
+    gid = 1234,
+    home = "/dummy",
+    info = "dumpster",
+    shell = "/dumb",
+    uid = 5678,
+    username = "default",
+)
+
+container_image(
+    name = "with_password_file_default",
+    files = "testpasswordfile_default"
+)
+    
 container_image(
     name = "base_based_warning",
     base = "@distroless_base//image:image.tar",
