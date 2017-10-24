@@ -413,6 +413,7 @@ passwd_tar(
     shell = "/myshell",
     uid = 1234,
     username = "foobar",
+    passwd_file_name = "/tmp/tmp_passwd",
 )
 
 container_image(
@@ -445,7 +446,7 @@ passwd_file(
     username = "default",
 )
 
-container_image(
+containter_image(
     name = "with_password_file",
     files = ["testpasswdfile"],
 )
