@@ -413,7 +413,6 @@ passwd_tar(
     shell = "/myshell",
     uid = 1234,
     username = "foobar",
-    passwd_file_name = "/tmp/tmp_passwd",
 )
 
 container_image(
