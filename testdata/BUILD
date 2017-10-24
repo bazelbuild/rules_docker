@@ -433,7 +433,7 @@ passwd_tar(
 container_image(
     name = "with_passwddefault",
     tars = [":testpasswddefault.tar"],
-    )
+)
 
 passwd_file(
     name = "testpasswdfile",
@@ -450,6 +450,22 @@ container_image(
     files = ["testpasswdfile"]
 )
 
+passwd_file(
+    name = "testpasswdfile_default"
+    gid = 1234,
+    home = "/dummy",
+    info = "dumpster",
+    shell = "/dumb",
+    uid = 5678,
+    username = "default",
+)
+
+container_image(
+    name = "with_password_file_default",
+    files = "testpasswordfile_default"
+)
+    
+>>>>>>> 9013190... add tests
 container_image(
     name = "base_based_warning",
     base = "@distroless_base//image:image.tar",
