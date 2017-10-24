@@ -445,7 +445,7 @@ passwd_file(
     username = "default",
 )
 
-containter_image(
+container_image(
     name = "with_password_file",
     files = ["testpasswdfile"],
 )
