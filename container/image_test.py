@@ -281,27 +281,27 @@ class ImageTest(unittest.TestCase):
 
   def test_with_passwd(self):
     with TestImage('with_passwd') as img:
-      self.assertDigest(img, '7de06a352108df247a4b5a1cea2eb3e80ee39ddc1192decbca8038427b4a2da6')
+      self.assertDigest(img, '02349185a25e8da9631ae2fe2e6883dca69d7ca14a659a01fbfe05ebd9056937')
       self.assertEqual(1, len(img.fs_layers()))
-      self.assertTopLayerContains(img, ['.', './tmp', './tmp/passwd'])
+      self.assertTopLayerContains(img, ['.', './tmp', './tmp/tmp_passwd'])
 
       buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
       with tarfile.open(fileobj=buf, mode='r') as layer:
-        content = layer.extractfile('./tmp/passwd').read()
+        content = layer.extractfile('./tmp/tmp_passwd').read()
         self.assertEqual(
           'foobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n', content)
 
   def test_with_passwddefault(self):
     with TestImage('with_passwddefault') as img:
-      self.assertDigest(img, '7de06a352108df247a4b5a1cea2eb3e80ee39ddc1192decbca8038427b4a2da6')
+      self.assertDigest(img, '2a86eaad4ac8ef55e775bfc85613dde2197067a1662d9d0080f625adc3075a2d')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
 
       buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
       with tarfile.open(fileobj=buf, mode='r') as layer:
-        content = layer.extractfile('./tmp/passwd').read()
+        content = layer.extractfile('./etc/passwd').read()
         self.assertEqual(
-          'default:x:5678:5345:dummy:/dumpster:/dumb\n', content)
+          'default:x:5678:5345:dumpster:/dummy:/dumb\n', content)
 
   def test_py_image(self):
     with TestImage('py_image') as img:
