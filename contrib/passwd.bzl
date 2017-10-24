@@ -32,7 +32,6 @@ def _impl(ctx):
       executable=False
   )
 
-
 passwd_file = rule(
     attrs = {
         "username": attr.string(mandatory = True),

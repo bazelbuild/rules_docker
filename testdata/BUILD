@@ -409,10 +409,10 @@ passwd_tar(
     gid = 2345,
     home = "/myhomedir",
     info = "myusernameinfo",
+    passwd_file_name = "/tmp/tmp_passwd",
     shell = "/myshell",
     uid = 1234,
     username = "foobar",
-    passwd_file_name = "/tmp/tmp_passwd",
 )
 
 container_image(
@@ -447,7 +447,7 @@ passwd_file(
 
 container_image(
     name = "with_password_file",
-    files = ["testpasswdfile"]
+    files = ["testpasswdfile"],
 )
 
 container_image(

@@ -64,9 +64,8 @@ def runfile(ctx, f):
     return f.short_path
 
 def basename(path):
-  """Returns the file name for the specified path."""
+  """Returns the basename for the specified path."""
   last_sep = path.rfind("/")
   if last_sep == -1:
     return path  # The path does not contain dirname.
   return path[last_sep+1:]
-
