@@ -402,7 +402,7 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_tar")
+load("//contrib:passwd.bzl", "passwd_file", "passwd_tar")
 
 passwd_tar(
     name = "testpasswd_withpath",
@@ -412,7 +412,7 @@ passwd_tar(
     shell = "/myshell",
     uid = 1234,
     username = "foobar",
-    passwd_file_name = "/tmp/passwd",
+    passwd_file_name = "/tmp/tmp_passwd",
 )
 
 container_image(
@@ -433,39 +433,23 @@ passwd_tar(
 container_image(
     name = "with_passwddefault",
     tars = [":testpasswddefault.tar"],
-)
+    )
 
 passwd_file(
-    name = "testpasswdfile"
+    name = "testpasswdfile",
     gid = 1234,
     home = "/dummy",
     info = "dumpster",
     shell = "/dumb",
     uid = 5678,
     username = "default",
-    output_file = "foo_password",
 )
 
 container_image(
     name = "with_password_file",
-    files = ["foo_password"]
+    files = ["testpasswdfile"]
 )
 
-passwd_file(
-    name = "testpasswdfile_default"
-    gid = 1234,
-    home = "/dummy",
-    info = "dumpster",
-    shell = "/dumb",
-    uid = 5678,
-    username = "default",
-)
-
-container_image(
-    name = "with_password_file_default",
-    files = ["testpasswordfile_default"]
-)
-    
 container_image(
     name = "base_based_warning",
     base = "@distroless_base//image:image.tar",

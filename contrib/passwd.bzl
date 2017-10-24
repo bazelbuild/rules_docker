@@ -41,11 +41,10 @@ passwd_file = rule(
         "info": attr.string(default = "user"),
         "home": attr.string(default = "/home"),
         "shell": attr.string(default = "/bin/bash"),
-        "output_file": attr.string(default = ""),
     },
     executable = False,
     outputs = {
-        "out": "%{output_file}" or "%{name}",
+        "out": "%{name}",
     },
     implementation = _impl,
 )
@@ -61,10 +60,9 @@ def passwd_tar(name, username, uid, gid, info, home, shell, passwd_file_name="/e
         info = info,
         home = home,
         shell = shell,
-        output_file = output_file
     )
     pkg_tar(
         name = "%s" %name,
         package_dir = package_dir,
         srcs = [output_file],
-    )`
+    )
