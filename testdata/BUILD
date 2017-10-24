@@ -433,7 +433,7 @@ passwd_tar(
 container_image(
     name = "with_passwddefault",
     tars = [":testpasswddefault.tar"],
-    )
+)
 
 passwd_file(
     name = "testpasswdfile",
