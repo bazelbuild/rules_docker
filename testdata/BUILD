@@ -443,12 +443,12 @@ passwd_file(
     shell = "/dumb",
     uid = 5678,
     username = "default",
-    output_file = "foo",
+    output_file = "foo_password",
 )
 
 container_image(
     name = "with_password_file",
-    files = "foo"
+    files = ["foo_password"]
 )
 
 passwd_file(
@@ -463,7 +463,7 @@ passwd_file(
 
 container_image(
     name = "with_password_file_default",
-    files = "testpasswordfile_default"
+    files = ["testpasswordfile_default"]
 )
     
 container_image(
