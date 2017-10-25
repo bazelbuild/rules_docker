@@ -57,9 +57,9 @@ def repositories():
     )
 
 DEFAULT_BASE = select({
-    "//:fastbuild": "@go_image_base//image",
-    "//:debug": "@go_debug_image_base//image",
-    "//:optimized": "@go_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
     "//conditions:default": "@go_image_base//image",
 })
 
