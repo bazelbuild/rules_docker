@@ -52,9 +52,9 @@ def repositories():
     )
 
 DEFAULT_BASE = select({
-    "//:fastbuild": "@py_image_base//image",
-    "//:debug": "@py_debug_image_base//image",
-    "//:optimized": "@py_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@py_debug_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@py_image_base//image",
     "//conditions:default": "@py_image_base//image",
 })
 
