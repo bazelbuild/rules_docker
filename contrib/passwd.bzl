@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("//skylib:path.bzl", "dirname")
 
 def _impl(ctx):
   """Core implementation of passwd_file."""
