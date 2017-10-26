@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("//skylib:path.bzl", "dirname", "basename")
+load("//skylib:path.bzl", "dirname")
 
 def _impl(ctx):
   """Core implementation of passwd_file."""
@@ -47,21 +47,3 @@ passwd_file = rule(
     },
     implementation = _impl,
 )
-
-def passwd_tar(name, username, uid, gid, info, home, shell, passwd_file_name="/etc/passwd"):
-    output_file = basename(passwd_file_name)
-    package_dir = dirname(passwd_file_name)
-    passwd_file(
-        name = output_file,
-        username = username,
-        uid = uid,
-        gid = gid,
-        info = info,
-        home = home,
-        shell = shell,
-    )
-    pkg_tar(
-        name = "%s" %name,
-        package_dir = package_dir,
-        srcs = [output_file],
-    )
