@@ -279,18 +279,6 @@ class ImageTest(unittest.TestCase):
       self.assertDigest(img, '1db3c9f3076f811a8d311ac6ee88251d621706ba8a80985685023b7e62b6cc14')
       self.assertEqual(3, len(img.fs_layers()))
 
-  def test_with_passwd(self):
-    with TestImage('with_passwd') as img:
-      self.assertDigest(img, '9fd1e04ef3070dc98b3b305e9e6091fd9e5fbf4a36d0928b5798a2d9ec2508ba')
-      self.assertEqual(1, len(img.fs_layers()))
-      self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
-
-      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
-      with tarfile.open(fileobj=buf, mode='r') as layer:
-        content = layer.extractfile('./etc/passwd').read()
-        self.assertEqual(
-          'foobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n', content)
-
   def test_py_image(self):
     with TestImage('py_image') as img:
       # Check the application layer, which is on top.
