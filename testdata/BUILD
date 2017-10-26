@@ -13,6 +13,7 @@
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
 
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load(
     "//container:container.bzl",
     "container_bundle",
@@ -405,7 +406,7 @@ oci_pushall(
 load("//contrib:passwd.bzl", "passwd_file")
 
 passwd_file(
-    name = "testpasswd",
+    name = "passwd",
     gid = 2345,
     home = "/myhomedir",
     info = "myusernameinfo",
@@ -414,9 +415,16 @@ passwd_file(
     username = "foobar",
 )
 
+pkg_tar(
+    name = "passwd_tar",
+    srcs = [":passwd"],
+    mode = "0644",
+    package_dir = "etc",
+)
+
 container_image(
     name = "with_passwd",
-    tars = [":testpasswd.passwd.tar"],
+    tars = [":passwd_tar"],
 )
 
 container_image(
