@@ -121,11 +121,11 @@ def _container_import_impl(ctx):
                 container_parts = container_parts)
 
 container_import = rule(
-    attrs = {
+    attrs = dict({
         "config": attr.label(allow_files = [".json"]),
         "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype),
         "repository": attr.string(default = "bazel"),
-    } + _hash_tools + _layer_tools,
+    }.items() + _hash_tools.items() + _layer_tools.items()),
     executable = True,
     outputs = {
         "out": "%{name}.tar",

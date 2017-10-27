@@ -84,7 +84,7 @@ def _impl(ctx):
   list(ctx.attr._pusher.default_runfiles.files)))
 
 container_push = rule(
-    attrs = {
+    attrs = dict({
         "image": attr.label(
             allow_files = [".tar"],
             single_file = True,
@@ -115,7 +115,7 @@ container_push = rule(
             default = False,
             mandatory = False,
         ),
-    } + _layer_tools,
+    }.items() + _layer_tools.items()),
     executable = True,
     implementation = _impl,
 )

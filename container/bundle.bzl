@@ -64,7 +64,7 @@ def _container_bundle_impl(ctx):
       stamp = ctx.attr.stamp)
 
 container_bundle_ = rule(
-    attrs = {
+    attrs = dict({
         "images": attr.string_dict(),
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
@@ -73,7 +73,7 @@ container_bundle_ = rule(
             default = False,
             mandatory = False,
         ),
-    } + _layer_tools,
+    }.items() + _layer_tools.items()),
     executable = True,
     outputs = {
         "out": "%{name}.tar",
