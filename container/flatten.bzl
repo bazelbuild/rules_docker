@@ -57,7 +57,7 @@ def _impl(ctx):
   return struct()
 
 container_flatten = rule(
-    attrs = {
+    attrs = dict({
         "image": attr.label(
             allow_files = [".tar"],
             single_file = True,
@@ -69,7 +69,7 @@ container_flatten = rule(
             executable = True,
             allow_files = True,
         ),
-    } + _layer_tools,
+    }.items() + _layer_tools.items()),
     outputs = {
         "filesystem": "%{name}.tar",
         "metadata": "%{name}.json",
