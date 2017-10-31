@@ -13,6 +13,14 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
+# While this exists as bazel_tools, that version is tied to the installed
+# bazel tool rather than a specific source version.
+git_repository(
+    name = "io_bazel",
+    remote = "https://github.com/bazelbuild/bazel.git",
+    commit = "97f0290cc1197311d60f45d49f7c52b70f879a18",
+)
+
 load(
     "//container:container.bzl",
     "container_pull",
@@ -135,3 +143,10 @@ git_repository(
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
 
 d_repositories()
+
+# For skylib_library.
+git_repository(
+    name = "bazel_skylib",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
+    tag = "0.2.0",
+)

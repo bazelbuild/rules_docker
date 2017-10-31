@@ -19,7 +19,7 @@ load(
     tgz_filetype = "tgz",
 )
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "@io_bazel//tools/build_defs/hash:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
