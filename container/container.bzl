@@ -26,7 +26,7 @@ container = struct(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.19"
+CONTAINERREGISTRY_RELEASE = "v0.0.21"
 
 def repositories():
   """Download dependencies of container rules."""
@@ -37,7 +37,7 @@ def repositories():
       name = "puller",
       url = ("https://storage.googleapis.com/containerregistry-releases/" +
              CONTAINERREGISTRY_RELEASE + "/puller.par"),
-      sha256 = "9a51a39a2ddaf13c62e5eab32385eb5b987899e526ce5b5e8b22b0fa6a09b229",
+      sha256 = "bc479494a9a9542fe18a34a323fca600ba72581a73f3cfbba697937d372c2772",
       executable = True,
     )
 
@@ -46,7 +46,7 @@ def repositories():
       name = "importer",
       url = ("https://storage.googleapis.com/containerregistry-releases/" +
              CONTAINERREGISTRY_RELEASE + "/importer.par"),
-      sha256 = "03de18f0bec9c81f0c969b8da65935b4658538ef56f6c9952262e899b4cbd84b",
+      sha256 = "34f03bd64d738ba2556b990d9292dfe99795a7058d327c1c5e82f9bfde089fc0",
       executable = True,
     )
 
