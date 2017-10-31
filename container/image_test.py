@@ -115,7 +115,7 @@ class ImageTest(unittest.TestCase):
 
   def test_docker_tarball_base(self):
     with TestImage('docker_tarball_base') as img:
-      self.assertDigest(img, '8737088f29110bcbbf8f65df5151b8148ab3c6adc3568b612f1326711f73b8a0')
+      self.assertDigest(img, 'cc3ca2b7307e79ad52c6e8878740f86dcfe7055d2b7118aaa10b52cbba8b9898')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
 
@@ -262,7 +262,7 @@ class ImageTest(unittest.TestCase):
 
   def test_pause_based(self):
     with TestImage('pause_based') as img:
-      self.assertDigest(img, 'fdd4eeea8ad631006ba52058b2dbf8356adae8dcee16e431e9a407f5ef79d25f')
+      self.assertDigest(img, 'ea150b117be58b64e4e6d070d28db5fa4d3283c078da927ffb3b49fa01e8c85f')
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_pause_piecemeal(self):
