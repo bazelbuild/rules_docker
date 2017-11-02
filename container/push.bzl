@@ -83,39 +83,41 @@ def _impl(ctx):
   stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
   list(ctx.attr._pusher.default_runfiles.files)))
 
+attrs = {
+    "image": attr.label(
+        allow_files = [".tar"],
+        single_file = True,
+        mandatory = True,
+    ),
+    "registry": attr.string(mandatory = True),
+    "repository": attr.string(mandatory = True),
+    "tag": attr.string(default = "latest"),
+    "format": attr.string(
+        mandatory = True,
+        values = [
+            "OCI",
+            "Docker",
+        ],
+    ),
+    "_tag_tpl": attr.label(
+        default = Label("//container:push-tag.sh.tpl"),
+        single_file = True,
+        allow_files = True,
+    ),
+    "_pusher": attr.label(
+        default = Label("@containerregistry//:pusher"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "stamp": attr.bool(
+        default = False,
+        mandatory = False,
+    ),
+}
+attrs.update(_layer_tools)
 container_push = rule(
-    attrs = dict({
-        "image": attr.label(
-            allow_files = [".tar"],
-            single_file = True,
-            mandatory = True,
-        ),
-        "registry": attr.string(mandatory = True),
-        "repository": attr.string(mandatory = True),
-        "tag": attr.string(default = "latest"),
-        "format": attr.string(
-            mandatory = True,
-            values = [
-                "OCI",
-                "Docker",
-            ],
-        ),
-        "_tag_tpl": attr.label(
-            default = Label("//container:push-tag.sh.tpl"),
-            single_file = True,
-            allow_files = True,
-        ),
-        "_pusher": attr.label(
-            default = Label("@containerregistry//:pusher"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "stamp": attr.bool(
-            default = False,
-            mandatory = False,
-        ),
-    }.items() + _layer_tools.items()),
+    attrs = attrs,
     executable = True,
     implementation = _impl,
 )
