@@ -135,10 +135,3 @@ git_repository(
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
 
 d_repositories()
-
-# For the container_test rule
-git_repository(
-    name = "io_bazel_structure_test",
-    remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
-    tag = "v0.1.1",
-)
