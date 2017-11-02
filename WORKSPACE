@@ -139,6 +139,6 @@ d_repositories()
 # For the container_test rule
 git_repository(
     name = "io_bazel_structure_test",
-    commit = "fb9284b374f1b987c5a9a1571580853015938d03",
-    remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git"
+    remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
+    tag = "v0.1.1",
 )
