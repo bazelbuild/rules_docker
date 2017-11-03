@@ -77,7 +77,7 @@ container_test = rule(
             mandatory = False,
         ),
         "_structure_test": attr.label(
-            default = Label("@io_bazel_structure_test//:go_default_test"),
+            default = Label("@structure_test//:go_default_test"),
             cfg = "target",
             executable = True,
             allow_files = True,
