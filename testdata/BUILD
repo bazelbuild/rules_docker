@@ -278,9 +278,9 @@ container_flatten(
 )
 
 container_test(
-    name = "structure test",
+    name = "structure_test",
     image = ":link_with_files_base",
-    configs = ["foo.yaml"],
+    configs = ["test.yaml"],
 )
 
 load("//docker:docker.bzl", "docker_push")

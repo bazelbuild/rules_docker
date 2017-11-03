@@ -149,10 +149,3 @@ py_library(
       remote = "https://github.com/google/subpar",
       commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
     )
-
-  if "structure_test" not in excludes:
-    native.git_repository(
-      name = "container_structure_test",
-      remote = "https://GoogleCloudPlatform/container-structure-test.git",
-      tag = "STRUCTURE_TEST_RELEASE",
-    )

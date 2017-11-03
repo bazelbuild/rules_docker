@@ -1,0 +1,11 @@
+schemaVersion: 2.0.0
+
+fileExistenceTests:
+  - name: foo
+    path: "/foo"
+    shouldExist: true
+
+fileContentTests:
+  - name: foo
+    path: "/foo"
+    expectedContents: "asdf$"
