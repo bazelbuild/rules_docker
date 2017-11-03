@@ -49,6 +49,7 @@ def groovy_image(name, base=None, deps=[], layers=[], **kwargs):
       files=[":" + binary_name + "_deploy.jar"],
       entrypoint=["/usr/bin/java", "-jar", "/" + binary_name + "_deploy.jar"],
       legacy_run_behavior = False,
+      visibility=kwargs.get('visibility', None),
   )
 
 def repositories():

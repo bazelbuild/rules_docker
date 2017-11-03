@@ -232,9 +232,11 @@ def java_image(name, base=None, main_class=None,
     base = this_name
     index += 1
 
+  visibility = kwargs.get('visibility', None)
   _jar_app_layer(name=name, base=base, binary=binary_name,
                  main_class=main_class, jvm_flags=jvm_flags,
-                 deps=deps, runtime_deps=runtime_deps, layers=layers)
+                 deps=deps, runtime_deps=runtime_deps, layers=layers,
+                 visibility=visibility)
 
 def _war_dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
@@ -333,4 +335,6 @@ def war_image(name, base=None, deps=[], layers=[], **kwargs):
     base = this_name
     index += 1
 
-  _war_app_layer(name=name, base=base, library=library_name, layers=layers)
+  visibility = kwargs.get('visibility', None)
+  _war_app_layer(name=name, base=base, library=library_name, layers=layers,
+                 visibility=visibility)
