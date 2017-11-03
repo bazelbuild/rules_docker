@@ -17,19 +17,12 @@ This rule feeds a built image and a set of config files
 to the container structure test framework."
 """
 
-load("//container:flatten.bzl", "container_flatten")
+load("//container:bundle.bzl", "container_bundle")
 
 def _impl(ctx):
-    flat_image = ctx.attr.image
+    config_str = ' '.join(['$(pwd)/' + c.short_path for c in ctx.files.configs])
 
-    config_runfiles = []
-    config_str = ""
-
-    for config_file in ctx.files.configs:
-        config_runfiles.append(config_file)
-        config_str = config_str + '$(pwd)/' + config_file.short_path + ' '
-
-    image_name = "bazel/%s:%s" % (ctx.attr.image.label.package, ctx.attr.image.label.name)
+    # image_name = "bazel/%s:%s" % (ctx.attr.image.label.package, ctx.attr.image.label.name)
 
     # Generate a shell script to execute structure_tests with the correct flags.
     ctx.actions.expand_template(
@@ -41,7 +34,8 @@ def _impl(ctx):
           "%{configs}": config_str,
           "%{workspace_name}": ctx.workspace_name,
           "%{test_executable}": ctx.executable._structure_test.short_path,
-          "%{image}": image_name,
+          # "%{image}": image_name,
+          "%{image}": ctx.attr.image
         },
         is_executable=True
     )
@@ -51,12 +45,11 @@ def _impl(ctx):
             ctx.executable.image] +
             ctx.attr.image.files.to_list() +
             ctx.attr.image.data_runfiles.files.to_list() +
-            config_runfiles,
+            ctx.files.configs,
         ),
     )
 
-
-container_test = rule(
+_container_test = rule(
     attrs = {
         "image": attr.label(
             executable = True,
@@ -84,11 +77,30 @@ container_test = rule(
         ),
         "_structure_test_tpl": attr.label(
             default = Label("//container:structure-test.sh.tpl"),
-            allow_files=True,
-            single_file=True
+            allow_files = True,
+            single_file = True,
         ),
     },
     executable = True,
     test = True,
     implementation = _impl,
 )
+
+
+def container_test(name, image, configs, driver=None, verbose=None):
+    intermediate_image_name = "%s.intermediate" % image
+
+    container_bundle(
+        name = "intermediate_bundle",
+        images = {
+            intermediate_image_name: image,
+        }
+    )
+
+    _container_test(
+        name = name,
+        image = intermediate_image_name,
+        configs = configs,
+        verbose = verbose,
+        driver = driver,
+    )
