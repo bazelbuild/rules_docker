@@ -17,8 +17,8 @@ workspace(name = "io_bazel_rules_docker")
 # bazel tool rather than a specific source version.
 git_repository(
     name = "io_bazel",
-    remote = "https://github.com/bazelbuild/bazel.git",
     commit = "97f0290cc1197311d60f45d49f7c52b70f879a18",
+    remote = "https://github.com/bazelbuild/bazel.git",
 )
 
 load(
