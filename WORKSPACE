@@ -143,10 +143,3 @@ git_repository(
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
 
 d_repositories()
-
-# For skylib_library.
-git_repository(
-    name = "bazel_skylib",
-    remote = "https://github.com/bazelbuild/bazel-skylib.git",
-    tag = "0.2.0",
-)
