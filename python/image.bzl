@@ -87,5 +87,6 @@ def py_image(name, base=None, deps=[], layers=[], **kwargs):
     base = this_name
     index += 1
 
+  visibility = kwargs.get('visibility', None)
   app_layer(name=name, base=base, entrypoint=['/usr/bin/python'],
-            binary=binary_name, layers=layers)
+            binary=binary_name, layers=layers, visibility=visibility)

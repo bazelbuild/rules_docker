@@ -81,4 +81,6 @@ def cc_image(name, base=None, deps=[], layers=[], **kwargs):
     base = this_name
     index += 1
 
-  app_layer(name=name, base=base, binary=binary_name, layers=layers)
+  visibility = kwargs.get('visibility', None)
+  app_layer(name=name, base=base, binary=binary_name, layers=layers,
+            visibility=visibility)
