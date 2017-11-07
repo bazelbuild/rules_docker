@@ -2,6 +2,6 @@
 
 set -ex
 
-./%{load_statement}
+%{load_statement}
 
 %{test_executable} -test.v -image %{image} %{configs}

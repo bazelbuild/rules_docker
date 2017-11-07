@@ -17,44 +17,51 @@ This rule feeds a built image and a set of config files
 to the container structure test framework."
 """
 
-load("//container:bundle.bzl", "container_bundle")
+load(
+    "//container:bundle.bzl",
+    container_bundler = "container_bundle",
+)
 
 def _impl(ctx):
     config_str = ' '.join(['$(pwd)/' + c.short_path for c in ctx.files.configs])
 
-    # image_name = "bazel/%s:%s" % (ctx.attr.image.label.package, ctx.attr.image.label.name)
+    # Since we're always bundling/renaming the image in the macro, this is valid.
+    load_statement = 'docker load -i %s' % ctx.file.image_tar.short_path
 
     # Generate a shell script to execute structure_tests with the correct flags.
     ctx.actions.expand_template(
         template=ctx.file._structure_test_tpl,
         output=ctx.outputs.executable,
         substitutions={
-          # call the image as an executable to load it in the daemon
-          "%{load_statement}": ctx.executable.image.short_path,
+          "%{load_statement}": load_statement,
           "%{configs}": config_str,
           "%{workspace_name}": ctx.workspace_name,
           "%{test_executable}": ctx.executable._structure_test.short_path,
-          # "%{image}": image_name,
-          "%{image}": ctx.attr.image
+          "%{image}": ctx.attr.image_name
         },
         is_executable=True
     )
 
     return struct(runfiles=ctx.runfiles(files = [
             ctx.executable._structure_test,
-            ctx.executable.image] +
-            ctx.attr.image.files.to_list() +
-            ctx.attr.image.data_runfiles.files.to_list() +
+            ctx.executable.image_tar] +
+            ctx.attr.image_tar.files.to_list() +
+            ctx.attr.image_tar.data_runfiles.files.to_list() +
             ctx.files.configs,
         ),
     )
 
 _container_test = rule(
     attrs = {
-        "image": attr.label(
+        "image_tar": attr.label(
             executable = True,
+            allow_files = True,
             mandatory = True,
+            single_file = True,
             cfg = "target",
+        ),
+        "image_name": attr.string(
+            mandatory = True,
         ),
         "configs": attr.label_list(
             mandatory = True,
@@ -86,12 +93,15 @@ _container_test = rule(
     implementation = _impl,
 )
 
-
 def container_test(name, image, configs, driver=None, verbose=None):
-    intermediate_image_name = "%s.intermediate" % image
+    """A macro to predictably rename the image under test before threading
+    it to the container test rule."""
+    intermediate_image_name = "%s:intermediate" % image.replace(':', '')
+    image_tar_name = "intermediate_bundle_%s" % name
 
-    container_bundle(
-        name = "intermediate_bundle",
+    # Give the image a predictable name when loaded
+    container_bundler(
+        name = image_tar_name,
         images = {
             intermediate_image_name: image,
         }
@@ -99,7 +109,8 @@ def container_test(name, image, configs, driver=None, verbose=None):
 
     _container_test(
         name = name,
-        image = intermediate_image_name,
+        image_name = intermediate_image_name,
+        image_tar = image_tar_name + ".tar",
         configs = configs,
         verbose = verbose,
         driver = driver,
