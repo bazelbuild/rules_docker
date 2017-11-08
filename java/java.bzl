@@ -18,8 +18,8 @@
 # git repository.
 
 DIGESTS = {
-    # "gcr.io/distroless/java:debug" circa 2017-10-10 04:10 +0000
-    "debug": "sha256:8155042bd06f028f452831bf25a21ad608308ae0868d28c667d66fa86d7103ca",
-    # "gcr.io/distroless/java:latest" circa 2017-10-10 04:10 +0000
-    "latest": "sha256:fa924e6904c4bb79c26996b5e8a9b37e9c392b5754b36b2bfafea2a36720ceeb",
+    # "gcr.io/distroless/java:debug" circa 2017-11-08 11:56 +0100
+    "debug": "sha256:9651c088fb09c34d790cfbf323b72cd261976a344947c78c149eb70eb6efe98d",
+    # "gcr.io/distroless/java:latest" circa 2017-11-08 11:56 +0100
+    "latest": "sha256:9607dd1cbdfa1149ae775c137c6864c944e3c9f64cb55dde38b3922d9d4e5a46",
 }
