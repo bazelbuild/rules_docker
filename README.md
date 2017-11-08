@@ -630,6 +630,15 @@ container_pull(
 ```
 
 This can then be referenced in `BUILD` files as `@base//image`.
+You can also pull images from the Docker Hub:
+
+```python
+container_pull(
+    name = "nginx_base",
+    registry = "registry.hub.docker.com",
+    repository = "library/nginx",
+)
+```
 
 ### container_push
 
