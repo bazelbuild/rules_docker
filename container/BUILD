@@ -17,8 +17,6 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["push-tag.sh.tpl"])
 
-exports_files(["structure-test.sh.tpl"])
-
 filegroup(
     name = "incremental_load_template",
     srcs = ["incremental_load.sh.tpl"],

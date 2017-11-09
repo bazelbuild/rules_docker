@@ -20,7 +20,6 @@ load("//container:import.bzl", "container_import")
 load("//container:load.bzl", "container_load")
 load("//container:pull.bzl", "container_pull")
 load("//container:push.bzl", "container_push")
-load("//container:test.bzl", "container_test")
 
 container = struct(
     image = image,

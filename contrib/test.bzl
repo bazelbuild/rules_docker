@@ -92,7 +92,7 @@ _container_test = rule(
             allow_files = True,
         ),
         "_structure_test_tpl": attr.label(
-            default = Label("//container:structure-test.sh.tpl"),
+            default = Label("//contrib:structure-test.sh.tpl"),
             allow_files = True,
             single_file = True,
         ),
