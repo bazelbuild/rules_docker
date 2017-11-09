@@ -180,7 +180,7 @@ skylark_library(
         "//skylib:path",
         "//skylib:serialize",
         "//skylib:zip",
-        "@io_bazel//tools/build_defs/hash:hash.bzl",
+        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
@@ -192,7 +192,7 @@ skylark_library(
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
-        "@io_bazel//tools/build_defs/hash:hash.bzl",
+        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 

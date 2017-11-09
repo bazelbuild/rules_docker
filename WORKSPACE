@@ -13,14 +13,6 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
-# While this exists as bazel_tools, that version is tied to the installed
-# bazel tool rather than a specific source version.
-git_repository(
-    name = "io_bazel",
-    commit = "97f0290cc1197311d60f45d49f7c52b70f879a18",
-    remote = "https://github.com/bazelbuild/bazel.git",
-)
-
 load(
     "//container:container.bzl",
     "container_pull",
