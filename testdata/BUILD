@@ -537,6 +537,13 @@ java_image(
     main_class = "examples.images.Binary",
 )
 
+java_image(
+    name = "java_sandwich_image",
+    srcs = ["Binary.java"],
+    layers = [":scala_image_library"],
+    main_class = "examples.images.Binary",
+)
+
 java_library(
     name = "java_bin_as_lib",
     srcs = ["Binary.java"],
@@ -572,6 +579,13 @@ scala_image(
     srcs = ["Binary.scala"],
     main_class = "examples.images.Binary",
     deps = [":scala_image_library"],
+)
+
+scala_image(
+    name = "scala_sandwich_image",
+    srcs = ["Binary.scala"],
+    main_class = "examples.images.Binary",
+    deps = [":java_image_library"],
 )
 
 load("//groovy:image.bzl", "groovy_image")
