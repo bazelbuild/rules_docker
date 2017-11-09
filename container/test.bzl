@@ -18,15 +18,21 @@ to the container structure test framework."
 """
 
 load(
-    "//container:bundle.bzl",
-    container_bundler = "container_bundle",
+    "//container:bundle.bzl", "container_bundle",
 )
 
 def _impl(ctx):
     config_str = ' '.join(['$(pwd)/' + c.short_path for c in ctx.files.configs])
 
-    # Since we're always bundling/renaming the image in the macro, this is valid.
-    load_statement = 'docker load -i %s' % ctx.file.image_tar.short_path
+    if ctx.attr.driver == 'tar':
+        # no need to load if we're using raw tar
+        load_statement = ''
+        image_name = '$(pwd)/' + ctx.file.image_tar.short_path
+
+    else:
+        # Since we're always bundling/renaming the image in the macro, this is valid.
+        load_statement = 'docker load -i %s' % ctx.file.image_tar.short_path
+        image_name = ctx.attr.image_name
 
     # Generate a shell script to execute structure_tests with the correct flags.
     ctx.actions.expand_template(
@@ -37,14 +43,16 @@ def _impl(ctx):
           "%{configs}": config_str,
           "%{workspace_name}": ctx.workspace_name,
           "%{test_executable}": ctx.executable._structure_test.short_path,
-          "%{image}": ctx.attr.image_name
+          "%{image}": image_name,
+          "%{driver}": ctx.attr.driver,
         },
         is_executable=True
     )
 
     return struct(runfiles=ctx.runfiles(files = [
             ctx.executable._structure_test,
-            ctx.executable.image_tar] +
+            ctx.executable.image_tar,
+            ctx.file.image_tar] +
             ctx.attr.image_tar.files.to_list() +
             ctx.attr.image_tar.data_runfiles.files.to_list() +
             ctx.files.configs,
@@ -75,6 +83,7 @@ _container_test = rule(
             default = "docker",
             doc = "Driver to use when running structure tests",
             mandatory = False,
+            values = ['docker', 'tar']
         ),
         "_structure_test": attr.label(
             default = Label("@structure_test//:go_default_test"),
@@ -100,7 +109,7 @@ def container_test(name, image, configs, driver=None, verbose=None):
     image_tar_name = "intermediate_bundle_%s" % name
 
     # Give the image a predictable name when loaded
-    container_bundler(
+    container_bundle(
         name = image_tar_name,
         images = {
             intermediate_image_name: image,
