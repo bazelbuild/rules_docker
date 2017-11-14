@@ -114,8 +114,8 @@ def _build_layer(ctx, files=None, file_map=None, empty_files=None,
   args += ["--file=%s=%s" % (f.path, magic_path(ctx, f)) for f in files]
   args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
   args += ["--empty_file=%s" % f for f in empty_files or []]
-  args += ["--tar=" + f.path for f in tars if f.path.endswith(".tar")]
-  args += ["--deb=" + f.path for f in debs if f.path.endswith(".deb")]
+  args += ["--tar=" + f.path for f in tars]
+  args += ["--deb=" + f.path for f in debs]
   for k in symlinks:
     if ':' in k:
       fail("The source of a symlink cannot contain ':', got: %s" % k)
