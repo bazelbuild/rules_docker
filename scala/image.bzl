@@ -21,11 +21,15 @@ load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
+    "jar_dep_layer",
+    "jar_app_layer",
     _repositories = "repositories",
 )
 
 # TODO(mattmoor): Take advantage of layering.
-def scala_image(name, base=None, deps=[], layers=[], **kwargs):
+def scala_image(name, base=None, main_class=None,
+                deps=[], runtime_deps=[], layers=[], jvm_flags=[],
+                **kwargs):
   """Builds a container image overlaying the scala_binary.
 
   Args:
@@ -35,22 +39,27 @@ def scala_image(name, base=None, deps=[], layers=[], **kwargs):
   """
   binary_name = name + ".binary"
 
-  if layers:
-    print("scala_image does not yet take advantage of the layers attribute.")
+  scala_binary(name=binary_name, main_class=main_class,
+                      # If the rule is turning a JAR built with java_library into
+                      # a binary, then it will appear in runtime_deps.  We are
+                      # not allowed to pass deps (even []) if there is no srcs
+                      # kwarg.
+                      deps=(deps + layers) or None, runtime_deps=runtime_deps,
+                      jvm_flags=jvm_flags, **kwargs)
 
-  scala_binary(name=binary_name, deps=(deps + layers) or None, **kwargs)
-
+  index = 0
   base = base or DEFAULT_JAVA_BASE
+  for dep in layers:
+    this_name = "%s.%d" % (name, index)
+    jar_dep_layer(name=this_name, base=base, dep=dep)
+    base = this_name
+    index += 1
 
-  container_image(
-      name=name,
-      base=base,
-      directory="/",
-      files=[":" + binary_name + "_deploy.jar"],
-      entrypoint=["/usr/bin/java", "-jar", "/" + binary_name + "_deploy.jar"],
-      legacy_run_behavior = False,
-      visibility=kwargs.get('visibility', None),
-  )
+  visibility = kwargs.get('visibility', None)
+  jar_app_layer(name=name, base=base, binary=binary_name,
+                 main_class=main_class, jvm_flags=jvm_flags,
+                 deps=deps, runtime_deps=runtime_deps, layers=layers,
+                 visibility=visibility)
 
 def repositories():
   _repositories()
