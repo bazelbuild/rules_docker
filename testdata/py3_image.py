@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# !!!! THIS IS A GENERATED FILE TO NOT EDIT IT BY HAND !!!!
-#
-# To regenerate this file, run ./update_deps.sh from the root of the
-# git repository.
+from testdata import py3_image_library
 
-DIGESTS = {
-    # "gcr.io/distroless/java/jetty:debug" circa 2017-11-15 16:12 -0500
-    "debug": "sha256:f6f6dd5720fa37899249c452250482d6a59f1af8bcd40caa41edaf9e981753fc",
-    # "gcr.io/distroless/java/jetty:latest" circa 2017-11-15 16:12 -0500
-    "latest": "sha256:b92b99e35280e033abd7ad75c1e5b6f07ee0d6ae88e1620163518681a60fc66d",
-}
+def main():
+  print('First: %d' % py3_image_library.fn(1))
+  print('Second: %d' % py3_image_library.fn(2))
+  print('Third: %d' % py3_image_library.fn(3))
+  print('Fourth: %d' % py3_image_library.fn(4))
+
+
+if __name__ == '__main__':
+  main()

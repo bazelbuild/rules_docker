@@ -502,6 +502,21 @@ py_image(
     main = "py_image.py",
 )
 
+load("//python3:image.bzl", "py3_image")
+py_library(
+    name = "py3_image_library",
+    srcs = ["py3_image_library.py"],
+)
+
+py_image(
+    name = "py3_image",
+    srcs = ["py3_image.py"],
+    layers = [
+        ":py3_image_library",
+    ],
+    main = "py3_image.py",
+)
+
 load("//cc:image.bzl", "cc_image")
 
 cc_library(
