@@ -94,11 +94,13 @@ load(
 )
 
 def java_files(f):
-  if hasattr(f, "java"):  # java_library, java_import
-    return f.java.transitive_runtime_deps
+  files = []
+  if java_common.provider in f:
+    java_provider = f[java_common.provider]
+    files += list(java_provider.transitive_runtime_jars)
   if hasattr(f, "files"):  # a jar file
-    return f.files
-  return []
+    files += list(f.files)
+  return files
 
 load(
     "//lang:image.bzl",
@@ -110,7 +112,7 @@ def _jar_dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
   return dep_layer_impl(ctx, runfiles=java_files)
 
-_jar_dep_layer = rule(
+jar_dep_layer = rule(
     attrs = _container.image.attrs + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
@@ -141,7 +143,7 @@ def _jar_app_layer_impl(ctx):
   for jar in ctx.attr.deps + ctx.attr.runtime_deps:
     unavailable += java_files(jar)
 
-  unavailable += ctx.attr.binary.files
+  unavailable += java_files(ctx.attr.binary)
   unavailable = [x for x in unavailable if x not in available]
 
   classpath = ":".join([
@@ -174,7 +176,7 @@ def _jar_app_layer_impl(ctx):
     directory="/", file_map=file_map,
     entrypoint=entrypoint)
 
-_jar_app_layer = rule(
+jar_app_layer = rule(
     attrs = _container.image.attrs + {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
@@ -228,12 +230,12 @@ def java_image(name, base=None, main_class=None,
   base = base or DEFAULT_JAVA_BASE
   for dep in layers:
     this_name = "%s.%d" % (name, index)
-    _jar_dep_layer(name=this_name, base=base, dep=dep)
+    jar_dep_layer(name=this_name, base=base, dep=dep)
     base = this_name
     index += 1
 
   visibility = kwargs.get('visibility', None)
-  _jar_app_layer(name=name, base=base, binary=binary_name,
+  jar_app_layer(name=name, base=base, binary=binary_name,
                  main_class=main_class, jvm_flags=jvm_flags,
                  deps=deps, runtime_deps=runtime_deps, layers=layers,
                  visibility=visibility)

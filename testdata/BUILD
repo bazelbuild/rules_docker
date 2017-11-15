@@ -537,6 +537,13 @@ java_image(
     main_class = "examples.images.Binary",
 )
 
+java_image(
+    name = "java_sandwich_image",
+    srcs = ["Binary.java"],
+    layers = [":scala_image_library"],
+    main_class = "examples.images.Binary",
+)
+
 java_library(
     name = "java_bin_as_lib",
     srcs = ["Binary.java"],
@@ -558,10 +565,24 @@ war_image(
     ],
 )
 
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
 load("//scala:image.bzl", "scala_image")
+
+scala_library(
+    name = "scala_image_library",
+    srcs = ["Library.scala"],
+    deps = ["@com_google_guava_guava//jar"],
+)
 
 scala_image(
     name = "scala_image",
+    srcs = ["Binary.scala"],
+    main_class = "examples.images.Binary",
+    deps = [":scala_image_library"],
+)
+
+scala_image(
+    name = "scala_sandwich_image",
     srcs = ["Binary.scala"],
     main_class = "examples.images.Binary",
     deps = [":java_image_library"],
