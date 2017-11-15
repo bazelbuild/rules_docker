@@ -26,7 +26,6 @@ load(
     _repositories = "repositories",
 )
 
-# TODO(mattmoor): Take advantage of layering.
 def scala_image(name, base=None, main_class=None,
                 deps=[], runtime_deps=[], layers=[], jvm_flags=[],
                 **kwargs):
