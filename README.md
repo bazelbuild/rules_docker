@@ -45,6 +45,8 @@ https://docs.bazel.build/versions/master/be/c-cpp.html#cc_binary))
 https://github.com/bazelbuild/rules_go#go_binary))
 * [py_image](#py_image) ([signature](
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
+* [py3_image](#py3_image) ([signature](
+https://docs.bazel.build/versions/master/be/python.html#py_binary))
 * [java_image](#java_image) ([signature](
 https://docs.bazel.build/versions/master/be/java.html#java_binary))
 * [war_image](#war_image) ([signature](
@@ -334,6 +336,11 @@ py_image(
     main = "server.py",
 )
 ```
+
+### py3_image
+
+To use a Python 3 runtime instead of the default of Python 2, use `py3_image`,
+instead of `py_image`.  The other semantics are identical.
 
 ### go_image
 
