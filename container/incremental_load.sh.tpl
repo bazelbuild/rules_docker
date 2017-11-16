@@ -230,7 +230,7 @@ function read_variables() {
 
 # An optional "docker run" statement for invoking a loaded container.
 # This is not executed if the single argument --norun is passed.
-if [ "a$@" != "a--norun" ]; then
+if [ "a$*" != "a--norun" ]; then
   # This generated and injected by docker_*.
   %{run_statements}
   # Empty if blocks can be problematic.
