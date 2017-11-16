@@ -15,5 +15,13 @@
            "parameters": {
                "tests": ["//... except //tests/docker/..."]
            }
+    },
+    {
+        "node": "darwin-x86_64",
+        "parameters": {
+            "tests": ["//tests/docker/... except //tests/docker/..."],
+            "build_tag_filters": ["-needs_xz"]
+        }
+
     }
 ]

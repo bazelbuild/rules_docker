@@ -13,10 +13,27 @@
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
 
+load("//container:container.bzl", "container_image")
 load("//contrib:test.bzl", "container_test")
 
 container_test(
     name = "structure_test",
     configs = ["//tests/docker/configs:test.yaml"],
     image = "//testdata:link_with_files_base",
+)
+
+container_image(
+    name = "deb_image_with_dpkgs",
+    debs = [
+        "//testdata:pkg1.deb",
+        "//testdata:pkg2.deb",
+        ":busybox-static_ubuntu1_amd64.deb",
+    ],
+    tags = ["needs_xz"],
+)
+
+container_test(
+    name = "deb_image_with_dpkgs_test",
+    configs = ["//tests/docker/configs:deb_image_with_dpkgs.yaml"],
+    image = ":deb_image_with_dpkgs",
 )

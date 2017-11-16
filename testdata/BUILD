@@ -21,6 +21,7 @@ load(
     "container_image",
     "container_import",
 )
+load("//testdata:utils.bzl", "generate_deb")
 
 exports_files(["pause.tar"])
 
@@ -346,11 +347,8 @@ py_binary(
     srcs = ["gen_deb.py"],
 )
 
-genrule(
-    name = "generate_deb",
-    outs = ["gen.deb"],
-    cmd = "$(location :gen_deb) $@",
-    tools = [":gen_deb"],
+generate_deb(
+    name = "extras_deb",
 )
 
 # TODO(mattmoor): re-enable once extras.tar works.
@@ -359,7 +357,7 @@ genrule(
 # container_image(
 #     name = "extras_with_deb",
 #     data_path = ".",
-#     debs = [":gen.deb"],
+#     debs = [":extras_deb.deb"],
 #     tars = ["extras.tar"],
 # )
 
@@ -663,4 +661,12 @@ nodejs_image(
     data = [":nodejs_image.js"],
     entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
     node_modules = "@npm_deps//:node_modules",
+)
+
+generate_deb(
+    name = "pkg1",
+)
+
+generate_deb(
+    name = "pkg2",
 )
