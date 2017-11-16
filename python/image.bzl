@@ -72,11 +72,6 @@ def py_image(name, base=None, deps=[], layers=[], **kwargs):
   # a single target can be used for all three.
   native.py_binary(name=binary_name, deps=deps + layers, **kwargs)
 
-  # TODO(mattmoor): Consider what the right way to switch between
-  # Python 2/3 support might be.  Perhaps just overriding `base`,
-  # but perhaps we can be smarter about selecting a py2 vs. py3
-  # distroless base?
-
   # TODO(mattmoor): Consider making the directory into which the app
   # is placed configurable.
   index = 0

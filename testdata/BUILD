@@ -504,16 +504,11 @@ py_image(
 
 load("//python3:image.bzl", "py3_image")
 
-py_library(
-    name = "py3_image_library",
-    srcs = ["py3_image_library.py"],
-)
-
 py_image(
     name = "py3_image",
     srcs = ["py3_image.py"],
     layers = [
-        ":py3_image_library",
+        ":py_image_library",
     ],
     main = "py3_image.py",
 )
