@@ -28,7 +28,7 @@ load(
 )
 
 # Load the resolved digests.
-load(":python.bzl", "DIGESTS")
+load(":python3.bzl", "DIGESTS")
 
 def repositories():
   # Call the core "repositories" function to reduce boilerplate.
@@ -36,29 +36,29 @@ def repositories():
   _repositories()
 
   excludes = native.existing_rules().keys()
-  if "py_image_base" not in excludes:
+  if "py3_image_base" not in excludes:
     container_pull(
-      name = "py_image_base",
+      name = "py3_image_base",
       registry = "gcr.io",
-      repository = "distroless/python2.7",
+      repository = "distroless/python3",
       digest = DIGESTS["latest"],
     )
   if "py_debug_image_base" not in excludes:
     container_pull(
       name = "py_debug_image_base",
       registry = "gcr.io",
-      repository = "distroless/python2.7",
+      repository = "distroless/python3",
       digest = DIGESTS["debug"],
     )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
-    "@io_bazel_rules_docker//:debug": "@py_debug_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@py_image_base//image",
-    "//conditions:default": "@py_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@py3_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@py3_debug_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@py3_image_base//image",
+    "//conditions:default": "@py3_image_base//image",
 })
 
-def py_image(name, base=None, deps=[], layers=[], **kwargs):
+def py3_image(name, base=None, deps=[], layers=[], **kwargs):
   """Constructs a container image wrapping a py_binary target.
 
   Args:
