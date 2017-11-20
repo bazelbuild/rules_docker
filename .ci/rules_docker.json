@@ -1,5 +1,12 @@
 [
     {
+        "node": "docker",
+        "parameters": {
+            "targets": [],
+            "tests": ["//test/docker/..."]
+        }
+    },
+    {
           "variation": "",
            "configurations": [
                 {"node": "linux-x86_64"},
