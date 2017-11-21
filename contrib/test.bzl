@@ -18,7 +18,8 @@ to the container structure test framework."
 """
 
 load(
-    "//container:bundle.bzl", "container_bundle",
+    "//container:bundle.bzl",
+    "container_bundle",
 )
 
 def _impl(ctx):
@@ -83,7 +84,10 @@ _container_test = rule(
             default = "docker",
             doc = "Driver to use when running structure tests",
             mandatory = False,
-            values = ['docker', 'tar']
+            values = [
+                "docker",
+                "tar",
+            ],
         ),
         "_structure_test": attr.label(
             default = Label("@structure_test//:go_default_test"),
