@@ -3,7 +3,7 @@
         "node": "docker",
         "parameters": {
             "targets": [],
-            "tests": ["//test/docker/..."]
+            "test_tag_filters": ["+docker"]
         }
     },
     {
