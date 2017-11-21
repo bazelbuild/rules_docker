@@ -20,6 +20,7 @@ load(
     "container_flatten",
     "container_image",
     "container_import",
+    # "container_test",
 )
 
 exports_files(["pause.tar"])
@@ -275,6 +276,12 @@ container_flatten(
     name = "flat",
     image = ":link_with_files_base",
 )
+
+# container_test(
+#     name = "structure_test",
+#     configs = ["test.yaml"],
+#     image = ":link_with_files_base",
+# )
 
 load("//docker:docker.bzl", "docker_push")
 

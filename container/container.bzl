@@ -28,6 +28,9 @@ container = struct(
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.21"
 
+# The release of the container-structure-test repository to use.
+STRUCTURE_TEST_RELEASE = "v0.1.1"
+
 def repositories():
   """Download dependencies of container rules."""
   excludes = native.existing_rules().keys()
@@ -145,3 +148,10 @@ py_library(
       remote = "https://github.com/google/subpar",
       commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
     )
+
+  if "structure_test" not in excludes:
+    native.git_repository(
+      name = "structure_test",
+      remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
+      tag = STRUCTURE_TEST_RELEASE,
+  )
