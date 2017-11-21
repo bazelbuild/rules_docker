@@ -395,9 +395,9 @@ container_image_ = rule(
 #   ],
 # NOTE: prefacing a command with 'exec' just ends up with the former
 def _validate_command(name, argument):
-  if type(argument) == "string":
+  if type(argument) == type(""):
     return ["/bin/sh", "-c", argument]
-  elif type(argument) == "list":
+  elif type(argument) == type([]):
     return argument
   elif argument:
     fail("The %s attribute must be a string or list, if specified." % name)
