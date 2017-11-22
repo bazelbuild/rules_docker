@@ -1,10 +1,19 @@
 [
     {
+        "node": "docker",
+        "parameters": {
+            "test_tag_filters": ["+docker"]
+        }
+    },
+    {
           "variation": "",
            "configurations": [
                 {"node": "linux-x86_64"},
                 {"node": "ubuntu_16.04-x86_64"},
                 {"node": "darwin-x86_64"}
-           ]
+           ],
+           "parameters": {
+              "test_tag_filters": ["-docker"]
+           }  
     }
 ]
