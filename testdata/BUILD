@@ -511,7 +511,7 @@ py_image(
 
 load("//python3:image.bzl", "py3_image")
 
-py_image(
+py3_image(
     name = "py3_image",
     srcs = ["py3_image.py"],
     layers = [
