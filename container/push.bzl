@@ -56,6 +56,17 @@ def _impl(ctx):
   layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
   config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
 
+  cert_inputs=[]
+  cert_args = ""
+
+  if ctx.attr.key or ctx.attr.cert or ctx.attr.domain:
+      if not (ctx.attr.key and ctx.attr.cert and ctx.attr.domain):
+          fail("All or none of 'key', 'cert', and 'domain' must be defined.")
+      else:
+          cert_args = "--certificates %s,%s,%s" % (ctx.file.key.path, ctx.file.cert.path,
+                                                   ctx.attr.domain)
+          cert_inputs += [ctx.file.key, ctx.file.cert]
+
   ctx.template_action(
       template = ctx.file._tag_tpl,
       substitutions = {
@@ -70,6 +81,7 @@ def _impl(ctx):
           "%{image}": "%s %s %s %s" % (
               legacy_base_arg, config_arg, digest_arg, layer_arg),
           "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+          "%{cert_args}": cert_args,
           "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
       },
       output = ctx.outputs.executable,
@@ -80,7 +92,7 @@ def _impl(ctx):
       ctx.executable._pusher,
       image["config"]
   ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-  stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
+  stamp_inputs + cert_inputs + ([image["legacy"]] if image.get("legacy") else []) +
   list(ctx.attr._pusher.default_runfiles.files)))
 
 container_push = rule(
@@ -100,6 +112,9 @@ container_push = rule(
                 "Docker",
             ],
         ),
+        "key": attr.label(allow_files = True, single_file = True),
+        "cert": attr.label(allow_files = True, single_file = True),
+        "domain": attr.string(),
         "_tag_tpl": attr.label(
             default = Label("//container:push-tag.sh.tpl"),
             single_file = True,
