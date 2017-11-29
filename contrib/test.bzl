@@ -22,6 +22,9 @@ load(
     "container_bundle",
 )
 
+# regex to match only valid characters in image name
+image_regex = "[^a-z0-9_|-|.|/]"
+
 def _impl(ctx):
     config_str = ' '.join(['$(pwd)/' + c.short_path for c in ctx.files.configs])
 
@@ -109,7 +112,7 @@ _container_test = rule(
 def container_test(name, image, configs, driver=None, verbose=None):
     """A macro to predictably rename the image under test before threading
     it to the container test rule."""
-    intermediate_image_name = "%s:intermediate" % image.replace(':', '')
+    intermediate_image_name = "%s:intermediate" % re.sub(image_regex, '', image)
     image_tar_name = "intermediate_bundle_%s" % name
 
     # Give the image a predictable name when loaded
