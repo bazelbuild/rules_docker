@@ -109,7 +109,7 @@ _container_test = rule(
 def container_test(name, image, configs, driver=None, verbose=None):
     """A macro to predictably rename the image under test before threading
     it to the container test rule."""
-    intermediate_image_name = "%s:intermediate" % image.replace(':', '')
+    intermediate_image_name = "%s:intermediate" % image.replace(':', '').replace('@', '')
     image_tar_name = "intermediate_bundle_%s" % name
 
     # Give the image a predictable name when loaded
