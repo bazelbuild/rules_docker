@@ -11,15 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package(default_visibility = ["//visibility:public"])
 
-# !!!! THIS IS A GENERATED FILE TO NOT EDIT IT BY HAND !!!!
-#
-# To regenerate this file, run ./update_deps.sh from the root of the
-# git repository.
-
-DIGESTS = {
-    # "gcr.io/distroless/cc:debug" circa 2017-12-09 23:05 +0000
-    "debug": "sha256:d3fe07be221200e6a7c9981545da4394cd6177ab80012da65a858069bd374bb9",
-    # "gcr.io/distroless/cc:latest" circa 2017-12-09 23:05 +0000
-    "latest": "sha256:7a52af4e4f09c905f2264c99ec75f65481fd132454f3ff4dd06962c99c7dab6e",
-}
+licenses(["notice"])  # Apache 2.0

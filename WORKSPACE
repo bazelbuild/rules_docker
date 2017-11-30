@@ -142,3 +142,25 @@ git_repository(
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
 
 d_repositories()
+
+git_repository(
+    name = "build_bazel_rules_nodejs",
+    commit = "5c53b46110d13c4c9f22364e96b2d0f55896d7aa",
+    remote = "https://github.com/bazelbuild/rules_nodejs.git",
+)
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+
+node_repositories(package_json = ["//testdata:package.json"])
+
+npm_install(
+    name = "npm_deps",
+    package_json = "//testdata:package.json",
+)
+
+load(
+    "//nodejs:image.bzl",
+    _nodejs_image_repos = "repositories",
+)
+
+_nodejs_image_repos()

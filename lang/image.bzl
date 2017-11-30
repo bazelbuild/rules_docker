@@ -39,6 +39,13 @@ def _reference_dir(ctx):
   # /app/bar/baz/blah.runfiles/foo
   return "/".join([_runfiles_dir(ctx), ctx.workspace_name])
 
+# The special "external" directory which is an alternate way of accessing
+# other repositories.
+def _external_dir(ctx):
+  # For @foo//bar/baz:blah this would translate to
+  # /app/bar/baz/blah.runfiles/foo/external
+  return "/".join([_reference_dir(ctx), "external"])
+
 # The final location that this file needs to exist for the foo_binary target to
 # properly execute.
 def _final_emptyfile_path(ctx, name):
@@ -95,6 +102,9 @@ def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
   runfiles = runfiles or _default_runfiles
   emptyfiles = emptyfiles or _default_emptyfiles
 
+  filepath = layer_file_path if ctx.attr.agnostic_dep_layout else _final_file_path
+  emptyfilepath = _layer_emptyfile_path if ctx.attr.agnostic_dep_layout else _final_emptyfile_path
+
   return _container.image.implementation(
     ctx,
     # We use all absolute paths.
@@ -105,11 +115,11 @@ def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # This references the binary package because the file paths are
     # relative to it, and normalized by the tarball package.
     file_map={
-        layer_file_path(ctx, f): f
+        filepath(ctx, f): f
         for f in runfiles(ctx.attr.dep)
     },
     empty_files=[
-        _layer_emptyfile_path(ctx, empty)
+        emptyfilepath(ctx, empty)
         for empty in emptyfiles(ctx.attr.dep)
     ]
   )
@@ -119,7 +129,19 @@ dep_layer = rule(
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
-        "dep": attr.label(mandatory = True),
+        "dep": attr.label(
+            mandatory = True,
+            allow_files = True,
+        ),
+
+        # Whether to lay out each dependency in a manner that is agnostic
+        # of the binary in which it is participating.  This can increase
+        # sharing of the dependency's layer across images, but requires a
+        # symlink forest in the app layers.
+        "agnostic_dep_layout": attr.bool(default = True),
+        # The binary target for which we are synthesizing an image.
+        # This is needed iff agnostic_dep_layout.
+        "binary": attr.label(mandatory = False),
 
         # Override the defaults.
         # https://github.com/bazelbuild/bazel/issues/2176
@@ -171,11 +193,20 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   # For each of the runfiles we aren't including directly into
   # the application layer, link to their binary-agnostic
   # location from the runfiles path.
-  symlinks = available + {
+  symlinks = {}
+  # Include symlinks to available files if they were laid out in a
+  # binary-agnostic fashion.
+  if ctx.attr.agnostic_dep_layout:
+    symlinks = available
+
+  symlinks += {
     # Create a symlink from our entrypoint to where it will actually be put
     # under runfiles.
     _binary_name(ctx): "/".join([_reference_dir(ctx), ctx.label.package,
-                                 ctx.attr.binary.label.name])
+                                 ctx.attr.binary.label.name]),
+    # Create a directory symlink from <workspace>/external to the runfiles
+    # root, since they may be accessed via either path.
+    _external_dir(ctx): _runfiles_dir(ctx),
   }
 
   return _container.image.implementation(
@@ -195,10 +226,16 @@ app_layer = rule(
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
         # factored into our base.
-        "layers": attr.label_list(),
+        "layers": attr.label_list(allow_files = True),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),
+
+        # Whether each dependency is laid out in a manner that is agnostic
+        # of the binary in which it is participating.  This can increase
+        # sharing of the dependency's layer across images, but requires a
+        # symlink forest in the app layers.
+        "agnostic_dep_layout": attr.bool(default = True),
 
         # Override the defaults.
         "data_path": attr.string(default = "."),

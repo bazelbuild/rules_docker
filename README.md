@@ -43,6 +43,8 @@ registry interactions.
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
 * [py3_image](#py3_image) ([signature](
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
+* [nodejs_image](#nodejs_image) ([usage](
+https://github.com/bazelbuild/rules_nodejs#usage))
 * [java_image](#java_image) ([signature](
 https://docs.bazel.build/versions/master/be/java.html#java_binary))
 * [war_image](#war_image) ([signature](
@@ -364,6 +366,58 @@ py_image(
 
 To use a Python 3 runtime instead of the default of Python 2, use `py3_image`,
 instead of `py_image`.  The other semantics are identical.
+
+### nodejs_image
+
+**It is notable that unlike the other image rules, `nodejs_image` is not
+currently using the `gcr.io/distroless/nodejs` image for a handful of reasons.**
+This is a switch we plan to make, when we can manage it.  We are currently
+utilizing the `gcr.io/google-appengine/base` image as our base.
+
+To use `nodejs_image`, add the following to `WORKSPACE`:
+
+```python
+git_repository(
+    name = "build_bazel_rules_nodejs",
+    # Replace with a real commit SHA
+    commit = "{HEAD}",
+    remote = "https://github.com/bazelbuild/rules_nodejs.git",
+)
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+
+# Download Node toolchain, etc.
+node_repositories(package_json = ["//:package.json"])
+
+# Install your declared Node.js dependencies
+npm_install(
+    name = "npm_deps",
+    packages = "//:package.json",
+)
+
+# Download base images, etc.
+load(
+    "@io_bazel_rules_docker//nodejs:image.bzl",
+    _nodejs_image_repos = "repositories",
+)
+
+_nodejs_image_repos()
+```
+
+Then in your `BUILD` file, simply rewrite `nodejs_binary` to `nodejs_image` with
+the following import:
+```python
+load("@io_bazel_rules_docker//nodejs:image.bzl", "nodejs_image")
+
+nodejs_image(
+    name = "nodejs_image",
+    entry_point = "your_workspace/path/to/file.js",
+    # This will be put into its own layer.
+    node_modules = "@npm_deps//:node_modules",
+    data = [":file.js"],
+    ...
+)
+```
 
 ### go_image
 

@@ -313,6 +313,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         '/app/testdata/py_image.binary',
+        '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/external',
       ])
 
       # Check the library layer, which is one below our application layer.
@@ -341,6 +342,9 @@ class ImageTest(unittest.TestCase):
         '/app',
         '/app/testdata',
         '/app/testdata/cc_image.binary',
+        '/app/testdata/cc_image.binary.runfiles',
+        '/app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker',
+        '/app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/external',
       ])
 
       # The linker pulls the object files into the final binary,

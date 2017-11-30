@@ -260,6 +260,12 @@ function test_d_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:d_image)" "Hello world"
 }
 
+function test_nodejs_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:nodejs_image)" "Hello World!"
+}
+
 test_top_level
 test_bazel_build_then_run_docker_build_clean
 test_bazel_run_docker_build_clean
@@ -293,3 +299,5 @@ test_rust_image -c opt
 test_rust_image -c dbg
 test_d_image -c opt
 test_d_image -c dbg
+test_nodejs_image -c opt
+test_nodejs_image -c dbg
