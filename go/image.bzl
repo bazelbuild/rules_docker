@@ -63,19 +63,22 @@ DEFAULT_BASE = select({
     "//conditions:default": "@go_image_base//image",
 })
 
-def go_image(name, base=None, deps=[], layers=[], **kwargs):
+def go_image(name, base=None, deps=[], layers=[], binary=None, **kwargs):
   """Constructs a container image wrapping a go_binary target.
 
   Args:
+    binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into their own layers.
     **kwargs: See go_binary.
   """
-  binary_name = name + ".binary"
-
   if layers:
     print("go_image does not benefit from layers=[], got: %s" % layers)
 
-  go_binary(name=binary_name, deps=deps + layers, **kwargs)
+  if not binary:
+    binary = name + ".binary"
+    go_binary(name=binary, deps=deps + layers, **kwargs)
+  elif deps:
+    fail("kwarg does nothing when binary is specified", "deps")
 
   index = 0
   base = base or DEFAULT_BASE
@@ -86,5 +89,5 @@ def go_image(name, base=None, deps=[], layers=[], **kwargs):
     index += 1
 
   visibility = kwargs.get('visibility', None)
-  app_layer(name=name, base=base, binary=binary_name, layers=layers,
+  app_layer(name=name, base=base, binary=binary, layers=layers,
             visibility=visibility)
