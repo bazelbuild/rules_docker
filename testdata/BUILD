@@ -535,6 +535,17 @@ cc_image(
     layers = [":cc_image_library"],
 )
 
+cc_binary(
+    name = "cc_binary",
+    srcs = ["cc_image.cc"],
+    deps = [":cc_image_library"],
+)
+
+cc_image(
+    name = "cc_binary_as_image",
+    binary = ":cc_binary",
+)
+
 load(
     "//java:image.bzl",
     "java_image",
