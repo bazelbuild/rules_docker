@@ -28,7 +28,7 @@ py_binary(
     srcs = ["extract_config.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "@containerregistry//:containerregistry",
+        "@containerregistry",
     ],
 )
 
@@ -46,7 +46,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@containerregistry//:containerregistry",
+        "@containerregistry",
     ],
 )
 
@@ -56,7 +56,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@containerregistry//:containerregistry",
+        "@containerregistry",
     ],
 )
 
@@ -133,5 +133,5 @@ py_test(
     size = "medium",
     srcs = ["image_test.py"],
     data = TEST_DATA,
-    deps = ["@containerregistry//:containerregistry"],
+    deps = ["@containerregistry"],
 )
