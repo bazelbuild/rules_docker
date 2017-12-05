@@ -17,6 +17,6 @@ py_binary(
     name = "update_deps",
     srcs = ["update_deps.py"],
     deps = [
-        "@containerregistry//:containerregistry",
+        "@containerregistry",
     ],
 )
