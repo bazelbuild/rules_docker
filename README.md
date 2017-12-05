@@ -39,10 +39,6 @@ registry interactions.
 
 ## Language Rules
 
-* [cc_image](#cc_image) ([signature](
-https://docs.bazel.build/versions/master/be/c-cpp.html#cc_binary))
-* [go_image](#go_image) ([signature](
-https://github.com/bazelbuild/rules_go#go_binary))
 * [py_image](#py_image) ([signature](
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
 * [py3_image](#py3_image) ([signature](
@@ -55,10 +51,17 @@ https://docs.bazel.build/versions/master/be/java.html#java_library))
 https://github.com/bazelbuild/rules_scala#scala_binary))
 * [groovy_image](#groovy_image) ([signature](
 https://github.com/bazelbuild/rules_groovy#groovy_binary))
+* [cc_image](#cc_image) ([signature](
+https://docs.bazel.build/versions/master/be/c-cpp.html#cc_binary))
+* [go_image](#go_image) ([signature](
+https://github.com/bazelbuild/rules_go#go_binary))
 * [rust_image](#rust_image) ([signature](
 https://github.com/bazelbuild/rules_rust#rust_binary))
 * [d_image](#d_image) ([signature](
 https://github.com/bazelbuild/rules_d#d_binary))
+
+It is notable that: `cc_image`, `go_image`, `rust_image`, and `d_image`
+also allow you to specify an external binary target.
 
 ### Overview
 
@@ -286,6 +289,26 @@ cc_image(
     name = "cc_image",
     srcs = ["cc_image.cc"],
     deps = [":cc_image_library"],
+)
+```
+
+### cc_image (external binary)
+
+To use `cc_image` (or `go_image`, `d_image`, `rust_image) with an external
+`cc_binary` (or the like) target, then your `BUILD` file should instead look
+like:
+```python
+load("@io_bazel_rules_docker//cc:image.bzl", "cc_image")
+
+cc_binary(
+    name = "cc_binary",
+    srcs = ["cc_binary.cc"],
+    deps = [":cc_library"],
+)
+
+cc_image(
+    name = "cc_image",
+    binary = ":cc_binary",
 )
 ```
 
