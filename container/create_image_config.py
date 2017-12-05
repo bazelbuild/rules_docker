@@ -17,6 +17,8 @@ import argparse
 import json
 import sys
 
+import six
+
 from container import utils
 from containerregistry.transform.v2_2 import metadata as v2_2_metadata
 
@@ -112,7 +114,7 @@ def main():
     layers.append(utils.ExtractValue(layer))
 
   labels = KeyValueToDict(args.labels)
-  for label, value in labels.iteritems():
+  for label, value in six.iteritems(labels):
     if value.startswith('@'):
       with open(value[1:], 'r') as f:
         labels[label] = f.read()
@@ -121,11 +123,11 @@ def main():
 
   output = v2_2_metadata.Override(data, v2_2_metadata.Overrides(
       author='Bazel', created_by='bazel build ...',
-      layers=layers, entrypoint=map(Stamp, fix_dashdash(args.entrypoint)),
-      cmd=map(Stamp, fix_dashdash(args.command)), user=Stamp(args.user),
+      layers=layers, entrypoint=list(map(Stamp, fix_dashdash(args.entrypoint))),
+      cmd=list(map(Stamp, fix_dashdash(args.command))), user=Stamp(args.user),
       labels=labels, env={
         k: Stamp(v)
-        for (k, v) in KeyValueToDict(args.env).iteritems()
+        for (k, v) in six.iteritems(KeyValueToDict(args.env))
       },
       ports=args.ports, volumes=args.volumes, workdir=Stamp(args.workdir)),
                                   architecture=_PROCESSOR_ARCHITECTURE,
