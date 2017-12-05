@@ -31,20 +31,23 @@ load("@io_bazel_rules_d//d:d.bzl", "d_binary")
 def repositories():
   _repositories()
 
-def d_image(name, base=None, deps=[], layers=[], **kwargs):
+def d_image(name, base=None, deps=[], layers=[], binary=None, **kwargs):
   """Constructs a container image wrapping a d_binary target.
 
   Args:
+    binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See d_binary.
   """
-  binary_name = name + "_binary"
-
   if layers:
     print("d_image does not benefit from layers=[], got: %s" % layers)
 
-  d_binary(name=binary_name, deps=deps + layers, **kwargs)
+  if not binary:
+    binary = name + "_binary"
+    d_binary(name=binary, deps=deps + layers, **kwargs)
+  elif deps:
+    fail("kwarg does nothing when binary is specified", "deps")
 
   index = 0
   base = base or DEFAULT_BASE
@@ -55,5 +58,5 @@ def d_image(name, base=None, deps=[], layers=[], **kwargs):
     index += 1
 
   visibility = kwargs.get('visibility', None)
-  app_layer(name=name, base=base, binary=binary_name, layers=layers,
+  app_layer(name=name, base=base, binary=binary, layers=layers,
             visibility=visibility)
