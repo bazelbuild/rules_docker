@@ -109,7 +109,10 @@ _container_test = rule(
 def container_test(name, image, configs, driver=None, verbose=None):
     """A macro to predictably rename the image under test before threading
     it to the container test rule."""
-    intermediate_image_name = "%s:intermediate" % image.replace(':', '')
+
+    # Remove commonly encountered characters that Docker will choke on 
+    sanitized_name = image.replace(':', '').replace('@', '').replace('/', '')
+    intermediate_image_name = "%s:intermediate" % sanitized_name
     image_tar_name = "intermediate_bundle_%s" % name
 
     # Give the image a predictable name when loaded
