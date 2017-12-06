@@ -46,6 +46,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
+        "@bazel_tools//third_party/py/six",
         "@containerregistry",
     ],
 )

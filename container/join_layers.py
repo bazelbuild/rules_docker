@@ -14,12 +14,14 @@
 """This tool creates a docker image from a list of layers."""
 
 import argparse
-import cStringIO
 import hashlib
 import json
 import os
 import sys
 import tarfile
+
+import six
+from six.moves import cStringIO
 
 from container import utils
 from containerregistry.client import docker_name
