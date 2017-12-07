@@ -50,6 +50,13 @@ load(
 
 _py_image_repos()
 
+load(
+    "//python3:image.bzl",
+    _py3_image_repos = "repositories",
+)
+
+_py3_image_repos()
+
 # Have the cc_image dependencies for testing.
 load(
     "//cc:image.bzl",
