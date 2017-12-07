@@ -15,6 +15,8 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
+
 exports_files(["push-tag.sh.tpl"])
 
 filegroup(
@@ -136,4 +138,86 @@ py_test(
     srcs = ["image_test.py"],
     data = TEST_DATA,
     deps = ["@containerregistry"],
+)
+
+skylark_library(
+    name = "bundle",
+    srcs = ["bundle.bzl"],
+    deps = [
+        ":layers",
+        "//skylib:label",
+    ],
+)
+
+skylark_library(
+    name = "container",
+    srcs = ["container.bzl"],
+    deps = [
+        ":bundle",
+        ":flatten",
+        ":image",
+        ":import",
+        ":push",
+    ],
+)
+
+skylark_library(
+    name = "flatten",
+    srcs = ["flatten.bzl"],
+    deps = [
+        ":layers",
+        "//skylib:label",
+    ],
+)
+
+skylark_library(
+    name = "image",
+    srcs = ["image.bzl"],
+    deps = [
+        ":layers",
+        "//skylib:filetype",
+        "//skylib:label",
+        "//skylib:path",
+        "//skylib:serialize",
+        "//skylib:zip",
+        "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    ],
+)
+
+skylark_library(
+    name = "import",
+    srcs = ["import.bzl"],
+    deps = [
+        ":layers",
+        "//skylib:filetype",
+        "//skylib:path",
+        "//skylib:zip",
+        "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    ],
+)
+
+skylark_library(
+    name = "layers",
+    srcs = ["layers.bzl"],
+    deps = ["//skylib:path"],
+)
+
+skylark_library(
+    name = "load",
+    srcs = ["load.bzl"],
+    deps = [":pull"],
+)
+
+skylark_library(
+    name = "pull",
+    srcs = ["pull.bzl"],
+)
+
+skylark_library(
+    name = "push",
+    srcs = ["push.bzl"],
+    deps = [
+        ":layers",
+        "//skylib:path",
+    ],
 )

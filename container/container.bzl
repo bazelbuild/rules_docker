@@ -155,3 +155,11 @@ py_library(
       remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
       tag = STRUCTURE_TEST_RELEASE,
   )
+
+  # For skylark_library.
+  if "bazel_skylib" not in excludes:
+    native.git_repository(
+        name = "bazel_skylib",
+        remote = "https://github.com/bazelbuild/bazel-skylib.git",
+        tag = "0.2.0",
+    )
