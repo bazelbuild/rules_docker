@@ -407,19 +407,29 @@ To use a custom base image, with any of the `lang_image`
 rules, you can override the default `base="..."` attribute.  Consider this
 modified sample from the `distroless` repository:
 ```python
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+
 # Create a passwd file with a nonroot user and uid.
 passwd_file(
-    name = "nonroot",
+    name = "passwd",
     info = "nonroot",
     uid = 1002,
     username = "nonroot",
+)
+
+# Create a tar file containing the created passwd file
+pkg_tar(
+    name = "passwd_tar",
+    srcs = [":passwd"],
+    mode = "0644",
+    package_dir = "etc",
 )
 
 # Include it in our base image as a tar.
 container_image(
     name = "passwd_image",
     base = "@go_image_base//image",
-    tars = [":nonroot.passwd.tar"],
+    tars = [":passwd_tar"],
     user = "nonroot",
 )
 
