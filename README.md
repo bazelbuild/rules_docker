@@ -372,7 +372,7 @@ instead of `py_image`.  The other semantics are identical.
 **It is notable that unlike the other image rules, `nodejs_image` is not
 currently using the `gcr.io/distroless/nodejs` image for a handful of reasons.**
 This is a switch we plan to make, when we can manage it.  We are currently
-utilizing the `gcr.io/google-appengine/base` image as our base.
+utilizing the `gcr.io/google-appengine/debian9` image as our base.
 
 To use `nodejs_image`, add the following to `WORKSPACE`:
 

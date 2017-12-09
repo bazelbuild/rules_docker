@@ -41,14 +41,14 @@ def repositories():
     container_pull(
       name = "nodejs_image_base",
       registry = "gcr.io",
-      repository = "google-appengine/base",
+      repository = "google-appengine/debian9",
       digest = DIGESTS["latest"],
     )
   if "nodejs_debug_image_base" not in excludes:
     container_pull(
       name = "nodejs_debug_image_base",
       registry = "gcr.io",
-      repository = "google-appengine/base",
+      repository = "google-appengine/debian9",
       digest = DIGESTS["debug"],
     )
 

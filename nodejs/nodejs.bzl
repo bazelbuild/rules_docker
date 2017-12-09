@@ -18,8 +18,8 @@
 # git repository.
 
 DIGESTS = {
-    # "gcr.io/google-appengine/base:debug" circa 2017-12-09 23:05 +0000
-    "debug": "sha256:c2e1aa7b3713c5bc8f4032cc26ff9f616542d105b4d0bcaceeadc8083c9c109e",
-    # "gcr.io/google-appengine/base:latest" circa 2017-12-09 23:05 +0000
-    "latest": "sha256:c2e1aa7b3713c5bc8f4032cc26ff9f616542d105b4d0bcaceeadc8083c9c109e",
+    # "gcr.io/google-appengine/debian9:debug" circa 2017-12-09 23:07 +0000
+    "debug": "sha256:6c76ed9ff726a1433243c3c2e8806e4f2ef2cbacddaca7c9e15f7d4312b1bb9f",
+    # "gcr.io/google-appengine/debian9:latest" circa 2017-12-09 23:07 +0000
+    "latest": "sha256:6c76ed9ff726a1433243c3c2e8806e4f2ef2cbacddaca7c9e15f7d4312b1bb9f",
 }
