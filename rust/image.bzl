@@ -49,13 +49,11 @@ def rust_image(name, base=None, deps=[], layers=[], binary=None, **kwargs):
   elif deps:
     fail("kwarg does nothing when binary is specified", "deps")
 
-  index = 0
   base = base or DEFAULT_BASE
-  for dep in layers:
+  for index, dep in enumerate(layers):
     this_name = "%s_%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)
     base = this_name
-    index += 1
 
   visibility = kwargs.get('visibility', None)
   app_layer(name=name, base=base, binary=binary, layers=layers,
