@@ -69,13 +69,14 @@ class FromParts(v2_2_image.DockerImage):
     self._blobsum_to_zipped = blobsum_to_zipped
     self._blobsum_to_legacy = blobsum_to_legacy
     config = json.loads(self._config)
+    content = self.config_file().encode('utf-8')
     self._manifest = json.dumps({
         'schemaVersion': 2,
         'mediaType': docker_http.MANIFEST_SCHEMA2_MIME,
         'config': {
             'mediaType': docker_http.CONFIG_JSON_MIME,
-            'size': len(self.config_file()),
-            'digest': 'sha256:' + hashlib.sha256(self.config_file()).hexdigest()
+            'size': len(content),
+            'digest': 'sha256:' + hashlib.sha256(content).hexdigest()
         },
         'layers': [
             {
@@ -145,7 +146,7 @@ def create_bundle(output, tag_to_config, diffid_to_blobsum,
       tar.addfile(tarinfo=info, fileobj=cStringIO.StringIO(contents))
 
     tag_to_image = {}
-    for (tag, config) in tag_to_config.iteritems():
+    for (tag, config) in six.iteritems(tag_to_config):
       tag_to_image[tag] = FromParts(
           config, diffid_to_blobsum,
           blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy)
