@@ -22,3 +22,4 @@ bazel run tools:update_deps -- --repository=gcr.io/distroless/python2.7 --output
 bazel run tools:update_deps -- --repository=gcr.io/distroless/python3 --output=$PWD/python3/python3.bzl
 bazel run tools:update_deps -- --repository=gcr.io/distroless/java --output=$PWD/java/java.bzl
 bazel run tools:update_deps -- --repository=gcr.io/distroless/java/jetty --output=$PWD/java/jetty.bzl
+bazel run tools:update_deps -- --repository=gcr.io/google-appengine/debian9 --output=$PWD/nodejs/nodejs.bzl

@@ -47,13 +47,11 @@ def scala_image(name, base=None, main_class=None,
                       deps=(deps + layers) or None, runtime_deps=runtime_deps,
                       jvm_flags=jvm_flags, **kwargs)
 
-  index = 0
   base = base or DEFAULT_JAVA_BASE
-  for dep in layers:
+  for index, dep in enumerate(layers):
     this_name = "%s.%d" % (name, index)
     jar_dep_layer(name=this_name, base=base, dep=dep)
     base = this_name
-    index += 1
 
   visibility = kwargs.get('visibility', None)
   jar_app_layer(name=name, base=base, binary=binary_name,

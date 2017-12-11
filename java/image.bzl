@@ -119,6 +119,12 @@ jar_dep_layer = rule(
         # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
 
+        # Whether to lay out each dependency in a manner that is agnostic
+        # of the binary in which it is participating.  This can increase
+        # sharing of the dependency's layer across images, but requires a
+        # symlink forest in the app layers.
+        "agnostic_dep_layout": attr.bool(default = True),
+
         # Override the defaults.
         "directory": attr.string(default = "/app"),
         # https://github.com/bazelbuild/bazel/issues/2176
@@ -192,6 +198,12 @@ jar_app_layer = rule(
         # The main class to invoke on startup.
         "main_class": attr.string(mandatory = True),
 
+        # Whether to lay out each dependency in a manner that is agnostic
+        # of the binary in which it is participating.  This can increase
+        # sharing of the dependency's layer across images, but requires a
+        # symlink forest in the app layers.
+        "agnostic_dep_layout": attr.bool(default = True),
+
         # Whether the classpath should be passed as a file.
         "_classpath_as_file": attr.bool(default = False),
 
@@ -226,13 +238,11 @@ def java_image(name, base=None, main_class=None,
                      deps=(deps + layers) or None, runtime_deps=runtime_deps,
                      jvm_flags=jvm_flags, **kwargs)
 
-  index = 0
   base = base or DEFAULT_JAVA_BASE
-  for dep in layers:
+  for index, dep in enumerate(layers):
     this_name = "%s.%d" % (name, index)
     jar_dep_layer(name=this_name, base=base, dep=dep)
     base = this_name
-    index += 1
 
   visibility = kwargs.get('visibility', None)
   jar_app_layer(name=name, base=base, binary=binary_name,
@@ -255,6 +265,12 @@ _war_dep_layer = rule(
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
+
+        # Whether to lay out each dependency in a manner that is agnostic
+        # of the binary in which it is participating.  This can increase
+        # sharing of the dependency's layer across images, but requires a
+        # symlink forest in the app layers.
+        "agnostic_dep_layout": attr.bool(default = True),
 
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
@@ -296,6 +312,12 @@ _war_app_layer = rule(
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),
 
+        # Whether to lay out each dependency in a manner that is agnostic
+        # of the binary in which it is participating.  This can increase
+        # sharing of the dependency's layer across images, but requires a
+        # symlink forest in the app layers.
+        "agnostic_dep_layout": attr.bool(default = True),
+
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
@@ -329,13 +351,11 @@ def war_image(name, base=None, deps=[], layers=[], **kwargs):
 
   native.java_library(name=library_name, deps=deps + layers, **kwargs)
 
-  index = 0
   base = base or DEFAULT_JETTY_BASE
-  for dep in layers:
+  for index, dep in enumerate(layers):
     this_name = "%s.%d" % (name, index)
     _war_dep_layer(name=this_name, base=base, dep=dep)
     base = this_name
-    index += 1
 
   visibility = kwargs.get('visibility', None)
   _war_app_layer(name=name, base=base, library=library_name, layers=layers,

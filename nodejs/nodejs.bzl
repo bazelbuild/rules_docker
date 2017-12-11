@@ -18,8 +18,8 @@
 # git repository.
 
 DIGESTS = {
-    # "gcr.io/distroless/python3:debug" circa 2017-12-09 23:07 +0000
-    "debug": "sha256:b85549147ef95174e03da6f54693fe96c533d3ae1a505db7cdd428bdac8ccffd",
-    # "gcr.io/distroless/python3:latest" circa 2017-12-09 23:07 +0000
-    "latest": "sha256:db2582d604778faf02fefb7089b8ce9f1e6fa62dda04eb3a4c510c31cc1d2799",
+    # "gcr.io/google-appengine/debian9:debug" circa 2017-12-09 23:07 +0000
+    "debug": "sha256:6c76ed9ff726a1433243c3c2e8806e4f2ef2cbacddaca7c9e15f7d4312b1bb9f",
+    # "gcr.io/google-appengine/debian9:latest" circa 2017-12-09 23:07 +0000
+    "latest": "sha256:6c76ed9ff726a1433243c3c2e8806e4f2ef2cbacddaca7c9e15f7d4312b1bb9f",
 }

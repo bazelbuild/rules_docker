@@ -46,7 +46,10 @@ def main():
 
   debug = docker_name.Tag(str(repo) + ":debug")
   with docker_image.FromRegistry(debug, creds, transport) as img:
-    debug_digest = img.digest()
+    if img.exists():
+      debug_digest = img.digest()
+    else:
+      debug_digest = latest_digest
 
   with open(args.output, 'w') as f:
     f.write("""\

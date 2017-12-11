@@ -38,8 +38,7 @@ def _impl(ctx):
 
   scripts = []
   runfiles = []
-  index = 0
-  for tag in images:
+  for index, tag in enumerate(images.keys()):
     image = images[tag]
     # Leverage our efficient intermediate representation to push.
     legacy_base_arg = ""
@@ -77,7 +76,6 @@ def _impl(ctx):
 
     scripts += [out]
     runfiles += [out]
-    index += 1
 
   ctx.template_action(
     template = ctx.file._all_tpl,

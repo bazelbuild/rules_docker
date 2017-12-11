@@ -74,13 +74,11 @@ def py3_image(name, base=None, deps=[], layers=[], **kwargs):
 
   # TODO(mattmoor): Consider making the directory into which the app
   # is placed configurable.
-  index = 0
   base = base or DEFAULT_BASE
-  for dep in layers:
+  for index, dep in enumerate(layers):
     this_name = "%s.%d" % (name, index)
     dep_layer(name=this_name, base=base, dep=dep)
     base = this_name
-    index += 1
 
   visibility = kwargs.get('visibility', None)
   app_layer(name=name, base=base, entrypoint=['/usr/bin/python'],
