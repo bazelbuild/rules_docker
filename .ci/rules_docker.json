@@ -1,10 +1,19 @@
 [
     {
+        "node": "docker",
+        "parameters": {
+            "tests": ["//tests/docker_tests/..."]
+        }
+    },
+    {
           "variation": "",
            "configurations": [
                 {"node": "linux-x86_64"},
                 {"node": "ubuntu_16.04-x86_64"},
                 {"node": "darwin-x86_64"}
-           ]
+           ],
+           "parameters": {
+               "tests": ["//... except //tests/docker_tests/..."]
+           }
     }
 ]
