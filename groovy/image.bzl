@@ -16,16 +16,19 @@
 The signature of groovy_image is compatible with groovy_binary.
 """
 
-load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_binary")
+load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
 load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
+    "jar_dep_layer",
+    "jar_app_layer",
     _repositories = "repositories",
 )
 
-# TODO(mattmoor): Take advantage of layering.
-def groovy_image(name, base=None, deps=[], layers=[], **kwargs):
+def groovy_image(name, base=None, main_class=None,
+                 srcs=[], deps=[], layers=[], jvm_flags=[],
+                 **kwargs):
   """Builds a container image overlaying the groovy_binary.
 
   Args:
@@ -35,22 +38,37 @@ def groovy_image(name, base=None, deps=[], layers=[], **kwargs):
   """
   binary_name = name + ".binary"
 
-  if layers:
-    print("groovy_image does not yet take advantage of the layers attribute.")
+  # This is an inlined copy of groovy_binary so that we properly collect
+  # the JARs relevant to the java_binary.
+  if srcs:
+    groovy_library(
+        name = binary_name + "-lib",
+        srcs = srcs,
+        deps = deps + layers,
+    )
+    deps = deps + [binary_name + "-lib"]
 
-  groovy_binary(name=binary_name, deps=(deps + layers) or None, **kwargs)
+  # This always belongs in a separate layer.
+  layers += ["//external:groovy"]
 
+  native.java_binary(
+      name = binary_name,
+      main_class = main_class,
+      runtime_deps = deps + layers,
+      **kwargs)
+
+  index = 0
   base = base or DEFAULT_JAVA_BASE
+  for dep in layers:
+    this_name = "%s.%d" % (name, index)
+    jar_dep_layer(name=this_name, base=base, dep=dep)
+    base = this_name
+    index += 1
 
-  container_image(
-      name=name,
-      base=base,
-      directory="/",
-      files=[":" + binary_name + "_deploy.jar"],
-      entrypoint=["/usr/bin/java", "-jar", "/" + binary_name + "_deploy.jar"],
-      legacy_run_behavior = False,
-      visibility=kwargs.get('visibility', None),
-  )
+  visibility = kwargs.get('visibility', None)
+  jar_app_layer(name=name, base=base, binary=binary_name,
+                 main_class=main_class, jvm_flags=jvm_flags,
+                 deps=deps, layers=layers, visibility=visibility)
 
 def repositories():
   _repositories()

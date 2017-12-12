@@ -248,6 +248,12 @@ function test_groovy_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:groovy_image)" "Hello World"
 }
 
+function test_groovy_scala_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:groovy_scala_image)" "Hello World"
+}
+
 function test_rust_image() {
   cd "${ROOT}"
   clear_docker
@@ -295,6 +301,8 @@ test_scala_sandwich_image -c opt
 test_scala_sandwich_image -c dbg
 test_groovy_image -c opt
 test_groovy_image -c dbg
+test_groovy_scala_image -c opt
+test_groovy_scala_image -c dbg
 test_rust_image -c opt
 test_rust_image -c dbg
 test_d_image -c opt

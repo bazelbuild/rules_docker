@@ -606,24 +606,39 @@ scala_library(
 scala_image(
     name = "scala_image",
     srcs = ["Binary.scala"],
+    layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
-    deps = [":scala_image_library"],
 )
 
 scala_image(
     name = "scala_sandwich_image",
     srcs = ["Binary.scala"],
+    layers = [":java_image_library"],
     main_class = "examples.images.Binary",
-    deps = [":java_image_library"],
 )
 
+load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
 load("//groovy:image.bzl", "groovy_image")
+
+groovy_library(
+    name = "groovy_image_library",
+    srcs = ["Library.groovy"],
+    deps = ["@com_google_guava_guava//jar"],
+)
 
 groovy_image(
     name = "groovy_image",
     srcs = ["Binary.groovy"],
+    layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
-    deps = [":java_image_library"],
+)
+
+# This calls from Groovy -> Scala -> Java :)
+groovy_image(
+    name = "groovy_scala_image",
+    srcs = ["Binary.groovy"],
+    layers = [":scala_image_library"],
+    main_class = "examples.images.Binary",
 )
 
 load("//go:image.bzl", "go_image")
