@@ -2,7 +2,7 @@
     {
         "node": "docker",
         "parameters": {
-            "tests": ["//tests/docker_tests/..."]
+            "tests": ["//tests/docker/..."]
         }
     },
     {
@@ -13,7 +13,7 @@
                 {"node": "darwin-x86_64"}
            ],
            "parameters": {
-               "tests": ["//... except //tests/docker_tests/..."]
+               "tests": ["//... except //tests/docker/..."]
            }
     }
 ]
