@@ -202,8 +202,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   symlinks += {
     # Create a symlink from our entrypoint to where it will actually be put
     # under runfiles.
-    _binary_name(ctx): "/".join([_reference_dir(ctx),
-                                 ctx.attr.binary.files.to_list()[0].short_path]),
+    _binary_name(ctx): _final_file_path(ctx, ctx.attr.binary.files.to_list()[0]),
     # Create a directory symlink from <workspace>/external to the runfiles
     # root, since they may be accessed via either path.
     _external_dir(ctx): _runfiles_dir(ctx),
