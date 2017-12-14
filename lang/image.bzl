@@ -222,7 +222,11 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
 app_layer = rule(
     attrs = _container.image.attrs + {
         # The binary target for which we are synthesizing an image.
-        "binary": attr.label(mandatory = True, executable = True, cfg="target"),
+        "binary": attr.label(
+            mandatory = True,
+            executable = True,
+            cfg = "target",
+        ),
         # The full list of dependencies that have their own layers
         # factored into our base.
         "layers": attr.label_list(allow_files = True),
