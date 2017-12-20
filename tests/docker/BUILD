@@ -36,4 +36,5 @@ container_test(
     name = "deb_image_with_dpkgs_test",
     configs = ["//tests/docker/configs:deb_image_with_dpkgs.yaml"],
     image = ":deb_image_with_dpkgs",
+    tags = ["needs_xz"],
 )
