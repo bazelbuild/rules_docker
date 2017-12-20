@@ -106,7 +106,7 @@ _container_test = rule(
     implementation = _impl,
 )
 
-def container_test(name, image, configs, driver=None, verbose=None):
+def container_test(name, image, configs, driver=None, verbose=None, **kwargs):
     """A macro to predictably rename the image under test before threading
     it to the container test rule."""
 
@@ -122,7 +122,6 @@ def container_test(name, image, configs, driver=None, verbose=None):
             intermediate_image_name: image,
         }
     )
-
     _container_test(
         name = name,
         image_name = intermediate_image_name,
@@ -130,4 +129,5 @@ def container_test(name, image, configs, driver=None, verbose=None):
         configs = configs,
         verbose = verbose,
         driver = driver,
+        **kwargs
     )

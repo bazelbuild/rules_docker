@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A simple cross-platform helper to create a dummy debian package."""
+import argparse
 from StringIO import StringIO
 import sys
 import tarfile
@@ -30,30 +31,57 @@ def AddArFileEntry(fileobj, filename, content=''):
   if len(content) % 2 != 0:
     fileobj.write('\n')  # 2-byte alignment padding
 
+
+def add_file_to_tar(tar, filename, content):
+   tarinfo = tarfile.TarInfo(filename)
+   tarinfo.size = len(content)
+   tar.addfile(tarinfo, fileobj=StringIO(content))
+
+
+def get_metadata(pkg_name, content=[]):
+  if content:
+     return '\n'.join(content)
+  else:
+     return '\n'.join([
+         'Package: {0}'.format(pkg_name),
+         'Description: Just a dummy description for dummy package {0}'.format(
+             pkg_name),
+     ])
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-p', action='store', dest='pkg_name',
+                    help='Package name')
+
+parser.add_argument('-a', action='append', dest='metadata',
+                    help='Metadata for package')
+
+parser.add_argument('-o', action='store', dest='outdir',
+                    help='Destination dir')
+
 if __name__ == '__main__':
+  args = parser.parse_args()
+
   # Create data.tar
   tar = StringIO()
   with tarfile.open('data.tar', mode='w', fileobj=tar) as f:
     tarinfo = tarfile.TarInfo('usr/')
     tarinfo.type = tarfile.DIRTYPE
     f.addfile(tarinfo)
-    tarinfo = tarfile.TarInfo('usr/titi')
-    f.addfile(tarinfo, fileobj=StringIO('toto\n'))
+    add_file_to_tar(f, 'usr/{0}'.format(args.pkg_name), 'toto\n')
   data = tar.getvalue()
   tar.close()
   # Create control.tar
   tar = StringIO()
   with tarfile.open('control.tar', mode='w', fileobj=tar) as f:
-    tarinfo = tarfile.TarInfo('control')
-    f.addfile(tarinfo, fileobj=StringIO('\n'.join([
-        'Package: test'
-        'Description: Just a dummy test'
-        ])))
+    metadata_content = get_metadata(pkg_name=args.pkg_name,
+                                    content=args.metadata)
+    add_file_to_tar(f, 'control', metadata_content)
   control = tar.getvalue()
   tar.close()
 
   # Write the final AR archive (the deb package)
-  with open(sys.argv[1], 'w') as f:
+  with open(args.outdir, 'w') as f:
     f.write('!<arch>\n')  # Magic AR header
     AddArFileEntry(f, 'debian-binary', '2.0')
     AddArFileEntry(f, 'control.tar', control)
