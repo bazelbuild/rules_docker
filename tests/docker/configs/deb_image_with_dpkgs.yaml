@@ -37,11 +37,13 @@ fileContentTests:
 - name: 'pkg2 package files contents'
   expectedContents: ['toto.*']
   path: '/usr/pkg2'
-fileContentTests:
-- name: 'Dpkg status file for busybox'
-  expectedContents: ['Package: busybox-static',
-                     'Version: 1:1.22.0-15ubuntu1']
-  path: '/var/lib/dpkg/status.d/busybox'
+
+# TODO: (tejaldesai) Bring this test back in when we can figure out disabling tests
+#fileContentTests:
+#- name: 'Dpkg status file for busybox'
+#  expectedContents: ['Package: busybox-static',
+#                     'Version: 1:1.22.0-15ubuntu1']
+#  path: '/var/lib/dpkg/status.d/busybox'
 # TODO: Uncomment this when commandTests are enabled in container_test rul
 #commandTests:
 #  - name: "busy_box"

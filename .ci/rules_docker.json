@@ -9,18 +9,11 @@
           "variation": "",
            "configurations": [
                 {"node": "linux-x86_64"},
-                {"node": "ubuntu_16.04-x86_64"}
+                {"node": "ubuntu_16.04-x86_64"},
+                {"node": "darwin-x86_64"}
            ],
            "parameters": {
                "tests": ["//... except //tests/docker/..."]
            }
-    },
-    {
-        "node": "darwin-x86_64",
-        "parameters": {
-            "tests": ["//tests/docker/... except //tests/docker/..."],
-            "build_tag_filters": ["-needs_xz"]
-        }
-
     }
 ]

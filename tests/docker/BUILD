@@ -27,14 +27,13 @@ container_image(
     debs = [
         "//testdata:pkg1.deb",
         "//testdata:pkg2.deb",
-        ":busybox-static_ubuntu1_amd64.deb",
+        # TODO: (tejaldesai) Once we figure out how to selectively disable tests using build_tag_filters
+        # ":busybox-static_ubuntu1_amd64.deb",
     ],
-    tags = ["needs_xz"],
 )
 
 container_test(
     name = "deb_image_with_dpkgs_test",
     configs = ["//tests/docker/configs:deb_image_with_dpkgs.yaml"],
     image = ":deb_image_with_dpkgs",
-    tags = ["needs_xz"],
 )
