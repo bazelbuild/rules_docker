@@ -1,0 +1,52 @@
+schemaVersion: '2.0.0'
+fileExistenceTests:
+- name: 'Dpkg status file for Pkg1'
+  path: '/var/lib/dpkg/status.d/pkg1'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+fileContentTests:
+- name: 'Dpkg status file for Pkg1 contents'
+  expectedContents: ['Package: pkg1',
+                     'Description:.*pkg1.*']
+  path: '/var/lib/dpkg/status.d/pkg1'
+fileExistenceTests:
+- name: 'pkg1 package files'
+  path: '/usr/pkg1'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+fileContentTests:
+- name: 'pkg1 package files contents'
+  expectedContents: ['toto.*']
+  path: '/usr'
+fileExistenceTests:
+- name: 'Dpkg status file for Pkg2'
+  path: '/var/lib/dpkg/status.d/pkg2'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+fileContentTests:
+- name: 'Dpkg status file for Pkg2 contents'
+  expectedContents: ['Package: pkg2',
+                     'Description:.*pkg2.*']
+  path: '/var/lib/dpkg/status.d/pkg2'
+fileExistenceTests:
+- name: 'pkg2 package files'
+  path: '/usr/pkg2'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+fileContentTests:
+- name: 'pkg2 package files contents'
+  expectedContents: ['toto.*']
+  path: '/usr/pkg2'
+
+# TODO: (tejaldesai) Bring this test back in when we can figure out disabling tests
+#fileContentTests:
+#- name: 'Dpkg status file for busybox'
+#  expectedContents: ['Package: busybox-static',
+#                     'Version: 1:1.22.0-15ubuntu1']
+#  path: '/var/lib/dpkg/status.d/busybox'
+# TODO: Uncomment this when commandTests are enabled in container_test rul
+#commandTests:
+#  - name: "busy_box"
+#    command: "busybox"
+#    args: ["echo", "test"]
+#    expectedOutput: ["busybox"]
