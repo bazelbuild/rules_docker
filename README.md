@@ -392,7 +392,7 @@ node_repositories(package_json = ["//:package.json"])
 # Install your declared Node.js dependencies
 npm_install(
     name = "npm_deps",
-    packages = "//:package.json",
+    package_json = "//:package.json",
 )
 
 # Download base images, etc.
