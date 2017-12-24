@@ -828,6 +828,8 @@ container_pull(name, registry, repository, digest, tag)
 A repository rule that pulls down a Docker base image in a manner suitable for
 use with `container_image`'s `base` attribute.
 
+**NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
+
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
     <col class="col-param" />
