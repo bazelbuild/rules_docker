@@ -71,7 +71,11 @@ container_import(
             tag=repository_ctx.attr.tag)
     ]
 
-  result = repository_ctx.execute(args)
+  kwargs = {}
+  if "PULLER_TIMEOUT" in repository_ctx.os.environ:
+      kwargs["timeout"] = int(repository_ctx.os.environ.get("PULLER_TIMEOUT"))
+
+  result = repository_ctx.execute(args, **kwargs)
   if result.return_code:
     fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
 
