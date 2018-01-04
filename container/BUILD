@@ -149,7 +149,7 @@ skylark_library(
     name = "bundle",
     srcs = ["bundle.bzl"],
     deps = [
-        ":layers",
+        ":layer_tools",
         "//skylib:label",
     ],
 )
@@ -170,7 +170,7 @@ skylark_library(
     name = "flatten",
     srcs = ["flatten.bzl"],
     deps = [
-        ":layers",
+        ":layer_tools",
         "//skylib:label",
     ],
 )
@@ -179,7 +179,7 @@ skylark_library(
     name = "image",
     srcs = ["image.bzl"],
     deps = [
-        ":layers",
+        ":layer_tools",
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
@@ -193,7 +193,7 @@ skylark_library(
     name = "import",
     srcs = ["import.bzl"],
     deps = [
-        ":layers",
+        ":layer_tools",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
@@ -222,7 +222,7 @@ skylark_library(
     name = "push",
     srcs = ["push.bzl"],
     deps = [
-        ":layers",
+        ":layer_tools",
         "//skylib:path",
     ],
 )
