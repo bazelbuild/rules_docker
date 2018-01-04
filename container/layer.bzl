@@ -134,7 +134,6 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                     diff_id=diff_id,
                     env=env)]
 
-
 _layer_attrs = dict({
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
@@ -156,7 +155,7 @@ _layer_attrs = dict({
 }.items() + _hash_tools.items() + _layer_tools.items())
 
 _layer_outputs = {
-    "layer": "%{name}-layer.tar"
+    "layer": "%{name}-layer.tar",
 }
 
 container_layer_ = rule(

@@ -303,7 +303,7 @@ _attrs = dict({
     ),
     "label_file_strings": attr.string_list(),
     "empty_files": attr.string_list(),
-    "container_layers": attr.label_list(providers=[LayerInfo]),
+    "container_layers": attr.label_list(providers = [LayerInfo]),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",
