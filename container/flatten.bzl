@@ -14,7 +14,11 @@
 """A rule to flatten container images."""
 
 load(
-    "//container:layers.bzl",
+    "//skylib:path.bzl",
+    _get_runfile_path = "runfile",
+)
+load(
+    "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )

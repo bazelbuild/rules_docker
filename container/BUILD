@@ -84,14 +84,18 @@ TEST_TARGETS = [
     "directory_with_tar_base",
     "files_base",
     "files_with_files_base",
+    "files_in_layer_with_files_base",
     "files_with_tar_base",
     "tar_base",
     "tar_with_files_base",
     "tar_with_tar_base",
+    "tars_in_layer_with_tar_base",
     "docker_tarball_base",
+    "layers_with_docker_tarball_base",
     # TODO(mattmoor): Re-enable once archive is visible
     # "generated_tarball",
     "with_env",
+    "layers_with_env",
     "with_double_env",
     "with_label",
     "with_double_label",
@@ -198,8 +202,8 @@ skylark_library(
 )
 
 skylark_library(
-    name = "layers",
-    srcs = ["layers.bzl"],
+    name = "layer_tools",
+    srcs = ["layer_tools.bzl"],
     deps = ["//skylib:path"],
 )
 
