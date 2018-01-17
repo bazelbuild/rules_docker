@@ -43,7 +43,7 @@ load(
     _join_path = "join",
 )
 
-def magic_path(ctx, f):
+def _magic_path(ctx, f):
   # Right now the logic this uses is a bit crazy/buggy, so to support
   # bug-for-bug compatibility in the foo_image rules, expose the logic.
   # See also: https://github.com/bazelbuild/rules_docker/issues/106
@@ -70,7 +70,7 @@ def build_layer(ctx, files=None, file_map=None, empty_files=None,
       "--mode=" + ctx.attr.mode,
   ]
 
-  args += ["--file=%s=%s" % (f.path, magic_path(ctx, f)) for f in files]
+  args += ["--file=%s=%s" % (f.path, _magic_path(ctx, f)) for f in files]
   args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
   args += ["--empty_file=%s" % f for f in empty_files or []]
   args += ["--tar=" + f.path for f in tars]
@@ -127,7 +127,12 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                                         debs=debs, tars=tars)
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
   zipped_layer, blob_sum = zip_layer(ctx, unzipped_layer)
-  # Returns constituent parts of the Container layer as provider
+  # Returns constituent parts of the Container layer as provider:
+  # - in container_image rule, we need to use all the following information,
+  #   e.g. zipped_layer etc., to assemble the complete container image.
+  # - in order to expose information from container_layer rule to container_image
+  #   rule, they need to be packaged into a provider, see:
+  #   https://docs.bazel.build/versions/master/skylark/rules.html#providers
   return [LayerInfo(zipped_layer=zipped_layer,
                     blob_sum=blob_sum,
                     unzipped_layer=unzipped_layer,

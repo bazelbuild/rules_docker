@@ -266,15 +266,16 @@ container_image(
     base = ":base_with_volume",
     container_layers = [":env_layer"],
     env = {
-        "abc": "ABC",
+        "PATH": "$PATH:/tmp/b:/tmp/c",
+        "x": "y",
     },
 )
 
 container_layer(
     name = "env_layer",
     env = {
-        "abc": "abc",
-        "xyz": "xyz",
+        "PATH": "$PATH:/tmp/a",
+        "a": "b",
     },
 )
 

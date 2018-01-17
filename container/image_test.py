@@ -66,7 +66,7 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './bar'])
 
-  def test_files_with_file_base(self):
+  def test_files_in_layer_with_file_base(self):
     with TestImage('files_in_layer_with_files_base') as img:
       self.assertDigest(img, '4b008d8241bdbbe930d72d8f0ee7b61d11561946db0fd52d02dbcb8842b3a958')
       self.assertEqual(3, len(img.fs_layers()))
@@ -91,7 +91,7 @@ class ImageTest(unittest.TestCase):
         './asdf', './usr', './usr/bin',
         './usr/bin/miraclegrow'])
 
-  def test_tar_with_tar_base(self):
+  def test_tars_in_layer_with_tar_base(self):
     with TestImage('tars_in_layer_with_tar_base') as img:
       self.assertDigest(img, '80f850359828f763ae544f9b7725f89755f1a28a80738a514735becae60924af')
       self.assertEqual(3, len(img.fs_layers()))
@@ -189,9 +189,9 @@ class ImageTest(unittest.TestCase):
 
   def test_layers_with_env(self):
     with TestImage('layers_with_env') as img:
-      self.assertDigest(img, 'c98768980847b394c4e194c7041662703e20a07925c8db78c12f2bcb2b09c926')
+      self.assertDigest(img, 'ecab0f39b4726e69c62747ce4c1662f697060eef23a26db719a47ea379b77d7f')
       self.assertEqual(3, len(img.fs_layers()))
-      self.assertConfigEqual(img, 'Env', ['abc=ABC', 'xyz=xyz'])
+      self.assertConfigEqual(img, 'Env', ['PATH=$PATH:/tmp/a:/tmp/b:/tmp/c', 'a=b', 'x=y'])
 
   def test_dummy_repository(self):
     # We allow users to specify an alternate repository name instead of 'bazel/'

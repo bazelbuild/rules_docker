@@ -165,6 +165,23 @@ def _repository_name(ctx):
 def _getLayerInfo(layers, info):
   return [getattr(layer[LayerInfo], info) for layer in layers]
 
+def _evalute_merge_env(env, new_env):
+  """Expand new environment variables properly and merge them.
+
+  Example:
+  - input: env={'foo':'bar', 'PATH':'$PATH:a:b'}
+           new_env={'X':'Y', 'PATH':'$PATH:c' }
+  - output: env={'foo':'bar', 'X':'Y', 'PATH':'$PATH:a:b:c'}
+  """
+  for k, v in new_env.items():
+    elems = []
+    for e in v.split(":"):
+      if e.startswith("$") and e[1:] in env.keys():
+        elems.append(env.get(e[1:]))
+      else:
+        elems.append(e)
+    env[k] = ":".join(elems)
+
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None, output=None, env=None,
           container_layers=None, debs=None, tars=None):
@@ -219,8 +236,8 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
 
   # Get and merge environment variables
   env = {}
-  [env.update(layer[LayerInfo].env) for layer in layers]
-  env.update(ctx.attr.env)
+  [_evalute_merge_env(env, layer[LayerInfo].env) for layer in layers]
+  _evalute_merge_env(env, ctx.attr.env)
 
   # Generate the new config using the attributes specified and the diff_id
   config_file, config_digest = _image_config(
