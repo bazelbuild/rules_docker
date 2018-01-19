@@ -245,7 +245,7 @@ app_layer = rule(
         "workdir": attr.string(default = "/app"),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
-    }),
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _app_layer_impl,
