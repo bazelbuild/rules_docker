@@ -113,7 +113,7 @@ def _jar_dep_layer_impl(ctx):
   return dep_layer_impl(ctx, runfiles=java_files)
 
 jar_dep_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -129,7 +129,7 @@ jar_dep_layer = rule(
         "directory": attr.string(default = "/app"),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
-    },
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _jar_dep_layer_impl,
@@ -183,7 +183,7 @@ def _jar_app_layer_impl(ctx):
     entrypoint=entrypoint)
 
 jar_app_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -212,7 +212,7 @@ jar_app_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
-    },
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _jar_app_layer_impl,
@@ -260,7 +260,7 @@ def _war_dep_layer_impl(ctx):
   )
 
 _war_dep_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -276,7 +276,7 @@ _war_dep_layer = rule(
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
-    },
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _war_dep_layer_impl,
@@ -302,7 +302,7 @@ def _war_app_layer_impl(ctx):
   return _container.image.implementation(ctx, files=files)
 
 _war_app_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The library target for which we are synthesizing an image.
         "library": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -329,7 +329,7 @@ _war_app_layer = rule(
         "docker_run_flags": attr.string(
             default = "-i --rm --network=host",
         ),
-    },
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _war_app_layer_impl,
