@@ -125,7 +125,7 @@ def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
   )
 
 dep_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -147,7 +147,7 @@ dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
-    },
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = dep_layer_impl,
@@ -163,14 +163,14 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   # in our base image, tracking absolute paths.
   available = {}
   for dep in ctx.attr.layers:
-    available += {
+    available.update({
         _final_file_path(ctx, f): layer_file_path(ctx, f)
         for f in runfiles(dep)
-    }
-    available += {
+    })
+    available.update({
         _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
         for f in emptyfiles(dep)
-    }
+    })
 
   # Compute the set of remaining runfiles to include into the
   # application layer.
@@ -197,16 +197,16 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   # Include symlinks to available files if they were laid out in a
   # binary-agnostic fashion.
   if ctx.attr.agnostic_dep_layout:
-    symlinks = available
+    symlinks.update(available)
 
-  symlinks += {
+  symlinks.update({
     # Create a symlink from our entrypoint to where it will actually be put
     # under runfiles.
     _binary_name(ctx): _final_file_path(ctx, ctx.executable.binary),
     # Create a directory symlink from <workspace>/external to the runfiles
     # root, since they may be accessed via either path.
     _external_dir(ctx): _runfiles_dir(ctx),
-  }
+  })
 
   return _container.image.implementation(
     ctx,
@@ -220,7 +220,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     entrypoint=ctx.attr.entrypoint + [_binary_name(ctx)])
 
 app_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(
             mandatory = True,
@@ -245,7 +245,7 @@ app_layer = rule(
         "workdir": attr.string(default = "/app"),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
-    },
+    }),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _app_layer_impl,
