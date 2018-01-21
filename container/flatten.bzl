@@ -14,10 +14,6 @@
 """A rule to flatten container images."""
 
 load(
-    "//skylib:path.bzl",
-    _get_runfile_path = "runfile",
-)
-load(
     "//container:layers.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
@@ -32,7 +28,6 @@ def _impl(ctx):
   legacy_base_arg = []
   legacy_files = []
   if image.get("legacy"):
-
     legacy_files += [image["legacy"]]
     legacy_base_arg = ["--tarball=%s" % image["legacy"].path]
 
