@@ -70,7 +70,7 @@ container_flatten = rule(
             mandatory = True,
         ),
         "_flattener": attr.label(
-            default = Label("//third_party/py/containerregistry/tools:fast_flatten"),
+            default = Label("@containerregistry//:flatten"),
             cfg = "host",
             executable = True,
             allow_files = True,
