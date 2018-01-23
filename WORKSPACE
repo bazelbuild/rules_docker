@@ -103,15 +103,17 @@ load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
 groovy_repositories()
 
 # For our go_image test.
-git_repository(
+http_archive(
     name = "io_bazel_rules_go",
-    commit = "4be196cc186da9dd396d5a45a3a7f343b6abe2b0",
-    remote = "https://github.com/bazelbuild/rules_go.git",
+    sha256 = "4d8d6244320dd751590f9100cf39fd7a4b75cd901e1f3ffdfd6f048328883695",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.9.0/rules_go-0.9.0.tar.gz",
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 
-go_repositories()
+go_rules_dependencies()
+
+go_register_toolchains()
 
 # Have the go_image dependencies for testing.
 load(
