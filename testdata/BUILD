@@ -404,23 +404,23 @@ oci_pushall(
 load("//contrib:passwd.bzl", "passwd_entry", "passwd_file")
 
 passwd_entry(
-    username = "root",
+    name = "root_user",
     gid = 0,
     home = "/root",
     info = "Root",
     shell = "/rootshell",
     uid = 0,
-    name = "root_user",
+    username = "root",
 )
 
 passwd_entry(
-    username = "foobar",
+    name = "foobar_user",
     gid = 2345,
     home = "/myhomedir",
     info = "myusernameinfo",
     shell = "/myshell",
     uid = 1234,
-    name = "foobar_user",
+    username = "foobar",
 )
 
 passwd_file(
@@ -446,16 +446,20 @@ container_image(
 load("//contrib:group.bzl", "group_entry", "group_file")
 
 group_entry(
-    groupname = "root",
-    gid = 0,
     name = "root_group",
+    gid = 0,
+    groupname = "root",
 )
 
 group_entry(
-    groupname = "foobar",
-    gid = 2345,
-    users = ["foo", "bar", "baz"],
     name = "foobar_group",
+    gid = 2345,
+    groupname = "foobar",
+    users = [
+        "foo",
+        "bar",
+        "baz",
+    ],
 )
 
 group_file(

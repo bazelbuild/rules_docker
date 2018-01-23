@@ -46,7 +46,10 @@ group_entry = rule(
 
 group_file = rule(
     attrs = {
-        "entries": attr.label_list(allow_empty = False, providers = [GroupFileContentProvider]),
+        "entries": attr.label_list(
+            allow_empty = False,
+            providers = [GroupFileContentProvider],
+        ),
     },
     executable = False,
     outputs = {

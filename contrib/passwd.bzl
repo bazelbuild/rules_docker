@@ -48,14 +48,17 @@ passwd_entry = rule(
         "gid": attr.int(default = 1000),
         "info": attr.string(default = "user"),
         "home": attr.string(default = "/home"),
-        "shell": attr.string(default = "/bin/bash")
+        "shell": attr.string(default = "/bin/bash"),
     },
     implementation = _passwd_entry_impl,
 )
 
 passwd_file = rule(
     attrs = {
-        "entries": attr.label_list(allow_empty = False, providers = [PasswdFileContentProvider]),
+        "entries": attr.label_list(
+            allow_empty = False,
+            providers = [PasswdFileContentProvider],
+        ),
     },
     executable = False,
     outputs = {
