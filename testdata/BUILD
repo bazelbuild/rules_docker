@@ -443,6 +443,41 @@ container_image(
     tars = [":passwd_tar"],
 )
 
+load("//contrib:group.bzl", "group_entry", "group_file")
+
+group_entry(
+    groupname = "root",
+    gid = 0,
+    name = "root_group",
+)
+
+group_entry(
+    groupname = "foobar",
+    gid = 2345,
+    users = ["foo", "bar", "baz"],
+    name = "foobar_group",
+)
+
+group_file(
+    name = "group",
+    entries = [
+        ":root_group",
+        ":foobar_group",
+    ],
+)
+
+pkg_tar(
+    name = "group_tar",
+    srcs = [":group"],
+    mode = "0644",
+    package_dir = "etc",
+)
+
+container_image(
+    name = "with_group",
+    tars = [":group_tar"],
+)
+
 container_image(
     name = "base_based_warning",
     base = "@distroless_base//image:image.tar",

@@ -101,6 +101,7 @@ TEST_TARGETS = [
     "link_with_files_base",
     "build_with_tag",
     "with_passwd",
+    "with_group",
     "gen_image",
     "data_path_image",
     "no_data_path_image",

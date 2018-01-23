@@ -292,6 +292,17 @@ class ImageTest(unittest.TestCase):
           'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
           content)
 
+  def test_with_group(self):
+    with TestImage('with_group') as img:
+      self.assertDigest(img, 'd6384ee5db847e2c8a9e941d78c10bec987aa9cbd4b5b84847e20336ec09d49c')
+      self.assertEqual(1, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './etc', './etc/group'])
+
+      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      with tarfile.open(fileobj=buf, mode='r') as layer:
+        content = layer.extractfile('./etc/group').read()
+        self.assertEqual('root:x:0:\nfoobar:x:2345:foo,bar,baz\n', content)
+
   def test_py_image(self):
     with TestImage('py_image') as img:
       # Check the application layer, which is on top.
