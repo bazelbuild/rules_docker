@@ -401,16 +401,34 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file")
 
-passwd_file(
-    name = "passwd",
+passwd_entry(
+    username = "root",
+    gid = 0,
+    home = "/root",
+    info = "Root",
+    shell = "/rootshell",
+    uid = 0,
+    name = "root_user",
+)
+
+passwd_entry(
+    username = "foobar",
     gid = 2345,
     home = "/myhomedir",
     info = "myusernameinfo",
     shell = "/myshell",
     uid = 1234,
-    username = "foobar",
+    name = "foobar_user",
+)
+
+passwd_file(
+    name = "passwd",
+    entries = [
+        ":root_user",
+        ":foobar_user",
+    ],
 )
 
 pkg_tar(
