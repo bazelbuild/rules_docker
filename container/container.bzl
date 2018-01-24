@@ -29,7 +29,8 @@ container = struct(
 CONTAINERREGISTRY_RELEASE = "v0.0.24"
 
 # The release of the container-structure-test repository to use.
-STRUCTURE_TEST_RELEASE = "v0.1.1"
+# Updated around 1/22/2018.
+STRUCTURE_TEST_COMMIT = "b97925142b1a09309537e648ade11b4af47ff7ad"
 
 def repositories():
   """Download dependencies of container rules."""
@@ -153,7 +154,7 @@ py_library(
     native.git_repository(
       name = "structure_test",
       remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
-      tag = STRUCTURE_TEST_RELEASE,
+      commit = STRUCTURE_TEST_COMMIT,
   )
 
   # For skylark_library.
