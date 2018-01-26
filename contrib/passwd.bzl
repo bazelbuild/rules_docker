@@ -72,7 +72,7 @@ passwd_file = rule(
     },
     executable = False,
     outputs = {
-        "out": "%{name}",
+        "out": "%{name}.passwd",
     },
     implementation = _passwd_file_impl,
 )
