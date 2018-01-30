@@ -404,7 +404,7 @@ oci_pushall(
 load("//contrib:passwd.bzl", "passwd_file")
 
 passwd_file(
-    name = "test_passwd",
+    name = "passwd",
     gid = 2345,
     home = "/myhomedir",
     info = "myusernameinfo",
