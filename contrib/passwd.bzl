@@ -45,11 +45,9 @@ def _passwd_file_impl(ctx):
       entry[PasswdFileContentProvider].info,
       entry[PasswdFileContentProvider].home,
       entry[PasswdFileContentProvider].shell) for entry in ctx.attr.entries])
-  ctx.file_action(
-      output = ctx.outputs.out,
-      content = f,
-      executable=False,
-  )
+  passwd_file  = ctx.actions.declare_file(ctx.label.name)
+  ctx.actions.write(output=passwd_file, content=f)
+  return DefaultInfo(files=depset([passwd_file]))
 
 passwd_entry = rule(
     attrs = {
@@ -71,8 +69,5 @@ passwd_file = rule(
         ),
     },
     executable = False,
-    outputs = {
-        "out": "%{name}",
-    },
     implementation = _passwd_file_impl,
 )
