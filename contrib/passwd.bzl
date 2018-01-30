@@ -23,11 +23,9 @@ def _impl(ctx):
       ctx.attr.home,
       ctx.attr.shell
   )
-  ctx.file_action(
-      output = ctx.outputs.out,
-      content = f,
-      executable=False
-  )
+  passwd_file  = ctx.actions.declare_file(ctx.label.name)
+  ctx.actions.write(output=passwd_file, content=f)
+  return DefaultInfo(files=depset([passwd_file]))
 
 passwd_file = rule(
     attrs = {
@@ -39,8 +37,5 @@ passwd_file = rule(
         "shell": attr.string(default = "/bin/bash"),
     },
     executable = False,
-    outputs = {
-        "out": "passwd",
-    },
     implementation = _impl,
 )
