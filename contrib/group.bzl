@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-GroupFileContentProvider = provider()
+GroupFileContentProvider = provider(fields = [
+    "groupname",
+    "gid",
+    "users",
+])
 
 def _group_entry_impl(ctx):
   """Creates a passwd_file_content_provider containing a single entry."""

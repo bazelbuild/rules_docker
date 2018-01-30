@@ -12,7 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PasswdFileContentProvider = provider()
+PasswdFileContentProvider = provider(
+    fields = [
+        "username",
+        "uid",
+        "gid",
+        "info",
+        "home",
+        "shell",
+        "name",
+    ],
+)
 
 def _passwd_entry_impl(ctx):
   """Creates a passwd_file_content_provider containing a single entry."""
