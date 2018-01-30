@@ -401,16 +401,34 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file")
 
-passwd_file(
-    name = "passwd",
+passwd_entry(
+    name = "root_user",
+    gid = 0,
+    home = "/root",
+    info = "Root",
+    shell = "/rootshell",
+    uid = 0,
+    username = "root",
+)
+
+passwd_entry(
+    name = "foobar_user",
     gid = 2345,
     home = "/myhomedir",
     info = "myusernameinfo",
     shell = "/myshell",
     uid = 1234,
     username = "foobar",
+)
+
+passwd_file(
+    name = "passwd",
+    entries = [
+        ":root_user",
+        ":foobar_user",
+    ],
 )
 
 pkg_tar(
@@ -423,6 +441,45 @@ pkg_tar(
 container_image(
     name = "with_passwd",
     tars = [":passwd_tar"],
+)
+
+load("//contrib:group.bzl", "group_entry", "group_file")
+
+group_entry(
+    name = "root_group",
+    gid = 0,
+    groupname = "root",
+)
+
+group_entry(
+    name = "foobar_group",
+    gid = 2345,
+    groupname = "foobar",
+    users = [
+        "foo",
+        "bar",
+        "baz",
+    ],
+)
+
+group_file(
+    name = "group",
+    entries = [
+        ":root_group",
+        ":foobar_group",
+    ],
+)
+
+pkg_tar(
+    name = "group_tar",
+    srcs = [":group"],
+    mode = "0644",
+    package_dir = "etc",
+)
+
+container_image(
+    name = "with_group",
+    tars = [":group_tar"],
 )
 
 container_image(

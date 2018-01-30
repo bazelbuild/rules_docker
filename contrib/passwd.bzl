@@ -12,24 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def _impl(ctx):
-  """Core implementation of passwd_file."""
+PasswdFileContentProvider = provider(
+    fields = [
+        "username",
+        "uid",
+        "gid",
+        "info",
+        "home",
+        "shell",
+        "name",
+    ],
+)
 
-  f = "%s:x:%s:%s:%s:%s:%s\n" % (
-      ctx.attr.username,
-      ctx.attr.uid,
-      ctx.attr.gid,
-      ctx.attr.info,
-      ctx.attr.home,
-      ctx.attr.shell
-  )
+def _passwd_entry_impl(ctx):
+  """Creates a passwd_file_content_provider containing a single entry."""
+  return [PasswdFileContentProvider(
+      username = ctx.attr.username,
+      uid = ctx.attr.uid,
+      gid = ctx.attr.gid,
+      info = ctx.attr.info,
+      home = ctx.attr.home,
+      shell = ctx.attr.shell,
+      name = ctx.attr.name,
+  )]
+
+def _passwd_file_impl(ctx):
+  """Core implementation of passwd_file."""
+  f = "".join(["%s:x:%s:%s:%s:%s:%s\n" % (
+      entry[PasswdFileContentProvider].username,
+      entry[PasswdFileContentProvider].uid,
+      entry[PasswdFileContentProvider].gid,
+      entry[PasswdFileContentProvider].info,
+      entry[PasswdFileContentProvider].home,
+      entry[PasswdFileContentProvider].shell) for entry in ctx.attr.entries])
   ctx.file_action(
       output = ctx.outputs.out,
       content = f,
-      executable=False
+      executable=False,
   )
 
-passwd_file = rule(
+passwd_entry = rule(
     attrs = {
         "username": attr.string(mandatory = True),
         "uid": attr.int(default = 1000),
@@ -38,9 +60,19 @@ passwd_file = rule(
         "home": attr.string(default = "/home"),
         "shell": attr.string(default = "/bin/bash"),
     },
+    implementation = _passwd_entry_impl,
+)
+
+passwd_file = rule(
+    attrs = {
+        "entries": attr.label_list(
+            allow_empty = False,
+            providers = [PasswdFileContentProvider],
+        ),
+    },
     executable = False,
     outputs = {
         "out": "%{name}",
     },
-    implementation = _impl,
+    implementation = _passwd_file_impl,
 )

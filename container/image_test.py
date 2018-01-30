@@ -281,7 +281,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_passwd(self):
     with TestImage('with_passwd') as img:
-      self.assertDigest(img, '0d373a037dd30a8c37e61f4b40db6c7b55a47d0cdc8688e3679da64f8d4667df')
+      self.assertDigest(img, '27149ceaab154631346209b42c9494708210901fbb6e9f88cb9370fb51f30999')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
 
@@ -289,7 +289,19 @@ class ImageTest(unittest.TestCase):
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/passwd').read()
         self.assertEqual(
-          'foobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n', content)
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          content)
+
+  def test_with_group(self):
+    with TestImage('with_group') as img:
+      self.assertDigest(img, 'd6384ee5db847e2c8a9e941d78c10bec987aa9cbd4b5b84847e20336ec09d49c')
+      self.assertEqual(1, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './etc', './etc/group'])
+
+      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      with tarfile.open(fileobj=buf, mode='r') as layer:
+        content = layer.extractfile('./etc/group').read()
+        self.assertEqual('root:x:0:\nfoobar:x:2345:foo,bar,baz\n', content)
 
   def test_py_image(self):
     with TestImage('py_image') as img:

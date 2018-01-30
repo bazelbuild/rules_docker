@@ -463,12 +463,27 @@ modified sample from the `distroless` repository:
 ```python
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
-# Create a passwd file with a nonroot user and uid.
-passwd_file(
-    name = "passwd",
+# Create a passwd file with a root and nonroot user and uid.
+passwd_entry(
+    username = "root",
+    uid = 0,
+    gid = 0,
+    name = "root_user",
+)
+
+passwd_entry(
+    username = "nonroot",
     info = "nonroot",
     uid = 1002,
-    username = "nonroot",
+    name = "nonroot_user",
+)
+
+passwd_file(
+    name = "passwd",
+    entries = [
+        ":root_user",
+        ":nonroot_user",
+    ],
 )
 
 # Create a tar file containing the created passwd file
