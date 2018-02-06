@@ -142,8 +142,7 @@ class TarFile(object):
 
     Args:
        destfile: the name of the file in the layer
-       mode: force to set the specified mode, by
-          default the value from the source is taken.
+       mode: force to set the specified mode, defaults to 644
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership.
 
