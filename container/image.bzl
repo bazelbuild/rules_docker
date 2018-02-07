@@ -70,6 +70,7 @@ load(
     "build_layer",
     "zip_layer",
     "LayerInfo",
+    _layer = "layer",
 )
 load(
     "//skylib:path.bzl",
@@ -286,13 +287,8 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                 files = depset([ctx.outputs.layer]),
                 container_parts = container_parts)
 
-_attrs = dict({
+_attrs = dict(_layer.attrs.items() + {
     "base": attr.label(allow_files = container_filetype),
-    "data_path": attr.string(),
-    "directory": attr.string(default = "/"),
-    "tars": attr.label_list(allow_files = tar_filetype),
-    "debs": attr.label_list(allow_files = deb_filetype),
-    "files": attr.label_list(allow_files = True),
     "legacy_repository_naming": attr.bool(default = False),
     # TODO(mattmoor): Default this to False.
     "legacy_run_behavior": attr.bool(default = True),
@@ -307,7 +303,6 @@ _attrs = dict({
     "entrypoint": attr.string_list(),
     "cmd": attr.string_list(),
     "user": attr.string(),
-    "env": attr.string_dict(),
     "labels": attr.string_dict(),
     "ports": attr.string_list(),  # Skylark doesn't support int_list...
     "volumes": attr.string_list(),
@@ -319,14 +314,7 @@ _attrs = dict({
         allow_files = True,
     ),
     "label_file_strings": attr.string_list(),
-    "empty_files": attr.string_list(),
     "container_layers": attr.label_list(providers = [LayerInfo]),
-    "build_layer": attr.label(
-        default = Label("//container:build_tar"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
-    ),
     "create_image_config": attr.label(
         default = Label("//container:create_image_config"),
         cfg = "host",

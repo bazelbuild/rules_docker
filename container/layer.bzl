@@ -163,6 +163,12 @@ _layer_outputs = {
     "layer": "%{name}-layer.tar",
 }
 
+layer = struct(
+    attrs = _layer_attrs,
+    outputs = _layer_outputs,
+    implementation = _impl,
+)
+
 container_layer_ = rule(
     attrs = _layer_attrs,
     executable = False,
