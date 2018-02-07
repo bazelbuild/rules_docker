@@ -33,11 +33,9 @@ def _group_file_impl(ctx):
           entry[GroupFileContentProvider].gid,
           ",".join(entry[GroupFileContentProvider].users))
        for entry in ctx.attr.entries])
-  ctx.file_action(
-      output = ctx.outputs.out,
-      content = f,
-      executable=False,
-  )
+  group_file = ctx.actions.declare_file(ctx.label.name)
+  ctx.actions.write(output=group_file, content=f)
+  return DefaultInfo(files=depset([group_file]))
 
 group_entry = rule(
     attrs = {
@@ -56,8 +54,5 @@ group_file = rule(
         ),
     },
     executable = False,
-    outputs = {
-        "out": "%{name}",
-    },
     implementation = _group_file_impl,
 )
