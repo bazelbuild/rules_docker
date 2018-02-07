@@ -31,6 +31,8 @@ gflags.DEFINE_multistring('file', [], 'A file to add to the layer')
 
 gflags.DEFINE_multistring('empty_file', [], 'An empty file to add to the layer')
 
+gflags.DEFINE_multistring('empty_dir', [], 'An empty dir to add to the layer')
+
 gflags.DEFINE_string(
     'mode', None, 'Force the mode on the added files (in octal).')
 
@@ -137,7 +139,8 @@ class TarFile(object):
         uname=names[0],
         gname=names[1])
 
-  def add_empty_file(self, destfile, mode=None, ids=None, names=None):
+  def add_empty_file(self, destfile, mode=None, ids=None, names=None,
+                     kind=tarfile.REGTYPE):
     """Add a file to the tar file.
 
     Args:
@@ -145,6 +148,7 @@ class TarFile(object):
        mode: force to set the specified mode, defaults to 644
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership.
+       kind: type of the file. tarfile.DIRTYPE for directory.
 
     An empty file will be created as `destfile` in the layer.
     """
@@ -159,12 +163,28 @@ class TarFile(object):
     dest = os.path.normpath(dest)
     self.tarfile.add_file(
         dest,
-        content='',
+        content='' if kind == tarfile.REGTYPE else None,
+        kind=kind,
         mode=mode,
         uid=ids[0],
         gid=ids[1],
         uname=names[0],
         gname=names[1])
+
+  def add_empty_dir(self, destpath, mode=None, ids=None, names=None):
+    """Add a directory to the tar file.
+
+    Args:
+       destpath: the name of the directory in the layer
+       mode: force to set the specified mode, defaults to 644
+       ids: (uid, gid) for the file to set ownership
+       names: (username, groupname) for the file to set ownership.
+       kind: type of the file. tarfile.DIRTYPE for directory.
+
+    An empty file will be created as `destfile` in the layer.
+    """
+    self.add_empty_file(destpath, mode=mode, ids=ids, names=names,
+                        kind=tarfile.DIRTYPE)
 
   def add_tar(self, tar):
     """Merge a tar file into the destination tar file.
@@ -298,23 +318,27 @@ def main(unused_argv):
 
   # Add objects to the tar file
   with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression) as output:
-    for f in FLAGS.file:
-      (inf, tof) = f.split('=', 1)
+    def file_attributes(filename):
       mode = default_mode
       ids = default_ids
       names = default_ownername
-      map_filename = tof
-      if tof[0] == '/':
-        map_filename = tof[1:]
-      if map_filename in mode_map:
-        mode = mode_map[map_filename]
-      if map_filename in ids_map:
-        ids = ids_map[map_filename]
-      if map_filename in names_map:
-        names = names_map[map_filename]
-      output.add_file(inf, tof, mode, ids, names)
+      if filename[0] == '/':
+        filename = filename[1:]
+      if filename in mode_map:
+        mode = mode_map[filename]
+      if filename in ids_map:
+        ids = ids_map[filename]
+      if filename in names_map:
+        names = names_map[filename]
+      return {'mode': mode, 'ids': ids, 'names': names}
+
+    for f in FLAGS.file:
+      (inf, tof) = f.split('=', 1)
+      output.add_file(inf, tof, **file_attributes(tof))
     for f in FLAGS.empty_file:
-      output.add_empty_file(f)
+      output.add_empty_file(f, **file_attributes(f))
+    for f in FLAGS.empty_dir:
+      output.add_empty_dir(f, **file_attributes(f))
     for tar in FLAGS.tar:
       output.add_tar(tar)
     for deb in FLAGS.deb:
