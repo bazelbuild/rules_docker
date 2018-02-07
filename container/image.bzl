@@ -323,7 +323,12 @@ _attrs = dict({
     "legacy_repository_naming": attr.bool(default = False),
     # TODO(mattmoor): Default this to False.
     "legacy_run_behavior": attr.bool(default = True),
-    "docker_run_flags": attr.string(),
+    # Run the container using host networking, so that the service is
+    # available to the developer without having to poke around with
+    # docker inspect.
+    "docker_run_flags": attr.string(
+        default = "-i --rm --network=host",
+    ),
     "mode": attr.string(default = "0555"),  # 0555 == a+rx
     "symlinks": attr.string_dict(),
     "entrypoint": attr.string_list(),

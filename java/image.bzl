@@ -323,12 +323,6 @@ _war_app_layer = rule(
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
-        # Run the container using host networking, so that the service is
-        # available to the developer without having to poke around with
-        # docker inspect.
-        "docker_run_flags": attr.string(
-            default = "-i --rm --network=host",
-        ),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
