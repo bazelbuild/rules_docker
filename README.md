@@ -137,7 +137,7 @@ These work with both `container_image`, `container_bundle`, and the
 `container_bundle`, the image name will be `bazel/my/image:helloworld`.
 For `container_bundle`, it will apply the tags you have specified.
 
-## Authorization
+## Authentication
 
 You can use these rules to access private images using standard Docker
 authentication methods.  e.g. to utilize the [Google Container Registry](
