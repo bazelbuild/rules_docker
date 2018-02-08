@@ -98,11 +98,10 @@ def zip_layer(ctx, layer):
 # A provider containing information needed in container_image and other rules.
 LayerInfo = provider(fields=["zipped_layer", "blob_sum",
                              "unzipped_layer", "diff_id",
-                             "cmd", "entrypoint", "env"])
+                             "env"])
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
-          symlinks=None, output=None, debs=None, tars=None,
-          cmd=None, entrypoint=None, env=None):
+          symlinks=None, output=None, debs=None, tars=None, env=None):
   """Implementation for the container_layer rule.
 
   Args:
@@ -142,22 +141,17 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                     blob_sum=blob_sum,
                     unzipped_layer=unzipped_layer,
                     diff_id=diff_id,
-                    cmd=cmd or ctx.attr.cmd,
-                    entrypoint=entrypoint or ctx.attr.entrypoint,
                     env=env or ctx.attr.env)]
 
 _layer_attrs = dict({
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
+    "files": attr.label_list(allow_files = True),
+    "mode": attr.string(default = "0555"),  # 0555 == a+rx
     "tars": attr.label_list(allow_files = tar_filetype),
     "debs": attr.label_list(allow_files = deb_filetype),
-    "files": attr.label_list(allow_files = True),
-    "docker_run_flags": attr.string(),
-    "mode": attr.string(default = "0555"),  # 0555 == a+rx
     "symlinks": attr.string_dict(),
-    "cmd": attr.string_list(),
     "env": attr.string_dict(),
-    "entrypoint": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "build_layer": attr.label(

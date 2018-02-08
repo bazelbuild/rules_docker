@@ -206,7 +206,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                                       directory=directory,
                                       symlinks=symlinks,
                                       debs=debs, tars=tars,
-                                      cmd=cmd, entrypoint=entrypoint, env=env)
+                                      env=env)
 
   layer_providers= layers or ctx.attr.layers
   layers = [provider[LayerInfo] for provider in layer_providers] + image_layer
@@ -287,9 +287,12 @@ _attrs = dict(_layer.attrs.items() + {
     ),
     "user": attr.string(),
     "labels": attr.string_dict(),
+    "cmd": attr.string_list(),
+    "entrypoint": attr.string_list(),
     "ports": attr.string_list(),  # Skylark doesn't support int_list...
     "volumes": attr.string_list(),
     "workdir": attr.string(),
+    "layers": attr.label_list(providers = [LayerInfo]),
     "repository": attr.string(default = "bazel"),
     "stamp": attr.bool(default = False),
     # Implicit/Undocumented dependencies.
@@ -297,7 +300,6 @@ _attrs = dict(_layer.attrs.items() + {
         allow_files = True,
     ),
     "label_file_strings": attr.string_list(),
-    "layers": attr.label_list(providers = [LayerInfo]),
     "create_image_config": attr.label(
         default = Label("//container:create_image_config"),
         cfg = "host",
