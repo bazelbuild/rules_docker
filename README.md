@@ -1011,15 +1011,9 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
     <tr>
       <td><code><i>name</i>-layer.tar</code></td>
       <td>
-        <code>An image of the current layer</code>
+        <code>A tarball of current layer</code>
         <p>
-            A Docker image containing only the layer corresponding to
-            that target. It is used for incremental loading of the layer.
-        </p>
-        <p>
-            <b>Note:</b> this target is not suitable for direct consumption.
-            It is used for incremental loading and non-docker rules should
-            depends on the Docker image (<i>name</i>.tar) instead.
+            A data tarball corresponding to the layer.
         </p>
       </td>
     </tr>
