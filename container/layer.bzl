@@ -95,10 +95,14 @@ def zip_layer(ctx, layer):
   zipped_layer = _gzip(ctx, layer)
   return zipped_layer, _sha256(ctx, zipped_layer)
 
-LayerInfo = provider()
+# A provider containing information needed in container_image and other rules.
+LayerInfo = provider(fields=["zipped_layer", "blob_sum",
+                             "unzipped_layer", "diff_id",
+                             "cmd", "entrypoint", "env"])
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
-          symlinks=None, output=None, env=None, debs=None, tars=None):
+          symlinks=None, output=None, debs=None, tars=None,
+          cmd=None, entrypoint=None, env=None):
   """Implementation for the container_layer rule.
 
   Args:
@@ -111,15 +115,15 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
     env: str Dict, overrides ctx.attr.env
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
-"""
+  """
   file_map = file_map or {}
   files = files or ctx.files.files
   empty_files = empty_files or ctx.attr.empty_files
   directory = directory or ctx.attr.directory
   symlinks = symlinks or ctx.attr.symlinks
-  env = env or ctx.attr.env
   debs = debs or ctx.files.debs
   tars = tars or ctx.files.tars
+
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id)
   unzipped_layer, diff_id = build_layer(ctx, files=files, file_map=file_map,
                                         empty_files=empty_files,
@@ -127,6 +131,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                                         debs=debs, tars=tars)
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
   zipped_layer, blob_sum = zip_layer(ctx, unzipped_layer)
+
   # Returns constituent parts of the Container layer as provider:
   # - in container_image rule, we need to use all the following information,
   #   e.g. zipped_layer etc., to assemble the complete container image.
@@ -137,7 +142,9 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                     blob_sum=blob_sum,
                     unzipped_layer=unzipped_layer,
                     diff_id=diff_id,
-                    env=env)]
+                    cmd=cmd or ctx.attr.cmd,
+                    entrypoint=entrypoint or ctx.attr.entrypoint,
+                    env=env or ctx.attr.env)]
 
 _layer_attrs = dict({
     "data_path": attr.string(),
@@ -148,7 +155,9 @@ _layer_attrs = dict({
     "docker_run_flags": attr.string(),
     "mode": attr.string(default = "0555"),  # 0555 == a+rx
     "symlinks": attr.string_dict(),
+    "cmd": attr.string_list(),
     "env": attr.string_dict(),
+    "entrypoint": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "build_layer": attr.label(

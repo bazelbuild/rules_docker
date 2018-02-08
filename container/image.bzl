@@ -67,8 +67,6 @@ load(
 )
 load(
     "//container:layer.bzl",
-    "build_layer",
-    "zip_layer",
     "LayerInfo",
     _layer = "layer",
 )
@@ -163,12 +161,8 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _getLayerInfo(layers, info):
-  return [getattr(layer[LayerInfo], info) for layer in layers]
-
 def _evalute_merge_env(env, new_env):
   """Expand new environment variables properly and merge them.
-
   Example:
   - input: env={'foo':'bar', 'PATH':'$PATH:a:b'}
            new_env={'X':'Y', 'PATH':'$PATH:c' }
@@ -203,46 +197,39 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
   """
-
-  file_map = file_map or {}
-  files = files or ctx.files.files
-  empty_files = empty_files or ctx.attr.empty_files
-  directory = directory or ctx.attr.directory
-  entrypoint = entrypoint or ctx.attr.entrypoint
-  cmd = cmd or ctx.attr.cmd
-  symlinks = symlinks or ctx.attr.symlinks
   output = output or ctx.outputs.executable
-  layers = container_layers or ctx.attr.container_layers
-  debs = debs or ctx.files.debs
-  tars = tars or ctx.files.tars
 
-  # Generate the unzipped filesystem layer, and its sha256 (aka diff_id).
-  unzipped_layer, diff_id = build_layer(ctx, files=files, file_map=file_map,
-                                        empty_files=empty_files,
-                                        directory=directory, symlinks=symlinks,
-                                        debs=debs, tars=tars)
+  # composite a layer from the container_image rule attrs,
+  image_layer = _layer.implementation(ctx=ctx, files=files,
+                                      file_map=file_map,
+                                      empty_files=empty_files,
+                                      directory=directory,
+                                      symlinks=symlinks,
+                                      debs=debs, tars=tars,
+                                      cmd=cmd, entrypoint=entrypoint, env=env)
 
-  # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
-  zipped_layer, blob_sum = zip_layer(ctx, unzipped_layer)
+  layer_providers= container_layers or ctx.attr.container_layers
+  layers = [provider[LayerInfo] for provider in layer_providers] + image_layer
 
   # Get the layers and shas from our base.
   # These are ordered as they'd appear in the v2.2 config,
   # so they grow at the end.
   parent_parts = _get_layers(ctx, ctx.attr.base, ctx.files.base)
-  zipped_layers = parent_parts.get("zipped_layer", []) + _getLayerInfo(layers, "zipped_layer") + [zipped_layer]
-  shas = parent_parts.get("blobsum", [])  + _getLayerInfo(layers, "blob_sum") + [blob_sum]
-  unzipped_layers = parent_parts.get("unzipped_layer", []) + _getLayerInfo(layers, "unzipped_layer") + [unzipped_layer]
-  layer_diff_ids = _getLayerInfo(layers, "diff_id") + [diff_id]
+  zipped_layers = parent_parts.get("zipped_layer", []) + [layer.zipped_layer for layer in layers]
+  shas = parent_parts.get("blobsum", [])  + [layer.blob_sum for layer in layers]
+  unzipped_layers = parent_parts.get("unzipped_layer", []) + [layer.unzipped_layer for layer in layers]
+  layer_diff_ids = [layer.diff_id for layer in layers]
   diff_ids = parent_parts.get("diff_id", []) + layer_diff_ids
 
   # Get and merge environment variables
   env = {}
-  [_evalute_merge_env(env, layer[LayerInfo].env) for layer in layers]
-  _evalute_merge_env(env, ctx.attr.env)
-
+  [_evalute_merge_env(env, layer.env) for layer in layers]
   # Generate the new config using the attributes specified and the diff_id
   config_file, config_digest = _image_config(
-      ctx, layer_diff_ids, entrypoint=entrypoint, cmd=cmd, env=env)
+      ctx, layer_diff_ids,
+      entrypoint=entrypoint or ctx.attr.entrypoint,
+      cmd=cmd or ctx.attr.cmd,
+      env=env)
 
   # Construct a temporary name based on the build target.
   tag_name = _repository_name(ctx) + ":" + ctx.label.name
@@ -298,10 +285,6 @@ _attrs = dict(_layer.attrs.items() + {
     "docker_run_flags": attr.string(
         default = "-i --rm --network=host",
     ),
-    "mode": attr.string(default = "0555"),  # 0555 == a+rx
-    "symlinks": attr.string_dict(),
-    "entrypoint": attr.string_list(),
-    "cmd": attr.string_list(),
     "user": attr.string(),
     "labels": attr.string_dict(),
     "ports": attr.string_list(),  # Skylark doesn't support int_list...
