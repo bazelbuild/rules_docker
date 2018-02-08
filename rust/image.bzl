@@ -56,5 +56,5 @@ def rust_image(name, base=None, deps=[], layers=[], binary=None, **kwargs):
     base = this_name
 
   visibility = kwargs.get('visibility', None)
-  app_layer(name=name, base=base, binary=binary, layers=layers,
+  app_layer(name=name, base=base, binary=binary, lang_layers=layers,
             visibility=visibility)

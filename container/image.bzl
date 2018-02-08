@@ -179,7 +179,7 @@ def _evalute_merge_env(env, new_env):
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None, output=None, env=None,
-          container_layers=None, debs=None, tars=None):
+          layers=None, debs=None, tars=None):
   """Implementation for the container_image rule.
 
   Args:
@@ -208,7 +208,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                                       debs=debs, tars=tars,
                                       cmd=cmd, entrypoint=entrypoint, env=env)
 
-  layer_providers= container_layers or ctx.attr.container_layers
+  layer_providers= layers or ctx.attr.layers
   layers = [provider[LayerInfo] for provider in layer_providers] + image_layer
 
   # Get the layers and shas from our base.
@@ -297,7 +297,7 @@ _attrs = dict(_layer.attrs.items() + {
         allow_files = True,
     ),
     "label_file_strings": attr.string_list(),
-    "container_layers": attr.label_list(providers = [LayerInfo]),
+    "layers": attr.label_list(providers = [LayerInfo]),
     "create_image_config": attr.label(
         default = Label("//container:create_image_config"),
         cfg = "host",

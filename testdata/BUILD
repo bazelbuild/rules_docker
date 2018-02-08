@@ -87,7 +87,7 @@ container_image(
 container_image(
     name = "files_in_layer_with_files_base",
     base = ":files_base",
-    container_layers = [":files_in_layer"],
+    layers = [":files_in_layer"],
     files = ["bar"],
     mode = "0644",
 )
@@ -112,7 +112,7 @@ container_image(
 container_image(
     name = "tars_in_layer_with_tar_base",
     base = ":tar_base",
-    container_layers = [":tars_in_layer"],
+    layers = [":tars_in_layer"],
     tars = ["two.tar"],
 )
 
@@ -158,7 +158,7 @@ container_image(
 container_image(
     name = "layers_with_docker_tarball_base",
     base = "@pause_tar//image",
-    container_layers = [
+    layers = [
         ":files_in_layer",
         ":tars_in_layer",
     ],
@@ -264,7 +264,7 @@ container_image(
 container_image(
     name = "layers_with_env",
     base = ":base_with_volume",
-    container_layers = [":env_layer"],
+    layers = [":env_layer"],
     env = {
         "PATH": "$PATH:/tmp/b:/tmp/c",
         "x": "y",
