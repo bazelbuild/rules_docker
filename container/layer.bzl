@@ -96,9 +96,13 @@ def zip_layer(ctx, layer):
   return zipped_layer, _sha256(ctx, zipped_layer)
 
 # A provider containing information needed in container_image and other rules.
-LayerInfo = provider(fields=["zipped_layer", "blob_sum",
-                             "unzipped_layer", "diff_id",
-                             "env"])
+LayerInfo = provider(fields = [
+    "zipped_layer",
+    "blob_sum",
+    "unzipped_layer",
+    "diff_id",
+    "env",
+])
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           symlinks=None, output=None, debs=None, tars=None, env=None):

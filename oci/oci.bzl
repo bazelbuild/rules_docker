@@ -19,8 +19,8 @@ load(
     oci_bundle = "container_bundle",
     oci_flatten = "container_flatten",
     oci_image = "container_image",
-    oci_layer = "container_layer",
     oci_import = "container_import",
+    oci_layer = "container_layer",
     oci_load = "container_load",
     oci_pull = "container_pull",
 )
