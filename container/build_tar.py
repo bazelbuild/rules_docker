@@ -319,18 +319,13 @@ def main(unused_argv):
   # Add objects to the tar file
   with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression) as output:
     def file_attributes(filename):
-      mode = default_mode
-      ids = default_ids
-      names = default_ownername
       if filename[0] == '/':
         filename = filename[1:]
-      if filename in mode_map:
-        mode = mode_map[filename]
-      if filename in ids_map:
-        ids = ids_map[filename]
-      if filename in names_map:
-        names = names_map[filename]
-      return {'mode': mode, 'ids': ids, 'names': names}
+      return {
+          'mode': mode_map.get(filename, default_mode),
+          'ids': ids_map.get(filename, default_ids),
+          'names': names_map.get(filename, default_ownername),
+      }
 
     for f in FLAGS.file:
       (inf, tof) = f.split('=', 1)
