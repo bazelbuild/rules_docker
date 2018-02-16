@@ -27,7 +27,7 @@ container = struct(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.24"
+CONTAINERREGISTRY_RELEASE = "v0.0.26"
 
 # The release of the container-structure-test repository to use.
 # Updated around 1/22/2018.
@@ -42,7 +42,7 @@ def repositories():
       name = "puller",
       url = ("https://storage.googleapis.com/containerregistry-releases/" +
              CONTAINERREGISTRY_RELEASE + "/puller.par"),
-      sha256 = "8348de85ce39753d21ccea1107aea3c0d481656daefa53357bd9788e0cf23265",
+      sha256 = "42309ba47bb28d1e1b81ef72789dcca396095e191d4f0e49e2e23c297edd27fb",
       executable = True,
     )
 
@@ -51,7 +51,7 @@ def repositories():
       name = "importer",
       url = ("https://storage.googleapis.com/containerregistry-releases/" +
              CONTAINERREGISTRY_RELEASE + "/importer.par"),
-      sha256 = "e9b50a5bf0e63b36a0370b7ecbd1cb9df60d656d2155135123e887ff4b222b16",
+      sha256 = "0a2490584c96bcf961242364d961859b94926182f20a217754730e7097ea6cde",
       executable = True,
     )
 
