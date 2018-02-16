@@ -289,7 +289,8 @@ def main(unused_argv):
   if FLAGS.modes:
     for filemode in FLAGS.modes:
       (f, mode) = filemode.split('=', 1)
-      f.lstrip('/')
+      if f[0] == '/':
+        f = f[1:]
       mode_map[f] = int(mode, 8)
 
   default_ownername = ('', '')
@@ -300,7 +301,8 @@ def main(unused_argv):
     for file_owner in FLAGS.owner_names:
       (f, owner) = file_owner.split('=', 1)
       (user, group) = owner.split('.', 1)
-      f.lstrip('/')
+      if f[0] == '/':
+        f = f[1:]
       names_map[f] = (user, group)
 
   default_ids = FLAGS.owner.split('.', 1)
@@ -310,7 +312,8 @@ def main(unused_argv):
     for file_owner in FLAGS.owners:
       (f, owner) = file_owner.split('=', 1)
       (user, group) = owner.split('.', 1)
-      f.lstrip('/')
+      if f[0] == '/':
+        f = f[1:]
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
@@ -319,7 +322,8 @@ def main(unused_argv):
       mode = default_mode
       ids = default_ids
       names = default_ownername
-      filename.lstrip('/')
+      if filename[0] == '/':
+        filename = filename[1:]
       if filename in mode_map:
         mode = mode_map[filename]
       if filename in ids_map:
