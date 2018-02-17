@@ -319,6 +319,8 @@ cc_image(
 To use `py_image`, add the following to `WORKSPACE`:
 
 ```python
+# You may use "@io_bazel_rules_docker//python3:image.bzl" here if using 
+# the py3 rules. (see below)
 load(
     "@io_bazel_rules_docker//python:image.bzl",
     _py_image_repos = "repositories",
