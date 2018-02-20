@@ -80,6 +80,10 @@ container_import(
     if "PULLER_TIMEOUT" in repository_ctx.os.environ:
         kwargs["timeout"] = int(repository_ctx.os.environ.get("PULLER_TIMEOUT"))
 
+    if repository_ctx.attr.print_progress:
+        kwargs["quiet"] = False
+        args += ["--print-progress"]
+
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:
         fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
@@ -90,6 +94,7 @@ container_pull = repository_rule(
         "repository": attr.string(mandatory = True),
         "digest": attr.string(),
         "tag": attr.string(default = "latest"),
+        "print_progress": attr.bool(),
         "_puller": attr.label(
             executable = True,
             default = Label("@puller//file:downloaded"),
