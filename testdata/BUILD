@@ -611,6 +611,14 @@ py_image(
     layers = [
         ":py_image_library",
     ],
+)
+
+py_image(
+    name = "py_image_with_main",
+    srcs = ["py_image.py"],
+    layers = [
+        ":py_image_library",
+    ],
     main = "py_image.py",
 )
 
@@ -618,6 +626,14 @@ load("//python3:image.bzl", "py3_image")
 
 py3_image(
     name = "py3_image",
+    srcs = ["py3_image.py"],
+    layers = [
+        ":py_image_library",
+    ],
+)
+
+py3_image(
+    name = "py3_image_with_main",
     srcs = ["py3_image.py"],
     layers = [
         ":py_image_library",
