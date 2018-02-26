@@ -2,7 +2,7 @@
 
 Travis CI | Bazel CI
 :---: | :---:
-[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build Status](https://ci.bazel.build/buildStatus/icon?job=rules_docker)](https://ci.bazel.build/job/rules_docker)
+[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
 
 ## Basic Rules
 
