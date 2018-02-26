@@ -88,9 +88,9 @@ def _get_base_config(ctx):
     l = _get_layers(ctx, ctx.attr.base, ctx.files.base)
     return l.get("config")
 
-def _image_config(ctx, layer_names, entrypoint=None, cmd=None, env=None):
+def _image_config(ctx, layer_names, entrypoint=None, cmd=None, env=None, base_config=None, layer_name=None):
   """Create the configuration for a new container image."""
-  config = ctx.new_file(ctx.label.name + ".config")
+  config = ctx.new_file(ctx.label.name + "." + layer_name + ".config")
 
   label_file_dict = _string_to_label(
       ctx.files.label_files, ctx.attr.label_file_strings)
@@ -133,10 +133,9 @@ def _image_config(ctx, layer_names, entrypoint=None, cmd=None, env=None):
   if ctx.attr.label_files:
     inputs += ctx.files.label_files
 
-  base = _get_base_config(ctx)
-  if base:
-    args += ["--base=%s" % base.path]
-    inputs += [base]
+  if base_config:
+    args += ["--base=%s" % base_config.path]
+    inputs += [base_config]
 
   if ctx.attr.stamp:
     stamp_inputs = [ctx.info_file, ctx.version_file]
@@ -161,22 +160,6 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _evalute_merge_env(env, new_env):
-  """Expand new environment variables properly and merge them.
-  Example:
-  - input: env={'foo':'bar', 'PATH':'$PATH:a:b'}
-           new_env={'X':'Y', 'PATH':'$PATH:c' }
-  - output: env={'foo':'bar', 'X':'Y', 'PATH':'$PATH:a:b:c'}
-  """
-  for k, v in new_env.items():
-    elems = []
-    for e in v.split(":"):
-      if e.startswith("$") and e[1:] in env.keys():
-        elems.append(env.get(e[1:]))
-      else:
-        elems.append(e)
-    env[k] = ":".join(elems)
-
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None, output=None, env=None,
           layers=None, debs=None, tars=None):
@@ -197,6 +180,8 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
   """
+  entrypoint=entrypoint or ctx.attr.entrypoint
+  cmd=cmd or ctx.attr.cmd
   output = output or ctx.outputs.executable
 
   # composite a layer from the container_image rule attrs,
@@ -221,15 +206,14 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   layer_diff_ids = [layer.diff_id for layer in layers]
   diff_ids = parent_parts.get("diff_id", []) + layer_diff_ids
 
-  # Get and merge environment variables
-  env = {}
-  [_evalute_merge_env(env, layer.env) for layer in layers]
-  # Generate the new config using the attributes specified and the diff_id
-  config_file, config_digest = _image_config(
-      ctx, layer_diff_ids,
-      entrypoint=entrypoint or ctx.attr.entrypoint,
-      cmd=cmd or ctx.attr.cmd,
-      env=env)
+  # Get the config for the base layer
+  config_file = _get_base_config(ctx)
+  # Generate the new config layer by layer, using the attributes specified and the diff_id
+  for i in range(len(layers)):
+    config_file, config_digest = _image_config(
+        ctx, [layer_diff_ids[i]],
+        entrypoint=entrypoint, cmd=cmd, env=layers[i].env,
+        base_config=config_file, layer_name=str(i), )
 
   # Construct a temporary name based on the build target.
   tag_name = _repository_name(ctx) + ":" + ctx.label.name
