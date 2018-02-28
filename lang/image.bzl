@@ -162,7 +162,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   # Compute the set of runfiles that have been made available
   # in our base image, tracking absolute paths.
   available = {}
-  for dep in ctx.attr.layers:
+  for dep in ctx.attr.lang_layers:
     available.update({
         _final_file_path(ctx, f): layer_file_path(ctx, f)
         for f in runfiles(dep)
@@ -229,7 +229,7 @@ app_layer = rule(
         ),
         # The full list of dependencies that have their own layers
         # factored into our base.
-        "layers": attr.label_list(allow_files = True),
+        "lang_layers": attr.label_list(allow_files = True),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),

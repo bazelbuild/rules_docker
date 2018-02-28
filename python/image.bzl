@@ -82,4 +82,4 @@ def py_image(name, base=None, deps=[], layers=[], **kwargs):
 
   visibility = kwargs.get('visibility', None)
   app_layer(name=name, base=base, entrypoint=['/usr/bin/python'],
-            binary=binary_name, layers=layers, visibility=visibility)
+            binary=binary_name, lang_layers=layers, visibility=visibility)

@@ -19,6 +19,7 @@ load(
     "container_bundle",
     "container_flatten",
     "container_image",
+    "container_layer",
     "container_import",
 )
 load("//testdata:utils.bzl", "generate_deb")
@@ -84,6 +85,20 @@ container_image(
 )
 
 container_image(
+    name = "files_in_layer_with_files_base",
+    base = ":files_base",
+    files = ["bar"],
+    layers = [":files_in_layer"],
+    mode = "0644",
+)
+
+container_layer(
+    name = "files_in_layer",
+    files = ["baz"],
+    mode = "0644",
+)
+
+container_image(
     name = "tar_base",
     tars = ["one.tar"],
 )
@@ -92,6 +107,19 @@ container_image(
     name = "tar_with_tar_base",
     base = ":tar_base",
     tars = ["two.tar"],
+)
+
+container_image(
+    name = "tars_in_layer_with_tar_base",
+    base = ":tar_base",
+    layers = [":tars_in_layer"],
+    tars = ["two.tar"],
+)
+
+container_layer(
+    name = "tars_in_layer",
+    directory = "/three",
+    tars = ["three.tar"],
 )
 
 container_image(
@@ -124,6 +152,17 @@ container_image(
     name = "docker_tarball_base",
     base = "@pause_tar//image",
     files = ["foo"],
+    mode = "0644",
+)
+
+container_image(
+    name = "layers_with_docker_tarball_base",
+    base = "@pause_tar//image",
+    files = ["foo"],
+    layers = [
+        ":files_in_layer",
+        ":tars_in_layer",
+    ],
     mode = "0644",
 )
 
@@ -219,6 +258,24 @@ container_image(
     base = ":with_env",
     env = {
         "baz": "${foo} $bar",
+    },
+)
+
+container_image(
+    name = "layers_with_env",
+    base = ":base_with_volume",
+    env = {
+        "PATH": "$PATH:/tmp/b:/tmp/c",
+        "x": "y",
+    },
+    layers = [":env_layer"],
+)
+
+container_layer(
+    name = "env_layer",
+    env = {
+        "PATH": "$PATH:/tmp/a",
+        "a": "b",
     },
 )
 

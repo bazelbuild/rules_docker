@@ -14,7 +14,7 @@
 """A rule to flatten container images."""
 
 load(
-    "//container:layers.bzl",
+    "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
