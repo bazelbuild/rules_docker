@@ -209,10 +209,10 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   # Get the config for the base layer
   config_file = _get_base_config(ctx)
   # Generate the new config layer by layer, using the attributes specified and the diff_id
-  for i in range(len(layers)):
+  for i, layer in enumerate(layers):
     config_file, config_digest = _image_config(
         ctx, [layer_diff_ids[i]],
-        entrypoint=entrypoint, cmd=cmd, env=layers[i].env,
+        entrypoint=entrypoint, cmd=cmd, env=layer.env,
         base_config=config_file, layer_name=str(i), )
 
   # Construct a temporary name based on the build target.
