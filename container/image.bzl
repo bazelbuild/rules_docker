@@ -254,9 +254,11 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   runfiles = ctx.runfiles(
       files = unzipped_layers + diff_ids + [config_file, config_digest] +
       ([container_parts["legacy"]] if container_parts["legacy"] else []))
+
   return struct(runfiles = runfiles,
                 files = depset([ctx.outputs.layer]),
-                container_parts = container_parts)
+                container_parts = container_parts,
+                providers = [image_layer[0]])
 
 _attrs = dict(_layer.attrs.items() + {
     "base": attr.label(allow_files = container_filetype),

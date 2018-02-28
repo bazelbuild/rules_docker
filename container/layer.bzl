@@ -124,8 +124,10 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   empty_files = empty_files or ctx.attr.empty_files
   directory = directory or ctx.attr.directory
   symlinks = symlinks or ctx.attr.symlinks
+  env = env or ctx.attr.env
   debs = debs or ctx.files.debs
   tars = tars or ctx.files.tars
+
 
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id)
   unzipped_layer, diff_id = build_layer(ctx, files=files, file_map=file_map,
@@ -145,7 +147,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                     blob_sum=blob_sum,
                     unzipped_layer=unzipped_layer,
                     diff_id=diff_id,
-                    env=env or ctx.attr.env)]
+                    env=env)]
 
 _layer_attrs = dict({
     "data_path": attr.string(),

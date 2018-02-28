@@ -193,6 +193,19 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(3, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Env', ['PATH=$PATH:/tmp/a:/tmp/b:/tmp/c', 'a=b', 'x=y'])
 
+  def test_with_image_layer(self):
+    with TestImage('with_image_layer') as img:
+      self.assertEqual(3, len(img.fs_layers()))
+      self.assertTopLayerContains(img, [
+        './asdf', './usr', './usr/bin',
+        './usr/bin/miraclegrow'])
+      self.assertLayerNContains(img, 1, ['.', './three', './three/three'])
+      self.assertLayerNContains(img, 2, [
+          './usr', './usr/bin', './usr/bin/unremarkabledeath'])
+      self.assertDigest(img, '12d220f4bed50f46265be8d4ee8b8c34bd8e228383f6cbbbc2cd4fb473edbdda')
+      self.assertEqual(3, len(img.fs_layers()))
+      self.assertConfigEqual(img, 'Env', ['PATH=$PATH:/tmp/a:/tmp/b:/tmp/c', 'a=b', 'x=y'])
+
   def test_dummy_repository(self):
     # We allow users to specify an alternate repository name instead of 'bazel/'
     # to prefix their image names.
