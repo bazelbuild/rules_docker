@@ -49,7 +49,7 @@ def groovy_image(name, base=None, main_class=None,
     deps = deps + [binary_name + "-lib"]
 
   # This always belongs in a separate layer.
-  layers += ["//external:groovy"]
+  layers = layers + ["//external:groovy"]
 
   native.java_binary(
       name = binary_name,
