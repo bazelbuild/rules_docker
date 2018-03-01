@@ -164,6 +164,7 @@ skylark_library(
         ":flatten",
         ":image",
         ":import",
+        ":layer",
         ":push",
     ],
 )
@@ -194,6 +195,18 @@ skylark_library(
 skylark_library(
     name = "import",
     srcs = ["import.bzl"],
+    deps = [
+        ":layer_tools",
+        "//skylib:filetype",
+        "//skylib:path",
+        "//skylib:zip",
+        "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    ],
+)
+
+skylark_library(
+    name = "layer",
+    srcs = ["layer.bzl"],
     deps = [
         ":layer_tools",
         "//skylib:filetype",
