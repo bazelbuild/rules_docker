@@ -139,7 +139,7 @@ def _jar_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
 
   available = depset()
-  for jar in ctx.attr.layers:
+  for jar in ctx.attr.jar_layers:
     available += java_files(jar)
 
   # We compute the set of unavailable stuff by walking deps
@@ -188,7 +188,7 @@ jar_app_layer = rule(
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
         # factored into our base.
-        "layers": attr.label_list(),
+        "jar_layers": attr.label_list(),
         # The rest of the dependencies.
         "deps": attr.label_list(),
         "runtime_deps": attr.label_list(),
@@ -247,7 +247,7 @@ def java_image(name, base=None, main_class=None,
   visibility = kwargs.get('visibility', None)
   jar_app_layer(name=name, base=base, binary=binary_name,
                  main_class=main_class, jvm_flags=jvm_flags,
-                 deps=deps, runtime_deps=runtime_deps, layers=layers,
+                 deps=deps, runtime_deps=runtime_deps, jar_layers=layers,
                  visibility=visibility)
 
 def _war_dep_layer_impl(ctx):
@@ -286,7 +286,7 @@ def _war_app_layer_impl(ctx):
   """Appends the app layer with all remaining runfiles."""
 
   available = depset()
-  for jar in ctx.attr.layers:
+  for jar in ctx.attr.jar_layers:
     available += java_files(jar)
 
   # This is based on rules_appengine's WAR rules.
@@ -307,7 +307,7 @@ _war_app_layer = rule(
         "library": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
         # factored into our base.
-        "layers": attr.label_list(),
+        "jar_layers": attr.label_list(),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),
@@ -352,5 +352,6 @@ def war_image(name, base=None, deps=[], layers=[], **kwargs):
     base = this_name
 
   visibility = kwargs.get('visibility', None)
-  _war_app_layer(name=name, base=base, library=library_name, layers=layers,
-                 visibility=visibility)
+  tags = kwargs.get('tags', None)
+  _war_app_layer(name=name, base=base, library=library_name, jar_layers=layers,
+                 visibility=visibility, tags=tags)

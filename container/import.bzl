@@ -29,7 +29,7 @@ load(
     _gzip = "gzip",
 )
 load(
-    "//container:layers.bzl",
+    "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _incr_load = "incremental_load",
     _layer_tools = "tools",

@@ -49,7 +49,7 @@ def groovy_image(name, base=None, main_class=None,
     deps = deps + [binary_name + "-lib"]
 
   # This always belongs in a separate layer.
-  layers += ["//external:groovy"]
+  layers = layers + ["//external:groovy"]
 
   native.java_binary(
       name = binary_name,
@@ -66,9 +66,11 @@ def groovy_image(name, base=None, main_class=None,
     index += 1
 
   visibility = kwargs.get('visibility', None)
+  tags = kwargs.get('tags', None)
   jar_app_layer(name=name, base=base, binary=binary_name,
-                 main_class=main_class, jvm_flags=jvm_flags,
-                 deps=deps, layers=layers, visibility=visibility)
+                main_class=main_class, jvm_flags=jvm_flags,
+                deps=deps, jar_layers=layers, visibility=visibility,
+                tags=tags)
 
 def repositories():
   _repositories()
