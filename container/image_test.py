@@ -336,6 +336,32 @@ class ImageTest(unittest.TestCase):
         content = layer.extractfile('./etc/group').read()
         self.assertEqual('root:x:0:\nfoobar:x:2345:foo,bar,baz\n', content)
 
+  def test_with_empty_files(self):
+    with TestImage('with_empty_files') as img:
+      self.assertDigest(img, 'ca83f384d82d79c39ed43dd79b8552e95c050041e7af8bed8ca8af0e291049e1')
+      self.assertEqual(1, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './file1', './file2'])
+
+      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      with tarfile.open(fileobj=buf, mode='r') as layer:
+        for name in ('./file1', './file2'):
+          memberfile = layer.getmember(name)
+          self.assertEqual(0, memberfile.size)
+          self.assertEqual(0o777, memberfile.mode)
+
+  def test_with_empty_dirs(self):
+    with TestImage('with_empty_dirs') as img:
+      self.assertDigest(img, 'f4f102478ccee4a759c37fadfae09ebfdb1be5b4899faeb81ee24afb558b8868')
+      self.assertEqual(1, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './etc', './foo', './bar'])
+
+      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      with tarfile.open(fileobj=buf, mode='r') as layer:
+        for name in ('./etc', './foo', './bar'):
+          memberfile = layer.getmember(name)
+          self.assertEqual(tarfile.DIRTYPE, memberfile.type)
+          self.assertEqual(0o777, memberfile.mode)
+
   def test_py_image(self):
     with TestImage('py_image') as img:
       # Check the application layer, which is on top.
