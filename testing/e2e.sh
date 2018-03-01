@@ -55,7 +55,7 @@ function EXPECT_NOT_CONTAINS() {
 }
 
 function stop_containers() {
-  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || /bin/true || /usr/bin/true
+  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
 }
 
 # Clean up any containers [before] we start.
