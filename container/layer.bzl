@@ -107,8 +107,7 @@ LayerInfo = provider(fields = [
 ])
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
-          directory=None, symlinks=None, output=None, debs=None, tars=None,
-          env=None):
+          directory=None, symlinks=None, debs=None, tars=None, env=None):
   """Implementation for the container_layer rule.
 
   Args:
