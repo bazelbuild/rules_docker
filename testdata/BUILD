@@ -369,7 +369,7 @@ container_image(
         "PATH": "$PATH:/tmp/b:/tmp/c",
         "x": "y",
     },
-    layers = [":image_layer"],
+    layers = [":image_layer.top_layer"],
     tars = ["two.tar"],
 )
 
