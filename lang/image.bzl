@@ -88,7 +88,12 @@ def _layer_emptyfile_path(ctx, name):
 # The foo_binary independent location in which we store a particular dependency's
 # file such that it can be shared.
 def layer_file_path(ctx, f):
-  return "/".join([ctx.attr.directory, ctx.workspace_name, f.short_path])
+  # See _layer_emptyfile_path for the logic
+
+  name = f.short_path
+  if not name.startswith('../'):
+    return "/".join([ctx.attr.directory, ctx.workspace_name, name])
+  return "/".join([ctx.attr.directory, name[len('../'):]])
 
 def _default_runfiles(dep):
   return dep.default_runfiles.files
