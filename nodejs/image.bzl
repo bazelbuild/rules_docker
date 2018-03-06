@@ -19,7 +19,9 @@ The signature of this rule is compatible with nodejs_binary.
 load(
     "//lang:image.bzl",
     "dep_layer_impl",
-    "app_layer",
+    "dep_layer_attrs",
+    "app_layer_impl",
+    "app_layer_attrs",
 )
 load(
     "//container:container.bzl",
@@ -69,32 +71,20 @@ def _dep_layer_impl(ctx):
   return dep_layer_impl(ctx, runfiles=_runfiles, emptyfiles=_emptyfiles)
 
 _dep_layer = rule(
-    attrs = _container.image.attrs + {
-        # The base image on which to overlay the dependency layers.
-        "base": attr.label(mandatory = True),
-        # The dependency whose runfiles we're appending.
-        "dep": attr.label(
-            mandatory = True,
-            allow_files = True,
-        ),
-
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = False),
-        # The binary target for which we are synthesizing an image.
-        # This is needed iff agnostic_dep_layout.
-        "binary": attr.label(mandatory = False),
-
-        # Override the defaults.
-        # https://github.com/bazelbuild/bazel/issues/2176
-        "data_path": attr.string(default = "."),
-        "directory": attr.string(default = "/app"),
-    },
+    attrs = dep_layer_attrs,
     executable = True,
     outputs = _container.image.outputs,
     implementation = _dep_layer_impl,
+)
+
+def _app_layer_impl(ctx):
+  return app_layer_impl(ctx, runfiles=_runfiles, emptyfiles=_emptyfiles)
+
+_app_layer = rule(
+    attrs = app_layer_attrs,
+    executable = True,
+    outputs = _container.image.outputs,
+    implementation = _app_layer_impl,
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
@@ -125,13 +115,14 @@ def nodejs_image(name, base=None, data=[], layers=[],
   base = base or DEFAULT_BASE
   for index, dep in enumerate(layers):
     this_name = "%s.%d" % (name, index)
-    _dep_layer(name=this_name, base=base, dep=dep, binary=binary_name)
+    _dep_layer(name=this_name, base=base, dep=dep, binary=binary_name,
+               agnostic_dep_layout=False)
     base = this_name
 
   visibility = kwargs.get('visibility', None)
   tags = kwargs.get('tags', None)
-  app_layer(name=name, base=base, entrypoint=['sh', '-c'],
-            # Node.JS hates symlinks.
-            agnostic_dep_layout=False,
-            binary=binary_name, lang_layers=layers, visibility=visibility,
-            tags=tags)
+  _app_layer(name=name, base=base, entrypoint=['sh', '-c'],
+             # Node.JS hates symlinks.
+             agnostic_dep_layout=False,
+             binary=binary_name, lang_layers=layers, visibility=visibility,
+             tags=tags)

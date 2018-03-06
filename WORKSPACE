@@ -147,7 +147,7 @@ d_repositories()
 
 git_repository(
     name = "build_bazel_rules_nodejs",
-    commit = "5c53b46110d13c4c9f22364e96b2d0f55896d7aa",
+    commit = "f3fc23b7e1f32984a3e5d0c7eabe3baa127fb32a",
     remote = "https://github.com/bazelbuild/rules_nodejs.git",
 )
 

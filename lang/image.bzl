@@ -124,36 +124,38 @@ def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
     ]
   )
 
+dep_layer_attrs = dict(_container.image.attrs.items() + {
+    # The base image on which to overlay the dependency layers.
+    "base": attr.label(mandatory = True),
+    # The dependency whose runfiles we're appending.
+    "dep": attr.label(
+        mandatory = True,
+        allow_files = True,
+    ),
+
+    # Whether to lay out each dependency in a manner that is agnostic
+    # of the binary in which it is participating.  This can increase
+    # sharing of the dependency's layer across images, but requires a
+    # symlink forest in the app layers.
+    "agnostic_dep_layout": attr.bool(default = True),
+    # The binary target for which we are synthesizing an image.
+    # This is needed iff agnostic_dep_layout.
+    "binary": attr.label(mandatory = False),
+
+    # Override the defaults.
+    # https://github.com/bazelbuild/bazel/issues/2176
+    "data_path": attr.string(default = "."),
+    "directory": attr.string(default = "/app"),
+}.items())
+
 dep_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
-        # The base image on which to overlay the dependency layers.
-        "base": attr.label(mandatory = True),
-        # The dependency whose runfiles we're appending.
-        "dep": attr.label(
-            mandatory = True,
-            allow_files = True,
-        ),
-
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
-        # The binary target for which we are synthesizing an image.
-        # This is needed iff agnostic_dep_layout.
-        "binary": attr.label(mandatory = False),
-
-        # Override the defaults.
-        # https://github.com/bazelbuild/bazel/issues/2176
-        "data_path": attr.string(default = "."),
-        "directory": attr.string(default = "/app"),
-    }.items()),
+    attrs = dep_layer_attrs,
     executable = True,
     outputs = _container.image.outputs,
     implementation = dep_layer_impl,
 )
 
-def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
+def app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   """Appends the app layer with all remaining runfiles."""
 
   runfiles = runfiles or _default_runfiles
@@ -219,34 +221,36 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # we should use the "exec" (list) form of entrypoint.
     entrypoint=ctx.attr.entrypoint + [_binary_name(ctx)])
 
+app_layer_attrs = dict(_container.image.attrs.items() + {
+    # The binary target for which we are synthesizing an image.
+    "binary": attr.label(
+        mandatory = True,
+        executable = True,
+        cfg = "target",
+    ),
+    # The full list of dependencies that have their own layers
+    # factored into our base.
+    "lang_layers": attr.label_list(allow_files = True),
+    # The base image on which to overlay the dependency layers.
+    "base": attr.label(mandatory = True),
+    "entrypoint": attr.string_list(default = []),
+
+    # Whether each dependency is laid out in a manner that is agnostic
+    # of the binary in which it is participating.  This can increase
+    # sharing of the dependency's layer across images, but requires a
+    # symlink forest in the app layers.
+    "agnostic_dep_layout": attr.bool(default = True),
+
+    # Override the defaults.
+    "data_path": attr.string(default = "."),
+    "workdir": attr.string(default = "/app"),
+    "directory": attr.string(default = "/app"),
+    "legacy_run_behavior": attr.bool(default = False),
+}.items())
+
 app_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
-        # The binary target for which we are synthesizing an image.
-        "binary": attr.label(
-            mandatory = True,
-            executable = True,
-            cfg = "target",
-        ),
-        # The full list of dependencies that have their own layers
-        # factored into our base.
-        "lang_layers": attr.label_list(allow_files = True),
-        # The base image on which to overlay the dependency layers.
-        "base": attr.label(mandatory = True),
-        "entrypoint": attr.string_list(default = []),
-
-        # Whether each dependency is laid out in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
-
-        # Override the defaults.
-        "data_path": attr.string(default = "."),
-        "workdir": attr.string(default = "/app"),
-        "directory": attr.string(default = "/app"),
-        "legacy_run_behavior": attr.bool(default = False),
-    }.items()),
+    attrs = app_layer_attrs,
     executable = True,
     outputs = _container.image.outputs,
-    implementation = _app_layer_impl,
+    implementation = app_layer_impl,
 )
