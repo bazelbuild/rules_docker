@@ -163,7 +163,7 @@ def _repository_name(ctx):
 def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
           empty_dirs=None, directory=None, entrypoint=None, cmd=None,
           symlinks=None, env=None, layers=None, debs=None, tars=None,
-          output_executable=None, output_image=None, output_layer=None):
+          output_executable=None, output_tarball=None, output_layer=None):
   """Implementation for the container_image rule.
 
   Args:
@@ -182,13 +182,13 @@ def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
     output_executable: File to use as output for script to load docker image
-    output_image: File, overrides ctx.outputs.out
+    output_tarball: File, overrides ctx.outputs.out
     output_layer: File, overrides ctx.outputs.layer
   """
   entrypoint = entrypoint or ctx.attr.entrypoint
   cmd = cmd or ctx.attr.cmd
   output_executable = output_executable or ctx.outputs.executable
-  output_image = output_image or ctx.outputs.out
+  output_tarball = output_tarball or ctx.outputs.out
   output_layer = output_layer or ctx.outputs.layer
 
   # composite a layer from the container_image rule attrs,
@@ -257,7 +257,7 @@ def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
   _incr_load(ctx, images, output_executable,
              run=not ctx.attr.legacy_run_behavior,
              run_flags=ctx.attr.docker_run_flags)
-  _assemble_image(ctx, images, output_image)
+  _assemble_image(ctx, images, output_tarball)
 
   runfiles = ctx.runfiles(
       files = unzipped_layers + diff_ids + [config_file, config_digest] +
