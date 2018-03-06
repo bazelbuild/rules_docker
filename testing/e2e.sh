@@ -29,6 +29,13 @@ function CONTAINS() {
   echo "${complete}" | grep -Fsq -- "${substring}"
 }
 
+function NOT_CONTAINS() {
+  local complete="${1}"
+  local substring="${2}"
+
+  echo "${complete}" | grep -Fsqv -- "${substring}"
+}
+
 function EXPECT_CONTAINS() {
   local complete="${1}"
   local substring="${2}"
@@ -38,8 +45,17 @@ function EXPECT_CONTAINS() {
   CONTAINS "${complete}" "${substring}" || fail "$message"
 }
 
+function EXPECT_NOT_CONTAINS() {
+  local complete="${1}"
+  local substring="${2}"
+  local message="${3:-Expected '${substring}' found in '${complete}'}"
+
+  echo Checking "$1" does not contain "$2"
+  NOT_CONTAINS "${complete}" "${substring}" || fail "$message"
+}
+
 function stop_containers() {
-  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || /bin/true
+  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
 }
 
 # Clean up any containers [before] we start.
@@ -200,6 +216,15 @@ function test_go_image_busybox() {
   EXPECT_CONTAINS "$(docker run -ti --rm --entrypoint=sh bazel/testdata:go_image -c \"echo aa${number}bb\")" "aa${number}bb"
 }
 
+function test_go_image_with_tags() {
+  cd "${ROOT}"
+  EXPECT_CONTAINS "$(bazel query //testdata:go_image)" "//testdata:go_image"
+  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //testdata:go_image)')" "//testdata:go_image"
+  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //testdata:go_image)')" "//testdata:go_image"
+  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //testdata:go_image)')" "//testdata:go_image"
+  echo yay
+}
+
 function test_java_image() {
   cd "${ROOT}"
   clear_docker
@@ -289,6 +314,7 @@ test_cc_binary_as_image -c dbg
 test_go_image -c opt
 test_go_image -c dbg
 test_go_image_busybox
+test_go_image_with_tags
 test_java_image -c opt
 test_java_image -c dbg
 test_java_sandwich_image -c opt

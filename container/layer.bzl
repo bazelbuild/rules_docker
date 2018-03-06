@@ -60,7 +60,8 @@ def _magic_path(ctx, f):
     return f.basename
 
 def build_layer(ctx, files=None, file_map=None, empty_files=None,
-                 directory=None, symlinks=None, debs=None, tars=None):
+                empty_dirs=None, directory=None, symlinks=None, debs=None,
+                tars=None):
   """Build the current layer for appending it to the base layer"""
   layer = ctx.outputs.layer
   build_layer_exec = ctx.executable.build_layer
@@ -73,6 +74,7 @@ def build_layer(ctx, files=None, file_map=None, empty_files=None,
   args += ["--file=%s=%s" % (f.path, _magic_path(ctx, f)) for f in files]
   args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
   args += ["--empty_file=%s" % f for f in empty_files or []]
+  args += ["--empty_dir=%s" % f for f in empty_dirs or []]
   args += ["--tar=" + f.path for f in tars]
   args += ["--deb=" + f.path for f in debs]
   for k in symlinks:
@@ -104,8 +106,9 @@ LayerInfo = provider(fields = [
     "env",
 ])
 
-def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
-          symlinks=None, output=None, debs=None, tars=None, env=None):
+def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
+          directory=None, symlinks=None, output=None, debs=None, tars=None,
+          env=None):
   """Implementation for the container_layer rule.
 
   Args:
@@ -113,6 +116,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
     files: File list, overrides ctx.files.files
     file_map: Dict[str, File], defaults to {}
     empty_files: str list, overrides ctx.attr.empty_files
+    empty_dirs: Dict[str, str], overrides ctx.attr.empty_dirs
     directory: str, overrides ctx.attr.directory
     symlinks: str Dict, overrides ctx.attr.symlinks
     env: str Dict, overrides ctx.attr.env
@@ -122,6 +126,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   file_map = file_map or {}
   files = files or ctx.files.files
   empty_files = empty_files or ctx.attr.empty_files
+  empty_dirs = empty_dirs or ctx.attr.empty_dirs
   directory = directory or ctx.attr.directory
   symlinks = symlinks or ctx.attr.symlinks
   env = env or ctx.attr.env
@@ -132,6 +137,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id)
   unzipped_layer, diff_id = build_layer(ctx, files=files, file_map=file_map,
                                         empty_files=empty_files,
+                                        empty_dirs=empty_dirs,
                                         directory=directory, symlinks=symlinks,
                                         debs=debs, tars=tars)
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
@@ -160,6 +166,7 @@ _layer_attrs = dict({
     "env": attr.string_dict(),
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
+    "empty_dirs": attr.string_list(),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",

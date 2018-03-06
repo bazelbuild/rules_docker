@@ -352,5 +352,6 @@ def war_image(name, base=None, deps=[], layers=[], **kwargs):
     base = this_name
 
   visibility = kwargs.get('visibility', None)
+  tags = kwargs.get('tags', None)
   _war_app_layer(name=name, base=base, library=library_name, jar_layers=layers,
-                 visibility=visibility)
+                 visibility=visibility, tags=tags)

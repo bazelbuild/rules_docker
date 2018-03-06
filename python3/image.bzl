@@ -81,5 +81,7 @@ def py3_image(name, base=None, deps=[], layers=[], **kwargs):
     base = this_name
 
   visibility = kwargs.get('visibility', None)
+  tags = kwargs.get('tags', None)
   app_layer(name=name, base=base, entrypoint=['/usr/bin/python'],
-            binary=binary_name, lang_layers=layers, visibility=visibility)
+            binary=binary_name, lang_layers=layers, visibility=visibility,
+            tags=tags)

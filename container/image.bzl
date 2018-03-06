@@ -160,9 +160,9 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
-          entrypoint=None, cmd=None, symlinks=None, output=None, env=None,
-          layers=None, debs=None, tars=None):
+def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
+          directory=None, entrypoint=None, cmd=None, symlinks=None, output=None,
+          env=None, layers=None, debs=None, tars=None):
   """Implementation for the container_image rule.
 
   Args:
@@ -170,6 +170,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
     files: File list, overrides ctx.files.files
     file_map: Dict[str, File], defaults to {}
     empty_files: str list, overrides ctx.attr.empty_files
+    empty_dirs: Dict[str, str], overrides ctx.attr.empty_dirs
     directory: str, overrides ctx.attr.directory
     entrypoint: str List, overrides ctx.attr.entrypoint
     cmd: str List, overrides ctx.attr.cmd
@@ -188,6 +189,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   image_layer = _layer.implementation(ctx=ctx, files=files,
                                       file_map=file_map,
                                       empty_files=empty_files,
+                                      empty_dirs=empty_dirs,
                                       directory=directory,
                                       symlinks=symlinks,
                                       debs=debs, tars=tars,

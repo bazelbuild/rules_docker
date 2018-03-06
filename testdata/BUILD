@@ -562,6 +562,25 @@ container_image(
 )
 
 container_image(
+    name = "with_empty_files",
+    empty_files = [
+        "file1",
+        "file2",
+    ],
+    mode = "0o777",
+)
+
+container_image(
+    name = "with_empty_dirs",
+    empty_dirs = [
+        "etc",
+        "foo",
+        "bar",
+    ],
+    mode = "0o777",
+)
+
+container_image(
     name = "base_based_warning",
     base = "@distroless_base//image:image.tar",
 )
@@ -774,6 +793,10 @@ go_image(
     name = "go_image",
     srcs = ["main.go"],
     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
+    tags = [
+        "tag1",
+        "tag2",
+    ],
 )
 
 load("//rust:image.bzl", "rust_image")
