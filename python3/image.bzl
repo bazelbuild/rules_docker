@@ -43,9 +43,9 @@ def repositories():
       repository = "distroless/python3",
       digest = DIGESTS["latest"],
     )
-  if "py_debug_image_base" not in excludes:
+  if "py3_debug_image_base" not in excludes:
     container_pull(
-      name = "py_debug_image_base",
+      name = "py3_debug_image_base",
       registry = "gcr.io",
       repository = "distroless/python3",
       digest = DIGESTS["debug"],
