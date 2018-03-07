@@ -106,6 +106,8 @@ TEST_TARGETS = [
     "build_with_tag",
     "with_passwd",
     "with_group",
+    "with_empty_files",
+    "with_empty_dirs",
     "gen_image",
     "data_path_image",
     "no_data_path_image",
