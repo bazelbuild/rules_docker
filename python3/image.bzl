@@ -68,6 +68,9 @@ def py3_image(name, base=None, deps=[], layers=[], **kwargs):
   """
   binary_name = name + ".binary"
 
+  if "main" not in kwargs:
+    kwargs["main"] = name + ".py"
+
   # TODO(mattmoor): Consider using par_binary instead, so that
   # a single target can be used for all three.
   native.py_binary(name=binary_name, deps=deps + layers, **kwargs)
