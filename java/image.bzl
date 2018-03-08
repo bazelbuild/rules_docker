@@ -118,12 +118,18 @@ jar_dep_layer = rule(
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
+        # Set to True to only add external dependencies of "dep" into
+        # this layer.
+        "only_external": attr.bool(),
 
         # Whether to lay out each dependency in a manner that is agnostic
         # of the binary in which it is participating.  This can increase
         # sharing of the dependency's layer across images, but requires a
         # symlink forest in the app layers.
         "agnostic_dep_layout": attr.bool(default = True),
+        # The binary target for which we are synthesizing an image.
+        # This is needed iff agnostic_dep_layout.
+        "binary": attr.label(mandatory = False),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
@@ -265,12 +271,18 @@ _war_dep_layer = rule(
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
+        # Set to True to only add external dependencies of "dep" into
+        # this layer.
+        "only_external": attr.bool(),
 
         # Whether to lay out each dependency in a manner that is agnostic
         # of the binary in which it is participating.  This can increase
         # sharing of the dependency's layer across images, but requires a
         # symlink forest in the app layers.
         "agnostic_dep_layout": attr.bool(default = True),
+        # The binary target for which we are synthesizing an image.
+        # This is needed iff agnostic_dep_layout.
+        "binary": attr.label(mandatory = False),
 
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),

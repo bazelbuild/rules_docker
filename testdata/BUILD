@@ -641,6 +641,32 @@ py_image(
     main = "py_image.py",
 )
 
+load("@pip_deps//:requirements.bzl", "requirement")
+
+py_library(
+    name = "py_image_library_with_external_deps",
+    srcs = ["py_image_library_with_external_deps.py"],
+    deps = [requirement("six")],
+)
+
+py_library(
+    name = "py_image_library_2",
+    srcs = ["py_image_library_2.py"],
+    deps = [":py_image_library_with_external_deps"],
+)
+
+py_image(
+    name = "py_image_complex",
+    srcs = ["py_image_complex.py"],
+    external_layer = True,
+    layers = [
+        ":py_image_library_with_external_deps",
+        ":py_image_library_2",
+    ],
+    main = "py_image_complex.py",
+)
+
+
 load("//python3:image.bzl", "py3_image")
 
 py3_image(

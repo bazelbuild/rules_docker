@@ -190,6 +190,16 @@ EOF
   rm -f output.txt
 }
 
+function test_py_image_complex() {
+  cd "${ROOT}"
+  clear_docker
+  cat > output.txt <<EOF
+$(bazel run "$@" testdata:py_image_complex)
+EOF
+  EXPECT_CONTAINS "$(cat output.txt)" "Calling from main module: through py_image_library_2: Six version: 1.11.0"
+  rm -f output.txt
+}
+
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
@@ -307,6 +317,8 @@ test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
 test_py_image -c opt
 test_py_image -c dbg
+test_py_image_complex -c opt
+test_py_image_complex -c dbg
 test_cc_image -c opt
 test_cc_image -c dbg
 test_cc_binary_as_image -c opt

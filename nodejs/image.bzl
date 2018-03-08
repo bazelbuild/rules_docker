@@ -133,5 +133,4 @@ def nodejs_image(name, base=None, data=[], layers=[],
   app_layer(name=name, base=base, entrypoint=['sh', '-c'],
             # Node.JS hates symlinks.
             agnostic_dep_layout=False,
-            binary=binary_name, lang_layers=layers, visibility=visibility,
-            tags=tags)
+            binary=binary_name, visibility=visibility, tags=tags)

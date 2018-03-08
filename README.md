@@ -362,6 +362,9 @@ py_image(
 )
 ```
 
+You can also put all external dependencies in a separate layer by setting
+`external_layer=True`.
+
 ### py3_image
 
 To use a Python 3 runtime instead of the default of Python 2, use `py3_image`,

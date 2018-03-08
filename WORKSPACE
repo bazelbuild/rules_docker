@@ -50,6 +50,25 @@ load(
 
 _py_image_repos()
 
+git_repository(
+    name = "io_bazel_rules_python",
+    commit = "b28c4c7a4c6db5db74c5897bc6a3ac28c2932d49",
+    remote = "https://github.com/bazelbuild/rules_python.git",
+)
+
+load("@io_bazel_rules_python//python:pip.bzl", "pip_repositories", "pip_import")
+
+pip_repositories()
+
+pip_import(
+    name = "pip_deps",
+    requirements = "//testdata:requirements-pip.txt",
+)
+
+load("@pip_deps//:requirements.bzl", "pip_install")
+
+pip_install()
+
 load(
     "//python3:image.bzl",
     _py3_image_repos = "repositories",

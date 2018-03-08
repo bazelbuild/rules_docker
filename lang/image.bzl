@@ -18,13 +18,17 @@ load(
     "//container:container.bzl",
     _container = "container",
 )
+load(
+    "//container:layer_tools.bzl",
+    _get_layers = "get_from_target",
+)
 
 def _binary_name(ctx):
   # For //foo/bar/baz:blah this would translate to
   # /app/foo/bar/baz/blah
   return "/".join([
       ctx.attr.directory,
-      ctx.label.package,
+      ctx.attr.binary.label.package,
       ctx.attr.binary.label.name,
   ])
 
@@ -96,14 +100,63 @@ def _default_runfiles(dep):
 def _default_emptyfiles(dep):
   return dep.default_runfiles.empty_filenames
 
+def _external_runfiles(dep):
+  return [f for f in dep.default_runfiles.files if f.path.startswith("external/")]
+
+def _external_emptyfiles(dep):
+  return [f for f in dep.default_runfiles.empty_filenames if f.startswith("external/")]
+
 def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
   """Appends a layer for a single dependency's runfiles."""
 
-  runfiles = runfiles or _default_runfiles
-  emptyfiles = emptyfiles or _default_emptyfiles
+  runfiles = runfiles or (_external_runfiles if ctx.attr.only_external else _default_runfiles)
+  emptyfiles = emptyfiles or (_external_emptyfiles if ctx.attr.only_external else _default_emptyfiles)
 
   filepath = layer_file_path if ctx.attr.agnostic_dep_layout else _final_file_path
   emptyfilepath = _layer_emptyfile_path if ctx.attr.agnostic_dep_layout else _final_emptyfile_path
+
+  parent_parts = _get_layers(ctx, ctx.attr.base, ctx.files.base)
+
+  # Compute the set of runfiles that have been made available
+  # in previous dep_layers, tracking absolute paths.
+  available = {}
+  available.update({
+      f: None
+      for f in parent_parts.get("transient_files", depset())
+  })
+  available.update({
+      f: None
+      for f in parent_parts.get("transient_emptyfiles", depset())
+  })
+
+  # Compute the set of runfiles that are required by "dep", but not
+  # already added to the image.
+  file_map={
+      filepath(ctx, f): f
+      for f in runfiles(ctx.attr.dep)
+      if filepath(ctx, f) not in available
+  }
+  empty_files=[
+      emptyfilepath(ctx, f)
+      for f in emptyfiles(ctx.attr.dep)
+      if emptyfilepath(ctx, f) not in available
+  ]
+
+  symlinks = {}
+  # If the caller provided the binary that will eventually form the
+  # app layer, we can already create symlinks to the runfiles path.
+  if ctx.attr.binary and ctx.attr.agnostic_dep_layout:
+    symlinks.update({
+        _final_file_path(ctx, f): layer_file_path(ctx, f)
+        for f in runfiles(ctx.attr.binary)
+        if filepath(ctx, f) in file_map
+    })
+    symlinks.update({
+        _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
+        for f in emptyfiles(ctx.attr.binary)
+        if emptyfilepath(ctx, f) in empty_files
+    })
+
 
   return _container.image.implementation(
     ctx,
@@ -114,14 +167,9 @@ def dep_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # then we symlink them into the appropriate place in the app layer.
     # This references the binary package because the file paths are
     # relative to it, and normalized by the tarball package.
-    file_map={
-        filepath(ctx, f): f
-        for f in runfiles(ctx.attr.dep)
-    },
-    empty_files=[
-        emptyfilepath(ctx, empty)
-        for empty in emptyfiles(ctx.attr.dep)
-    ]
+    file_map=file_map,
+    empty_files=empty_files,
+    symlinks=symlinks,
   )
 
 dep_layer = rule(
@@ -133,6 +181,9 @@ dep_layer = rule(
             mandatory = True,
             allow_files = True,
         ),
+        # Set to True to only add external dependencies of "dep" into
+        # this layer.
+        "only_external": attr.bool(),
 
         # Whether to lay out each dependency in a manner that is agnostic
         # of the binary in which it is participating.  This can increase
@@ -158,22 +209,21 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
 
   runfiles = runfiles or _default_runfiles
   emptyfiles = emptyfiles or _default_emptyfiles
+  parent_parts = _get_layers(ctx, ctx.attr.base, ctx.files.base)
+  filepath = layer_file_path if ctx.attr.agnostic_dep_layout else _final_file_path
+  emptyfilepath = _layer_emptyfile_path if ctx.attr.agnostic_dep_layout else _final_emptyfile_path
 
   # Compute the set of runfiles that have been made available
   # in our base image, tracking absolute paths.
   available = {}
-  for dep in ctx.attr.lang_layers:
-    available.update({
-        _final_file_path(ctx, f): layer_file_path(ctx, f)
-        for f in runfiles(dep)
-    })
-    available.update({
-        _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
-        for f in emptyfiles(dep)
-    })
-
-  # Compute the set of remaining runfiles to include into the
-  # application layer.
+  available.update({
+      f: None
+      for f in parent_parts.get("transitive_files", depset())
+  })
+  available.update({
+      f: None
+      for f in parent_parts.get("transient_emptyfiles", depset())
+  })
   file_map = {
     _final_file_path(ctx, f): f
     for f in runfiles(ctx.attr.binary)
@@ -181,32 +231,23 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # this runfile matches that of the dependency.  It is
     # not clear at this time whether that is an invariant
     # broadly in Bazel.
-    if _final_file_path(ctx, f) not in available
+    if filepath(ctx, f) not in available
   }
 
   empty_files = [
     _final_emptyfile_path(ctx, f)
     for f in emptyfiles(ctx.attr.binary)
-    if _final_emptyfile_path(ctx, f) not in available
+    if emptyfilepath(ctx, f) not in available
   ]
 
-  # For each of the runfiles we aren't including directly into
-  # the application layer, link to their binary-agnostic
-  # location from the runfiles path.
-  symlinks = {}
-  # Include symlinks to available files if they were laid out in a
-  # binary-agnostic fashion.
-  if ctx.attr.agnostic_dep_layout:
-    symlinks.update(available)
-
-  symlinks.update({
+  symlinks = {
     # Create a symlink from our entrypoint to where it will actually be put
     # under runfiles.
     _binary_name(ctx): _final_file_path(ctx, ctx.executable.binary),
     # Create a directory symlink from <workspace>/external to the runfiles
     # root, since they may be accessed via either path.
     _external_dir(ctx): _runfiles_dir(ctx),
-  })
+  }
 
   return _container.image.implementation(
     ctx,
@@ -227,9 +268,6 @@ app_layer = rule(
             executable = True,
             cfg = "target",
         ),
-        # The full list of dependencies that have their own layers
-        # factored into our base.
-        "lang_layers": attr.label_list(allow_files = True),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),

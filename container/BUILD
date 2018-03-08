@@ -125,6 +125,7 @@ TEST_TARGETS = [
     "pause_piecemeal",
     "pause_piecemeal_gz",
     "py_image",
+    "py_image_complex",
     "py3_image",
     "cc_image",
     "java_image",
