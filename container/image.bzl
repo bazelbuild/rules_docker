@@ -94,7 +94,7 @@ def magic_path(ctx, f):
     return f.basename
 
 def _build_layer(ctx, files=None, file_map=None, empty_files=None,
-                 directory=None, symlinks=None, debs=None, tars=None):
+                 directory=None, symlinks=None, debs=None, tars=None, mode_map={}):
   """Build the current layer for appending it the base layer.
 
   Args:
@@ -111,6 +111,7 @@ def _build_layer(ctx, files=None, file_map=None, empty_files=None,
       "--mode=" + ctx.attr.mode,
   ]
 
+  args += ["--modes=%s=%s" % (k, v) for (k, v) in mode_map.items()]
   args += ["--file=%s=%s" % (f.path, magic_path(ctx, f)) for f in files]
   args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
   args += ["--empty_file=%s" % f for f in empty_files or []]
@@ -218,7 +219,7 @@ def _repository_name(ctx):
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None, output=None, env=None,
-          debs=None, tars=None):
+          debs=None, tars=None, mode_map={}):
   """Implementation for the container_image rule.
 
   Args:
@@ -252,7 +253,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   unzipped_layer, diff_id = _build_layer(ctx, files=files, file_map=file_map,
                                          empty_files=empty_files,
                                          directory=directory, symlinks=symlinks,
-                                         debs=debs, tars=tars)
+                                         debs=debs, tars=tars, mode_map=mode_map)
 
   # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
   zipped_layer, blob_sum = _zip_layer(ctx, unzipped_layer)
