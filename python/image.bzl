@@ -58,12 +58,14 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py_image_base//image",
 })
 
-def py_image(name, base=None, deps=[], layers=[], **kwargs):
+def py_image(name, base=None, deps=[], layers=[], external_layer=False, **kwargs):
   """Constructs a container image wrapping a py_binary target.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    external_layer: Add separate layer for external deps, which don't change
+           very often.
     **kwargs: See py_binary.
   """
   binary_name = name + ".binary"
@@ -75,16 +77,22 @@ def py_image(name, base=None, deps=[], layers=[], **kwargs):
   # a single target can be used for all three.
   native.py_binary(name=binary_name, deps=deps + layers, **kwargs)
 
+  base = base or DEFAULT_BASE
+  # Add a separate layer for external deps, usually they don't change very often.
+  if external_layer:
+    external_layer_name = "%s.external" % name
+    dep_layer(name=external_layer_name, base=base, dep=binary_name, only_external=True, binary=binary_name)
+    base = external_layer_name
+
   # TODO(mattmoor): Consider making the directory into which the app
   # is placed configurable.
-  base = base or DEFAULT_BASE
   for index, dep in enumerate(layers):
     this_name = "%s.%d" % (name, index)
-    dep_layer(name=this_name, base=base, dep=dep)
+    dep_layer(name=this_name, base=base, dep=dep, binary=binary_name)
     base = this_name
 
   visibility = kwargs.get('visibility', None)
   tags = kwargs.get('tags', None)
   app_layer(name=name, base=base, entrypoint=['/usr/bin/python'],
-            binary=binary_name, lang_layers=layers, visibility=visibility,
+            binary=binary_name, visibility=visibility,
             tags=tags)

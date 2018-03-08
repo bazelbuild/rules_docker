@@ -57,5 +57,5 @@ def d_image(name, base=None, deps=[], layers=[], binary=None, **kwargs):
 
   visibility = kwargs.get('visibility', None)
   tags = kwargs.get('tags', None)
-  app_layer(name=name, base=base, binary=binary, lang_layers=layers,
+  app_layer(name=name, base=base, binary=binary,
             visibility=visibility, tags=tags)
