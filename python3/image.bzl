@@ -43,9 +43,9 @@ def repositories():
       repository = "distroless/python3",
       digest = DIGESTS["latest"],
     )
-  if "py_debug_image_base" not in excludes:
+  if "py3_debug_image_base" not in excludes:
     container_pull(
-      name = "py_debug_image_base",
+      name = "py3_debug_image_base",
       registry = "gcr.io",
       repository = "distroless/python3",
       digest = DIGESTS["debug"],
@@ -67,6 +67,9 @@ def py3_image(name, base=None, deps=[], layers=[], **kwargs):
     **kwargs: See py_binary.
   """
   binary_name = name + ".binary"
+
+  if "main" not in kwargs:
+    kwargs["main"] = name + ".py"
 
   # TODO(mattmoor): Consider using par_binary instead, so that
   # a single target can be used for all three.
