@@ -130,6 +130,7 @@ TEST_TARGETS = [
     "java_image",
     "war_image",
     "flat",
+    "nodejs_image",
 ]
 
 TEST_DATA = [
