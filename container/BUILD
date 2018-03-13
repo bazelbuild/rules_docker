@@ -141,6 +141,7 @@ TEST_TARGETS = [
     ":nodejs_image",
     ":py3_image",
     ":py_image",
+    ":py_image_complex",
     ":rust_image",
     ":scala_image",
     ":war_image",

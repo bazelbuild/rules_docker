@@ -95,13 +95,21 @@ compare_ids_fail_test(
     id = "<my_wrong_image_sha256>",
 )
 """
+
 compare_ids_fail_test = rule(
-    implementation = _impl,
-    test = True,
     attrs = {
-        "images": attr.label_list(mandatory = True, allow_files = True),
-        "id": attr.string(mandatory = False, default = ""),
-        "reg_exps": attr.string_list(mandatory = False, default = []),
+        "images": attr.label_list(
+            mandatory = True,
+            allow_files = True,
+        ),
+        "id": attr.string(
+            mandatory = False,
+            default = "",
+        ),
+        "reg_exps": attr.string_list(
+            mandatory = False,
+            default = [],
+        ),
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,
@@ -128,4 +136,6 @@ compare_ids_fail_test = rule(
             default = "//contrib:BUILD",
         ),
     },
+    test = True,
+    implementation = _impl,
 )

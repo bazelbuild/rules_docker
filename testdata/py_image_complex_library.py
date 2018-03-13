@@ -11,22 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//testdata:__subpackages__"])
 
-filegroup(
-    name = "srcs",
-    srcs = glob(["**"]),
-)
+from testdata import py_image_library_using_six
+from testdata.test import py_image_library_using_addict
 
-filegroup(
-    name = "test-data",
-    srcs = ["test"],
-)
-
-load("@pip_deps//:requirements.bzl", "requirement")
-
-py_library(
-    name = "py_image_library_using_addict",
-    srcs = ["py_image_library_using_addict.py"],
-    deps = [requirement("addict")],
-)
+def fn(what_comes_in):
+  return "\n".join([
+    py_image_library_using_six.fn(what_comes_in + "through py_image_complex_library: "),
+    py_image_library_using_addict.fn(what_comes_in + "through py_image_complex_library: "),
+  ])

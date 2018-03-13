@@ -1,4 +1,4 @@
-# Copyright 2017 The Bazel Authors. All rights reserved.
+# Copyright 2018 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,22 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//testdata:__subpackages__"])
 
-filegroup(
-    name = "srcs",
-    srcs = glob(["**"]),
-)
+import six
 
-filegroup(
-    name = "test-data",
-    srcs = ["test"],
-)
-
-load("@pip_deps//:requirements.bzl", "requirement")
-
-py_library(
-    name = "py_image_library_using_addict",
-    srcs = ["py_image_library_using_addict.py"],
-    deps = [requirement("addict")],
-)
+def fn(what_comes_in):
+  return what_comes_in + "Six version: " + six.__version__
