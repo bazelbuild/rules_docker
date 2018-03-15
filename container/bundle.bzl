@@ -31,8 +31,6 @@ def _container_bundle_impl(ctx):
   # Compute the set of layers from the image_targets.
   image_target_dict = _string_to_label(
       ctx.attr.image_targets, ctx.attr.image_target_strings)
-  image_files_dict = _string_to_label(
-      ctx.files.image_targets, ctx.attr.image_target_strings)
 
   images = {}
   runfiles = []
@@ -42,7 +40,7 @@ def _container_bundle_impl(ctx):
 
     target = ctx.attr.images[unresolved_tag]
 
-    l = _get_layers(ctx, image_target_dict[target], image_files_dict[target])
+    l = _get_layers(ctx, image_target_dict[target])
     images[tag] = l
     runfiles += [l.get('config')]
     runfiles += [l.get('config_digest')]

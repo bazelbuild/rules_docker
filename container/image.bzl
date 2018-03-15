@@ -85,7 +85,7 @@ load(
 def _get_base_config(ctx, base):
   if ctx.files.base:
     # The base is the first layer in container_parts if provided.
-    l = _get_layers(ctx, ctx.attr.base, ctx.files.base, base)
+    l = _get_layers(ctx, ctx.attr.base, base)
     return l.get("config")
 
 def _image_config(ctx, layer_names, entrypoint=None, cmd=None, env=None, base_config=None, layer_name=None):
@@ -207,7 +207,7 @@ def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
   # Get the layers and shas from our base.
   # These are ordered as they'd appear in the v2.2 config,
   # so they grow at the end.
-  parent_parts = _get_layers(ctx, ctx.attr.base, ctx.files.base, base)
+  parent_parts = _get_layers(ctx, ctx.attr.base, base)
   zipped_layers = parent_parts.get("zipped_layer", []) + [layer.zipped_layer for layer in layers]
   shas = parent_parts.get("blobsum", [])  + [layer.blob_sum for layer in layers]
   unzipped_layers = parent_parts.get("unzipped_layer", []) + [layer.unzipped_layer for layer in layers]

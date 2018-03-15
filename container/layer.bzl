@@ -30,9 +30,6 @@ load(
 )
 load(
     "//container:layer_tools.bzl",
-    _assemble_image = "assemble",
-    _get_layers = "get_from_target",
-    _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
 load(
