@@ -134,4 +134,4 @@ def nodejs_image(name, base=None, data=[], layers=[],
             # Node.JS hates symlinks.
             agnostic_dep_layout=False,
             binary=binary_name, lang_layers=layers, visibility=visibility,
-            tags=tags)
+            tags=tags, args=kwargs["args"])
