@@ -88,7 +88,9 @@ def _get_base_config(ctx, base):
     l = _get_layers(ctx, ctx.attr.base, base)
     return l.get("config")
 
-def _image_config(ctx, layer_names, entrypoint=None, cmd=None, env=None, base_config=None, layer_name=None):
+def _image_config(ctx, layer_names, entrypoint=None, cmd=None,
+                  creation_time=None, env=None, base_config=None,
+                  layer_name=None):
   """Create the configuration for a new container image."""
   config = ctx.new_file(ctx.label.name + "." + layer_name + ".config")
 
@@ -114,6 +116,9 @@ def _image_config(ctx, layer_names, entrypoint=None, cmd=None, env=None, base_co
   ] + [
       "--volumes=%s" % x for x in ctx.attr.volumes
   ]
+  if creation_time:
+    args += ["--creation_time=%s" % creation_time]
+
   _labels = _serialize_dict(labels)
   if _labels:
     args += ["--labels=%s" % x for x in _labels.split(',')]
@@ -162,8 +167,9 @@ def _repository_name(ctx):
 
 def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
           empty_dirs=None, directory=None, entrypoint=None, cmd=None,
-          symlinks=None, env=None, layers=None, debs=None, tars=None,
-          output_executable=None, output_tarball=None, output_layer=None):
+          creation_time=None, symlinks=None, env=None, layers=None, debs=None,
+          tars=None, output_executable=None, output_tarball=None,
+          output_layer=None):
   """Implementation for the container_image rule.
 
   Args:
@@ -176,6 +182,7 @@ def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
     directory: str, overrides ctx.attr.directory
     entrypoint: str List, overrides ctx.attr.entrypoint
     cmd: str List, overrides ctx.attr.cmd
+    creation_time: str, overrides ctx.attr.creation_time
     symlinks: str Dict, overrides ctx.attr.symlinks
     env: str Dict, overrides ctx.attr.env
     layers: label List, overrides ctx.attr.layers
@@ -185,8 +192,9 @@ def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
     output_tarball: File, overrides ctx.outputs.out
     output_layer: File, overrides ctx.outputs.layer
   """
-  entrypoint = entrypoint or ctx.attr.entrypoint
-  cmd = cmd or ctx.attr.cmd
+  entrypoint=entrypoint or ctx.attr.entrypoint
+  cmd=cmd or ctx.attr.cmd
+  creation_time=creation_time or ctx.attr.creation_time
   output_executable = output_executable or ctx.outputs.executable
   output_tarball = output_tarball or ctx.outputs.out
   output_layer = output_layer or ctx.outputs.layer
@@ -220,8 +228,8 @@ def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
   for i, layer in enumerate(layers):
     config_file, config_digest = _image_config(
         ctx, [layer_diff_ids[i]],
-        entrypoint=entrypoint, cmd=cmd, env=layer.env,
-        base_config=config_file, layer_name=str(i), )
+        entrypoint=entrypoint, cmd=cmd, creation_time=creation_time,
+        env=layer.env, base_config=config_file, layer_name=str(i), )
 
   # Construct a temporary name based on the build target.
   tag_name = _repository_name(ctx) + ":" + ctx.label.name
@@ -280,6 +288,7 @@ _attrs = dict(_layer.attrs.items() + {
     "user": attr.string(),
     "labels": attr.string_dict(),
     "cmd": attr.string_list(),
+    "creation_time": attr.string(),
     "entrypoint": attr.string_list(),
     "ports": attr.string_list(),  # Skylark doesn't support int_list...
     "volumes": attr.string_list(),
