@@ -627,13 +627,13 @@ py_library(
 py_image(
     name = "py_image",
     srcs = ["py_image.py"],
-    layers = [
-        ":py_image_library",
-    ],
     args = [
         "arg0",
         "arg1",
-    ],    
+    ],
+    layers = [
+        ":py_image_library",
+    ],
 )
 
 py_image(
@@ -650,13 +650,13 @@ load("//python3:image.bzl", "py3_image")
 py3_image(
     name = "py3_image",
     srcs = ["py3_image.py"],
-    layers = [
-        ":py_image_library",
-    ],
     args = [
         "arg0",
         "arg1",
-    ],    
+    ],
+    layers = [
+        ":py_image_library",
+    ],
 )
 
 py3_image(
@@ -679,12 +679,12 @@ cc_library(
 cc_image(
     name = "cc_image",
     srcs = ["cc_image.cc"],
-    # This creates an empty layer, due to linking.
-    layers = [":cc_image_library"],
     args = [
         "arg0",
         "arg1",
-    ],    
+    ],
+    # This creates an empty layer, due to linking.
+    layers = [":cc_image_library"],
 )
 
 cc_binary(
@@ -713,13 +713,13 @@ java_library(
 java_image(
     name = "java_image",
     srcs = ["Binary.java"],
-    jvm_flags = ["-XX:MaxPermSize=128M"],
-    layers = [":java_image_library"],
-    main_class = "examples.images.Binary",
     args = [
         "arg0",
         "arg1",
     ],
+    jvm_flags = ["-XX:MaxPermSize=128M"],
+    layers = [":java_image_library"],
+    main_class = "examples.images.Binary",
 )
 
 java_image(
@@ -762,12 +762,12 @@ scala_library(
 scala_image(
     name = "scala_image",
     srcs = ["Binary.scala"],
-    layers = [":scala_image_library"],
-    main_class = "examples.images.Binary",
     args = [
         "arg0",
         "arg1",
     ],
+    layers = [":scala_image_library"],
+    main_class = "examples.images.Binary",
 )
 
 scala_image(
@@ -789,12 +789,12 @@ groovy_library(
 groovy_image(
     name = "groovy_image",
     srcs = ["Binary.groovy"],
-    layers = [":groovy_image_library"],
-    main_class = "examples.images.Binary",
     args = [
         "arg0",
         "arg1",
     ],
+    layers = [":groovy_image_library"],
+    main_class = "examples.images.Binary",
 )
 
 # This calls from Groovy -> Scala -> Java :)
@@ -810,14 +810,14 @@ load("//go:image.bzl", "go_image")
 go_image(
     name = "go_image",
     srcs = ["main.go"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
     tags = [
         "tag1",
         "tag2",
-    ],
-    args = [
-        "arg0",
-        "arg1",
     ],
 )
 
@@ -847,13 +847,13 @@ load("//nodejs:image.bzl", "nodejs_image")
 
 nodejs_image(
     name = "nodejs_image",
-    data = [":nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
     args = [
         "arg0",
         "arg1",
     ],
+    data = [":nodejs_image.js"],
+    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
+    node_modules = "@npm_deps//:node_modules",
 )
 
 generate_deb(
