@@ -56,10 +56,11 @@ def repositories():
         )
 
     if "containerregistry" not in excludes:
-        native.git_repository(
+        native.http_archive(
             name = "containerregistry",
-            remote = "https://github.com/google/containerregistry.git",
-            tag = CONTAINERREGISTRY_RELEASE,
+            url = ("https://github.com/google/containerregistry/archive/" +
+                   CONTAINERREGISTRY_RELEASE + ".tar.gz"),
+            strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
