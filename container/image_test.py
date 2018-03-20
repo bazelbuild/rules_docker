@@ -454,7 +454,7 @@ class ImageTest(unittest.TestCase):
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
-        '-XX:MaxPermSize=128M', 'examples.images.Binary'])
+        '-XX:MaxPermSize=128M', 'examples.images.Binary', 'arg0', 'arg1'])
 
   def test_war_image(self):
     with TestImage('war_image') as img:
@@ -479,6 +479,104 @@ class ImageTest(unittest.TestCase):
         './jetty/webapps/ROOT/WEB-INF/lib/javax.servlet-api-3.0.1.jar',
       ])
 
+
+  def test_cc_image_args(self):
+    with TestImage('cc_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/app/testdata/cc_image.binary',
+        'arg0',
+        'arg1'])
+
+  def test_d_image_args(self):
+    with TestImage('d_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/app/testdata/d_image_binary',
+        'arg0',
+        'arg1'])
+
+  def test_py_image_args(self):
+    with TestImage('py_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/usr/bin/python',
+        '/app/testdata/py_image.binary',
+        'arg0',
+        'arg1'])
+
+  def test_py3_image_args(self):
+    with TestImage('py3_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/usr/bin/python',
+        '/app/testdata/py3_image.binary',
+        'arg0',
+        'arg1'])
+      
+  def test_java_image_args(self):
+    with TestImage('java_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/usr/bin/java',
+        '-cp',
+        '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar:'
+        +'/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'
+        +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
+        +'/app/io_bazel_rules_docker/testdata/java_image.binary',
+        '-XX:MaxPermSize=128M',
+        'examples.images.Binary',
+        'arg0',
+        'arg1'])
+
+  def test_go_image_args(self):
+    with TestImage('go_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/app/testdata/go_image.binary',
+        'arg0',
+        'arg1'])
+
+  def test_go_image_args(self):
+    with TestImage('rust_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/app/testdata/rust_image_binary',
+        'arg0',
+        'arg1'])
+      
+  def test_scala_image_args(self):
+    with TestImage('scala_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/usr/bin/java',
+        '-cp',
+        '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
+        '/app/io_bazel_rules_docker/../scala/lib/scala-library.jar:'+
+        '/app/io_bazel_rules_docker/../scala/lib/scala-reflect.jar:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        'examples.images.Binary',
+        'arg0',
+        'arg1'])
+
+  def test_groovy_image_args(self):
+    with TestImage('groovy_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/usr/bin/java',
+        '-cp',
+        '/app/io_bazel_rules_docker/testdata/libgroovy_image_library-impl.jar:'+
+        '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
+        '/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.4.4/lib/groovy-2.4.4.jar:'+
+        '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
+        '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
+        '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
+        'examples.images.Binary',
+        'arg0',
+        'arg1'])
+
+  def test_nodejs_image_args(self):
+    with TestImage('nodejs_image') as img:
+      self.assertConfigEqual(img, 'Entrypoint', [
+        'sh',
+        '-c',
+        '/app/testdata/nodejs_image.binary',
+        'arg0',
+        'arg1'])
+      
 
 if __name__ == '__main__':
   unittest.main()

@@ -179,7 +179,6 @@ class TarFile(object):
        mode: force to set the specified mode, defaults to 644
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership.
-       kind: type of the file. tarfile.DIRTYPE for directory.
 
     An empty file will be created as `destfile` in the layer.
     """

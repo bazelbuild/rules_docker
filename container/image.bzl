@@ -82,10 +82,10 @@ load(
     _serialize_dict = "dict_to_associative_list",
 )
 
-def _get_base_config(ctx):
+def _get_base_config(ctx, base):
   if ctx.files.base:
     # The base is the first layer in container_parts if provided.
-    l = _get_layers(ctx, ctx.attr.base, ctx.files.base)
+    l = _get_layers(ctx, ctx.attr.base, base)
     return l.get("config")
 
 def _image_config(ctx, layer_names, entrypoint=None, cmd=None, env=None, base_config=None, layer_name=None):
@@ -160,13 +160,15 @@ def _repository_name(ctx):
   # the v2 registry specification.
   return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
-          directory=None, entrypoint=None, cmd=None, symlinks=None, output=None,
-          env=None, layers=None, debs=None, tars=None):
+def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
+          empty_dirs=None, directory=None, entrypoint=None, cmd=None,
+          symlinks=None, env=None, layers=None, debs=None, tars=None,
+          output_executable=None, output_tarball=None, output_layer=None):
   """Implementation for the container_image rule.
 
   Args:
     ctx: The bazel rule context
+    base: File, overrides ctx.attr.base and ctx.files.base[0]
     files: File list, overrides ctx.files.files
     file_map: Dict[str, File], defaults to {}
     empty_files: str list, overrides ctx.attr.empty_files
@@ -175,15 +177,19 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
     entrypoint: str List, overrides ctx.attr.entrypoint
     cmd: str List, overrides ctx.attr.cmd
     symlinks: str Dict, overrides ctx.attr.symlinks
-    output: File to use as output for script to load docker image
     env: str Dict, overrides ctx.attr.env
     layers: label List, overrides ctx.attr.layers
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
+    output_executable: File to use as output for script to load docker image
+    output_tarball: File, overrides ctx.outputs.out
+    output_layer: File, overrides ctx.outputs.layer
   """
-  entrypoint=entrypoint or ctx.attr.entrypoint
-  cmd=cmd or ctx.attr.cmd
-  output = output or ctx.outputs.executable
+  entrypoint = entrypoint or ctx.attr.entrypoint
+  cmd = cmd or ctx.attr.cmd
+  output_executable = output_executable or ctx.outputs.executable
+  output_tarball = output_tarball or ctx.outputs.out
+  output_layer = output_layer or ctx.outputs.layer
 
   # composite a layer from the container_image rule attrs,
   image_layer = _layer.implementation(ctx=ctx, files=files,
@@ -201,7 +207,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
   # Get the layers and shas from our base.
   # These are ordered as they'd appear in the v2.2 config,
   # so they grow at the end.
-  parent_parts = _get_layers(ctx, ctx.attr.base, ctx.files.base)
+  parent_parts = _get_layers(ctx, ctx.attr.base, base)
   zipped_layers = parent_parts.get("zipped_layer", []) + [layer.zipped_layer for layer in layers]
   shas = parent_parts.get("blobsum", [])  + [layer.blob_sum for layer in layers]
   unzipped_layers = parent_parts.get("unzipped_layer", []) + [layer.unzipped_layer for layer in layers]
@@ -209,7 +215,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
   diff_ids = parent_parts.get("diff_id", []) + layer_diff_ids
 
   # Get the config for the base layer
-  config_file = _get_base_config(ctx)
+  config_file = _get_base_config(ctx, base)
   # Generate the new config layer by layer, using the attributes specified and the diff_id
   for i, layer in enumerate(layers):
     config_file, config_digest = _image_config(
@@ -248,16 +254,16 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
       tag_name: container_parts
   }
 
-  _incr_load(ctx, images, output,
+  _incr_load(ctx, images, output_executable,
              run=not ctx.attr.legacy_run_behavior,
              run_flags=ctx.attr.docker_run_flags)
-  _assemble_image(ctx, images, ctx.outputs.out)
+  _assemble_image(ctx, images, output_tarball)
 
   runfiles = ctx.runfiles(
       files = unzipped_layers + diff_ids + [config_file, config_digest] +
       ([container_parts["legacy"]] if container_parts["legacy"] else []))
   return struct(runfiles = runfiles,
-                files = depset([ctx.outputs.layer]),
+                files = depset([output_layer]),
                 container_parts = container_parts)
 
 _attrs = dict(_layer.attrs.items() + {

@@ -710,6 +710,10 @@ d_image(
 )
 ```
 
+> NOTE: all application image rules support the `args` string_list
+> attribute.  If specified, they will be appended directly after the
+> container ENTRYPOINT binary name.
+
 ### container_bundle
 
 ```python
