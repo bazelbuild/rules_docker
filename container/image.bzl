@@ -219,7 +219,7 @@ def _repository_name(ctx):
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
           entrypoint=None, cmd=None, symlinks=None, output=None, env=None,
-          debs=None, tars=None, mode_map={}):
+          debs=None, tars=None, tag_name=None, mode_map={}):
   """Implementation for the container_image rule.
 
   Args:
@@ -262,8 +262,9 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
   config_file, config_digest = _image_config(
       ctx, diff_id, entrypoint=entrypoint, cmd=cmd, env=env)
 
-  # Construct a temporary name based on the build target.
-  tag_name = _repository_name(ctx) + ":" + ctx.label.name
+  # If a tag name is not specified, construct a temporary name based on the build target.
+  if not tag_name:
+    tag_name = _repository_name(ctx) + ":" + ctx.label.name
 
   # Get the layers and shas from our base.
   # These are ordered as they'd appear in the v2.2 config,
