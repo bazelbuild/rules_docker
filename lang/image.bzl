@@ -208,7 +208,8 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     _external_dir(ctx): _runfiles_dir(ctx),
   })
   for data in ctx.attr.data:
-    loc = ctx.expand_location('$(location ' + str(data.label) + ')', ctx.attr.data)
+    print(data.label.name)
+    loc = ctx.expand_location('$(location ' + data.label.name + ')', ctx.attr.data)
     symlinks[_runfiles_dir(ctx) + "/" + loc.rpartition("/")[-1]] = '/'.join([_runfiles_dir(ctx), '__main__', loc])
   args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
 
