@@ -207,6 +207,10 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # root, since they may be accessed via either path.
     _external_dir(ctx): _runfiles_dir(ctx),
   })
+  for data in ctx.attr.data:
+    symlinks['/'.join(_runfiles_dir(ctx), '__main__', ctx.expand_location(data, ctx.attr.data))] = _runfiles_dir(ctx)
+  # for data in ctx.attr.data:
+  #   symlinks["/app/" + data] = _final_file_path(ctx, data)
   args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
 
   return _container.image.implementation(
