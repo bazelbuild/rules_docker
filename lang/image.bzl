@@ -217,7 +217,8 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # image is `docker run ...`.
     # Per: https://docs.docker.com/engine/reference/builder/#entrypoint
     # we should use the "exec" (list) form of entrypoint.
-    entrypoint=ctx.attr.entrypoint + [_binary_name(ctx)] + ctx.attr.args)
+    args = [ctx.expand_location(arg) for arg in args]
+    entrypoint=ctx.attr.entrypoint + [_binary_name(ctx)] + args)
 
 app_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
