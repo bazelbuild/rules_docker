@@ -629,8 +629,10 @@ py_image(
     srcs = ["py_image.py"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     layers = [
         ":py_image_library",
     ],
@@ -652,8 +654,10 @@ py3_image(
     srcs = ["py3_image.py"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     layers = [
         ":py_image_library",
     ],
@@ -681,8 +685,10 @@ cc_image(
     srcs = ["cc_image.cc"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     # This creates an empty layer, due to linking.
     layers = [":cc_image_library"],
 )
@@ -715,8 +721,10 @@ java_image(
     srcs = ["Binary.java"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     jvm_flags = ["-XX:MaxPermSize=128M"],
     layers = [":java_image_library"],
     main_class = "examples.images.Binary",
@@ -764,8 +772,10 @@ scala_image(
     srcs = ["Binary.scala"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -791,8 +801,10 @@ groovy_image(
     srcs = ["Binary.groovy"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -812,8 +824,10 @@ go_image(
     srcs = ["main.go"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
     tags = [
         "tag1",
@@ -828,8 +842,10 @@ rust_image(
     srcs = ["main.rs"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
 )
 
 load("//d:image.bzl", "d_image")
@@ -839,7 +855,7 @@ d_image(
     srcs = ["main.d"],
     args = [
         "arg0",
-        "arg1",
+        "arg1"
     ],
 )
 

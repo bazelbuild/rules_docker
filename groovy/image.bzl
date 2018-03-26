@@ -70,7 +70,7 @@ def groovy_image(name, base=None, main_class=None,
   jar_app_layer(name=name, base=base, binary=binary_name,
                 main_class=main_class, jvm_flags=jvm_flags,
                 deps=deps, jar_layers=layers, visibility=visibility,
-                tags=tags, args=kwargs.get("args"))
+                tags=tags, args=kwargs.get("args"), data=kwargs.get("data"))
 
 def repositories():
   _repositories()

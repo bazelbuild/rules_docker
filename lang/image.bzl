@@ -207,7 +207,6 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # root, since they may be accessed via either path.
     _external_dir(ctx): _runfiles_dir(ctx),
   })
-
   args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
 
   return _container.image.implementation(
@@ -247,7 +246,7 @@ app_layer = rule(
         "workdir": attr.string(default = "/app"),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
-        "data": attr.string_list(default = []),
+        "data": attr.label_list(cfg="data", allow_files=True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,

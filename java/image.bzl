@@ -212,6 +212,7 @@ jar_app_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
+        "data": attr.label_list(cfg="data", allow_files=True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
@@ -248,7 +249,7 @@ def java_image(name, base=None, main_class=None,
   jar_app_layer(name=name, base=base, binary=binary_name,
                  main_class=main_class, jvm_flags=jvm_flags,
                  deps=deps, runtime_deps=runtime_deps, jar_layers=layers,
-                 visibility=visibility, args=kwargs.get("args"))
+                 visibility=visibility, args=kwargs.get("args"), data=kwargs.get("data"))
 
 def _war_dep_layer_impl(ctx):
   """Appends a layer for a single dependency's runfiles."""
