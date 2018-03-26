@@ -209,6 +209,26 @@ class ImageTest(unittest.TestCase):
       # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis, or
       # env['SOURCE_DATE_EPOCH'] * 1000.
       # See https://github.com/bazelbuild/bazel/issues/2240
+      # Assume that any value for 'created' within a reasonable bound is fine.
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
+
+  def test_with_default_stamped_creation_time(self):
+    # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
+    # `creation_time` isn't explicitly defined.
+    with TestImage('with_default_stamped_creation_time') as img:
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      created_str = cfg.get('created', '')
+      self.assertNotEqual('', created_str)
+
+      now = datetime.datetime.utcnow()
+
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%SZ')
+
+      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis, or
+      # env['SOURCE_DATE_EPOCH'] * 1000.
+      # See https://github.com/bazelbuild/bazel/issues/2240
+      # Assume that any value for 'created' within a reasonable bound is fine.
       self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
 
   def test_with_env(self):

@@ -264,6 +264,12 @@ container_image(
 )
 
 container_image(
+    name = "with_default_stamped_creation_time",
+    base = ":base_with_volume",
+    stamp = True,
+)
+
+container_image(
     name = "with_env",
     base = ":base_with_volume",
     env = {

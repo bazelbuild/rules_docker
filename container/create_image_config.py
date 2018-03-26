@@ -43,7 +43,7 @@ parser.add_argument('--command', action='append', default=[],
 
 parser.add_argument('--creation_time', action='store', required=False,
                     help='The creation timestamp. Acceptable formats: '
-                    'Milliseconds since Unix Epoch, RFC 3339 date/time')
+                    'Integer milliseconds since Unix Epoch, RFC 3339 date/time')
 
 parser.add_argument('--user', action='store',
                     help='The username to run commands under.')

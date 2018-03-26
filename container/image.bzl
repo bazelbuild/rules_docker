@@ -118,6 +118,10 @@ def _image_config(ctx, layer_names, entrypoint=None, cmd=None,
   ]
   if creation_time:
     args += ["--creation_time=%s" % creation_time]
+  elif ctx.attr.stamp:
+    # If stamping is enabled, and the creation_time is not manually defined,
+    # default to '{BUILD_TIMESTAMP}'.
+    args += ["--creation_time={BUILD_TIMESTAMP}"]
 
   _labels = _serialize_dict(labels)
   if _labels:
