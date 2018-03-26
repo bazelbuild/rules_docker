@@ -208,7 +208,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     _external_dir(ctx): _runfiles_dir(ctx),
   })
 
-  args = [ctx.expand_location(arg) for arg in args]
+  args = [ctx.expand_location(arg) for arg in ctx.attr.args]
 
   return _container.image.implementation(
     ctx,
