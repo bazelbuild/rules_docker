@@ -209,8 +209,13 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
   })
   for data in ctx.attr.data:
     print(data.label.name)
-    loc = ctx.expand_location('$(location ' + data.label.name + ')', ctx.attr.data)
-    symlinks[_runfiles_dir(ctx) + "/" + loc.rpartition("/")[-1]] = '/'.join([_runfiles_dir(ctx), '__main__', loc])
+    loc = ctx.expand_location('$(location :' + data.label.name + ')', ctx.attr.data)
+    data_path = "/".join([
+      ctx.attr.directory,
+      ctx.label.package,
+      data.label.name
+  ])
+    symlinks[data_path] = '/'.join([_runfiles_dir(ctx), '__main__', loc])
   args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
 
   print(symlinks)
