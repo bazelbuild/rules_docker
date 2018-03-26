@@ -130,8 +130,9 @@ def nodejs_image(name, base=None, data=[], layers=[],
 
   visibility = kwargs.get('visibility', None)
   tags = kwargs.get('tags', None)
+  print(data)
   app_layer(name=name, base=base, entrypoint=['sh', '-c'],
             # Node.JS hates symlinks.
             agnostic_dep_layout=False,
             binary=binary_name, lang_layers=layers, visibility=visibility,
-            tags=tags, args=kwargs.get("args"))
+            tags=tags, args=kwargs.get("args"), data=data)
