@@ -1358,8 +1358,8 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       <td>
         <code>String, optional, default to {BUILD_TIMESTAMP} when stamp = True, otherwise 0</code>
         <p>The image's creation timestamp.</p>
-        <p>Acceptable formats: Integer milliseconds since Unix Epoch,
-            RFC 3339 date/time.</p>
+        <p>Acceptable formats: Integer or floating point seconds since Unix
+           Epoch, RFC 3339 date/time.</p>
         <p>This field supports stamp variables.</p>
       </td>
     </tr>

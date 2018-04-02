@@ -95,6 +95,7 @@ TEST_TARGETS = [
     # TODO(mattmoor): Re-enable once archive is visible
     # "generated_tarball",
     "with_unix_epoch_creation_time",
+    "with_millisecond_unix_epoch_creation_time",
     "with_rfc_3339_creation_time",
     "with_stamped_creation_time",
     "with_default_stamped_creation_time",

@@ -183,17 +183,24 @@ class ImageTest(unittest.TestCase):
 
   def test_with_unix_epoch_creation_time(self):
     with TestImage('with_unix_epoch_creation_time') as img:
-      self.assertDigest(img, 'ee5c081744fb66c0d3ba58af3eac1a6825a633222c6de8c779194a2f9ea7df21')
+      self.assertDigest(img, '85113de3854559f724a23eed6afea5ceecd5fd4bf241cedaded8af0474d4f882')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
-      self.assertEqual('2009-02-13T23:31:30Z', cfg.get('created', ''))
+      self.assertEqual('2009-02-13T23:31:30.120000Z', cfg.get('created', ''))
+
+  def test_with_millisecond_unix_epoch_creation_time(self):
+    with TestImage('with_millisecond_unix_epoch_creation_time') as img:
+      self.assertDigest(img, 'e9412cb69da02e05fd5b7f8cc1a5d60139c091362afdc2488f9c8f7c508e5d3b')
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      self.assertEqual('2009-02-13T23:31:30.123450Z', cfg.get('created', ''))
 
   def test_with_rfc_3339_creation_time(self):
     with TestImage('with_rfc_3339_creation_time') as img:
-      self.assertDigest(img, '6d737bf23ad8cdcd408878aa831ce6f08e5903537333ae40cffaa02c60de43e7')
+      self.assertDigest(img, '9aeef8cba32f3af6e95a08e60d76cc5e2a46de4847da5366bffeb1b3d7066d17')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
-      self.assertEqual('1989-05-03T12:58:00Z', cfg.get('created', ''))
+      self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
 
   def test_with_stamped_creation_time(self):
     with TestImage('with_stamped_creation_time') as img:
@@ -204,11 +211,13 @@ class ImageTest(unittest.TestCase):
 
       now = datetime.datetime.utcnow()
 
-      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%SZ')
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis, or
-      # env['SOURCE_DATE_EPOCH'] * 1000.
+      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
+      # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
+      # a bug where CurrentTimeMillis was not divided by 1000.
       # See https://github.com/bazelbuild/bazel/issues/2240
+      # https://bazel-review.googlesource.com/c/bazel/+/48211
       # Assume that any value for 'created' within a reasonable bound is fine.
       self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
 
@@ -223,11 +232,13 @@ class ImageTest(unittest.TestCase):
 
       now = datetime.datetime.utcnow()
 
-      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%SZ')
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis, or
-      # env['SOURCE_DATE_EPOCH'] * 1000.
+      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
+      # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
+      # a bug where CurrentTimeMillis was not divided by 1000.
       # See https://github.com/bazelbuild/bazel/issues/2240
+      # https://bazel-review.googlesource.com/c/bazel/+/48211
       # Assume that any value for 'created' within a reasonable bound is fine.
       self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
 

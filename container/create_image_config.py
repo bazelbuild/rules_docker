@@ -13,6 +13,8 @@
 # limitations under the License.
 """This package manipulates v2.2 image configuration metadata."""
 
+from __future__ import division
+
 import argparse
 import datetime
 import json
@@ -43,7 +45,8 @@ parser.add_argument('--command', action='append', default=[],
 
 parser.add_argument('--creation_time', action='store', required=False,
                     help='The creation timestamp. Acceptable formats: '
-                    'Integer milliseconds since Unix Epoch, RFC 3339 date/time')
+                    'Integer or floating point seconds since Unix Epoch, RFC '
+                    '3339 date/time')
 
 parser.add_argument('--user', action='store',
                     help='The username to run commands under.')
@@ -130,17 +133,20 @@ def main():
   if args.creation_time:
     creation_time = Stamp(args.creation_time)
     try:
-      # If creation_time is parsable as an int type, assume unix epoch timestamp.
-      if six.PY3:
-        parsed_unix_timestamp = int(creation_time) // 1000
-      else:
-        parsed_unix_timestamp = int(long(creation_time) / 1000)
+      # If creation_time is parsable as a floating point type, assume unix epoch
+      # timestamp.
+      parsed_unix_timestamp = float(creation_time)
+      if parsed_unix_timestamp > 1.0e+11:
+          # Bazel < 0.12 was bugged and used milliseconds since unix epoch as
+          # the default. Values > 1e11 are assumed to be unix epoch
+          # milliseconds.
+          parsed_unix_timestamp = parsed_unix_timestamp / 1000.0
 
       # Construct a RFC 3339 date/time from the Unix epoch.
       creation_time = (
           datetime.datetime.utcfromtimestamp(
               parsed_unix_timestamp
-          ).strftime("%Y-%m-%dT%H:%M:%SZ")
+          ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
       )
     except ValueError:
       # Otherwise, assume RFC 3339 date/time format.

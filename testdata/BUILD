@@ -247,13 +247,21 @@ container_image(
 container_image(
     name = "with_unix_epoch_creation_time",
     base = ":base_with_volume",
-    creation_time = "1234567890000",
+    creation_time = "1234567890.12",
+)
+
+# This is to support bazel < 0.12 BUILD_TIMESTAMPs, which were in milliseconds
+# by default.
+container_image(
+    name = "with_millisecond_unix_epoch_creation_time",
+    base = ":base_with_volume",
+    creation_time = "1234567890123.45",
 )
 
 container_image(
     name = "with_rfc_3339_creation_time",
     base = ":base_with_volume",
-    creation_time = "1989-05-03T12:58:00Z",
+    creation_time = "1989-05-03T12:58:12.345Z",
 )
 
 container_image(
