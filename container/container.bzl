@@ -33,6 +33,32 @@ CONTAINERREGISTRY_RELEASE = "v0.0.26"
 # Updated around 1/22/2018.
 STRUCTURE_TEST_COMMIT = "b97925142b1a09309537e648ade11b4af47ff7ad"
 
+_local_tool_build_template = """
+sh_binary(
+    name = "{name}",
+    srcs = ["bin/{name}"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+def _local_tool(repository_ctx):
+    rctx = repository_ctx
+    realpath = rctx.which(rctx.name)
+    rctx.symlink(realpath, "bin/%s" % rctx.name)
+    rctx.file(
+        "WORKSPACE",
+        'workspace(name = "{}")\n'.format(rctx.name),
+    )
+    rctx.file(
+        "BUILD",
+        _local_tool_build_template.format(name = rctx.name),
+    )
+
+local_tool = repository_rule(
+    local = True,
+    implementation = _local_tool,
+)
+
 def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
@@ -166,4 +192,9 @@ py_library(
             name = "bazel_skylib",
             remote = "https://github.com/bazelbuild/bazel-skylib.git",
             tag = "0.2.0",
+        )
+
+    if "gzip" not in excludes:
+        local_tool(
+            name = "gzip",
         )

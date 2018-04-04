@@ -27,6 +27,7 @@ load(
     "//skylib:zip.bzl",
     _gunzip = "gunzip",
     _gzip = "gzip",
+    _zip_tools = "tools",
 )
 load(
     "//container:layer_tools.bzl",
@@ -131,7 +132,7 @@ container_import = rule(
         "config": attr.label(allow_files = [".json"]),
         "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype),
         "repository": attr.string(default = "bazel"),
-    }.items() + _hash_tools.items() + _layer_tools.items()),
+    }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items()),
     executable = True,
     outputs = {
         "out": "%{name}.tar",
