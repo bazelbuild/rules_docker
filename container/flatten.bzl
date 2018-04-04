@@ -22,7 +22,7 @@ load(
 def _impl(ctx):
   """Core implementation of container_flatten."""
 
-  image = _get_layers(ctx, ctx.attr.image, ctx.files.image)
+  image = _get_layers(ctx, ctx.attr.image)
 
   # Leverage our efficient intermediate representation to push.
   legacy_base_arg = []

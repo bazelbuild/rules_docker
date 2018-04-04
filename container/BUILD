@@ -126,10 +126,16 @@ TEST_TARGETS = [
     "cc_based_warning",
     "pause_piecemeal",
     "pause_piecemeal_gz",
-    "py_image",
-    "py3_image",
     "cc_image",
+    "d_image",
+    "go_image",
+    "groovy_image",
     "java_image",
+    "nodejs_image",
+    "py3_image",
+    "py_image",
+    "rust_image",
+    "scala_image",
     "war_image",
     "flat",
 ]
@@ -166,6 +172,7 @@ skylark_library(
         ":flatten",
         ":image",
         ":import",
+        ":layer",
         ":push",
     ],
 )
@@ -196,6 +203,18 @@ skylark_library(
 skylark_library(
     name = "import",
     srcs = ["import.bzl"],
+    deps = [
+        ":layer_tools",
+        "//skylib:filetype",
+        "//skylib:path",
+        "//skylib:zip",
+        "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    ],
+)
+
+skylark_library(
+    name = "layer",
+    srcs = ["layer.bzl"],
     deps = [
         ":layer_tools",
         "//skylib:filetype",

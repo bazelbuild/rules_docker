@@ -36,13 +36,15 @@ def _extract_layers(ctx, artifact):
       "legacy": artifact,
   }
 
-def get_from_target(ctx, attr_target, file_target):
-  if hasattr(attr_target, "container_parts"):
+def get_from_target(ctx, attr_target, file_target=None):
+  if file_target:
+    return _extract_layers(ctx, file_target)
+  elif hasattr(attr_target, "container_parts"):
     return attr_target.container_parts
   else:
-    if not file_target:
+    if not hasattr(attr_target, "files"):
       return {}
-    target = file_target[0]
+    target = attr_target.files.to_list()[0]
     return _extract_layers(ctx, target)
 
 def assemble(ctx, images, output, stamp=False):
@@ -61,7 +63,7 @@ def assemble(ctx, images, output, stamp=False):
 
     for i in range(0, len(image["diff_id"])):
       args += [
-          "--layer=" + 
+          "--layer=" +
           "@" + image["diff_id"][i].path +
           "=@" + image["blobsum"][i].path +
           # No @, not resolved through utils, always filename.

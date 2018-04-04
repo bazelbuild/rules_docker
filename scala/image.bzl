@@ -57,7 +57,7 @@ def scala_image(name, base=None, main_class=None,
   jar_app_layer(name=name, base=base, binary=binary_name,
                  main_class=main_class, jvm_flags=jvm_flags,
                  deps=deps, runtime_deps=runtime_deps, jar_layers=layers,
-                 visibility=visibility, tags=tags)
+                 visibility=visibility, tags=tags, args=kwargs.get("args"))
 
 def repositories():
   _repositories()

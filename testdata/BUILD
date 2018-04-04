@@ -649,6 +649,18 @@ py_library(
 py_image(
     name = "py_image",
     srcs = ["py_image.py"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    layers = [
+        ":py_image_library",
+    ],
+)
+
+py_image(
+    name = "py_image_with_main",
+    srcs = ["py_image.py"],
     layers = [
         ":py_image_library",
     ],
@@ -659,6 +671,18 @@ load("//python3:image.bzl", "py3_image")
 
 py3_image(
     name = "py3_image",
+    srcs = ["py3_image.py"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    layers = [
+        ":py_image_library",
+    ],
+)
+
+py3_image(
+    name = "py3_image_with_main",
     srcs = ["py3_image.py"],
     layers = [
         ":py_image_library",
@@ -677,6 +701,10 @@ cc_library(
 cc_image(
     name = "cc_image",
     srcs = ["cc_image.cc"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
     # This creates an empty layer, due to linking.
     layers = [":cc_image_library"],
 )
@@ -707,6 +735,10 @@ java_library(
 java_image(
     name = "java_image",
     srcs = ["Binary.java"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
     jvm_flags = ["-XX:MaxPermSize=128M"],
     layers = [":java_image_library"],
     main_class = "examples.images.Binary",
@@ -752,6 +784,10 @@ scala_library(
 scala_image(
     name = "scala_image",
     srcs = ["Binary.scala"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -775,6 +811,10 @@ groovy_library(
 groovy_image(
     name = "groovy_image",
     srcs = ["Binary.groovy"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -792,6 +832,10 @@ load("//go:image.bzl", "go_image")
 go_image(
     name = "go_image",
     srcs = ["main.go"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
     tags = [
         "tag1",
@@ -804,6 +848,10 @@ load("//rust:image.bzl", "rust_image")
 rust_image(
     name = "rust_image",
     srcs = ["main.rs"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
 )
 
 load("//d:image.bzl", "d_image")
@@ -811,12 +859,20 @@ load("//d:image.bzl", "d_image")
 d_image(
     name = "d_image",
     srcs = ["main.d"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
 )
 
 load("//nodejs:image.bzl", "nodejs_image")
 
 nodejs_image(
     name = "nodejs_image",
+    args = [
+        "arg0",
+        "arg1",
+    ],
     data = [":nodejs_image.js"],
     entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
     node_modules = "@npm_deps//:node_modules",

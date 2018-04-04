@@ -30,9 +30,6 @@ load(
 )
 load(
     "//container:layer_tools.bzl",
-    _assemble_image = "assemble",
-    _get_layers = "get_from_target",
-    _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
 load(
@@ -107,8 +104,7 @@ LayerInfo = provider(fields = [
 ])
 
 def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
-          directory=None, symlinks=None, output=None, debs=None, tars=None,
-          env=None):
+          directory=None, symlinks=None, debs=None, tars=None, env=None):
   """Implementation for the container_layer rule.
 
   Args:
