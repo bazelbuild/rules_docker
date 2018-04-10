@@ -213,7 +213,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     data_path = "/".join([
       ctx.attr.directory,
       ctx.label.package,
-      data.label.name
+      loc
     ])
     symlinks[data_path] = '/'.join([_runfiles_dir(ctx), '__main__', loc])
 
