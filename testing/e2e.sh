@@ -233,6 +233,12 @@ function test_cc_binary_as_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_binary_as_image)" "Hello World"
 }
 
+function test_cc_image_wrapper() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
+}
+
 function test_go_image() {
   cd "${ROOT}"
   clear_docker
@@ -375,6 +381,7 @@ test_cc_image -c opt
 test_cc_image -c dbg
 test_cc_binary_as_image -c opt
 test_cc_binary_as_image -c dbg
+test_cc_image_wrapper
 test_go_image -c opt
 test_go_image -c dbg
 test_go_image_busybox
