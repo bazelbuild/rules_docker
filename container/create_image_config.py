@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package manipulates v2.2 image configuration metadata."""
 
+from __future__ import division
+
 import argparse
+import datetime
 import json
 import sys
 
@@ -39,6 +42,11 @@ parser.add_argument('--entrypoint', action='append', default=[],
 
 parser.add_argument('--command', action='append', default=[],
                     help='Override the "Cmd" of the previous layer.')
+
+parser.add_argument('--creation_time', action='store', required=False,
+                    help='The creation timestamp. Acceptable formats: '
+                    'Integer or floating point seconds since Unix Epoch, RFC '
+                    '3339 date/time')
 
 parser.add_argument('--user', action='store',
                     help='The username to run commands under.')
@@ -121,10 +129,37 @@ def main():
     elif '{' in value:
       labels[label] = Stamp(value)
 
+  creation_time = None
+  if args.creation_time:
+    creation_time = Stamp(args.creation_time)
+    try:
+      # If creation_time is parsable as a floating point type, assume unix epoch
+      # timestamp.
+      parsed_unix_timestamp = float(creation_time)
+      if parsed_unix_timestamp > 1.0e+11:
+          # Bazel < 0.12 was bugged and used milliseconds since unix epoch as
+          # the default. Values > 1e11 are assumed to be unix epoch
+          # milliseconds.
+          parsed_unix_timestamp = parsed_unix_timestamp / 1000.0
+
+      # Construct a RFC 3339 date/time from the Unix epoch.
+      creation_time = (
+          datetime.datetime.utcfromtimestamp(
+              parsed_unix_timestamp
+          ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+      )
+    except ValueError:
+      # Otherwise, assume RFC 3339 date/time format.
+      pass
+
   output = v2_2_metadata.Override(data, v2_2_metadata.Overrides(
-      author='Bazel', created_by='bazel build ...',
-      layers=layers, entrypoint=list(map(Stamp, fix_dashdash(args.entrypoint))),
-      cmd=list(map(Stamp, fix_dashdash(args.command))), user=Stamp(args.user),
+      author='Bazel',
+      created_by='bazel build ...',
+      layers=layers,
+      entrypoint=list(map(Stamp, fix_dashdash(args.entrypoint))),
+      cmd=list(map(Stamp, fix_dashdash(args.command))),
+      creation_time=creation_time,
+      user=Stamp(args.user),
       labels=labels, env={
         k: Stamp(v)
         for (k, v) in six.iteritems(KeyValueToDict(args.env))
