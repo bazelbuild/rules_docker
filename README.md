@@ -1434,7 +1434,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       <td>
         <code>Label list, optional</code>
         <p>List of `container_layer` targets. </p>
-        <p>The data from each `container_layer` will be part of container image, and the environment variable will be available in the image as well.</p>
+        <p>The data from each `container_layer` or `container_image` without base will be part of produced container image, and the environment variable will be available in the image as well.</p>
       </td>
     </tr>
     <tr>

@@ -395,6 +395,28 @@ container_image(
     files = ["foo"],
 )
 
+container_image(
+    name = "with_image_layer",
+    base = ":tar_base",
+    env = {
+        "PATH": "$PATH:/tmp/b:/tmp/c",
+        "x": "y",
+    },
+    layers = [":image_layer.top_layer"],
+    tars = ["two.tar"],
+)
+
+container_image(
+    name = "image_layer",
+    base = ":tar_base",
+    directory = "/three",
+    env = {
+        "PATH": "$PATH:/tmp/a",
+        "a": "b",
+    },
+    tars = ["three.tar"],
+)
+
 # We should get a warning when we build/run this.
 docker_push(
     name = "push_inadvertent_legacy_base",

@@ -102,6 +102,8 @@ TEST_TARGETS = [
     "with_env",
     "layers_with_env",
     "with_double_env",
+    "with_image_layer",
+    "image_layer",
     "with_label",
     "with_double_label",
     "with_stamp_label",

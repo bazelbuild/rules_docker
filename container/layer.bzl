@@ -61,7 +61,7 @@ def build_layer(ctx, files=None, file_map=None, empty_files=None,
                 tars=None):
   """Build the current layer for appending it to the base layer"""
   layer = ctx.outputs.layer
-  build_layer_exec = ctx.executable.build_layer
+  build_layer_exec = ctx.executable._build_layer
   args = [
       "--output=" + layer.path,
       "--directory=" + directory,
@@ -125,8 +125,10 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
   empty_dirs = empty_dirs or ctx.attr.empty_dirs
   directory = directory or ctx.attr.directory
   symlinks = symlinks or ctx.attr.symlinks
+  env = env or ctx.attr.env
   debs = debs or ctx.files.debs
   tars = tars or ctx.files.tars
+
 
   # Generate the unzipped filesystem layer, and its sha256 (aka diff_id)
   unzipped_layer, diff_id = build_layer(ctx, files=files, file_map=file_map,
@@ -147,7 +149,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, empty_dirs=None,
                     blob_sum=blob_sum,
                     unzipped_layer=unzipped_layer,
                     diff_id=diff_id,
-                    env=env or ctx.attr.env)]
+                    env=env)]
 
 _layer_attrs = dict({
     "data_path": attr.string(),
@@ -161,7 +163,7 @@ _layer_attrs = dict({
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "empty_dirs": attr.string_list(),
-    "build_layer": attr.label(
+    "_build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",
         executable = True,

@@ -68,6 +68,7 @@ load(
 load(
     "//container:layer.bzl",
     "LayerInfo",
+    "container_layer_",
     _layer = "layer",
 )
 load(
@@ -274,6 +275,7 @@ def _impl(ctx, base=None, files=None, file_map=None, empty_files=None,
   runfiles = ctx.runfiles(
       files = unzipped_layers + diff_ids + [config_file, config_digest] +
       ([container_parts["legacy"]] if container_parts["legacy"] else []))
+
   return struct(runfiles = runfiles,
                 files = depset([output_layer]),
                 container_parts = container_parts)
@@ -460,6 +462,10 @@ def container_image(**kwargs):
   loaded (an internal detail).  The expectation is that the images produced
   by these rules will be uploaded using the 'docker_push' rule below.
 
+  Also, this rule generates a `container_layer` target which can be reference
+  in the `layers` attr as `name.top_layer`. It is the layer generated from
+  `container_image` attrs only.
+
   Args:
     **kwargs: See above.
   """
@@ -475,3 +481,10 @@ def container_image(**kwargs):
   if "entrypoint" in kwargs:
     kwargs["entrypoint"] = _validate_command("entrypoint", kwargs["entrypoint"])
   container_image_(**kwargs)
+  # Also create a "name.top_layer" container_layer target
+  top_layer_attrs = {}
+  for key in _layer.attrs.keys():
+    if key in kwargs:
+      top_layer_attrs[key] = kwargs[key]
+  top_layer_attrs["name"] = kwargs["name"] + ".top_layer"
+  container_layer_(**top_layer_attrs)
