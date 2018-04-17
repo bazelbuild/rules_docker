@@ -33,7 +33,6 @@ function async() {
 function sync() {
     # Launch the command synchronously and track its process id.
     PYTHON_RUNFILES=${RUNFILES} "$@"
-    PIDS+=($!)
 }
 
 %{push_statements}
