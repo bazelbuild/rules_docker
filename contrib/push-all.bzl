@@ -81,7 +81,7 @@ def _impl(ctx):
     template = ctx.file._all_tpl,
     substitutions = {
       "%{push_statements}": "\n".join([
-        'async "%s"' % _get_runfile_path(ctx, command)
+        'sync "%s"' % _get_runfile_path(ctx, command)
         for command in scripts
       ]),
     },

@@ -30,6 +30,11 @@ function async() {
     PIDS+=($!)
 }
 
+function sync() {
+    # Launch the command synchronously and track its process id.
+    PYTHON_RUNFILES=${RUNFILES} "$@"
+}
+
 %{push_statements}
 
 # Wait for all of the subprocesses, failing the script if any of them failed.
