@@ -178,6 +178,7 @@ container_push(
   registry = "gcr.io",
   repository = "my-project/my-image",
   tag = "{BUILD_USER}",
+  creation_time = "{BUILD_TIMESTAMP}",
 
   # Trigger stamping.
   stamp = True,
@@ -1148,7 +1149,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
 ## container_image
 
 ```python
-container_image(name, base, data_path, directory, files, legacy_repository_naming, mode, tars, debs, symlinks, entrypoint, cmd, env, labels, ports, volumes, workdir, layers, repository)
+container_image(name, base, data_path, directory, files, legacy_repository_naming, mode, tars, debs, symlinks, entrypoint, cmd, creation_time, env, labels, ports, volumes, workdir, layers, repository)
 ```
 
 <table class="table table-condensed table-bordered table-implicit">
@@ -1350,6 +1351,16 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
                of commands to execute in the image.</a></p>
 	<p>This field supports stamp variables.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>creation_time</code></td>
+      <td>
+        <code>String, optional, default to {BUILD_TIMESTAMP} when stamp = True, otherwise 0</code>
+        <p>The image's creation timestamp.</p>
+        <p>Acceptable formats: Integer or floating point seconds since Unix
+           Epoch, RFC 3339 date/time.</p>
+        <p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>

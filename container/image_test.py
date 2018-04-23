@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import cStringIO
+import datetime
 import json
 import os
 import tarfile
@@ -179,6 +180,67 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Volumes', {
         '/asdf': {}, '/blah': {}, '/logs': {}
       })
+
+  def test_with_unix_epoch_creation_time(self):
+    with TestImage('with_unix_epoch_creation_time') as img:
+      self.assertDigest(img, '85113de3854559f724a23eed6afea5ceecd5fd4bf241cedaded8af0474d4f882')
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      self.assertEqual('2009-02-13T23:31:30.120000Z', cfg.get('created', ''))
+
+  def test_with_millisecond_unix_epoch_creation_time(self):
+    with TestImage('with_millisecond_unix_epoch_creation_time') as img:
+      self.assertDigest(img, 'e9412cb69da02e05fd5b7f8cc1a5d60139c091362afdc2488f9c8f7c508e5d3b')
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      self.assertEqual('2009-02-13T23:31:30.123450Z', cfg.get('created', ''))
+
+  def test_with_rfc_3339_creation_time(self):
+    with TestImage('with_rfc_3339_creation_time') as img:
+      self.assertDigest(img, '9aeef8cba32f3af6e95a08e60d76cc5e2a46de4847da5366bffeb1b3d7066d17')
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
+
+  def test_with_stamped_creation_time(self):
+    with TestImage('with_stamped_creation_time') as img:
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      created_str = cfg.get('created', '')
+      self.assertNotEqual('', created_str)
+
+      now = datetime.datetime.utcnow()
+
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
+      # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
+      # a bug where CurrentTimeMillis was not divided by 1000.
+      # See https://github.com/bazelbuild/bazel/issues/2240
+      # https://bazel-review.googlesource.com/c/bazel/+/48211
+      # Assume that any value for 'created' within a reasonable bound is fine.
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
+
+  def test_with_default_stamped_creation_time(self):
+    # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
+    # `creation_time` isn't explicitly defined.
+    with TestImage('with_default_stamped_creation_time') as img:
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      created_str = cfg.get('created', '')
+      self.assertNotEqual('', created_str)
+
+      now = datetime.datetime.utcnow()
+
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
+      # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
+      # a bug where CurrentTimeMillis was not divided by 1000.
+      # See https://github.com/bazelbuild/bazel/issues/2240
+      # https://bazel-review.googlesource.com/c/bazel/+/48211
+      # Assume that any value for 'created' within a reasonable bound is fine.
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
 
   def test_with_env(self):
     with TestBundleImage(
@@ -509,7 +571,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/py3_image.binary',
         'arg0',
         'arg1'])
-      
+
   def test_java_image_args(self):
     with TestImage('java_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
@@ -537,7 +599,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/rust_image_binary',
         'arg0',
         'arg1'])
-      
+
   def test_scala_image_args(self):
     with TestImage('scala_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
@@ -576,7 +638,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/nodejs_image.binary',
         'arg0',
         'arg1'])
-      
+
 
 if __name__ == '__main__':
   unittest.main()
