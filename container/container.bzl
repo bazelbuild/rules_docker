@@ -65,6 +65,7 @@ def repositories():
   # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
   # once transitive workspace instantiation lands.
   if "httplib2" not in excludes:
+    
     # TODO(mattmoor): Is there a clean way to override?
     native.new_http_archive(
       name = "httplib2",
