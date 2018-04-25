@@ -66,7 +66,6 @@ def repositories():
   # once transitive workspace instantiation lands.
   if "httplib2" not in excludes:
     # TODO(mattmoor): Is there a clean way to override?
-
     native.new_http_archive(
       name = "httplib2",
       url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3",
