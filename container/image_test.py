@@ -219,7 +219,7 @@ class ImageTest(unittest.TestCase):
       # See https://github.com/bazelbuild/bazel/issues/2240
       # https://bazel-review.googlesource.com/c/bazel/+/48211
       # Assume that any value for 'created' within a reasonable bound is fine.
-      self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
   def test_with_default_stamped_creation_time(self):
     # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
@@ -240,7 +240,7 @@ class ImageTest(unittest.TestCase):
       # See https://github.com/bazelbuild/bazel/issues/2240
       # https://bazel-review.googlesource.com/c/bazel/+/48211
       # Assume that any value for 'created' within a reasonable bound is fine.
-      self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
   def test_with_env(self):
     with TestBundleImage(
