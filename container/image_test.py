@@ -512,7 +512,7 @@ class ImageTest(unittest.TestCase):
         '/usr/bin/java', '-cp',
         ':'.join([
           '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar',
-          '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar',
+          '/app/com_google_guava_guava/jar/guava-18.0.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
