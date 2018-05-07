@@ -18,8 +18,8 @@ load(
     _get_runfile_path = "runfile",
 )
 
-def _extract_layers(ctx, artifact):
-    config_file = ctx.new_file(ctx.label.name + "." + artifact.basename + ".config")
+def _extract_layers(ctx, name, artifact):
+    config_file = ctx.new_file(name + "." + artifact.basename + ".config")
     ctx.action(
         executable = ctx.executable.extract_config,
         arguments = [
@@ -40,16 +40,16 @@ def _extract_layers(ctx, artifact):
         "legacy": artifact,
     }
 
-def get_from_target(ctx, attr_target, file_target = None):
+def get_from_target(ctx, name, attr_target, file_target = None):
     if file_target:
-        return _extract_layers(ctx, file_target)
+        return _extract_layers(ctx, name, file_target)
     elif hasattr(attr_target, "container_parts"):
         return attr_target.container_parts
     else:
         if not hasattr(attr_target, "files"):
             return {}
         target = attr_target.files.to_list()[0]
-        return _extract_layers(ctx, target)
+        return _extract_layers(ctx, name, target)
 
 def assemble(ctx, images, output, stamp = False):
     """Create the full image from the list of layers."""

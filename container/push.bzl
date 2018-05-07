@@ -36,7 +36,7 @@ def _impl(ctx):
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
 
-    image = _get_layers(ctx, ctx.attr.image)
+    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
 
     stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
 
