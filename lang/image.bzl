@@ -208,6 +208,17 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     _external_dir(ctx): _runfiles_dir(ctx),
   })
 
+  for data in ctx.attr.data:
+    for dfile in data.files:
+      loc = dfile.short_path
+      data_path = "/".join([
+        ctx.attr.directory,
+        loc
+      ])
+      symlinks[data_path] = '/'.join([_runfiles_dir(ctx), ctx.workspace_name, loc])
+
+  args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
+
   return _container.image.implementation(
     ctx,
     # We use all absolute paths.
@@ -217,7 +228,7 @@ def _app_layer_impl(ctx, runfiles=None, emptyfiles=None):
     # image is `docker run ...`.
     # Per: https://docs.docker.com/engine/reference/builder/#entrypoint
     # we should use the "exec" (list) form of entrypoint.
-    entrypoint=ctx.attr.entrypoint + [_binary_name(ctx)] + ctx.attr.args)
+    entrypoint=ctx.attr.entrypoint + [_binary_name(ctx)] + args)
 
 app_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -245,6 +256,7 @@ app_layer = rule(
         "workdir": attr.string(default = "/app"),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
+        "data": attr.label_list(cfg="data", allow_files=True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
