@@ -1,9 +1,19 @@
+dist: trusty
 sudo: required
-dist: precise
-language:
-  - java
+
+os:
+  - linux
+
+python:
+  - "2.7"
+
 jdk:
   - oraclejdk8  # Building Bazel requires JDK8.
+
+language: go
+go: 1.10.x
+install: true
+
 addons:
   apt:
     sources:
