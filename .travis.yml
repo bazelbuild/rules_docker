@@ -14,6 +14,9 @@ language: go
 go: 1.10.x
 install: true
 
+services:
+  - docker
+
 addons:
   apt:
     sources:
