@@ -42,7 +42,7 @@ def _container_bundle_impl(ctx):
 
         target = ctx.attr.images[unresolved_tag]
 
-        l = _get_layers(ctx, image_target_dict[target])
+        l = _get_layers(ctx, ctx.label.name, image_target_dict[target])
         images[tag] = l
         runfiles += [l.get("config")]
         runfiles += [l.get("config_digest")]

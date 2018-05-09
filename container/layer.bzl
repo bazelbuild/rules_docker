@@ -40,7 +40,7 @@ load(
     _join_path = "join",
 )
 
-def _magic_path(ctx, f):
+def _magic_path(ctx, f, output_layer):
     # Right now the logic this uses is a bit crazy/buggy, so to support
     # bug-for-bug compatibility in the foo_image rules, expose the logic.
     # See also: https://github.com/bazelbuild/rules_docker/issues/106
@@ -49,7 +49,7 @@ def _magic_path(ctx, f):
     if ctx.attr.data_path:
         # If data_prefix is specified, then add files relative to that.
         data_path = _join_path(
-            dirname(ctx.outputs.layer.short_path),
+            dirname(output_layer.short_path),
             _canonicalize_path(ctx.attr.data_path),
         )
         return strip_prefix(f.short_path, data_path)
@@ -59,6 +59,8 @@ def _magic_path(ctx, f):
 
 def build_layer(
         ctx,
+        name,
+        output_layer,
         files = None,
         file_map = None,
         empty_files = None,
@@ -68,7 +70,7 @@ def build_layer(
         debs = None,
         tars = None):
     """Build the current layer for appending it to the base layer"""
-    layer = ctx.outputs.layer
+    layer = output_layer
     build_layer_exec = ctx.executable.build_layer
     args = [
         "--output=" + layer.path,
@@ -76,7 +78,7 @@ def build_layer(
         "--mode=" + ctx.attr.mode,
     ]
 
-    args += ["--file=%s=%s" % (f.path, _magic_path(ctx, f)) for f in files]
+    args += ["--file=%s=%s" % (f.path, _magic_path(ctx, f, layer)) for f in files]
     args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
     args += ["--empty_file=%s" % f for f in empty_files or []]
     args += ["--empty_dir=%s" % f for f in empty_dirs or []]
@@ -86,7 +88,7 @@ def build_layer(
         if ":" in k:
             fail("The source of a symlink cannot container ':', got: %s" % k)
     args += ["--link=%s:%s" % (k, symlinks[k]) for k in symlinks]
-    arg_file = ctx.new_file(ctx.label.name + "-layer.args")
+    arg_file = ctx.new_file(name + "-layer.args")
     ctx.file_action(arg_file, "\n".join(args))
     ctx.action(
         executable = build_layer_exec,
@@ -114,6 +116,7 @@ LayerInfo = provider(fields = [
 
 def _impl(
         ctx,
+        name = None,
         files = None,
         file_map = None,
         empty_files = None,
@@ -122,11 +125,13 @@ def _impl(
         symlinks = None,
         debs = None,
         tars = None,
-        env = None):
+        env = None,
+        output_layer = None):
     """Implementation for the container_layer rule.
 
   Args:
     ctx: The bazel rule context
+    name: str, overrides ctx.label.name or ctx.attr.name
     files: File list, overrides ctx.files.files
     file_map: Dict[str, File], defaults to {}
     empty_files: str list, overrides ctx.attr.empty_files
@@ -136,7 +141,9 @@ def _impl(
     env: str Dict, overrides ctx.attr.env
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
+    output_layer: File, overrides ctx.outputs.layer
   """
+    name = name or ctx.label.name
     file_map = file_map or {}
     files = files or ctx.files.files
     empty_files = empty_files or ctx.attr.empty_files
@@ -145,10 +152,13 @@ def _impl(
     symlinks = symlinks or ctx.attr.symlinks
     debs = debs or ctx.files.debs
     tars = tars or ctx.files.tars
+    output_layer = output_layer or ctx.outputs.layer
 
     # Generate the unzipped filesystem layer, and its sha256 (aka diff_id)
     unzipped_layer, diff_id = build_layer(
         ctx,
+        name = name,
+        output_layer = output_layer,
         files = files,
         file_map = file_map,
         empty_files = empty_files,
