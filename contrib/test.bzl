@@ -23,40 +23,43 @@ load(
 )
 
 def _impl(ctx):
-    config_str = ' '.join(['$(pwd)/' + c.short_path for c in ctx.files.configs])
+    config_str = " ".join(["$(pwd)/" + c.short_path for c in ctx.files.configs])
 
-    if ctx.attr.driver == 'tar':
+    if ctx.attr.driver == "tar":
         # no need to load if we're using raw tar
-        load_statement = ''
-        image_name = '$(pwd)/' + ctx.file.image_tar.short_path
+        load_statement = ""
+        image_name = "$(pwd)/" + ctx.file.image_tar.short_path
 
     else:
         # Since we're always bundling/renaming the image in the macro, this is valid.
-        load_statement = 'docker load -i %s' % ctx.file.image_tar.short_path
+        load_statement = "docker load -i %s" % ctx.file.image_tar.short_path
         image_name = ctx.attr.image_name
 
-    # Generate a shell script to execute structure_tests with the correct flags.
+        # Generate a shell script to execute structure_tests with the correct flags.
     ctx.actions.expand_template(
-        template=ctx.file._structure_test_tpl,
-        output=ctx.outputs.executable,
-        substitutions={
-          "%{load_statement}": load_statement,
-          "%{configs}": config_str,
-          "%{workspace_name}": ctx.workspace_name,
-          "%{test_executable}": ctx.executable._structure_test.short_path,
-          "%{image}": image_name,
-          "%{driver}": ctx.attr.driver,
+        template = ctx.file._structure_test_tpl,
+        output = ctx.outputs.executable,
+        substitutions = {
+            "%{load_statement}": load_statement,
+            "%{configs}": config_str,
+            "%{workspace_name}": ctx.workspace_name,
+            "%{test_executable}": ctx.executable._structure_test.short_path,
+            "%{image}": image_name,
+            "%{driver}": ctx.attr.driver,
         },
-        is_executable=True
+        is_executable = True,
     )
 
-    return struct(runfiles=ctx.runfiles(files = [
-            ctx.executable._structure_test,
-            ctx.executable.image_tar,
-            ctx.file.image_tar] +
-            ctx.attr.image_tar.files.to_list() +
-            ctx.attr.image_tar.data_runfiles.files.to_list() +
-            ctx.files.configs,
+    return struct(
+        runfiles = ctx.runfiles(
+            files = [
+                        ctx.executable._structure_test,
+                        ctx.executable.image_tar,
+                        ctx.file.image_tar,
+                    ] +
+                    ctx.attr.image_tar.files.to_list() +
+                    ctx.attr.image_tar.data_runfiles.files.to_list() +
+                    ctx.files.configs,
         ),
     )
 
@@ -106,12 +109,12 @@ _container_test = rule(
     implementation = _impl,
 )
 
-def container_test(name, image, configs, driver=None, verbose=None, **kwargs):
+def container_test(name, image, configs, driver = None, verbose = None, **kwargs):
     """A macro to predictably rename the image under test before threading
     it to the container test rule."""
 
-    # Remove commonly encountered characters that Docker will choke on 
-    sanitized_name = image.replace(':', '').replace('@', '').replace('/', '')
+    # Remove commonly encountered characters that Docker will choke on
+    sanitized_name = image.replace(":", "").replace("@", "").replace("/", "")
     intermediate_image_name = "%s:intermediate" % sanitized_name
     image_tar_name = "intermediate_bundle_%s" % name
 
@@ -120,7 +123,7 @@ def container_test(name, image, configs, driver=None, verbose=None, **kwargs):
         name = image_tar_name,
         images = {
             intermediate_image_name: image,
-        }
+        },
     )
     _container_test(
         name = name,
