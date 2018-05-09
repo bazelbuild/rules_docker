@@ -29,10 +29,10 @@ load(
 load("@io_bazel_rules_d//d:d.bzl", "d_binary")
 
 def repositories():
-  _repositories()
+    _repositories()
 
-def d_image(name, base=None, deps=[], layers=[], binary=None, **kwargs):
-  """Constructs a container image wrapping a d_binary target.
+def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+    """Constructs a container image wrapping a d_binary target.
 
   Args:
     binary: An alternative binary target to use instead of generating one.
@@ -40,22 +40,29 @@ def d_image(name, base=None, deps=[], layers=[], binary=None, **kwargs):
            their own layers.
     **kwargs: See d_binary.
   """
-  if layers:
-    print("d_image does not benefit from layers=[], got: %s" % layers)
+    if layers:
+        print("d_image does not benefit from layers=[], got: %s" % layers)
 
-  if not binary:
-    binary = name + "_binary"
-    d_binary(name=binary, deps=deps + layers, **kwargs)
-  elif deps:
-    fail("kwarg does nothing when binary is specified", "deps")
+    if not binary:
+        binary = name + "_binary"
+        d_binary(name = binary, deps = deps + layers, **kwargs)
+    elif deps:
+        fail("kwarg does nothing when binary is specified", "deps")
 
-  base = base or DEFAULT_BASE
-  for index, dep in enumerate(layers):
-    this_name = "%s_%d" % (name, index)
-    dep_layer(name=this_name, base=base, dep=dep)
-    base = this_name
+    base = base or DEFAULT_BASE
+    for index, dep in enumerate(layers):
+        this_name = "%s_%d" % (name, index)
+        dep_layer(name = this_name, base = base, dep = dep)
+        base = this_name
 
-  visibility = kwargs.get('visibility', None)
-  tags = kwargs.get('tags', None)
-  app_layer(name=name, base=base, binary=binary, lang_layers=layers,
-            visibility=visibility, tags=tags, args=kwargs.get("args"))
+    visibility = kwargs.get("visibility", None)
+    tags = kwargs.get("tags", None)
+    app_layer(
+        name = name,
+        base = base,
+        binary = binary,
+        lang_layers = layers,
+        visibility = visibility,
+        tags = tags,
+        args = kwargs.get("args"),
+    )

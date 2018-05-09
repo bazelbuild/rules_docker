@@ -28,60 +28,74 @@ load(
 )
 
 def _get_runfile_path(ctx, f):
-  return "${RUNFILES}/%s" % runfile(ctx, f)
+    return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
-  """Core implementation of container_push."""
-  stamp_inputs = []
-  if ctx.attr.stamp:
-    stamp_inputs = [ctx.info_file, ctx.version_file]
+    """Core implementation of container_push."""
+    stamp_inputs = []
+    if ctx.attr.stamp:
+        stamp_inputs = [ctx.info_file, ctx.version_file]
 
-  image = _get_layers(ctx, ctx.attr.image)
+    image = _get_layers(ctx, ctx.attr.image)
 
-  stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
+    stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
 
-  # Leverage our efficient intermediate representation to push.
-  legacy_base_arg = ""
-  if image.get("legacy"):
-    print("Pushing an image based on a tarball can be very " +
-          "expensive.  If the image is the output of a " +
-          "docker_build, consider dropping the '.tar' extension. " +
-          "If the image is checked in, consider using " +
-          "docker_import instead.")
-    legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
+    # Leverage our efficient intermediate representation to push.
+    legacy_base_arg = ""
+    if image.get("legacy"):
+        print("Pushing an image based on a tarball can be very " +
+              "expensive.  If the image is the output of a " +
+              "docker_build, consider dropping the '.tar' extension. " +
+              "If the image is checked in, consider using " +
+              "docker_import instead.")
+        legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
 
-  blobsums = image.get("blobsum", [])
-  digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
-  blobs = image.get("zipped_layer", [])
-  layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
-  config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
+    blobsums = image.get("blobsum", [])
+    digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
+    blobs = image.get("zipped_layer", [])
+    layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
+    config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
 
-  ctx.template_action(
-      template = ctx.file._tag_tpl,
-      substitutions = {
-          "%{tag}": "{registry}/{repository}:{tag}".format(
-            registry=ctx.expand_make_variables(
-              "registry", ctx.attr.registry, {}),
-            repository=ctx.expand_make_variables(
-              "repository", ctx.attr.repository, {}),
-            tag=ctx.expand_make_variables(
-              "tag", ctx.attr.tag, {})),
-          "%{stamp}": stamp_arg,
-          "%{image}": "%s %s %s %s" % (
-              legacy_base_arg, config_arg, digest_arg, layer_arg),
-          "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
-          "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
-      },
-      output = ctx.outputs.executable,
-      executable=True,
-  )
+    ctx.template_action(
+        template = ctx.file._tag_tpl,
+        substitutions = {
+            "%{tag}": "{registry}/{repository}:{tag}".format(
+                registry = ctx.expand_make_variables(
+                    "registry",
+                    ctx.attr.registry,
+                    {},
+                ),
+                repository = ctx.expand_make_variables(
+                    "repository",
+                    ctx.attr.repository,
+                    {},
+                ),
+                tag = ctx.expand_make_variables(
+                    "tag",
+                    ctx.attr.tag,
+                    {},
+                ),
+            ),
+            "%{stamp}": stamp_arg,
+            "%{image}": "%s %s %s %s" % (
+                legacy_base_arg,
+                config_arg,
+                digest_arg,
+                layer_arg,
+            ),
+            "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+            "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
+        },
+        output = ctx.outputs.executable,
+        executable = True,
+    )
 
-  return struct(runfiles = ctx.runfiles(files = [
-      ctx.executable._pusher,
-      image["config"]
-  ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-  stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
-  list(ctx.attr._pusher.default_runfiles.files)))
+    return struct(runfiles = ctx.runfiles(files = [
+                                                      ctx.executable._pusher,
+                                                      image["config"],
+                                                  ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
+                                                  stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
+                                                  list(ctx.attr._pusher.default_runfiles.files)))
 
 container_push = rule(
     attrs = dict({
