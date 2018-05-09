@@ -32,25 +32,25 @@ load(
 load(":nodejs.bzl", "DIGESTS")
 
 def repositories():
-  # Call the core "repositories" function to reduce boilerplate.
-  # This is idempotent if folks call it themselves.
-  _repositories()
+    # Call the core "repositories" function to reduce boilerplate.
+    # This is idempotent if folks call it themselves.
+    _repositories()
 
-  excludes = native.existing_rules().keys()
-  if "nodejs_image_base" not in excludes:
-    container_pull(
-      name = "nodejs_image_base",
-      registry = "gcr.io",
-      repository = "google-appengine/debian9",
-      digest = DIGESTS["latest"],
-    )
-  if "nodejs_debug_image_base" not in excludes:
-    container_pull(
-      name = "nodejs_debug_image_base",
-      registry = "gcr.io",
-      repository = "google-appengine/debian9",
-      digest = DIGESTS["debug"],
-    )
+    excludes = native.existing_rules().keys()
+    if "nodejs_image_base" not in excludes:
+        container_pull(
+            name = "nodejs_image_base",
+            registry = "gcr.io",
+            repository = "google-appengine/debian9",
+            digest = DIGESTS["latest"],
+        )
+    if "nodejs_debug_image_base" not in excludes:
+        container_pull(
+            name = "nodejs_debug_image_base",
+            registry = "gcr.io",
+            repository = "google-appengine/debian9",
+            digest = DIGESTS["debug"],
+        )
 
 DEFAULT_BASE = select({
     "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
@@ -60,13 +60,13 @@ DEFAULT_BASE = select({
 })
 
 def _runfiles(dep):
-  return dep.default_runfiles.files + dep.data_runfiles.files + dep.files
+    return dep.default_runfiles.files + dep.data_runfiles.files + dep.files
 
 def _emptyfiles(dep):
-  return dep.default_runfiles.empty_filenames + dep.data_runfiles.empty_filenames
+    return dep.default_runfiles.empty_filenames + dep.data_runfiles.empty_filenames
 
 def _dep_layer_impl(ctx):
-  return dep_layer_impl(ctx, runfiles=_runfiles, emptyfiles=_emptyfiles)
+    return dep_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
 
 _dep_layer = rule(
     attrs = _container.image.attrs + {
@@ -99,39 +99,55 @@ _dep_layer = rule(
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
-def nodejs_image(name, base=None, data=[], layers=[],
-                 node_modules="//:node_modules", **kwargs):
-  """Constructs a container image wrapping a nodejs_binary target.
+def nodejs_image(
+        name,
+        base = None,
+        data = [],
+        layers = [],
+        node_modules = "//:node_modules",
+        **kwargs):
+    """Constructs a container image wrapping a nodejs_binary target.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See nodejs_binary.
   """
-  binary_name = name + ".binary"
+    binary_name = name + ".binary"
 
-  layers = [
-    # Put the Node binary into its own layer.
-    "@nodejs//:bin/node",
-    # node_modules can get large, it should be in its own layer.
-    node_modules,
-  ] + layers
+    layers = [
+        # Put the Node binary into its own layer.
+        "@nodejs//:bin/node",
+        # node_modules can get large, it should be in its own layer.
+        node_modules,
+    ] + layers
 
-  nodejs_binary(name=binary_name, node_modules=node_modules,
-                data=data + layers, **kwargs)
+    nodejs_binary(
+        name = binary_name,
+        node_modules = node_modules,
+        data = data + layers,
+        **kwargs
+    )
 
-  # TODO(mattmoor): Consider making the directory into which the app
-  # is placed configurable.
-  base = base or DEFAULT_BASE
-  for index, dep in enumerate(layers):
-    this_name = "%s.%d" % (name, index)
-    _dep_layer(name=this_name, base=base, dep=dep, binary=binary_name)
-    base = this_name
+    # TODO(mattmoor): Consider making the directory into which the app
+    # is placed configurable.
+    base = base or DEFAULT_BASE
+    for index, dep in enumerate(layers):
+        this_name = "%s.%d" % (name, index)
+        _dep_layer(name = this_name, base = base, dep = dep, binary = binary_name)
+        base = this_name
 
-  visibility = kwargs.get('visibility', None)
-  tags = kwargs.get('tags', None)
-  app_layer(name=name, base=base, entrypoint=['sh', '-c'],
-            # Node.JS hates symlinks.
-            agnostic_dep_layout=False,
-            binary=binary_name, lang_layers=layers, visibility=visibility,
-            tags=tags, args=kwargs.get("args"))
+    visibility = kwargs.get("visibility", None)
+    tags = kwargs.get("tags", None)
+    app_layer(
+        name = name,
+        base = base,
+        entrypoint = ["sh", "-c"],
+        # Node.JS hates symlinks.
+        agnostic_dep_layout = False,
+        binary = binary_name,
+        lang_layers = layers,
+        visibility = visibility,
+        tags = tags,
+        args = kwargs.get("args"),
+    )

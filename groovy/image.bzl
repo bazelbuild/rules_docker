@@ -26,51 +26,66 @@ load(
     _repositories = "repositories",
 )
 
-def groovy_image(name, base=None, main_class=None,
-                 srcs=[], deps=[], layers=[], jvm_flags=[],
-                 **kwargs):
-  """Builds a container image overlaying the groovy_binary.
+def groovy_image(
+        name,
+        base = None,
+        main_class = None,
+        srcs = [],
+        deps = [],
+        layers = [],
+        jvm_flags = [],
+        **kwargs):
+    """Builds a container image overlaying the groovy_binary.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See groovy_binary.
   """
-  binary_name = name + ".binary"
+    binary_name = name + ".binary"
 
-  # This is an inlined copy of groovy_binary so that we properly collect
-  # the JARs relevant to the java_binary.
-  if srcs:
-    groovy_library(
-        name = binary_name + "-lib",
-        srcs = srcs,
-        deps = deps + layers,
+    # This is an inlined copy of groovy_binary so that we properly collect
+    # the JARs relevant to the java_binary.
+    if srcs:
+        groovy_library(
+            name = binary_name + "-lib",
+            srcs = srcs,
+            deps = deps + layers,
+        )
+        deps = deps + [binary_name + "-lib"]
+
+        # This always belongs in a separate layer.
+    layers = layers + ["//external:groovy"]
+
+    native.java_binary(
+        name = binary_name,
+        main_class = main_class,
+        runtime_deps = deps + layers,
+        **kwargs
     )
-    deps = deps + [binary_name + "-lib"]
 
-  # This always belongs in a separate layer.
-  layers = layers + ["//external:groovy"]
+    index = 0
+    base = base or DEFAULT_JAVA_BASE
+    for dep in layers:
+        this_name = "%s.%d" % (name, index)
+        jar_dep_layer(name = this_name, base = base, dep = dep)
+        base = this_name
+        index += 1
 
-  native.java_binary(
-      name = binary_name,
-      main_class = main_class,
-      runtime_deps = deps + layers,
-      **kwargs)
-
-  index = 0
-  base = base or DEFAULT_JAVA_BASE
-  for dep in layers:
-    this_name = "%s.%d" % (name, index)
-    jar_dep_layer(name=this_name, base=base, dep=dep)
-    base = this_name
-    index += 1
-
-  visibility = kwargs.get('visibility', None)
-  tags = kwargs.get('tags', None)
-  jar_app_layer(name=name, base=base, binary=binary_name,
-                main_class=main_class, jvm_flags=jvm_flags,
-                deps=deps, jar_layers=layers, visibility=visibility,
-                tags=tags, args=kwargs.get("args"))
+    visibility = kwargs.get("visibility", None)
+    tags = kwargs.get("tags", None)
+    jar_app_layer(
+        name = name,
+        base = base,
+        binary = binary_name,
+        main_class = main_class,
+        jvm_flags = jvm_flags,
+        deps = deps,
+        jar_layers = layers,
+        visibility = visibility,
+        tags = tags,
+        args = kwargs.get("args"),
+    )
 
 def repositories():
-  _repositories()
+    _repositories()
