@@ -219,7 +219,7 @@ class ImageTest(unittest.TestCase):
       # See https://github.com/bazelbuild/bazel/issues/2240
       # https://bazel-review.googlesource.com/c/bazel/+/48211
       # Assume that any value for 'created' within a reasonable bound is fine.
-      self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
   def test_with_default_stamped_creation_time(self):
     # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
@@ -240,7 +240,7 @@ class ImageTest(unittest.TestCase):
       # See https://github.com/bazelbuild/bazel/issues/2240
       # https://bazel-review.googlesource.com/c/bazel/+/48211
       # Assume that any value for 'created' within a reasonable bound is fine.
-      self.assertLessEqual(now - created, datetime.timedelta(minutes=5))
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
   def test_with_env(self):
     with TestBundleImage(
@@ -436,6 +436,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary',
+        './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -444,7 +445,6 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py',
-        '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         '/app/testdata/py_image.binary',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/external',
       ])
@@ -456,7 +456,6 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker',
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/py_image_library.py',
-        './app/io_bazel_rules_docker/testdata/__init__.py',
       ])
 
   def test_cc_image(self):
