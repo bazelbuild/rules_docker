@@ -18,10 +18,10 @@ load(
     _container_image = "container_image",
 )
 
-def container_image(name=None, tag=None, **kwargs):
-    _container_image(name=name + '-internal', **kwargs)
-    container_bundle(name=name, images={
-      tag: ':' + name + '-internal'
+def container_image(name = None, tag = None, **kwargs):
+    _container_image(name = name + "-internal", **kwargs)
+    container_bundle(name = name, images = {
+        tag: ":" + name + "-internal",
     })
 
 docker_build = container_image
