@@ -26,40 +26,49 @@ load(
 )
 
 def _container_bundle_impl(ctx):
-  """Implementation for the container_bundle rule."""
+    """Implementation for the container_bundle rule."""
 
-  # Compute the set of layers from the image_targets.
-  image_target_dict = _string_to_label(
-      ctx.attr.image_targets, ctx.attr.image_target_strings)
+    # Compute the set of layers from the image_targets.
+    image_target_dict = _string_to_label(
+        ctx.attr.image_targets,
+        ctx.attr.image_target_strings,
+    )
 
-  images = {}
-  runfiles = []
-  for unresolved_tag in ctx.attr.images:
-    # Allow users to put make variables into the tag name.
-    tag = ctx.expand_make_variables("images", unresolved_tag, {})
+    images = {}
+    runfiles = []
+    for unresolved_tag in ctx.attr.images:
+        # Allow users to put make variables into the tag name.
+        tag = ctx.expand_make_variables("images", unresolved_tag, {})
 
-    target = ctx.attr.images[unresolved_tag]
+        target = ctx.attr.images[unresolved_tag]
 
-    l = _get_layers(ctx, image_target_dict[target])
-    images[tag] = l
-    runfiles += [l.get('config')]
-    runfiles += [l.get('config_digest')]
-    runfiles += l.get('unzipped_layer', [])
-    runfiles += l.get('diff_id', [])
+        l = _get_layers(ctx, image_target_dict[target])
+        images[tag] = l
+        runfiles += [l.get("config")]
+        runfiles += [l.get("config_digest")]
+        runfiles += l.get("unzipped_layer", [])
+        runfiles += l.get("diff_id", [])
 
-  _incr_load(ctx, images, ctx.outputs.executable,
-             stamp=ctx.attr.stamp)
-  _assemble_image(ctx, images, ctx.outputs.out, stamp=ctx.attr.stamp)
+    _incr_load(
+        ctx,
+        images,
+        ctx.outputs.executable,
+        stamp = ctx.attr.stamp,
+    )
+    _assemble_image(ctx, images, ctx.outputs.out, stamp = ctx.attr.stamp)
 
-  stamp_files = []
-  if ctx.attr.stamp:
-    stamp_files = [ctx.info_file, ctx.version_file]
+    stamp_files = []
+    if ctx.attr.stamp:
+        stamp_files = [ctx.info_file, ctx.version_file]
 
-  return struct(runfiles = ctx.runfiles(
-      files = (stamp_files + runfiles)),
-      files = depset(),
-      container_images = images,
-      stamp = ctx.attr.stamp)
+    return struct(
+        runfiles = ctx.runfiles(
+            files = (stamp_files + runfiles),
+        ),
+        files = depset(),
+        container_images = images,
+        stamp = ctx.attr.stamp,
+    )
 
 container_bundle_ = rule(
     attrs = dict({
@@ -91,18 +100,18 @@ container_bundle_ = rule(
 #     }
 #   )
 def container_bundle(**kwargs):
-  """Package several container images into a single tarball.
+    """Package several container images into a single tarball.
 
   Args:
     **kwargs: See above.
   """
-  for reserved in ["image_targets", "image_target_strings"]:
-    if reserved in kwargs:
-      fail("reserved for internal use by container_bundle macro", attr=reserved)
+    for reserved in ["image_targets", "image_target_strings"]:
+        if reserved in kwargs:
+            fail("reserved for internal use by container_bundle macro", attr = reserved)
 
-  if "images" in kwargs:
-    values = {value: None for value in kwargs["images"].values()}.keys()
-    kwargs["image_targets"] = values
-    kwargs["image_target_strings"] = values
+    if "images" in kwargs:
+        values = {value: None for value in kwargs["images"].values()}.keys()
+        kwargs["image_targets"] = values
+        kwargs["image_target_strings"] = values
 
-  container_bundle_(**kwargs)
+    container_bundle_(**kwargs)

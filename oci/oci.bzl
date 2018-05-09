@@ -26,8 +26,10 @@ load(
 )
 
 def oci_push(*args, **kwargs):
-  if "format" in kwargs:
-    fail("Cannot override 'format' attribute on oci_push",
-         attr="format")
-  kwargs["format"] = "OCI"
-  container_push(*args, **kwargs)
+    if "format" in kwargs:
+        fail(
+            "Cannot override 'format' attribute on oci_push",
+            attr = "format",
+        )
+    kwargs["format"] = "OCI"
+    container_push(*args, **kwargs)

@@ -25,29 +25,30 @@ PasswdFileContentProvider = provider(
 )
 
 def _passwd_entry_impl(ctx):
-  """Creates a passwd_file_content_provider containing a single entry."""
-  return [PasswdFileContentProvider(
-      username = ctx.attr.username,
-      uid = ctx.attr.uid,
-      gid = ctx.attr.gid,
-      info = ctx.attr.info,
-      home = ctx.attr.home,
-      shell = ctx.attr.shell,
-      name = ctx.attr.name,
-  )]
+    """Creates a passwd_file_content_provider containing a single entry."""
+    return [PasswdFileContentProvider(
+        username = ctx.attr.username,
+        uid = ctx.attr.uid,
+        gid = ctx.attr.gid,
+        info = ctx.attr.info,
+        home = ctx.attr.home,
+        shell = ctx.attr.shell,
+        name = ctx.attr.name,
+    )]
 
 def _passwd_file_impl(ctx):
-  """Core implementation of passwd_file."""
-  f = "".join(["%s:x:%s:%s:%s:%s:%s\n" % (
-      entry[PasswdFileContentProvider].username,
-      entry[PasswdFileContentProvider].uid,
-      entry[PasswdFileContentProvider].gid,
-      entry[PasswdFileContentProvider].info,
-      entry[PasswdFileContentProvider].home,
-      entry[PasswdFileContentProvider].shell) for entry in ctx.attr.entries])
-  passwd_file  = ctx.actions.declare_file(ctx.label.name)
-  ctx.actions.write(output=passwd_file, content=f)
-  return DefaultInfo(files=depset([passwd_file]))
+    """Core implementation of passwd_file."""
+    f = "".join(["%s:x:%s:%s:%s:%s:%s\n" % (
+        entry[PasswdFileContentProvider].username,
+        entry[PasswdFileContentProvider].uid,
+        entry[PasswdFileContentProvider].gid,
+        entry[PasswdFileContentProvider].info,
+        entry[PasswdFileContentProvider].home,
+        entry[PasswdFileContentProvider].shell,
+    ) for entry in ctx.attr.entries])
+    passwd_file = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.write(output = passwd_file, content = f)
+    return DefaultInfo(files = depset([passwd_file]))
 
 passwd_entry = rule(
     attrs = {

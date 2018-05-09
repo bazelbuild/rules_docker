@@ -13,15 +13,16 @@
 # limitations under the License.
 """Utility Rules for testing"""
 
-def generate_deb(name, args=[]):
-  args_str = ""
-  if args:
-      args_str = '-a' + ' -a '.join(args)
-  native.genrule(
-    name = name,
-    outs = [name + ".deb"],
-    cmd = "$(location :gen_deb) -p {name} {args_str} -o $@".format(
-        name=name,
-        args_str=args_str),
-    tools = [":gen_deb"],
-  )
+def generate_deb(name, args = []):
+    args_str = ""
+    if args:
+        args_str = "-a" + " -a ".join(args)
+    native.genrule(
+        name = name,
+        outs = [name + ".deb"],
+        cmd = "$(location :gen_deb) -p {name} {args_str} -o $@".format(
+            name = name,
+            args_str = args_str,
+        ),
+        tools = [":gen_deb"],
+    )
