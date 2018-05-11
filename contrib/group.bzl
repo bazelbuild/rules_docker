@@ -19,23 +19,24 @@ GroupFileContentProvider = provider(fields = [
 ])
 
 def _group_entry_impl(ctx):
-  """Creates a passwd_file_content_provider containing a single entry."""
-  return [GroupFileContentProvider(
-      groupname = ctx.attr.groupname,
-      gid = ctx.attr.gid,
-      users = ctx.attr.users,
-  )]
+    """Creates a passwd_file_content_provider containing a single entry."""
+    return [GroupFileContentProvider(
+        groupname = ctx.attr.groupname,
+        gid = ctx.attr.gid,
+        users = ctx.attr.users,
+    )]
 
 def _group_file_impl(ctx):
-  f = "".join(
-      ["%s:x:%s:%s\n" % (
-          entry[GroupFileContentProvider].groupname,
-          entry[GroupFileContentProvider].gid,
-          ",".join(entry[GroupFileContentProvider].users))
-       for entry in ctx.attr.entries])
-  group_file = ctx.actions.declare_file(ctx.label.name)
-  ctx.actions.write(output=group_file, content=f)
-  return DefaultInfo(files=depset([group_file]))
+    f = "".join(
+        ["%s:x:%s:%s\n" % (
+            entry[GroupFileContentProvider].groupname,
+            entry[GroupFileContentProvider].gid,
+            ",".join(entry[GroupFileContentProvider].users),
+        ) for entry in ctx.attr.entries],
+    )
+    group_file = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.write(output = group_file, content = f)
+    return DefaultInfo(files = depset([group_file]))
 
 group_entry = rule(
     attrs = {
