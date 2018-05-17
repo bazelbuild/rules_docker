@@ -179,8 +179,9 @@ def _repository_name(ctx):
     if ctx.attr.legacy_repository_naming:
         # Legacy behavior, off by default.
         return _join_path(ctx.attr.repository, ctx.label.package.replace("/", "_"))
-        # Newer Docker clients support multi-level names, which are a part of
-        # the v2 registry specification.
+
+    # Newer Docker clients support multi-level names, which are a part of
+    # the v2 registry specification.
 
     return _join_path(ctx.attr.repository, ctx.label.package)
 
@@ -281,7 +282,7 @@ def _impl(
             layer_name = str(i),
         )
 
-        # Construct a temporary name based on the build target.
+    # Construct a temporary name based on the build target.
     tag_name = _repository_name(ctx) + ":" + name
 
     # These are the constituent parts of the Container image, which each
@@ -413,83 +414,83 @@ def _validate_command(name, argument):
     else:
         return None
 
-        # Produces a new container image tarball compatible with 'docker load', which
-        # is a single additional layer atop 'base'.  The goal is to have relatively
-        # complete support for building container image, from the Dockerfile spec.
-        #
-        # For more information see the 'Config' section of the image specification:
-        # https://github.com/opencontainers/image-spec/blob/v0.2.0/serialization.md
-        #
-        # Only 'name' is required. All other fields have sane defaults.
-        #
-        #   container_image(
-        #      name="...",
-        #      visibility="...",
-        #
-        #      # The base layers on top of which to overlay this layer,
-        #      # equivalent to FROM.
-        #      base="//another/build:rule",
-        #
-        #      # The base directory of the files, defaulted to
-        #      # the package of the input.
-        #      # All files structure relatively to that path will be preserved.
-        #      # A leading '/' mean the workspace root and this path is relative
-        #      # to the current package by default.
-        #      data_path="...",
-        #
-        #      # The directory in which to expand the specified files,
-        #      # defaulting to '/'.
-        #      # Only makes sense accompanying one of files/tars/debs.
-        #      directory="...",
-        #
-        #      # The set of archives to expand, or packages to install
-        #      # within the chroot of this layer
-        #      files=[...],
-        #      tars=[...],
-        #      debs=[...],
-        #
-        #      # The set of symlinks to create within a given layer.
-        #      symlinks = {
-        #          "/path/to/link": "/path/to/target",
-        #          ...
-        #      },
-        #
-        #      # Other layers built from container_layer rule
-        #      layers = [":c-lang-layer", ":java-lang-layer", ...]
-        #
-        #      # https://docs.docker.com/engine/reference/builder/#entrypoint
-        #      entrypoint="...", or
-        #      entrypoint=[...],            -- exec form
-        #
-        #      # https://docs.docker.com/engine/reference/builder/#cmd
-        #      cmd="...", or
-        #      cmd=[...],                   -- exec form
-        #
-        #      # https://docs.docker.com/engine/reference/builder/#expose
-        #      ports=[...],
-        #
-        #      # https://docs.docker.com/engine/reference/builder/#user
-        #      # NOTE: the normal directive affects subsequent RUN, CMD,
-        #      # and ENTRYPOINT
-        #      user="...",
-        #
-        #      # https://docs.docker.com/engine/reference/builder/#volume
-        #      volumes=[...],
-        #
-        #      # https://docs.docker.com/engine/reference/builder/#workdir
-        #      # NOTE: the normal directive affects subsequent RUN, CMD,
-        #      # ENTRYPOINT, ADD, and COPY, but this attribute only affects
-        #      # the entry point.
-        #      workdir="...",
-        #
-        #      # https://docs.docker.com/engine/reference/builder/#env
-        #      env = {
-        #         "var1": "val1",
-        #         "var2": "val2",
-        #         ...
-        #         "varN": "valN",
-        #      },
-        #   )
+# Produces a new container image tarball compatible with 'docker load', which
+# is a single additional layer atop 'base'.  The goal is to have relatively
+# complete support for building container image, from the Dockerfile spec.
+#
+# For more information see the 'Config' section of the image specification:
+# https://github.com/opencontainers/image-spec/blob/v0.2.0/serialization.md
+#
+# Only 'name' is required. All other fields have sane defaults.
+#
+#   container_image(
+#      name="...",
+#      visibility="...",
+#
+#      # The base layers on top of which to overlay this layer,
+#      # equivalent to FROM.
+#      base="//another/build:rule",
+#
+#      # The base directory of the files, defaulted to
+#      # the package of the input.
+#      # All files structure relatively to that path will be preserved.
+#      # A leading '/' mean the workspace root and this path is relative
+#      # to the current package by default.
+#      data_path="...",
+#
+#      # The directory in which to expand the specified files,
+#      # defaulting to '/'.
+#      # Only makes sense accompanying one of files/tars/debs.
+#      directory="...",
+#
+#      # The set of archives to expand, or packages to install
+#      # within the chroot of this layer
+#      files=[...],
+#      tars=[...],
+#      debs=[...],
+#
+#      # The set of symlinks to create within a given layer.
+#      symlinks = {
+#          "/path/to/link": "/path/to/target",
+#          ...
+#      },
+#
+#      # Other layers built from container_layer rule
+#      layers = [":c-lang-layer", ":java-lang-layer", ...]
+#
+#      # https://docs.docker.com/engine/reference/builder/#entrypoint
+#      entrypoint="...", or
+#      entrypoint=[...],            -- exec form
+#
+#      # https://docs.docker.com/engine/reference/builder/#cmd
+#      cmd="...", or
+#      cmd=[...],                   -- exec form
+#
+#      # https://docs.docker.com/engine/reference/builder/#expose
+#      ports=[...],
+#
+#      # https://docs.docker.com/engine/reference/builder/#user
+#      # NOTE: the normal directive affects subsequent RUN, CMD,
+#      # and ENTRYPOINT
+#      user="...",
+#
+#      # https://docs.docker.com/engine/reference/builder/#volume
+#      volumes=[...],
+#
+#      # https://docs.docker.com/engine/reference/builder/#workdir
+#      # NOTE: the normal directive affects subsequent RUN, CMD,
+#      # ENTRYPOINT, ADD, and COPY, but this attribute only affects
+#      # the entry point.
+#      workdir="...",
+#
+#      # https://docs.docker.com/engine/reference/builder/#env
+#      env = {
+#         "var1": "val1",
+#         "var2": "val2",
+#         ...
+#         "varN": "valN",
+#      },
+#   )
 
 def container_image(**kwargs):
     """Package a docker image.

@@ -35,7 +35,7 @@ def _impl(ctx):
         load_statement = "docker load -i %s" % ctx.file.image_tar.short_path
         image_name = ctx.attr.image_name
 
-        # Generate a shell script to execute structure_tests with the correct flags.
+    # Generate a shell script to execute structure_tests with the correct flags.
     ctx.actions.expand_template(
         template = ctx.file._structure_test_tpl,
         output = ctx.outputs.executable,

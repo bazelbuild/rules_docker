@@ -104,7 +104,7 @@ def zip_layer(ctx, layer):
     zipped_layer = _gzip(ctx, layer)
     return zipped_layer, _sha256(ctx, zipped_layer)
 
-    # A provider containing information needed in container_image and other rules.
+# A provider containing information needed in container_image and other rules.
 
 LayerInfo = provider(fields = [
     "zipped_layer",

@@ -18,8 +18,8 @@ The signature of this rule is compatible with nodejs_binary.
 
 load(
     "//lang:image.bzl",
-    "dep_layer_impl",
     "app_layer",
+    "dep_layer_impl",
 )
 load(
     "//container:container.bzl",

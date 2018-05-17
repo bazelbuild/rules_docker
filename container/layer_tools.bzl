@@ -106,8 +106,8 @@ def incremental_load(
     if stamp:
         stamp_files = [ctx.info_file, ctx.version_file]
 
-        # Default to interactively launching the container,
-        # and cleaning up when it exits.
+    # Default to interactively launching the container,
+    # and cleaning up when it exits.
 
     run_flags = run_flags or "-i --rm"
 

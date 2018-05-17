@@ -62,8 +62,8 @@ def repositories():
             tag = CONTAINERREGISTRY_RELEASE,
         )
 
-        # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
-        # once transitive workspace instantiation lands.
+    # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
+    # once transitive workspace instantiation lands.
 
     if "httplib2" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
@@ -82,7 +82,7 @@ py_library(
 )""",
         )
 
-        # Used by oauth2client
+    # Used by oauth2client
     if "six" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         native.new_http_archive(
@@ -106,7 +106,7 @@ py_library(
 )""",
         )
 
-        # Used for authentication in containerregistry
+    # Used for authentication in containerregistry
     if "oauth2client" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         native.new_http_archive(
@@ -127,7 +127,7 @@ py_library(
 )""",
         )
 
-        # Used for parallel execution in containerregistry
+    # Used for parallel execution in containerregistry
     if "concurrent" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         native.new_http_archive(
@@ -144,7 +144,7 @@ py_library(
 )""",
         )
 
-        # For packaging python tools.
+    # For packaging python tools.
     if "subpar" not in excludes:
         native.git_repository(
             name = "subpar",
@@ -159,7 +159,7 @@ py_library(
             commit = STRUCTURE_TEST_COMMIT,
         )
 
-        # For skylark_library.
+    # For skylark_library.
     if "bazel_skylib" not in excludes:
         native.git_repository(
             name = "bazel_skylib",

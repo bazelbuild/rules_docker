@@ -18,8 +18,8 @@ The signature of this rule is compatible with rust_binary.
 
 load(
     "//lang:image.bzl",
-    "dep_layer",
     "app_layer",
+    "dep_layer",
 )
 load(
     "//cc:image.bzl",
