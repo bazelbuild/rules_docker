@@ -18,8 +18,8 @@ The signature of this rule is compatible with go_binary.
 
 load(
     "//lang:image.bzl",
-    "dep_layer",
     "app_layer",
+    "dep_layer",
 )
 load(
     "//container:container.bzl",

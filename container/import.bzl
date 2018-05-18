@@ -81,8 +81,8 @@ def _container_import_impl(ctx):
         unzipped_layers += [unzipped]
         diff_ids += [diff_id]
 
-        # These are the constituent parts of the Container image, which each
-        # rule in the chain must preserve.
+    # These are the constituent parts of the Container image, which each
+    # rule in the chain must preserve.
 
     container_parts = {
         # The path to the v2.2 configuration file.
