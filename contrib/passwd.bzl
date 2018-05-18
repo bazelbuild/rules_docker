@@ -84,7 +84,7 @@ passwd_entry = rule(
         "home": attr.string(default = "/home"),
         "shell": attr.string(default = "/bin/bash"),
     },
-    implementation = _passwd_entry_impl
+    implementation = _passwd_entry_impl,
 )
 
 passwd_file = rule(
