@@ -37,3 +37,15 @@ container_test(
     configs = ["//tests/docker/configs:deb_image_with_dpkgs.yaml"],
     image = ":deb_image_with_dpkgs",
 )
+
+container_test(
+    name = "with_passwd_homedirs_test",
+    configs = ["//tests/docker/configs:with_passwd_homedirs.yaml"],
+    image = "//testdata:with_passwd_homedirs",
+)
+
+container_test(
+    name = "with_passwd_test",
+    configs = ["//tests/docker/configs:with_passwd.yaml"],
+    image = "//testdata:with_passwd",
+)

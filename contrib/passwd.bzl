@@ -36,6 +36,27 @@ def _passwd_entry_impl(ctx):
         name = ctx.attr.name,
     )]
 
+def _build_homedirs_tar(ctx):
+    homedirs = []
+    owners_map = {}
+    for entry in ctx.attr.entries:
+        homedir = entry[PasswdFileContentProvider].home
+        owners_map[homedir] = "{uid}.{gid}".format(
+            uid=entry[PasswdFileContentProvider].uid,
+            gid=entry[PasswdFileContentProvider].gid)
+        homedirs.append(homedir)
+    args = ["--output=" + ctx.outputs.homedirs_tar.path, "--mode=0700"]
+    args += ["--empty_dir=%s" % homedir for homedir in homedirs]
+    args += ["--owners=%s=%s" % (key, owners_map[key]) for key in owners_map]
+
+    ctx.actions.run(
+        executable=ctx.executable.build_tar,
+        inputs = [],
+        outputs = [ctx.outputs.homedirs_tar],
+        mnemonic="HomedirsPackageTar",
+        arguments = args,
+    )
+
 def _passwd_file_impl(ctx):
     """Core implementation of passwd_file."""
     f = "".join(["%s:x:%s:%s:%s:%s:%s\n" % (
@@ -48,7 +69,11 @@ def _passwd_file_impl(ctx):
     ) for entry in ctx.attr.entries])
     passwd_file = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.write(output = passwd_file, content = f)
+
+    _build_homedirs_tar(ctx)
+
     return DefaultInfo(files = depset([passwd_file]))
+
 
 passwd_entry = rule(
     attrs = {
@@ -59,7 +84,7 @@ passwd_entry = rule(
         "home": attr.string(default = "/home"),
         "shell": attr.string(default = "/bin/bash"),
     },
-    implementation = _passwd_entry_impl,
+    implementation = _passwd_entry_impl
 )
 
 passwd_file = rule(
@@ -68,7 +93,16 @@ passwd_file = rule(
             allow_empty = False,
             providers = [PasswdFileContentProvider],
         ),
+        "build_tar": attr.label(
+            default = Label("//container:build_tar"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
     },
     executable = False,
+    outputs = {
+        "homedirs_tar": "%{name}-homedirs.tar",
+    },
     implementation = _passwd_file_impl,
 )

@@ -22,6 +22,8 @@ load(
     "container_import",
     "container_layer",
 )
+load("//contrib:test.bzl", "container_test")
+
 load("//testdata:utils.bzl", "generate_deb")
 
 exports_files(["pause.tar"])
@@ -533,6 +535,13 @@ container_image(
     tars = [":passwd_tar"],
 )
 
+container_image(
+    name = "with_passwd_homedirs",
+    tars = [":passwd_tar",
+            ":passwd-homedirs.tar"
+            ],
+)
+
 load("//contrib:group.bzl", "group_entry", "group_file")
 
 group_entry(
@@ -867,14 +876,15 @@ rust_image(
 
 load("//d:image.bzl", "d_image")
 
-d_image(
-    name = "d_image",
-    srcs = ["main.d"],
-    args = [
-        "arg0",
-        "arg1",
-    ],
-)
+# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+#d_image(
+#    name = "d_image",
+#    srcs = ["main.d"],
+#    args = [
+#        "arg0",
+#        "arg1",
+#    ],
+#)
 
 load("//nodejs:image.bzl", "nodejs_image")
 
