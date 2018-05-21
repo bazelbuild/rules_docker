@@ -23,7 +23,6 @@ load(
     "container_layer",
 )
 load("//contrib:test.bzl", "container_test")
-
 load("//testdata:utils.bzl", "generate_deb")
 
 exports_files(["pause.tar"])
@@ -537,9 +536,10 @@ container_image(
 
 container_image(
     name = "with_passwd_homedirs",
-    tars = [":passwd_tar",
-            ":passwd-homedirs.tar"
-            ],
+    tars = [
+        ":passwd_tar",
+        ":passwd-homedirs.tar",
+    ],
 )
 
 load("//contrib:group.bzl", "group_entry", "group_file")

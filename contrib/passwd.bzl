@@ -74,7 +74,6 @@ def _passwd_file_impl(ctx):
 
     return DefaultInfo(files = depset([passwd_file]))
 
-
 passwd_entry = rule(
     attrs = {
         "username": attr.string(mandatory = True),
