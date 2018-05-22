@@ -17,7 +17,7 @@ def dirname(path):
     """Returns the directory's name."""
     last_sep = path.rfind("/")
     if last_sep == -1:
-        return ""  # The artifact is at the top level.
+        return ""
     return path[:last_sep]
 
 def join(directory, path):
@@ -34,11 +34,12 @@ def canonicalize(path):
     """Canonicalize the input path."""
     if not path:
         return path
-        # Strip ./ from the beginning if specified.
-        # There is no way to handle .// correctly (no function that would make
-        # that possible and Skylark is not turing complete) so just consider it
-        # as an absolute path. A path of / should preserve the entire
-        # path up to the repository root.
+
+    # Strip ./ from the beginning if specified.
+    # There is no way to handle .// correctly (no function that would make
+    # that possible and Skylark is not turing complete) so just consider it
+    # as an absolute path. A path of / should preserve the entire
+    # path up to the repository root.
 
     if path == "/":
         return path

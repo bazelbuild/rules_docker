@@ -19,8 +19,8 @@ load(
     "container_bundle",
     "container_flatten",
     "container_image",
-    "container_layer",
     "container_import",
+    "container_layer",
 )
 load("//testdata:utils.bzl", "generate_deb")
 

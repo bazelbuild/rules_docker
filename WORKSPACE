@@ -15,8 +15,8 @@ workspace(name = "io_bazel_rules_docker")
 
 load(
     "//container:container.bzl",
-    "container_pull",
     "container_load",
+    "container_pull",
     container_repositories = "repositories",
 )
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -113,7 +113,7 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_go/archive/0.12.0.tar.gz"],
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
 
