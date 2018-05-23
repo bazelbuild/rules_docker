@@ -142,9 +142,9 @@ def _jar_app_layer_impl(ctx):
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
 
-        # We compute the set of unavailable stuff by walking deps
-        # in the same way, adding in our binary and then subtracting
-        # out what it available.
+    # We compute the set of unavailable stuff by walking deps
+    # in the same way, adding in our binary and then subtracting
+    # out what it available.
 
     unavailable = depset()
     for jar in ctx.attr.deps + ctx.attr.runtime_deps:
@@ -314,7 +314,7 @@ def _war_app_layer_impl(ctx):
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
 
-        # This is based on rules_appengine's WAR rules.
+    # This is based on rules_appengine's WAR rules.
     transitive_deps = depset()
     transitive_deps += java_files(ctx.attr.library)
 

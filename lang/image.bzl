@@ -33,67 +33,67 @@ def _runfiles_dir(ctx):
     # /app/bar/baz/blah.runfiles
     return _binary_name(ctx) + ".runfiles"
 
-    # The directory relative to which all ".short_path" paths are relative.
+# The directory relative to which all ".short_path" paths are relative.
 
 def _reference_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles/foo
     return "/".join([_runfiles_dir(ctx), ctx.workspace_name])
 
-    # The special "external" directory which is an alternate way of accessing
-    # other repositories.
+# The special "external" directory which is an alternate way of accessing
+# other repositories.
 
 def _external_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles/foo/external
     return "/".join([_reference_dir(ctx), "external"])
 
-    # The final location that this file needs to exist for the foo_binary target to
-    # properly execute.
+# The final location that this file needs to exist for the foo_binary target to
+# properly execute.
 
 def _final_emptyfile_path(ctx, name):
     if not name.startswith("external/"):
         # Names that don't start with external are relative to our own workspace.
         return _reference_dir(ctx) + "/" + name
 
-        # References to workspace-external dependencies, which are identifiable
-        # because their path begins with external/, are inconsistent with the
-        # form of their File counterparts, whose ".short_form" is relative to
-        #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
-        # whereas we see:
-        #    external/foreign-workspace/...
-        # so we "fix" the empty files' paths by removing "external/" and basing them
-        # directly on the runfiles path.
+    # References to workspace-external dependencies, which are identifiable
+    # because their path begins with external/, are inconsistent with the
+    # form of their File counterparts, whose ".short_form" is relative to
+    #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
+    # whereas we see:
+    #    external/foreign-workspace/...
+    # so we "fix" the empty files' paths by removing "external/" and basing them
+    # directly on the runfiles path.
 
     return "/".join([_runfiles_dir(ctx), name[len("external/"):]])
 
-    # The final location that this file needs to exist for the foo_binary target to
-    # properly execute.
+# The final location that this file needs to exist for the foo_binary target to
+# properly execute.
 
 def _final_file_path(ctx, f):
     return "/".join([_reference_dir(ctx), f.short_path])
 
-    # The foo_binary independent location in which we store a particular dependency's
-    # file such that it can be shared.
+# The foo_binary independent location in which we store a particular dependency's
+# file such that it can be shared.
 
 def _layer_emptyfile_path(ctx, name):
     if not name.startswith("external/"):
         # Names that don't start with external are relative to our own workspace.
         return "/".join([ctx.attr.directory, ctx.workspace_name, name])
 
-        # References to workspace-external dependencies, which are identifiable
-        # because their path begins with external/, are inconsistent with the
-        # form of their File counterparts, whose ".short_form" is relative to
-        #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
-        # whereas we see:
-        #    external/foreign-workspace/...
-        # so we "fix" the empty files' paths by removing "external/" and basing them
-        # directly on the runfiles path.
+    # References to workspace-external dependencies, which are identifiable
+    # because their path begins with external/, are inconsistent with the
+    # form of their File counterparts, whose ".short_form" is relative to
+    #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
+    # whereas we see:
+    #    external/foreign-workspace/...
+    # so we "fix" the empty files' paths by removing "external/" and basing them
+    # directly on the runfiles path.
 
     return "/".join([ctx.attr.directory, name[len("external/"):]])
 
-    # The foo_binary independent location in which we store a particular dependency's
-    # file such that it can be shared.
+# The foo_binary independent location in which we store a particular dependency's
+# file such that it can be shared.
 
 def layer_file_path(ctx, f):
     return "/".join([ctx.attr.directory, ctx.workspace_name, f.short_path])
@@ -180,8 +180,8 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
             for f in emptyfiles(dep)
         })
 
-        # Compute the set of remaining runfiles to include into the
-        # application layer.
+    # Compute the set of remaining runfiles to include into the
+    # application layer.
 
     file_map = {
         _final_file_path(ctx, f): f

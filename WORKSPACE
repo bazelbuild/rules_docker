@@ -15,10 +15,11 @@ workspace(name = "io_bazel_rules_docker")
 
 load(
     "//container:container.bzl",
-    "container_pull",
     "container_load",
+    "container_pull",
     container_repositories = "repositories",
 )
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
 # instantiated recursively.
@@ -81,10 +82,11 @@ maven_jar(
 )
 
 # For our scala_image test.
-git_repository(
+http_archive(
     name = "io_bazel_rules_scala",
-    commit = "0bac7fe86fdde1cfba3bb2c8a04de5e12de47bcd",
-    remote = "https://github.com/bazelbuild/rules_scala.git",
+    sha256 = "f5f35de94d2d64e48fb4aef87cf89248b8980cb25f9ff1449575af8d904f41be",
+    strip_prefix = "rules_scala-0bac7fe86fdde1cfba3bb2c8a04de5e12de47bcd",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/0bac7fe86fdde1cfba3bb2c8a04de5e12de47bcd.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -92,10 +94,11 @@ load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
 scala_repositories()
 
 # For our groovy_image test.
-git_repository(
+http_archive(
     name = "io_bazel_rules_groovy",
-    commit = "6b8e32ce0f7e33ae1b859706c2dc0c169b966e7e",
-    remote = "https://github.com/bazelbuild/rules_groovy.git",
+    sha256 = "c54168848cf2b733cb95fda4eaacd74a94c052e2e9db086253555686ae70d53f",
+    strip_prefix = "rules_groovy-54cb1746d0832feca3a610fef7da92bbe6e7cbd4",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/54cb1746d0832feca3a610fef7da92bbe6e7cbd4.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -105,11 +108,12 @@ groovy_repositories()
 # For our go_image test.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "4d8d6244320dd751590f9100cf39fd7a4b75cd901e1f3ffdfd6f048328883695",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.9.0/rules_go-0.9.0.tar.gz",
+    sha256 = "6dcc2cb319da10d33a810f4b330896de9beebbdd3d3392f6a19cf32bcc1b908d",
+    strip_prefix = "rules_go-0.12.0",
+    urls = ["https://github.com/bazelbuild/rules_go/archive/0.12.0.tar.gz"],
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
 
@@ -124,10 +128,11 @@ load(
 _go_image_repos()
 
 # For our rust_image test
-git_repository(
+http_archive(
     name = "io_bazel_rules_rust",
-    commit = "7b1ba1f2a89006fbe358e97011cb1c1516435806",
-    remote = "https://github.com/bazelbuild/rules_rust.git",
+    sha256 = "615639cfd5459fec4b8a5751112be808ab25ba647c4c1953d29bb554ef865da7",
+    strip_prefix = "rules_rust-0.0.6",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/0.0.6.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -135,20 +140,22 @@ load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
 rust_repositories()
 
 # For our d_image test
-git_repository(
+http_archive(
     name = "io_bazel_rules_d",
-    commit = "0400b9b054013274cee2ed15679da19e1fc94e07",
-    remote = "https://github.com/bazelbuild/rules_d.git",
+    sha256 = "527908e02d7bccf5a4eb89b690b003247eb6c57d69cc3234977c034d27c59d6e",
+    strip_prefix = "rules_d-0400b9b054013274cee2ed15679da19e1fc94e07",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/0400b9b054013274cee2ed15679da19e1fc94e07.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
 
 d_repositories()
 
-git_repository(
+http_archive(
     name = "build_bazel_rules_nodejs",
-    commit = "5c53b46110d13c4c9f22364e96b2d0f55896d7aa",
-    remote = "https://github.com/bazelbuild/rules_nodejs.git",
+    sha256 = "6139762b62b37c1fd171d7f22aa39566cb7dc2916f0f801d505a9aaf118c117f",
+    strip_prefix = "rules_nodejs-0.9.1",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.9.1.zip"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")

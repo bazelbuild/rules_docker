@@ -82,11 +82,15 @@ or `container_image` target).
 Add the following to your `WORKSPACE` file to add the external repositories:
 
 ```python
-git_repository(
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
     name = "io_bazel_rules_docker",
-    remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.4.0",
+    sha256 = "6dede2c65ce86289969b907f343a1382d33c14fbce5e30dd17bb59bb55bb6593",
+    strip_prefix = "rules_docker-0.4.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.4.0.tar.gz"],
 )
+
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
@@ -378,11 +382,15 @@ utilizing the `gcr.io/google-appengine/debian9` image as our base.
 To use `nodejs_image`, add the following to `WORKSPACE`:
 
 ```python
-git_repository(
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
     name = "build_bazel_rules_nodejs",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
     # Replace with a real commit SHA
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_nodejs.git",
+    strip_prefix = "rules_nodejs-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/{HEAD}.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
@@ -425,11 +433,16 @@ nodejs_image(
 To use `go_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Go rules before setting up the go_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_go",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_go.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_go-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_go/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
@@ -579,11 +592,16 @@ war_image(
 To use `scala_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Scala rules before setting up the scala_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_scala",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_scala.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_scala-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -615,11 +633,16 @@ scala_image(
 To use `groovy_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Groovy rules before setting up the groovy_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_groovy",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_groovy.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_groovy-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -651,11 +674,16 @@ groovy_image(
 To use `rust_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Rust rules before setting up the rust_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_rust",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_rust.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_rust-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -686,11 +714,16 @@ rust_image(
 To use `d_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the D rules before setting up the d_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_d",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_d.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_d-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")

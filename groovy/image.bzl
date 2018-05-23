@@ -21,8 +21,8 @@ load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
-    "jar_dep_layer",
     "jar_app_layer",
+    "jar_dep_layer",
     _repositories = "repositories",
 )
 
@@ -54,7 +54,7 @@ def groovy_image(
         )
         deps = deps + [binary_name + "-lib"]
 
-        # This always belongs in a separate layer.
+    # This always belongs in a separate layer.
     layers = layers + ["//external:groovy"]
 
     native.java_binary(

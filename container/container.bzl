@@ -62,16 +62,16 @@ def repositories():
             tag = CONTAINERREGISTRY_RELEASE,
         )
 
-        # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
-        # once transitive workspace instantiation lands.
+    # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
+    # once transitive workspace instantiation lands.
 
     if "httplib2" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         native.new_http_archive(
             name = "httplib2",
-            url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.10.3",
-            sha256 = "d1bee28a68cc665c451c83d315e3afdbeb5391f08971dcc91e060d5ba16986f1",
-            strip_prefix = "httplib2-0.10.3/python2/httplib2/",
+            url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3",
+            sha256 = "d9f568c183d1230f271e9c60bd99f3f2b67637c3478c9068fea29f7cca3d911f",
+            strip_prefix = "httplib2-0.11.3/python2/httplib2/",
             type = "tar.gz",
             build_file_content = """
 py_library(
@@ -82,7 +82,7 @@ py_library(
 )""",
         )
 
-        # Used by oauth2client
+    # Used by oauth2client
     if "six" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         native.new_http_archive(
@@ -106,7 +106,7 @@ py_library(
 )""",
         )
 
-        # Used for authentication in containerregistry
+    # Used for authentication in containerregistry
     if "oauth2client" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         native.new_http_archive(
@@ -127,7 +127,7 @@ py_library(
 )""",
         )
 
-        # Used for parallel execution in containerregistry
+    # Used for parallel execution in containerregistry
     if "concurrent" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         native.new_http_archive(
@@ -144,11 +144,11 @@ py_library(
 )""",
         )
 
-        # For packaging python tools.
+    # For packaging python tools.
     if "subpar" not in excludes:
         native.git_repository(
             name = "subpar",
-            remote = "https://github.com/google/subpar",
+            remote = "https://github.com/google/subpar.git",
             commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
         )
 
@@ -159,7 +159,7 @@ py_library(
             commit = STRUCTURE_TEST_COMMIT,
         )
 
-        # For skylark_library.
+    # For skylark_library.
     if "bazel_skylib" not in excludes:
         native.git_repository(
             name = "bazel_skylib",
