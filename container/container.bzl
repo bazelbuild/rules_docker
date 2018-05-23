@@ -149,7 +149,7 @@ py_library(
     if "subpar" not in excludes:
         native.git_repository(
             name = "subpar",
-            remote = "https://github.com/google/subpar",
+            remote = "https://github.com/google/subpar.git",
             commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
         )
 
