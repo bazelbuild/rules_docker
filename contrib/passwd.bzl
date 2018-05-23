@@ -42,18 +42,19 @@ def _build_homedirs_tar(ctx):
     for entry in ctx.attr.entries:
         homedir = entry[PasswdFileContentProvider].home
         owners_map[homedir] = "{uid}.{gid}".format(
-            uid=entry[PasswdFileContentProvider].uid,
-            gid=entry[PasswdFileContentProvider].gid)
+            uid = entry[PasswdFileContentProvider].uid,
+            gid = entry[PasswdFileContentProvider].gid,
+        )
         homedirs.append(homedir)
     args = ["--output=" + ctx.outputs.homedirs_tar.path, "--mode=0700"]
     args += ["--empty_dir=%s" % homedir for homedir in homedirs]
     args += ["--owners=%s=%s" % (key, owners_map[key]) for key in owners_map]
 
     ctx.actions.run(
-        executable=ctx.executable.build_tar,
+        executable = ctx.executable.build_tar,
         inputs = [],
         outputs = [ctx.outputs.homedirs_tar],
-        mnemonic="HomedirsPackageTar",
+        mnemonic = "HomedirsPackageTar",
         arguments = args,
     )
 
