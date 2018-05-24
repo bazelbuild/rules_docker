@@ -24,6 +24,7 @@ from containerregistry.client.v2_2 import docker_image as v2_2_image
 
 TEST_DATA_TARGET_BASE='testdata'
 DIR_PERMISSION=448 # decimal for oct 0700
+PASSWD_FILE_MODE=420  # decimal for oct 0644
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
@@ -393,10 +394,11 @@ class ImageTest(unittest.TestCase):
         self.assertEqual(
           'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
           content)
+        self.assertEqual(layer.getmember("./etc/passwd").mode, PASSWD_FILE_MODE)
 
   def test_with_passwd_tar(self):
     with TestImage('with_passwd_tar') as img:
-      self.assertDigest(img, '180c22e2083c1260d736abe6658e8a61eaed46d7da5a26de1eef01b758e0ce55')
+      self.assertDigest(img, 'b8f091c370d6a8a6f74e11327f52e579f73dd93d9cf82e39e83b3096bb0c2256')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
 
@@ -406,6 +408,7 @@ class ImageTest(unittest.TestCase):
         self.assertEqual(
           'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
           content)
+        self.assertEqual(layer.getmember("./etc/password").mode, PASSWD_FILE_MODE)
         self.assertTarInfo(layer.getmember("./root"), 0, 0, DIR_PERMISSION, True)
         self.assertTarInfo(layer.getmember("./myhomedir"), 1234, 2345, DIR_PERMISSION, True)
 
