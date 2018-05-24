@@ -109,6 +109,8 @@ TEST_TARGETS = [
     "workdir_with_tar_base",
     "link_with_files_base",
     "build_with_tag",
+    "with_passwd",
+    "with_passwd_tar",
     "with_group",
     "with_empty_files",
     "with_empty_dirs",

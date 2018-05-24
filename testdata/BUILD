@@ -22,7 +22,6 @@ load(
     "container_import",
     "container_layer",
 )
-load("//contrib:test.bzl", "container_test")
 load("//testdata:utils.bzl", "generate_deb")
 
 exports_files(["pause.tar"])
@@ -492,7 +491,7 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_entry", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
 
 passwd_entry(
     name = "root_user",
@@ -529,16 +528,25 @@ pkg_tar(
     package_dir = "etc",
 )
 
+passwd_tar(
+    name = "password",
+    entries = [
+        ":root_user",
+        ":foobar_user",
+    ],
+    passwd_file_pkg_dir = "etc",
+
+)
+
 container_image(
     name = "with_passwd",
     tars = [":passwd_tar"],
 )
 
 container_image(
-    name = "with_passwd_homedirs",
+    name = "with_passwd_tar",
     tars = [
-        ":passwd_tar",
-        ":passwd-homedirs.tar",
+        ":password",
     ],
 )
 
