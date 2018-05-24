@@ -73,6 +73,7 @@ def _build_homedirs_tar(ctx, passwd_file):
         "--output=" + ctx.outputs.passwd_tar.path,
         "--mode=0700",
         "--file=%s=%s" % (passwd_file.path, dest_file),
+        "--modes=%s=%s" % (dest_file, ctx.attr.passwd_file_mode),
     ]
     args += ["--empty_dir=%s" % homedir for homedir in homedirs]
     args += ["--owners=%s=%s" % (key, owners_map[key]) for key in owners_map]
@@ -132,6 +133,7 @@ passwd_tar = rule(
             providers = [PasswdFileContentProvider],
         ),
         "passwd_file_pkg_dir": attr.string(mandatory = True),
+        "passwd_file_mode": attr.string(default = "0644"),
         "build_tar": attr.label(
             default = Label("//container:build_tar"),
             cfg = "host",
