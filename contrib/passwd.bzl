@@ -65,11 +65,15 @@ def _build_homedirs_tar(ctx, passwd_file):
             gid = entry[PasswdFileContentProvider].gid,
         )
         homedirs.append(homedir)
-    dest_file = _join_path(ctx.attr.passwd_file_pkg_dir,
-                ctx.label.name)
-    args = ["--output=" + ctx.outputs.passwd_tar.path,
-            "--mode=0700",
-            "--file=%s=%s" % (passwd_file.path, dest_file)]
+    dest_file = _join_path(
+        ctx.attr.passwd_file_pkg_dir,
+        ctx.label.name,
+    )
+    args = [
+        "--output=" + ctx.outputs.passwd_tar.path,
+        "--mode=0700",
+        "--file=%s=%s" % (passwd_file.path, dest_file),
+    ]
     args += ["--empty_dir=%s" % homedir for homedir in homedirs]
     args += ["--owners=%s=%s" % (key, owners_map[key]) for key in owners_map]
     ctx.actions.run(
@@ -137,7 +141,7 @@ passwd_tar = rule(
     },
     executable = False,
     outputs = {
-        "passwd_tar": "%{name}.tar"
+        "passwd_tar": "%{name}.tar",
     },
     implementation = _passwd_tar_impl,
 )

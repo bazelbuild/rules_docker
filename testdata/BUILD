@@ -535,7 +535,6 @@ passwd_tar(
         ":foobar_user",
     ],
     passwd_file_pkg_dir = "etc",
-
 )
 
 container_image(
