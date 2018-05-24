@@ -23,6 +23,7 @@ from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 
 TEST_DATA_TARGET_BASE='testdata'
+DIR_PERMISSION=448 # decimal for oct 0700
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
@@ -54,6 +55,12 @@ class ImageTest(unittest.TestCase):
 
   def assertDigest(self, img, digest):
     self.assertEqual(img.digest(), 'sha256:' + digest)
+
+  def assertTarInfo(self, tarinfo, uid, gid, mode, isdir):
+    self.assertEqual(tarinfo.uid, uid)
+    self.assertEqual(tarinfo.gid, gid)
+    self.assertEqual(tarinfo.mode, mode)
+    self.assertEqual(tarinfo.isdir(), isdir)
 
   def test_files_base(self):
     with TestImage('files_base') as img:
@@ -387,6 +394,22 @@ class ImageTest(unittest.TestCase):
           'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
           content)
 
+  def test_with_passwd_tar(self):
+    with TestImage('with_passwd_tar') as img:
+      self.assertDigest(img, '180c22e2083c1260d736abe6658e8a61eaed46d7da5a26de1eef01b758e0ce55')
+      self.assertEqual(1, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
+
+      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      with tarfile.open(fileobj=buf, mode='r') as layer:
+        content = layer.extractfile('./etc/password').read()
+        self.assertEqual(
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          content)
+        self.assertTarInfo(layer.getmember("./root"), 0, 0, DIR_PERMISSION, True)
+        self.assertTarInfo(layer.getmember("./myhomedir"), 1234, 2345, DIR_PERMISSION, True)
+
+
   def test_with_group(self):
     with TestImage('with_group') as img:
       self.assertDigest(img, 'd6384ee5db847e2c8a9e941d78c10bec987aa9cbd4b5b84847e20336ec09d49c')
@@ -548,12 +571,13 @@ class ImageTest(unittest.TestCase):
         'arg0',
         'arg1'])
 
-  def test_d_image_args(self):
-    with TestImage('d_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/d_image_binary',
-        'arg0',
-        'arg1'])
+  # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+  # def test_d_image_args(self):
+  #  with TestImage('d_image') as img:
+  #    self.assertConfigEqual(img, 'Entrypoint', [
+  #      '/app/testdata/d_image_binary',
+  #      'arg0',
+  #      'arg1'])
 
   def test_py_image_args(self):
     with TestImage('py_image') as img:

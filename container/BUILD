@@ -110,6 +110,7 @@ TEST_TARGETS = [
     "link_with_files_base",
     "build_with_tag",
     "with_passwd",
+    "with_passwd_tar",
     "with_group",
     "with_empty_files",
     "with_empty_dirs",
@@ -130,7 +131,8 @@ TEST_TARGETS = [
     "pause_piecemeal",
     "pause_piecemeal_gz",
     "cc_image",
-    "d_image",
+    # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+    # "d_image",
     "go_image",
     "groovy_image",
     "java_image",
