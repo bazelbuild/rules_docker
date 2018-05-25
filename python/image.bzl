@@ -58,7 +58,7 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py_image_base//image",
 })
 
-def py_image(name, base = None, deps = [], layers = [], **kwargs):
+def py_image(name, base = None, deps = [], layers = [], directory = "/app", **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
@@ -81,7 +81,7 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
+        dep_layer(name = this_name, base = base, dep = dep, directory = directory)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -94,5 +94,6 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         lang_layers = layers,
         visibility = visibility,
         tags = tags,
+        directory = directory,
         args = kwargs.get("args"),
     )
