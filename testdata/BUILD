@@ -491,7 +491,7 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_entry", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
 
 passwd_entry(
     name = "root_user",
@@ -528,9 +528,25 @@ pkg_tar(
     package_dir = "etc",
 )
 
+passwd_tar(
+    name = "password",
+    entries = [
+        ":root_user",
+        ":foobar_user",
+    ],
+    passwd_file_pkg_dir = "etc",
+)
+
 container_image(
     name = "with_passwd",
     tars = [":passwd_tar"],
+)
+
+container_image(
+    name = "with_passwd_tar",
+    tars = [
+        ":password",
+    ],
 )
 
 load("//contrib:group.bzl", "group_entry", "group_file")
@@ -867,14 +883,15 @@ rust_image(
 
 load("//d:image.bzl", "d_image")
 
-d_image(
-    name = "d_image",
-    srcs = ["main.d"],
-    args = [
-        "arg0",
-        "arg1",
-    ],
-)
+# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+#d_image(
+#    name = "d_image",
+#    srcs = ["main.d"],
+#    args = [
+#        "arg0",
+#        "arg1",
+#    ],
+#)
 
 load("//nodejs:image.bzl", "nodejs_image")
 
