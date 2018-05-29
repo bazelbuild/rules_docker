@@ -331,7 +331,8 @@ test_groovy_scala_image -c opt
 test_groovy_scala_image -c dbg
 test_rust_image -c opt
 test_rust_image -c dbg
-test_d_image -c opt
-test_d_image -c dbg
+# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+# test_d_image -c opt
+# test_d_image -c dbg
 test_nodejs_image -c opt
 test_nodejs_image -c dbg
