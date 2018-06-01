@@ -58,7 +58,7 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py_image_base//image",
 })
 
-def py_image(name, base = None, deps = [], layers = [], directory = "/app", **kwargs):
+def py_image(name, base = None, deps = [], layers = [], directory = "/app",  workdir = "/app", **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
@@ -76,8 +76,6 @@ def py_image(name, base = None, deps = [], layers = [], directory = "/app", **kw
 
     native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
 
-    # TODO(mattmoor): Consider making the directory into which the app
-    # is placed configurable.
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
@@ -95,5 +93,6 @@ def py_image(name, base = None, deps = [], layers = [], directory = "/app", **kw
         visibility = visibility,
         tags = tags,
         directory = directory,
+        workdir = workdir,
         args = kwargs.get("args"),
     )
