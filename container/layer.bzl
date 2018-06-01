@@ -54,7 +54,7 @@ def _magic_path(ctx, f, output_layer):
         )
         # data path get get calculated incorrectly for external repo
         if data_path.startswith("/.."):
-            data_path = data_path[1:]        
+            data_path = data_path[1:]
         return strip_prefix(f.short_path, data_path)
     else:
         # Otherwise, files are added without a directory prefix at all.
