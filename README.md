@@ -466,8 +466,13 @@ go_image(
     name = "go_image",
     srcs = ["main.go"],
     importpath = "github.com/your/path/here",
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
 )
 ```
+Notice that it is important to explicitly specify `goarch`, `goos`, and `pure`
+as the binary should be built for Linux since it will run on a Linux container.
 
 ### go_image (custom base)
 
