@@ -23,12 +23,12 @@ load(
 )
 
 def _impl(repository_ctx):
-  """Core implementation of container_load."""
+    """Core implementation of container_load."""
 
-  # Add an empty top-level BUILD file.
-  repository_ctx.file("BUILD", "")
+    # Add an empty top-level BUILD file.
+    repository_ctx.file("BUILD", "")
 
-  repository_ctx.file("image/BUILD", """
+    repository_ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
@@ -38,16 +38,19 @@ container_import(
   config = "config.json",
   layers = glob(["*.tar"]),
 )
-""", executable=False)
+""", executable = False)
 
-  result = repository_ctx.execute([
-      _python(repository_ctx),
-      repository_ctx.path(repository_ctx.attr._importer),
-      "--directory", repository_ctx.path("image"),
-      "--tarball", repository_ctx.path(repository_ctx.attr.file)])
+    result = repository_ctx.execute([
+        _python(repository_ctx),
+        repository_ctx.path(repository_ctx.attr._importer),
+        "--directory",
+        repository_ctx.path("image"),
+        "--tarball",
+        repository_ctx.path(repository_ctx.attr.file),
+    ])
 
-  if result.return_code:
-    fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
+    if result.return_code:
+        fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
 
 container_load = repository_rule(
     attrs = {

@@ -35,44 +35,44 @@ load(
 )
 
 def repositories():
-  # Call the core "repositories" function to reduce boilerplate.
-  # This is idempotent if folks call it themselves.
-  _repositories()
+    # Call the core "repositories" function to reduce boilerplate.
+    # This is idempotent if folks call it themselves.
+    _repositories()
 
-  excludes = native.existing_rules().keys()
-  if "java_image_base" not in excludes:
-    container_pull(
-      name = "java_image_base",
-      registry = "gcr.io",
-      repository = "distroless/java",
-      digest = _JAVA_DIGESTS["latest"],
-    )
-  if "java_debug_image_base" not in excludes:
-    container_pull(
-      name = "java_debug_image_base",
-      registry = "gcr.io",
-      repository = "distroless/java",
-      digest = _JAVA_DIGESTS["debug"],
-    )
-  if "jetty_image_base" not in excludes:
-    container_pull(
-      name = "jetty_image_base",
-      registry = "gcr.io",
-      repository = "distroless/java/jetty",
-      digest = _JETTY_DIGESTS["latest"],
-    )
-  if "jetty_debug_image_base" not in excludes:
-    container_pull(
-      name = "jetty_debug_image_base",
-      registry = "gcr.io",
-      repository = "distroless/java/jetty",
-      digest = _JETTY_DIGESTS["debug"],
-    )
-  if "servlet_api" not in excludes:
-    native.maven_jar(
-        name = "javax_servlet_api",
-        artifact = "javax.servlet:javax.servlet-api:3.0.1",
-    )
+    excludes = native.existing_rules().keys()
+    if "java_image_base" not in excludes:
+        container_pull(
+            name = "java_image_base",
+            registry = "gcr.io",
+            repository = "distroless/java",
+            digest = _JAVA_DIGESTS["latest"],
+        )
+    if "java_debug_image_base" not in excludes:
+        container_pull(
+            name = "java_debug_image_base",
+            registry = "gcr.io",
+            repository = "distroless/java",
+            digest = _JAVA_DIGESTS["debug"],
+        )
+    if "jetty_image_base" not in excludes:
+        container_pull(
+            name = "jetty_image_base",
+            registry = "gcr.io",
+            repository = "distroless/java/jetty",
+            digest = _JETTY_DIGESTS["latest"],
+        )
+    if "jetty_debug_image_base" not in excludes:
+        container_pull(
+            name = "jetty_debug_image_base",
+            registry = "gcr.io",
+            repository = "distroless/java/jetty",
+            digest = _JETTY_DIGESTS["debug"],
+        )
+    if "javax_servlet_api" not in excludes:
+        native.maven_jar(
+            name = "javax_servlet_api",
+            artifact = "javax.servlet:javax.servlet-api:3.0.1",
+        )
 
 DEFAULT_JAVA_BASE = select({
     "@io_bazel_rules_docker//:fastbuild": "@java_image_base//image",
@@ -94,13 +94,13 @@ load(
 )
 
 def java_files(f):
-  files = []
-  if java_common.provider in f:
-    java_provider = f[java_common.provider]
-    files += list(java_provider.transitive_runtime_jars)
-  if hasattr(f, "files"):  # a jar file
-    files += list(f.files)
-  return files
+    files = []
+    if java_common.provider in f:
+        java_provider = f[java_common.provider]
+        files += list(java_provider.transitive_runtime_jars)
+    if hasattr(f, "files"):  # a jar file
+        files += list(f.files)
+    return files
 
 load(
     "//lang:image.bzl",
@@ -109,8 +109,8 @@ load(
 )
 
 def _jar_dep_layer_impl(ctx):
-  """Appends a layer for a single dependency's runfiles."""
-  return dep_layer_impl(ctx, runfiles=java_files)
+    """Appends a layer for a single dependency's runfiles."""
+    return dep_layer_impl(ctx, runfiles = java_files)
 
 jar_dep_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -136,51 +136,55 @@ jar_dep_layer = rule(
 )
 
 def _jar_app_layer_impl(ctx):
-  """Appends the app layer with all remaining runfiles."""
+    """Appends the app layer with all remaining runfiles."""
 
-  available = depset()
-  for jar in ctx.attr.jar_layers:
-    available += java_files(jar)
+    available = depset()
+    for jar in ctx.attr.jar_layers:
+        available += java_files(jar)
 
-  # We compute the set of unavailable stuff by walking deps
-  # in the same way, adding in our binary and then subtracting
-  # out what it available.
-  unavailable = depset()
-  for jar in ctx.attr.deps + ctx.attr.runtime_deps:
-    unavailable += java_files(jar)
+    # We compute the set of unavailable stuff by walking deps
+    # in the same way, adding in our binary and then subtracting
+    # out what it available.
 
-  unavailable += java_files(ctx.attr.binary)
-  unavailable = [x for x in unavailable if x not in available]
+    unavailable = depset()
+    for jar in ctx.attr.deps + ctx.attr.runtime_deps:
+        unavailable += java_files(jar)
 
-  classpath = ":".join([
-    layer_file_path(ctx, x) for x in available + unavailable
-  ])
+    unavailable += java_files(ctx.attr.binary)
+    unavailable = [x for x in unavailable if x not in available]
 
-  # Classpaths can grow long and there is a limit on the length of a
-  # command line, so mitigate this by always writing the classpath out
-  # to a file instead.
-  classpath_file = ctx.new_file(ctx.attr.name + ".classpath")
-  ctx.actions.write(classpath_file, classpath)
+    classpath = ":".join([
+        layer_file_path(ctx, x)
+        for x in available + unavailable
+    ])
 
-  binary_path = layer_file_path(ctx, ctx.files.binary[0])
-  classpath_path = layer_file_path(ctx, classpath_file)
-  entrypoint = [
-      '/usr/bin/java',
-      '-cp',
-      # Support optionally passing the classpath as a file.
-      '@' + classpath_path if ctx.attr._classpath_as_file else classpath,
-   ] + ctx.attr.jvm_flags + [ctx.attr.main_class] + ctx.attr.args
+    # Classpaths can grow long and there is a limit on the length of a
+    # command line, so mitigate this by always writing the classpath out
+    # to a file instead.
+    classpath_file = ctx.new_file(ctx.attr.name + ".classpath")
+    ctx.actions.write(classpath_file, classpath)
 
-  file_map = {
-    layer_file_path(ctx, f): f
-    for f in unavailable + [classpath_file]
-  }
+    binary_path = layer_file_path(ctx, ctx.files.binary[0])
+    classpath_path = layer_file_path(ctx, classpath_file)
+    entrypoint = [
+        "/usr/bin/java",
+        "-cp",
+        # Support optionally passing the classpath as a file.
+        "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
+    ] + ctx.attr.jvm_flags + [ctx.attr.main_class] + ctx.attr.args
 
-  return _container.image.implementation(
-    ctx,
-    # We use all absolute paths.
-    directory="/", file_map=file_map,
-    entrypoint=entrypoint)
+    file_map = {
+        layer_file_path(ctx, f): f
+        for f in unavailable + [classpath_file]
+    }
+
+    return _container.image.implementation(
+        ctx,
+        # We use all absolute paths.
+        directory = "/",
+        file_map = file_map,
+        entrypoint = entrypoint,
+    )
 
 jar_app_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -218,46 +222,67 @@ jar_app_layer = rule(
     implementation = _jar_app_layer_impl,
 )
 
-def java_image(name, base=None, main_class=None,
-               deps=[], runtime_deps=[], layers=[], jvm_flags=[],
-               **kwargs):
-  """Builds a container image overlaying the java_binary.
+def java_image(
+        name,
+        base = None,
+        main_class = None,
+        deps = [],
+        runtime_deps = [],
+        layers = [],
+        jvm_flags = [],
+        **kwargs):
+    """Builds a container image overlaying the java_binary.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See java_binary.
   """
-  binary_name = name + ".binary"
+    binary_name = name + ".binary"
 
-  native.java_binary(name=binary_name, main_class=main_class,
-                     # If the rule is turning a JAR built with java_library into
-                     # a binary, then it will appear in runtime_deps.  We are
-                     # not allowed to pass deps (even []) if there is no srcs
-                     # kwarg.
-                     deps=(deps + layers) or None, runtime_deps=runtime_deps,
-                     jvm_flags=jvm_flags, **kwargs)
+    native.java_binary(
+        name = binary_name,
+        main_class = main_class,
+        # If the rule is turning a JAR built with java_library into
+        # a binary, then it will appear in runtime_deps.  We are
+        # not allowed to pass deps (even []) if there is no srcs
+        # kwarg.
+        deps = (deps + layers) or None,
+        runtime_deps = runtime_deps,
+        jvm_flags = jvm_flags,
+        **kwargs
+    )
 
-  base = base or DEFAULT_JAVA_BASE
-  for index, dep in enumerate(layers):
-    this_name = "%s.%d" % (name, index)
-    jar_dep_layer(name=this_name, base=base, dep=dep)
-    base = this_name
+    base = base or DEFAULT_JAVA_BASE
+    for index, dep in enumerate(layers):
+        this_name = "%s.%d" % (name, index)
+        jar_dep_layer(name = this_name, base = base, dep = dep)
+        base = this_name
 
-  visibility = kwargs.get('visibility', None)
-  jar_app_layer(name=name, base=base, binary=binary_name,
-                 main_class=main_class, jvm_flags=jvm_flags,
-                 deps=deps, runtime_deps=runtime_deps, jar_layers=layers,
-                 visibility=visibility, args=kwargs.get("args"))
+    visibility = kwargs.get("visibility", None)
+    jar_app_layer(
+        name = name,
+        base = base,
+        binary = binary_name,
+        main_class = main_class,
+        jvm_flags = jvm_flags,
+        deps = deps,
+        runtime_deps = runtime_deps,
+        jar_layers = layers,
+        visibility = visibility,
+        args = kwargs.get("args"),
+    )
 
 def _war_dep_layer_impl(ctx):
-  """Appends a layer for a single dependency's runfiles."""
-  # TODO(mattmoor): Today we run the risk of filenames colliding when
-  # they get flattened.  Instead of just flattening and using basename
-  # we should use a file_map based scheme.
-  return _container.image.implementation(
-    ctx, files=java_files(ctx.attr.dep),
-  )
+    """Appends a layer for a single dependency's runfiles."""
+
+    # TODO(mattmoor): Today we run the risk of filenames colliding when
+    # they get flattened.  Instead of just flattening and using basename
+    # we should use a file_map based scheme.
+    return _container.image.implementation(
+        ctx,
+        files = java_files(ctx.attr.dep),
+    )
 
 _war_dep_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -283,23 +308,23 @@ _war_dep_layer = rule(
 )
 
 def _war_app_layer_impl(ctx):
-  """Appends the app layer with all remaining runfiles."""
+    """Appends the app layer with all remaining runfiles."""
 
-  available = depset()
-  for jar in ctx.attr.jar_layers:
-    available += java_files(jar)
+    available = depset()
+    for jar in ctx.attr.jar_layers:
+        available += java_files(jar)
 
-  # This is based on rules_appengine's WAR rules.
-  transitive_deps = depset()
-  transitive_deps += java_files(ctx.attr.library)
+    # This is based on rules_appengine's WAR rules.
+    transitive_deps = depset()
+    transitive_deps += java_files(ctx.attr.library)
 
-  # TODO(mattmoor): Handle data files.
+    # TODO(mattmoor): Handle data files.
 
-  # If we start putting libs in servlet-agnostic paths,
-  # then consider adding symlinks here.
-  files = [d for d in transitive_deps if d not in available]
+    # If we start putting libs in servlet-agnostic paths,
+    # then consider adding symlinks here.
+    files = [d for d in transitive_deps if d not in available]
 
-  return _container.image.implementation(ctx, files=files)
+    return _container.image.implementation(ctx, files = files)
 
 _war_app_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -329,8 +354,8 @@ _war_app_layer = rule(
     implementation = _war_app_layer_impl,
 )
 
-def war_image(name, base=None, deps=[], layers=[], **kwargs):
-  """Builds a container image overlaying the java_library as an exploded WAR.
+def war_image(name, base = None, deps = [], layers = [], **kwargs):
+    """Builds a container image overlaying the java_library as an exploded WAR.
 
   TODO(mattmoor): For `bazel run` of this to be useful, we need to be able
   to ctrl-C it and have the container actually terminate.  More information:
@@ -341,17 +366,23 @@ def war_image(name, base=None, deps=[], layers=[], **kwargs):
            their own layers.
     **kwargs: See java_library.
   """
-  library_name = name + ".library"
+    library_name = name + ".library"
 
-  native.java_library(name=library_name, deps=deps + layers, **kwargs)
+    native.java_library(name = library_name, deps = deps + layers, **kwargs)
 
-  base = base or DEFAULT_JETTY_BASE
-  for index, dep in enumerate(layers):
-    this_name = "%s.%d" % (name, index)
-    _war_dep_layer(name=this_name, base=base, dep=dep)
-    base = this_name
+    base = base or DEFAULT_JETTY_BASE
+    for index, dep in enumerate(layers):
+        this_name = "%s.%d" % (name, index)
+        _war_dep_layer(name = this_name, base = base, dep = dep)
+        base = this_name
 
-  visibility = kwargs.get('visibility', None)
-  tags = kwargs.get('tags', None)
-  _war_app_layer(name=name, base=base, library=library_name, jar_layers=layers,
-                 visibility=visibility, tags=tags)
+    visibility = kwargs.get("visibility", None)
+    tags = kwargs.get("tags", None)
+    _war_app_layer(
+        name = name,
+        base = base,
+        library = library_name,
+        jar_layers = layers,
+        visibility = visibility,
+        tags = tags,
+    )

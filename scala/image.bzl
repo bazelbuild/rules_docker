@@ -21,43 +21,63 @@ load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
-    "jar_dep_layer",
     "jar_app_layer",
+    "jar_dep_layer",
     _repositories = "repositories",
 )
 
-def scala_image(name, base=None, main_class=None,
-                deps=[], runtime_deps=[], layers=[], jvm_flags=[],
-                **kwargs):
-  """Builds a container image overlaying the scala_binary.
+def scala_image(
+        name,
+        base = None,
+        main_class = None,
+        deps = [],
+        runtime_deps = [],
+        layers = [],
+        jvm_flags = [],
+        **kwargs):
+    """Builds a container image overlaying the scala_binary.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See scala_binary.
   """
-  binary_name = name + ".binary"
+    binary_name = name + ".binary"
 
-  scala_binary(name=binary_name, main_class=main_class,
-                      # If the rule is turning a JAR built with java_library into
-                      # a binary, then it will appear in runtime_deps.  We are
-                      # not allowed to pass deps (even []) if there is no srcs
-                      # kwarg.
-                      deps=(deps + layers) or None, runtime_deps=runtime_deps,
-                      jvm_flags=jvm_flags, **kwargs)
+    scala_binary(
+        name = binary_name,
+        main_class = main_class,
+        # If the rule is turning a JAR built with java_library into
+        # a binary, then it will appear in runtime_deps.  We are
+        # not allowed to pass deps (even []) if there is no srcs
+        # kwarg.
+        deps = (deps + layers) or None,
+        runtime_deps = runtime_deps,
+        jvm_flags = jvm_flags,
+        **kwargs
+    )
 
-  base = base or DEFAULT_JAVA_BASE
-  for index, dep in enumerate(layers):
-    this_name = "%s.%d" % (name, index)
-    jar_dep_layer(name=this_name, base=base, dep=dep)
-    base = this_name
+    base = base or DEFAULT_JAVA_BASE
+    for index, dep in enumerate(layers):
+        this_name = "%s.%d" % (name, index)
+        jar_dep_layer(name = this_name, base = base, dep = dep)
+        base = this_name
 
-  visibility = kwargs.get('visibility', None)
-  tags = kwargs.get('tags', None)
-  jar_app_layer(name=name, base=base, binary=binary_name,
-                 main_class=main_class, jvm_flags=jvm_flags,
-                 deps=deps, runtime_deps=runtime_deps, jar_layers=layers,
-                 visibility=visibility, tags=tags, args=kwargs.get("args"))
+    visibility = kwargs.get("visibility", None)
+    tags = kwargs.get("tags", None)
+    jar_app_layer(
+        name = name,
+        base = base,
+        binary = binary_name,
+        main_class = main_class,
+        jvm_flags = jvm_flags,
+        deps = deps,
+        runtime_deps = runtime_deps,
+        jar_layers = layers,
+        visibility = visibility,
+        tags = tags,
+        args = kwargs.get("args"),
+    )
 
 def repositories():
-  _repositories()
+    _repositories()

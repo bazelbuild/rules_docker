@@ -36,11 +36,11 @@ Any of "registry", "repository" or "tag" may be given a new default.
 """
 
 def _impl(repository_ctx):
-  """Core implementation of docker_default."""
+    """Core implementation of docker_default."""
 
-  repository_ctx.file("BUILD", "")
+    repository_ctx.file("BUILD", "")
 
-  repository_ctx.file("defaults.bzl", """
+    repository_ctx.file("defaults.bzl", """
 load(
   "@io_bazel_rules_docker//container:push.bzl",
   _container_push="container_push"
@@ -70,10 +70,10 @@ def oci_push(*args, **kwargs):
   kwargs["format"] = "OCI"
   container_push(*args, **kwargs)
 """.format(
-  registry=repository_ctx.attr.registry or "",
-  repository=repository_ctx.attr.repository or "",
-  tag=repository_ctx.attr.tag or "",
-))
+        registry = repository_ctx.attr.registry or "",
+        repository = repository_ctx.attr.repository or "",
+        tag = repository_ctx.attr.tag or "",
+    ))
 
 defaults = repository_rule(
     attrs = {

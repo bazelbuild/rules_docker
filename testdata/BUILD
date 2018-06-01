@@ -19,8 +19,8 @@ load(
     "container_bundle",
     "container_flatten",
     "container_image",
-    "container_layer",
     "container_import",
+    "container_layer",
 )
 load("//testdata:utils.bzl", "generate_deb")
 
@@ -245,6 +245,39 @@ container_image(
 # )
 
 container_image(
+    name = "with_unix_epoch_creation_time",
+    base = ":base_with_volume",
+    creation_time = "1234567890.12",
+)
+
+# This is to support bazel < 0.12 BUILD_TIMESTAMPs, which were in milliseconds
+# by default.
+container_image(
+    name = "with_millisecond_unix_epoch_creation_time",
+    base = ":base_with_volume",
+    creation_time = "1234567890123.45",
+)
+
+container_image(
+    name = "with_rfc_3339_creation_time",
+    base = ":base_with_volume",
+    creation_time = "1989-05-03T12:58:12.345Z",
+)
+
+container_image(
+    name = "with_stamped_creation_time",
+    base = ":base_with_volume",
+    creation_time = "{BUILD_TIMESTAMP}",
+    stamp = True,
+)
+
+container_image(
+    name = "with_default_stamped_creation_time",
+    base = ":base_with_volume",
+    stamp = True,
+)
+
+container_image(
     name = "with_env",
     base = ":base_with_volume",
     env = {
@@ -458,7 +491,7 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_entry", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
 
 passwd_entry(
     name = "root_user",
@@ -495,9 +528,25 @@ pkg_tar(
     package_dir = "etc",
 )
 
+passwd_tar(
+    name = "password",
+    entries = [
+        ":root_user",
+        ":foobar_user",
+    ],
+    passwd_file_pkg_dir = "etc",
+)
+
 container_image(
     name = "with_passwd",
     tars = [":passwd_tar"],
+)
+
+container_image(
+    name = "with_passwd_tar",
+    tars = [
+        ":password",
+    ],
 )
 
 load("//contrib:group.bzl", "group_entry", "group_file")
@@ -834,14 +883,15 @@ rust_image(
 
 load("//d:image.bzl", "d_image")
 
-d_image(
-    name = "d_image",
-    srcs = ["main.d"],
-    args = [
-        "arg0",
-        "arg1",
-    ],
-)
+# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+#d_image(
+#    name = "d_image",
+#    srcs = ["main.d"],
+#    args = [
+#        "arg0",
+#        "arg1",
+#    ],
+#)
 
 load("//nodejs:image.bzl", "nodejs_image")
 

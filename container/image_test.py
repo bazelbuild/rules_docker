@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import cStringIO
+import datetime
 import json
 import os
 import tarfile
@@ -22,6 +23,8 @@ from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 
 TEST_DATA_TARGET_BASE='testdata'
+DIR_PERMISSION=448 # decimal for oct 0700
+PASSWD_FILE_MODE=420  # decimal for oct 0644
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
@@ -53,6 +56,12 @@ class ImageTest(unittest.TestCase):
 
   def assertDigest(self, img, digest):
     self.assertEqual(img.digest(), 'sha256:' + digest)
+
+  def assertTarInfo(self, tarinfo, uid, gid, mode, isdir):
+    self.assertEqual(tarinfo.uid, uid)
+    self.assertEqual(tarinfo.gid, gid)
+    self.assertEqual(tarinfo.mode, mode)
+    self.assertEqual(tarinfo.isdir(), isdir)
 
   def test_files_base(self):
     with TestImage('files_base') as img:
@@ -179,6 +188,67 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Volumes', {
         '/asdf': {}, '/blah': {}, '/logs': {}
       })
+
+  def test_with_unix_epoch_creation_time(self):
+    with TestImage('with_unix_epoch_creation_time') as img:
+      self.assertDigest(img, '85113de3854559f724a23eed6afea5ceecd5fd4bf241cedaded8af0474d4f882')
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      self.assertEqual('2009-02-13T23:31:30.120000Z', cfg.get('created', ''))
+
+  def test_with_millisecond_unix_epoch_creation_time(self):
+    with TestImage('with_millisecond_unix_epoch_creation_time') as img:
+      self.assertDigest(img, 'e9412cb69da02e05fd5b7f8cc1a5d60139c091362afdc2488f9c8f7c508e5d3b')
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      self.assertEqual('2009-02-13T23:31:30.123450Z', cfg.get('created', ''))
+
+  def test_with_rfc_3339_creation_time(self):
+    with TestImage('with_rfc_3339_creation_time') as img:
+      self.assertDigest(img, '9aeef8cba32f3af6e95a08e60d76cc5e2a46de4847da5366bffeb1b3d7066d17')
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
+
+  def test_with_stamped_creation_time(self):
+    with TestImage('with_stamped_creation_time') as img:
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      created_str = cfg.get('created', '')
+      self.assertNotEqual('', created_str)
+
+      now = datetime.datetime.utcnow()
+
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
+      # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
+      # a bug where CurrentTimeMillis was not divided by 1000.
+      # See https://github.com/bazelbuild/bazel/issues/2240
+      # https://bazel-review.googlesource.com/c/bazel/+/48211
+      # Assume that any value for 'created' within a reasonable bound is fine.
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
+
+  def test_with_default_stamped_creation_time(self):
+    # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
+    # `creation_time` isn't explicitly defined.
+    with TestImage('with_default_stamped_creation_time') as img:
+      self.assertEqual(2, len(img.fs_layers()))
+      cfg = json.loads(img.config_file())
+      created_str = cfg.get('created', '')
+      self.assertNotEqual('', created_str)
+
+      now = datetime.datetime.utcnow()
+
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+      # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
+      # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
+      # a bug where CurrentTimeMillis was not divided by 1000.
+      # See https://github.com/bazelbuild/bazel/issues/2240
+      # https://bazel-review.googlesource.com/c/bazel/+/48211
+      # Assume that any value for 'created' within a reasonable bound is fine.
+      self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
   def test_with_env(self):
     with TestBundleImage(
@@ -324,6 +394,24 @@ class ImageTest(unittest.TestCase):
         self.assertEqual(
           'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
           content)
+        self.assertEqual(layer.getmember("./etc/passwd").mode, PASSWD_FILE_MODE)
+
+  def test_with_passwd_tar(self):
+    with TestImage('with_passwd_tar') as img:
+      self.assertDigest(img, 'b8f091c370d6a8a6f74e11327f52e579f73dd93d9cf82e39e83b3096bb0c2256')
+      self.assertEqual(1, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
+
+      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      with tarfile.open(fileobj=buf, mode='r') as layer:
+        content = layer.extractfile('./etc/password').read()
+        self.assertEqual(
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          content)
+        self.assertEqual(layer.getmember("./etc/password").mode, PASSWD_FILE_MODE)
+        self.assertTarInfo(layer.getmember("./root"), 0, 0, DIR_PERMISSION, True)
+        self.assertTarInfo(layer.getmember("./myhomedir"), 1234, 2345, DIR_PERMISSION, True)
+
 
   def test_with_group(self):
     with TestImage('with_group') as img:
@@ -374,6 +462,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary',
+        './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -382,7 +471,6 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py',
-        '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         '/app/testdata/py_image.binary',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/external',
       ])
@@ -394,7 +482,6 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker',
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/py_image_library.py',
-        './app/io_bazel_rules_docker/testdata/__init__.py',
       ])
 
   def test_cc_image(self):
@@ -487,12 +574,13 @@ class ImageTest(unittest.TestCase):
         'arg0',
         'arg1'])
 
-  def test_d_image_args(self):
-    with TestImage('d_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/d_image_binary',
-        'arg0',
-        'arg1'])
+  # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+  # def test_d_image_args(self):
+  #  with TestImage('d_image') as img:
+  #    self.assertConfigEqual(img, 'Entrypoint', [
+  #      '/app/testdata/d_image_binary',
+  #      'arg0',
+  #      'arg1'])
 
   def test_py_image_args(self):
     with TestImage('py_image') as img:
@@ -509,7 +597,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/py3_image.binary',
         'arg0',
         'arg1'])
-      
+
   def test_java_image_args(self):
     with TestImage('java_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
@@ -537,7 +625,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/rust_image_binary',
         'arg0',
         'arg1'])
-      
+
   def test_scala_image_args(self):
     with TestImage('scala_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
@@ -576,7 +664,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/nodejs_image.binary',
         'arg0',
         'arg1'])
-      
+
 
 if __name__ == '__main__':
   unittest.main()

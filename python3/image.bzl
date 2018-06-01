@@ -18,8 +18,8 @@ The signature of this rule is compatible with py_binary.
 
 load(
     "//lang:image.bzl",
-    "dep_layer",
     "app_layer",
+    "dep_layer",
 )
 load(
     "//container:container.bzl",
@@ -31,25 +31,25 @@ load(
 load(":python3.bzl", "DIGESTS")
 
 def repositories():
-  # Call the core "repositories" function to reduce boilerplate.
-  # This is idempotent if folks call it themselves.
-  _repositories()
+    # Call the core "repositories" function to reduce boilerplate.
+    # This is idempotent if folks call it themselves.
+    _repositories()
 
-  excludes = native.existing_rules().keys()
-  if "py3_image_base" not in excludes:
-    container_pull(
-      name = "py3_image_base",
-      registry = "gcr.io",
-      repository = "distroless/python3",
-      digest = DIGESTS["latest"],
-    )
-  if "py3_debug_image_base" not in excludes:
-    container_pull(
-      name = "py3_debug_image_base",
-      registry = "gcr.io",
-      repository = "distroless/python3",
-      digest = DIGESTS["debug"],
-    )
+    excludes = native.existing_rules().keys()
+    if "py3_image_base" not in excludes:
+        container_pull(
+            name = "py3_image_base",
+            registry = "gcr.io",
+            repository = "distroless/python3",
+            digest = DIGESTS["latest"],
+        )
+    if "py3_debug_image_base" not in excludes:
+        container_pull(
+            name = "py3_debug_image_base",
+            registry = "gcr.io",
+            repository = "distroless/python3",
+            digest = DIGESTS["debug"],
+        )
 
 DEFAULT_BASE = select({
     "@io_bazel_rules_docker//:fastbuild": "@py3_image_base//image",
@@ -58,33 +58,41 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py3_image_base//image",
 })
 
-def py3_image(name, base=None, deps=[], layers=[], **kwargs):
-  """Constructs a container image wrapping a py_binary target.
+def py3_image(name, base = None, deps = [], layers = [], **kwargs):
+    """Constructs a container image wrapping a py_binary target.
 
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See py_binary.
   """
-  binary_name = name + ".binary"
+    binary_name = name + ".binary"
 
-  if "main" not in kwargs:
-    kwargs["main"] = name + ".py"
+    if "main" not in kwargs:
+        kwargs["main"] = name + ".py"
 
-  # TODO(mattmoor): Consider using par_binary instead, so that
-  # a single target can be used for all three.
-  native.py_binary(name=binary_name, deps=deps + layers, **kwargs)
+    # TODO(mattmoor): Consider using par_binary instead, so that
+    # a single target can be used for all three.
 
-  # TODO(mattmoor): Consider making the directory into which the app
-  # is placed configurable.
-  base = base or DEFAULT_BASE
-  for index, dep in enumerate(layers):
-    this_name = "%s.%d" % (name, index)
-    dep_layer(name=this_name, base=base, dep=dep)
-    base = this_name
+    native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
 
-  visibility = kwargs.get('visibility', None)
-  tags = kwargs.get('tags', None)
-  app_layer(name=name, base=base, entrypoint=['/usr/bin/python'],
-            binary=binary_name, lang_layers=layers, visibility=visibility,
-            tags=tags, args=kwargs.get("args"))
+    # TODO(mattmoor): Consider making the directory into which the app
+    # is placed configurable.
+    base = base or DEFAULT_BASE
+    for index, dep in enumerate(layers):
+        this_name = "%s.%d" % (name, index)
+        dep_layer(name = this_name, base = base, dep = dep)
+        base = this_name
+
+    visibility = kwargs.get("visibility", None)
+    tags = kwargs.get("tags", None)
+    app_layer(
+        name = name,
+        base = base,
+        entrypoint = ["/usr/bin/python"],
+        binary = binary_name,
+        lang_layers = layers,
+        visibility = visibility,
+        tags = tags,
+        args = kwargs.get("args"),
+    )
