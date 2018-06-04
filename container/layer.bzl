@@ -52,6 +52,7 @@ def _magic_path(ctx, f, output_layer):
             dirname(output_layer.short_path),
             _canonicalize_path(ctx.attr.data_path),
         )
+
         # data path get get calculated incorrectly for external repo
         if data_path.startswith("/.."):
             data_path = data_path[1:]
