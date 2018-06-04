@@ -156,8 +156,21 @@ py_library(
     if "structure_test" not in excludes:
         native.git_repository(
             name = "structure_test",
-            remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
+            remote = "https://github.com/GoogleContainerTools/container-structure-test.git",
             commit = STRUCTURE_TEST_COMMIT,
+        )
+        native.git_repository(
+            name = "runtimes_common",
+            commit = "9828ee5659320cebbfd8d34707c36648ca087888",
+            remote = "https://github.com/GoogleCloudPlatform/runtimes-common.git",
+        )
+        native.new_http_archive(
+            name = "docker_credential_gcr",
+            build_file_content = """package(default_visibility = ["//visibility:public"])
+exports_files(["docker-credential-gcr"])""",
+            sha256 = "3f02de988d69dc9c8d242b02cc10d4beb6bab151e31d63cb6af09dd604f75fce",
+            type = "tar.gz",
+            url = "https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v1.4.3/docker-credential-gcr_linux_amd64-1.4.3.tar.gz",
         )
 
     # For skylark_library.
