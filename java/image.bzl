@@ -68,7 +68,7 @@ def repositories():
             repository = "distroless/java/jetty",
             digest = _JETTY_DIGESTS["debug"],
         )
-    if "servlet_api" not in excludes:
+    if "javax_servlet_api" not in excludes:
         native.maven_jar(
             name = "javax_servlet_api",
             artifact = "javax.servlet:javax.servlet-api:3.0.1",
