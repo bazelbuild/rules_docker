@@ -30,8 +30,8 @@ container = struct(
 CONTAINERREGISTRY_RELEASE = "v0.0.26"
 
 # The release of the container-structure-test repository to use.
-# Updated around 1/22/2018.
-STRUCTURE_TEST_COMMIT = "b97925142b1a09309537e648ade11b4af47ff7ad"
+# v1.2.2 release. Updated on June 04, 2018.
+STRUCTURE_TEST_COMMIT = "5312189a48acc5297399ced5d6c513b307292e61"
 
 def repositories():
     """Download dependencies of container rules."""
