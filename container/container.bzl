@@ -86,6 +86,7 @@ def repositories():
             name = "containerregistry",
             url = ("https://github.com/google/containerregistry/archive/" +
                    CONTAINERREGISTRY_RELEASE + ".tar.gz"),
+            sha256 = "21bdca48f39e5c73b83a1b3b9ea8888d20fa4c352e8cd879b00f1d0166972928",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
