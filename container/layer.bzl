@@ -27,6 +27,7 @@ load(
 load(
     "//skylib:zip.bzl",
     _gzip = "gzip",
+    _zip_tools = "tools",
 )
 load(
     "//container:layer_tools.bzl",
@@ -52,6 +53,10 @@ def _magic_path(ctx, f, output_layer):
             dirname(output_layer.short_path),
             _canonicalize_path(ctx.attr.data_path),
         )
+
+        # data path get get calculated incorrectly for external repo
+        if data_path.startswith("/.."):
+            data_path = data_path[1:]
         return strip_prefix(f.short_path, data_path)
     else:
         # Otherwise, files are added without a directory prefix at all.
@@ -204,7 +209,7 @@ _layer_attrs = dict({
         executable = True,
         allow_files = True,
     ),
-}.items() + _hash_tools.items() + _layer_tools.items())
+}.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
 
 _layer_outputs = {
     "layer": "%{name}-layer.tar",

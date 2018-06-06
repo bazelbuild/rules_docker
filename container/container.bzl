@@ -30,8 +30,34 @@ container = struct(
 CONTAINERREGISTRY_RELEASE = "v0.0.26"
 
 # The release of the container-structure-test repository to use.
-# Updated around 1/22/2018.
-STRUCTURE_TEST_COMMIT = "b97925142b1a09309537e648ade11b4af47ff7ad"
+# Pin to commit that overwrites image entrypoint when running tests.
+STRUCTURE_TEST_COMMIT = "7411da1d4cb505f1a70ae5d1ca3d961a3fa66cda"
+
+_local_tool_build_template = """
+sh_binary(
+    name = "{name}",
+    srcs = ["bin/{name}"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+def _local_tool(repository_ctx):
+    rctx = repository_ctx
+    realpath = rctx.which(rctx.name)
+    rctx.symlink(realpath, "bin/%s" % rctx.name)
+    rctx.file(
+        "WORKSPACE",
+        'workspace(name = "{}")\n'.format(rctx.name),
+    )
+    rctx.file(
+        "BUILD",
+        _local_tool_build_template.format(name = rctx.name),
+    )
+
+local_tool = repository_rule(
+    local = True,
+    implementation = _local_tool,
+)
 
 def repositories():
     """Download dependencies of container rules."""
@@ -60,6 +86,7 @@ def repositories():
             name = "containerregistry",
             url = ("https://github.com/google/containerregistry/archive/" +
                    CONTAINERREGISTRY_RELEASE + ".tar.gz"),
+            sha256 = "21bdca48f39e5c73b83a1b3b9ea8888d20fa4c352e8cd879b00f1d0166972928",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
@@ -166,4 +193,9 @@ py_library(
             name = "bazel_skylib",
             remote = "https://github.com/bazelbuild/bazel-skylib.git",
             tag = "0.2.0",
+        )
+
+    if "gzip" not in excludes:
+        local_tool(
+            name = "gzip",
         )

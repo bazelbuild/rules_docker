@@ -69,7 +69,7 @@ def _dep_layer_impl(ctx):
     return dep_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
 
 _dep_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -91,7 +91,7 @@ _dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
-    },
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _dep_layer_impl,

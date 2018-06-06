@@ -89,7 +89,7 @@ class TarFile(object):
 
   @staticmethod
   def parse_pkg_name(metadata, filename):
-    pkg_name_match = TarFile.PKG_NAME_RE.match(metadata)
+    pkg_name_match = TarFile.PKG_NAME_RE.match(str(metadata))
     if pkg_name_match:
       return pkg_name_match.group('pkg_name')
     else:
@@ -224,11 +224,11 @@ class TarFile(object):
     try:
       with tarfile.open(metadata_tar) as tar:
         # Metadata is expected to be in a file.
-        control_file_member = filter(lambda f: os.path.basename(f.name) == TarFile.PKG_METADATA_FILE, tar.getmembers())
+        control_file_member = list(filter(lambda f: os.path.basename(f.name) == TarFile.PKG_METADATA_FILE, tar.getmembers()))
         if not control_file_member:
            raise self.DebError(deb + ' does not Metadata File!')
         control_file = tar.extractfile(control_file_member[0])
-        metadata = ''.join(control_file.readlines())
+        metadata = b''.join(control_file.readlines())
         destination_file = os.path.join(TarFile.DPKG_STATUS_DIR,
                                         TarFile.parse_pkg_name(metadata, deb))
         with self.write_temp_file(data=metadata) as metadata_file:
