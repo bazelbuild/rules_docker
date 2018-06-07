@@ -24,5 +24,5 @@ rename_image(
     name = "renamed_image",
     image = "@distroless_base//image",
     new_repo = "new_image_repo",
-    new_tag = "new_image_name",
+    new_tag = "new_image_tag",
 )
