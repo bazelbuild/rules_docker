@@ -17,8 +17,8 @@
 set -ex
 BASEDIR=$(dirname "$0")
 
-if [ $(docker load -i "$BASEDIR/intermediate_bundle_renamed_image.tar" | 
-    cut -d " " -f3)  = 'distroless_baseimage:intermediate' ]
+if [ $(docker load -i "$BASEDIR/renamed_image.tar" |
+    cut -d " " -f3)  = 'new_image_repo:new_image_name' ]
 then
     exit 0
 else

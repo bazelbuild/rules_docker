@@ -17,10 +17,12 @@ load("//contrib:rename_image.bzl", "rename_image")
 sh_test(
     name = "rename_image_test",
     srcs = ["rename_image_test.sh"],
-    data = [":intermediate_bundle_renamed_image.tar"],
+    data = [":renamed_image.tar"],
 )
 
 rename_image(
     name = "renamed_image",
     image = "@distroless_base//image",
+    new_repo = "new_image_repo",
+    new_tag = "new_image_name",
 )

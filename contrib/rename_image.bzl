@@ -16,16 +16,27 @@
 
 load("//container:bundle.bzl", "container_bundle")
 
-def rename_image(image, name):
-    """A macro to predictably rename the image under test."""
-    intermediate_image_name = "%s:intermediate" % image.replace(":", "").replace("@", "").replace("/", "")
-    image_tar_name = "intermediate_bundle_%s" % name
+def rename_image(name, image, new_repo, new_tag = "latest"):
+    """
+    A macro to predictably rename a given image.
 
-    # Give the image a predictable name when loaded
+    Args:
+        name: A unique name for the rule, the output tarball is also ${name}.tar
+        image: Label, representing the image to be renamed
+        new_repo: String, new repo name to give to the image
+        new_tag: String, new tag to give to the image
+
+    Produces a tarball '${name}.tar' which contains the same image but now
+    with the name '${new_repo}:${new_tag}'
+    """
+
+    image_name = new_repo + ":" + new_tag
+
     container_bundle(
-        name = image_tar_name,
+        name = name,
         images = {
-            intermediate_image_name: image,
+            image_name : image,
         },
     )
-    return image_tar_name, intermediate_image_name
+
+    return name+".tar", image_name
