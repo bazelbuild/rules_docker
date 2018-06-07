@@ -35,8 +35,8 @@ def rename_image(name, image, new_repo, new_tag = "latest"):
     container_bundle(
         name = name,
         images = {
-            image_name : image,
+            image_name: image,
         },
     )
 
-    return name+".tar", image_name
+    return name + ".tar", image_name
