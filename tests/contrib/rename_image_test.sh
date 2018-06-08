@@ -17,8 +17,7 @@
 set -ex
 BASEDIR=$(dirname "$0")
 
-if [ $(docker load -i "$BASEDIR/renamed_image.tar" |
-    cut -d " " -f3)  = 'new_image_repo:new_image_tag' ]
+if [ $(./contrib/extract_image_name.sh ./tests/contrib/renamed_image.tar) = 'new_image_repo:new_image_tag' ]
 then
     exit 0
 else
