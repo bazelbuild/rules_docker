@@ -18,3 +18,5 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["push-all.sh.tpl"])
 
 exports_files(["structure-test.sh.tpl"])
+
+exports_files(["extract_image_id.sh"])
