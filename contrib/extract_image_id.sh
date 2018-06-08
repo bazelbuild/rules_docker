@@ -14,9 +14,9 @@
 
 #!/bin/bash
 
-# NOTE: If you are already loading the image, and the image name also does
-# what you are looking for (ex. running the image) then there is a much more
-# efficient tool at #ADD LINK TO base-images-docker REPO HERE WHEN THEY ACCEPT THE PULL REQUEST
+# NOTE: If you are already loading the image, and are ok with getting the
+# image name instead of the id (ex. if you are using it to run the image) then
+# there is a much more efficient tool at #ADD LINK TO base-images-docker REPO HERE WHEN THEY ACCEPT THE PULL REQUEST
 
 mkdir temp_for_extracting_id
 cd temp_for_extracting_id
