@@ -21,18 +21,15 @@ BASEDIR=$(dirname "$0")
 RUNFILES=$(echo ./*)
 
 ID="0"
-for image in ./*
+for image in $(find -name "*.tar*")
 do
-  if echo $image | grep -q ".tar"
+  if [ $ID = "0" ]
   then
-    if [ $ID = "0" ]
+    ID=$(./extract_image_id.sh $image)
+  else
+    if [ $(./extract_image_id.sh $image) != $ID ]
     then
-      ID=$(./extract_image_id.sh $image)
-    else
-      if [ $(./extract_image_id.sh $image) != $ID ]
-      then
-        exit 1
-      fi
+      exit 1
     fi
   fi
 done
