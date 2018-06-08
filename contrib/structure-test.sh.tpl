@@ -4,4 +4,6 @@ set -ex
 
 %{load_statement}
 
-%{test_executable} -test.v -driver %{driver} -image %{image} %{configs}
+%{test_executable} version
+
+%{test_executable} test --driver %{driver} --image %{image} %{configs} %{quiet}

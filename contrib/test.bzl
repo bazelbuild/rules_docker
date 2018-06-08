@@ -23,7 +23,7 @@ load(
 )
 
 def _impl(ctx):
-    config_str = " ".join(["$(pwd)/" + c.short_path for c in ctx.files.configs])
+    config_str = " ".join(["--config $(pwd)/" + c.short_path for c in ctx.files.configs])
 
     if ctx.attr.driver == "tar":
         # no need to load if we're using raw tar
@@ -35,6 +35,10 @@ def _impl(ctx):
         load_statement = "docker load -i %s" % ctx.file.image_tar.short_path
         image_name = ctx.attr.image_name
 
+    quiet_str = "--quiet"
+    if ctx.attr.verbose:
+        quiet_str = ""
+
     # Generate a shell script to execute structure_tests with the correct flags.
     ctx.actions.expand_template(
         template = ctx.file._structure_test_tpl,
@@ -42,10 +46,10 @@ def _impl(ctx):
         substitutions = {
             "%{load_statement}": load_statement,
             "%{configs}": config_str,
-            "%{workspace_name}": ctx.workspace_name,
             "%{test_executable}": ctx.executable._structure_test.short_path,
             "%{image}": image_name,
             "%{driver}": ctx.attr.driver,
+            "%{quiet}": quiet_str,
         },
         is_executable = True,
     )
@@ -93,7 +97,7 @@ _container_test = rule(
             ],
         ),
         "_structure_test": attr.label(
-            default = Label("@structure_test//:go_default_test"),
+            default = Label("@structure_test//:container_structure_test"),
             cfg = "target",
             executable = True,
             allow_files = True,
