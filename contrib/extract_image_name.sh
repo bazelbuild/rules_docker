@@ -19,7 +19,7 @@
 
 mkdir temp_for_extracting_id
 cd temp_for_extracting_id
-tar -xf ../$1
+tar -xf "../$1" "manifest.json"
 i=1
 while [ true ]
 do
