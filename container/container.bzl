@@ -27,7 +27,7 @@ container = struct(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.26"
+CONTAINERREGISTRY_RELEASE = "v0.0.27"
 
 # The release of the container-structure-test repository to use.
 # Pin to commit that overwrites image entrypoint when running tests.
@@ -68,7 +68,7 @@ def repositories():
             name = "puller",
             url = ("https://storage.googleapis.com/containerregistry-releases/" +
                    CONTAINERREGISTRY_RELEASE + "/puller.par"),
-            sha256 = "42309ba47bb28d1e1b81ef72789dcca396095e191d4f0e49e2e23c297edd27fb",
+            sha256 = "86cc384526970ab529f6da871384f53f9ddc937bb9566211ff7b633629eed463",
             executable = True,
         )
 
@@ -77,7 +77,7 @@ def repositories():
             name = "importer",
             url = ("https://storage.googleapis.com/containerregistry-releases/" +
                    CONTAINERREGISTRY_RELEASE + "/importer.par"),
-            sha256 = "0a2490584c96bcf961242364d961859b94926182f20a217754730e7097ea6cde",
+            sha256 = "117abf9c8e62630b5d3b62646113e95fb444bb3e756147548068a9e070643e3e",
             executable = True,
         )
 
@@ -86,7 +86,7 @@ def repositories():
             name = "containerregistry",
             url = ("https://github.com/google/containerregistry/archive/" +
                    CONTAINERREGISTRY_RELEASE + ".tar.gz"),
-            sha256 = "21bdca48f39e5c73b83a1b3b9ea8888d20fa4c352e8cd879b00f1d0166972928",
+            sha256 = "5778d538f23e3ba03237ea844beeb40057273cd57ef82bf7791ef4f6acaf9a4b",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
