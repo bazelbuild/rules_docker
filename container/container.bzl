@@ -30,8 +30,8 @@ container = struct(
 CONTAINERREGISTRY_RELEASE = "v0.0.27"
 
 # The release of the container-structure-test repository to use.
-# Pin to commit that overwrites image entrypoint when running tests.
-STRUCTURE_TEST_COMMIT = "7411da1d4cb505f1a70ae5d1ca3d961a3fa66cda"
+# Updated on June 8, 2018.
+STRUCTURE_TEST_COMMIT = "2cf1a517baea7d6705619f6acab580ce01d3489d"
 
 _local_tool_build_template = """
 sh_binary(
@@ -183,8 +183,21 @@ py_library(
     if "structure_test" not in excludes:
         native.git_repository(
             name = "structure_test",
-            remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
+            remote = "https://github.com/GoogleContainerTools/container-structure-test.git",
             commit = STRUCTURE_TEST_COMMIT,
+        )
+        native.git_repository(
+            name = "runtimes_common",
+            commit = "9828ee5659320cebbfd8d34707c36648ca087888",
+            remote = "https://github.com/GoogleCloudPlatform/runtimes-common.git",
+        )
+        native.new_http_archive(
+            name = "docker_credential_gcr",
+            build_file_content = """package(default_visibility = ["//visibility:public"])
+exports_files(["docker-credential-gcr"])""",
+            sha256 = "3f02de988d69dc9c8d242b02cc10d4beb6bab151e31d63cb6af09dd604f75fce",
+            type = "tar.gz",
+            url = "https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v1.4.3/docker-credential-gcr_linux_amd64-1.4.3.tar.gz",
         )
 
     # For skylark_library.
