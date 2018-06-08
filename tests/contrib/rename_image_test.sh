@@ -18,13 +18,13 @@ function extract_image_name () {
     # Extracts the image name (repo:tag) from the tarball without running it
     # Does not require docker to be installed
 
-    image_tar=$image_tar
+    image_tar=$1
 
-    tar -xf "image_tar" "manifest.json"
+    tar -xf "$image_tar" "manifest.json"
     i=1
     while [ true ]
     do
-    if [ $(cut -d '"' -f$i manifest.json) = "RepoTags" ]
+    if [ "$(cut -d '"' -f$i manifest.json)" = "RepoTags" ]
         then
         image_name=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
         break
@@ -38,7 +38,6 @@ set -ex
 
 image_tar=$1
 new_image_name=$2
-
 
 if [ $(extract_image_name $image_tar) = $new_image_name ]
 then
