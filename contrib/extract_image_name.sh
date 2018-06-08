@@ -1,4 +1,4 @@
-# Copyright 2017 The Bazel Authors. All rights reserved.
+# Copyright 2015 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+#!/bin/bash
 
-exports_files(["push-all.sh.tpl"])
+# Extracts the image name (repo:tag) from the tarball without running it
+# Does not require docker to be installed
 
-exports_files(["structure-test.sh.tpl"])
-
-exports_files(["extract_image_name.sh"])
+mkdir temp_for_extracting_id
+cd temp_for_extracting_id
+tar -xf ../$1
+i=1
+while [ true ]
+do
+  if [ $(cut -d '"' -f$i manifest.json) = "RepoTags" ]
+    then
+      image_name=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
+      break
+  fi
+  i=$(expr $i + 1)
+done
+cd ..
+rm -rf temp_for_extracting_id
+echo $image_name
