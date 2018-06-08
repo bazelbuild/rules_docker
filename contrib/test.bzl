@@ -117,8 +117,11 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     """A macro to predictably rename the image under test before threading
     it to the container test rule."""
 
-    # Remove commonly encountered characters that Docker will choke on
-    sanitized_name = image.replace(":", "").replace("@", "").replace("/", "")
+    # Remove commonly encountered characters that Docker will choke on.
+    # Include the package name in the new image tag to avoid conflicts on naming
+    # when running multiple container_test on images with the same target name
+    # from different packages.
+    sanitized_name = (native.package_name() + image).replace(":", "").replace("@", "").replace("/", "")
     intermediate_image_name = "%s:intermediate" % sanitized_name
     image_tar_name = "intermediate_bundle_%s" % name
 
