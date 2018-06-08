@@ -12,21 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script is the main part of the compare_ids_test test in compare_ids_test.bzl
+
 #!/bin/bash
 
-set -ex
+set -exu
 BASEDIR=$(dirname "$0")
+RUNFILES=$(echo ./*)
 
-ID=""
-for image in RUNFILES
+ID="0"
+for image in ./*
 do
-  if [ echo $image | grep -q ".tar" ]
+  if echo $image | grep -q ".tar"
   then
-    if [ $ID = "" ]
+    if [ $ID = "0" ]
     then
-      ID=$(BASEDIR/extract_image_id.sh $image)
+      ID=$(./extract_image_id.sh $image)
     else
-      if [ $(BASEDIR/extract_image_id.sh $image) != $ID ]
+      if [ $(./extract_image_id.sh $image) != $ID ]
       then
         exit 1
       fi
