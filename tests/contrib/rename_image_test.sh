@@ -14,13 +14,29 @@
 
 #!/bin/bash
 
-set -ex
-BASEDIR=$(dirname "$0")
+function extract_image_name () {
+    # Extracts the image name (repo:tag) from the tarball without running it
+    # Does not require docker to be installed
 
-if [ $(./contrib/extract_image_name.sh ./tests/contrib/renamed_image.tar) = 'new_image_repo:new_image_tag' ]
+    tar -xf "$1" "manifest.json"
+    i=1
+    while [ true ]
+    do
+    if [ $(cut -d '"' -f$i manifest.json) = "RepoTags" ]
+        then
+        image_name=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
+        break
+    fi
+    i=$(expr $i + 1)
+    done
+    echo $image_name
+}
+
+set -ex
+
+if [ $(extract_image_name $1) = $2 ]
 then
     exit 0
 else
     exit 1
 fi
-

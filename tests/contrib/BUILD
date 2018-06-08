@@ -17,9 +17,12 @@ load("//contrib:rename_image.bzl", "rename_image")
 sh_test(
     name = "rename_image_test",
     srcs = ["rename_image_test.sh"],
+    args = [
+        "$(location :renamed_image.tar)",
+        "new_image_repo:new_image_tag",
+    ],
     data = [
         ":renamed_image.tar",
-        "//contrib:extract_image_name.sh",
     ],
 )
 
