@@ -36,7 +36,7 @@ def compare_ids_test(name, tars, timeout = "short", flaky = True):
   native.sh_test(
     name = name,
     srcs = ["compare_ids_test.sh"],
-    data = ["//contrib:extract_image_id.sh"] + tars,
+    data = tars,
     flaky = flaky,
     timeout = timeout,
   )

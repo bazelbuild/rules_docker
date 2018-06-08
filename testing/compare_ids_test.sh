@@ -12,22 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script is the main part of the compare_ids_test test in compare_ids_test.bzl
+# This script is to be used for testing reproducibility in builds
+# All data passed in must be tarballs
 
 #!/bin/bash
 
+function extract_image_id () {
+  tar -xf $1 "manifest.json"
+  i=1
+  while [ true ]
+  do
+    if [ $(cut -d '"' -f$i manifest.json) = "Config" ]
+      then
+        image_id=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
+        break
+    fi
+    i=$(expr $i + 1)
+  done
+  echo $image_id
+
+}
+
 set -exu
-BASEDIR=$(dirname "$0")
-RUNFILES=$(echo ./*)
 
 ID="0"
 for image in $(find -name "*.tar*")
 do
   if [ $ID = "0" ]
   then
-    ID=$(./extract_image_id.sh $image)
+    ID=$(extract_image_id $image)
   else
-    if [ $(./extract_image_id.sh $image) != $ID ]
+    if [ $(extract_image_id $image) != $ID ]
     then
       exit 1
     fi
