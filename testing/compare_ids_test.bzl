@@ -12,31 +12,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def compare_ids_test(name, tars, timeout = "short", flaky = True):
-  """
-  Macro which produces a test to compare the ids of a list of image tarballs
+#Implementation of compare_ids_test
+def _compare_ids_test_impl(ctx):
+    tar_files = []
+    for tar in ctx.attr.tars:
+        tar_files += list(tar.files)
 
-  Args:
-    name: A unique name for the rule
-    tars: List of Label, the list of image tarballs we are comparing
-    timeout: Used for *_test timeout attribute
-    flaky: Used for *_test flaky attribute
+    if (len(tar_files) == 0):
+        fail("No tar files provided for test.")
 
-  Refer to https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes-tests
-  for refrence about the last two arguments
+    if (len(tar_files) == 1 and ctx.attr.id == "0"):
+        fail("One tar provided. Need either second tar or an id to compare it to.")
 
-  This test will succeed if all tarball targets given in argument 'tars' have
-  the same id, and will fail otherwise. Useful for testing reproducibilty in
-  builds.
+    tars_string = ""
+    for tar in tar_files:
+        tars_string += tar.path + " "
 
-  NOTE: All tarballs in the 'tars' argument must contain '.tar' or else they
-  will be ignored.
-  """
+    runfiles = ctx.runfiles(files = tar_files)
 
-  native.sh_test(
-    name = name,
-    srcs = ["compare_ids_test.sh"],
-    data = tars,
-    flaky = flaky,
-    timeout = timeout,
-  )
+    ctx.actions.expand_template(
+        template = ctx.file._executable_template,
+        output = ctx.outputs.executable,
+        substitutions = {"{id}": ctx.attr.id, "{tars}": tars_string},
+        is_executable = True,
+    )
+
+    return [DefaultInfo(runfiles = runfiles)]
+
+"""
+Test to help with maintaining reproducibility.
+
+Args:
+    tars: List of Labels which refer to the tarballs
+    id: (optional) the id we want the tarballs to have
+
+The test passes if all tarballs have the given id.
+The test also passes if no id is provided and all tarballs have the same id.
+"""
+compare_ids_test = rule(
+    implementation = _compare_ids_test_impl,
+    test = True,
+    executable = True,
+    attrs = {
+        "tars": attr.label_list(mandatory = True, allow_files = True),
+        "id": attr.string(mandatory = False, default = "0"),
+        "_executable_template": attr.label(allow_files = True, single_file = True, default = "compare_ids_test.sh.tpl"),
+    },
+)
