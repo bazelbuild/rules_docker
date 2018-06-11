@@ -56,6 +56,10 @@ compare_ids_test = rule(
     attrs = {
         "tars": attr.label_list(mandatory = True, allow_files = True),
         "id": attr.string(mandatory = False, default = "0"),
-        "_executable_template": attr.label(allow_files = True, single_file = True, default = "compare_ids_test.sh.tpl"),
+        "_executable_template": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = "compare_ids_test.sh.tpl",
+        ),
     },
 )

@@ -15,7 +15,6 @@
 function extract_image_id () {
   tar_path=$1
 
-
   if [ -e $tar_path ]
   then
     :
