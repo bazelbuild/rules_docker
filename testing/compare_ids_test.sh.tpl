@@ -12,20 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script is to be used for testing reproducibility in builds
-# All data passed in must be tarballs
-
-#!/bin/bash
-
 function extract_image_id () {
-  tar -xf $1 "manifest.json"
+  tar_path=$1
+
+
+  if [ -e $tar_path ]
+  then
+    :
+  else
+    exit 1
+  fi
+
+  tar -xf $tar_path "manifest.json"
   i=1
   while [ true ]
   do
     if [ $(cut -d '"' -f$i manifest.json) = "Config" ]
-      then
-        image_id=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
-        break
+    then
+      image_id=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
+      break
     fi
     i=$(expr $i + 1)
   done
@@ -35,8 +40,9 @@ function extract_image_id () {
 
 set -exu
 
-ID="0"
-for image in $(find -name "*.tar*")
+ID={id}
+
+for image in {tars}
 do
   if [ $ID = "0" ]
   then
