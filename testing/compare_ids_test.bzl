@@ -52,7 +52,6 @@ The test also passes if no id is provided and all tarballs have the same id.
 compare_ids_test = rule(
     implementation = _compare_ids_test_impl,
     test = True,
-    executable = True,
     attrs = {
         "tars": attr.label_list(mandatory = True, allow_files = True),
         "id": attr.string(mandatory = False, default = "0"),
