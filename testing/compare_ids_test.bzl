@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#Implementation of compare_ids_test
+# Implementation of compare_ids_test
 def _compare_ids_test_impl(ctx):
     tar_files = []
     for tar in ctx.attr.tars:
