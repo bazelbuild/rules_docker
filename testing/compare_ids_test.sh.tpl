@@ -40,7 +40,7 @@ ID={id}
 
 for image in {tars}
 do
-  if [ ${#ID} = 0 ]
+  if [ ${#ID} = 0 ] # Checks if ID has been assigned yet
   then
     ID=$(extract_image_id $image)
   elif [ $(extract_image_id $image) != $ID ]
