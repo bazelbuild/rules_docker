@@ -15,13 +15,10 @@
 function extract_image_id () {
   tar_path=$1
 
-  if [ -e $tar_path ]
-  then
-    :
-  else
-    exit 1
-  fi
+  test -e $tar_path
 
+  # Extracts the manifest.json file from the tarball
+  # and finds the image id in it
   tar -xf $tar_path "manifest.json"
   i=1
   while [ true ]
@@ -43,14 +40,12 @@ ID={id}
 
 for image in {tars}
 do
-  if [ $ID = "0" ]
+  if [ ${#ID} = 0 ]
   then
     ID=$(extract_image_id $image)
-  else
-    if [ $(extract_image_id $image) != $ID ]
-    then
-      exit 1
-    fi
+  elif [ $(extract_image_id $image) != $ID ]
+  then
+    exit 1
   fi
 done
 

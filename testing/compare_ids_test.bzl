@@ -21,7 +21,7 @@ def _compare_ids_test_impl(ctx):
     if (len(tar_files) == 0):
         fail("No tar files provided for test.")
 
-    if (len(tar_files) == 1 and ctx.attr.id == "0"):
+    if (len(tar_files) == 1 and not ctx.attr.id):
         fail("One tar provided. Need either second tar or an id to compare it to.")
 
     tars_string = ""
@@ -54,7 +54,7 @@ compare_ids_test = rule(
     test = True,
     attrs = {
         "tars": attr.label_list(mandatory = True, allow_files = True),
-        "id": attr.string(mandatory = False, default = "0"),
+        "id": attr.string(mandatory = False, default = ""),
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,
