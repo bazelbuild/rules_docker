@@ -17,7 +17,7 @@ function extract_image_id () {
 
   test -e $tar_path
 
-  # Extracts the manifest.json file from the tarball
+  # Extracts the manifest.json file from the image's tarball
   # and finds the image id in it
   tar -xf $tar_path "manifest.json"
   i=1

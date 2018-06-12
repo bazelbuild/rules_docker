@@ -40,14 +40,30 @@ def _compare_ids_test_impl(ctx):
     return [DefaultInfo(runfiles = runfiles)]
 
 """
-Test to help with maintaining reproducibility.
+Test to compare ids of images in tarballs.
+Useful for testing reproducibility.
 
 Args:
-    tars: List of Labels which refer to the tarballs
-    id: (optional) the id we want the tarballs to have
+    tars: List of Labels which refer to the docker image tarballs (from docker save)
+    id: (optional) the id we want the images in the tarballs to have
 
-The test passes if all tarballs have the given id.
+The test passes if all images in the tarballs have the given id.
 The test also passes if no id is provided and all tarballs have the same id.
+
+Each tarball must contain exactly one image.
+
+Examples of use:
+
+compare_ids_test(
+    name = "test1",
+    tars = ["image1.tar", "image2.tar", "image3.tar"],
+)
+
+compare_ids_test(
+    name = "test2",
+    tars = ["image.tar"],
+    id = "452a96d81c30a1e426bc250428263ac9ca3f47c9bf086f876d11cb39cf57aeec",
+)
 """
 compare_ids_test = rule(
     implementation = _compare_ids_test_impl,
