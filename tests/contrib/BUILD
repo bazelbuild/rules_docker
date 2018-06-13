@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("//contrib:rename_image.bzl", "rename_image")
+load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 
 sh_test(
     name = "rename_image_test",
@@ -31,4 +32,22 @@ rename_image(
     image = "@distroless_base//image",
     new_repo = "new_image_repo",
     new_tag = "new_image_tag",
+)
+
+alias(
+    name = "duplicate1",
+    actual = "@distroless_cc//image",
+)
+
+alias(
+    name = "duplicate2",
+    actual = "duplicate1",
+)
+
+compare_ids_test(
+    name = "test_compare_ids_test",
+    tars = [
+        ":duplicate1",
+        ":duplicate2",
+    ],
 )
