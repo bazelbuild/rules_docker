@@ -26,7 +26,7 @@ def _compare_ids_test_impl(ctx):
 
     tars_string = ""
     for tar in tar_files:
-        tars_string += tar.path + " "
+        tars_string += tar.short_path + " "
 
     runfiles = ctx.runfiles(files = tar_files)
 

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 function extract_image_id () {
+  set -eux
+
   tar_path=$1
 
   test -e $tar_path
@@ -31,7 +33,6 @@ function extract_image_id () {
     i=$(expr $i + 1)
   done
   echo $image_id
-
 }
 
 set -exu
