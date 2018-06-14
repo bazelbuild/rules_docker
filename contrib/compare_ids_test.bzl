@@ -62,7 +62,7 @@ compare_ids_test(
 compare_ids_test(
     name = "test2",
     tars = ["image.tar"],
-    id = "452a96d81c30a1e426bc250428263ac9ca3f47c9bf086f876d11cb39cf57aeec",
+    id = "<my_image_sha256>",
 )
 """
 compare_ids_test = rule(
