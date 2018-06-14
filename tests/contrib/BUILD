@@ -14,6 +14,7 @@
 
 load("//contrib:rename_image.bzl", "rename_image")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
+load("//container:container.bzl", "container_pull")
 
 sh_test(
     name = "rename_image_test",
@@ -50,4 +51,10 @@ compare_ids_test(
         ":duplicate1",
         ":duplicate2",
     ],
+)
+
+compare_ids_test(
+    name = "test_id_compare_ids_test",
+    id = "d86477c0011ee23ba00c9d2ffce09d15a0a9282e9af1f54309ecbb7b2c6736cc",
+    tars = ["@distorless_fixed_id//image"],
 )

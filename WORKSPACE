@@ -43,6 +43,14 @@ container_load(
     file = "//testdata:pause.tar",
 )
 
+# For testing, don't change the sha on this one
+container_pull(
+    name = "distorless_fixed_id",
+    digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)
+
 # Have the py_image dependencies for testing.
 load(
     "//python:image.bzl",
