@@ -14,6 +14,7 @@
 
 load("//contrib:rename_image.bzl", "rename_image")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
+load("//tests/contrib:create_failing_test_for_compare_ids_test.bzl", "create_failing_test_for_compare_ids_test")
 
 sh_test(
     name = "rename_image_test",
@@ -56,4 +57,29 @@ compare_ids_test(
     name = "test_id_compare_ids_test",
     id = "d86477c0011ee23ba00c9d2ffce09d15a0a9282e9af1f54309ecbb7b2c6736cc",
     tars = ["@distroless_fixed_id//image"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_diff_ids_fails",
+    tars = [
+        "@distroless_fixed_id//image",
+        "@distroless_fixed_id_2//image",
+    ],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_wrong_id_fails",
+    id = "wrong_id",
+    tars = ["@distroless_fixed_id//image"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_one_tar_no_id_fails",
+    tars = ["@distroless_fixed_id//image"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_no_tars_with_id_fails",
+    id = "some_id",
+    tars = [],
 )
