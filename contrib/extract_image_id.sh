@@ -12,19 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -exu
+set -eux
 
-ID={id}
+tar_path=$1
 
-for image in {tars}
+test -e $tar_path
+
+# Extracts the manifest.json file from the image's tarball
+# and finds the image id in it
+tar -xf $tar_path "manifest.json"
+i=1
+while [ true ]
 do
-  if [ ${#ID} = 0 ] # Checks if ID has been assigned yet
+  if [ $(cut -d '"' -f$i manifest.json) = "Config" ]
   then
-    ID=$({id_script_path} $image)
-  elif [ $({id_script_path} $image) != $ID ]
-  then
-    exit 1
+    image_id=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
+    break
   fi
+  i=$(expr $i + 1)
 done
-
-exit 0
+echo $image_id
