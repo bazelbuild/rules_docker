@@ -46,7 +46,7 @@ alias(
 
 compare_ids_test(
     name = "test_compare_ids_test",
-    tars = [
+    images = [
         ":duplicate1",
         ":duplicate2",
     ],
@@ -55,5 +55,5 @@ compare_ids_test(
 compare_ids_test(
     name = "test_id_compare_ids_test",
     id = "d86477c0011ee23ba00c9d2ffce09d15a0a9282e9af1f54309ecbb7b2c6736cc",
-    tars = ["@distroless_fixed_id//image"],
+    images = ["@distroless_fixed_id//image"],
 )
