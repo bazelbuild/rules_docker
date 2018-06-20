@@ -15,8 +15,8 @@
 # Implementation of compare_ids_test
 def _compare_ids_test_impl(ctx):
     tar_files = []
-    for tar in ctx.attr.tars:
-        tar_files += list(tar.files)
+    for image in ctx.attr.images:
+        tar_files += list(image.files)
 
     if (len(tar_files) == 0):
         fail("No tar files provided for test.")
@@ -48,7 +48,7 @@ Test to compare ids of images in tarballs.
 Useful for testing reproducibility.
 
 Args:
-    tars: List of Labels which refer to the docker image tarballs (from docker save)
+    images: List of Labels which refer to the docker image tarballs (from docker save)
     id: (optional) the id we want the images in the tarballs to have
 
 The test passes if all images in the tarballs have the given id.
@@ -60,12 +60,12 @@ Examples of use:
 
 compare_ids_test(
     name = "test1",
-    tars = ["image1.tar", "image2.tar", "image3.tar"],
+    images = ["image1.tar", "image2.tar", "image3.tar"],
 )
 
 compare_ids_test(
     name = "test2",
-    tars = ["image.tar"],
+    images = ["image.tar"],
     id = "<my_image_sha256>",
 )
 """
@@ -73,7 +73,7 @@ compare_ids_test = rule(
     implementation = _compare_ids_test_impl,
     test = True,
     attrs = {
-        "tars": attr.label_list(mandatory = True, allow_files = True),
+        "images": attr.label_list(mandatory = True, allow_files = True),
         "id": attr.string(mandatory = False, default = ""),
         "_executable_template": attr.label(
             allow_files = True,
