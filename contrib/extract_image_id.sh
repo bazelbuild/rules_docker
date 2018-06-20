@@ -20,7 +20,11 @@ test -e $tar_path
 
 # Extracts the manifest.json file from the image's tarball
 # and finds the image id in it
-tar -xf $tar_path "manifest.json"
+if tar -xf $tar_path "manifest.json"; then :
+else
+  echo Unable to extract manifest.json, make sure $tar_path is a valid docker image. >&2
+  exit 1
+fi
 i=1
 while [ true ]
 do
