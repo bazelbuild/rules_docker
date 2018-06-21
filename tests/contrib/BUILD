@@ -83,3 +83,15 @@ create_failing_test_for_compare_ids_test(
     id = "some_id",
     tars = [],
 )
+
+genrule(
+    name = "make_invalid_tar",
+    outs = ["invalid.tar"],
+    cmd = "touch random_file.txt && tar -c random_file.txt > $@",
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_invalid_tar_fails",
+    id = "some_id",
+    tars = ["invalid.tar"],
+)
