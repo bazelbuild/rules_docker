@@ -12,29 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function extract_image_id () {
-  set -eux
-
-  tar_path=$1
-
-  test -e $tar_path
-
-  # Extracts the manifest.json file from the image's tarball
-  # and finds the image id in it
-  tar -xf $tar_path "manifest.json"
-  i=1
-  while [ true ]
-  do
-    if [ $(cut -d '"' -f$i manifest.json) = "Config" ]
-    then
-      image_id=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
-      break
-    fi
-    i=$(expr $i + 1)
-  done
-  echo $image_id
-}
-
 set -exu
 
 ID={id}
@@ -43,8 +20,8 @@ for image in {tars}
 do
   if [ ${#ID} = 0 ] # Checks if ID has been assigned yet
   then
-    ID=$(extract_image_id $image)
-  elif [ $(extract_image_id $image) != $ID ]
+    ID=$({id_script_path} $image)
+  elif [ $({id_script_path} $image) != $ID ]
   then
     exit 1
   fi
