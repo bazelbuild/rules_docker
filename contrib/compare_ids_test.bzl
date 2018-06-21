@@ -28,12 +28,16 @@ def _compare_ids_test_impl(ctx):
     for tar in tar_files:
         tars_string += tar.short_path + " "
 
-    runfiles = ctx.runfiles(files = tar_files)
+    runfiles = ctx.runfiles(files = tar_files + [ctx.file._id_extract_script])
 
     ctx.actions.expand_template(
         template = ctx.file._executable_template,
         output = ctx.outputs.executable,
-        substitutions = {"{id}": ctx.attr.id, "{tars}": tars_string},
+        substitutions = {
+            "{id}": ctx.attr.id,
+            "{tars}": tars_string,
+            "{id_script_path}": ctx.file._id_extract_script.short_path,
+        },
         is_executable = True,
     )
 
@@ -75,6 +79,11 @@ compare_ids_test = rule(
             allow_files = True,
             single_file = True,
             default = "compare_ids_test.sh.tpl",
+        ),
+        "_id_extract_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = "extract_image_id.sh",
         ),
     },
 )

@@ -1,4 +1,4 @@
-# Copyright 2017 The Bazel Authors. All rights reserved.
+# Copyright 2015 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,16 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+set -eux
 
-exports_files(["push-all.sh.tpl"])
+tar_path=$1
 
-exports_files(["structure-test.sh.tpl"])
+test -e $tar_path
 
-exports_files(["compare_ids_test.sh.tpl"])
-
-exports_files(["compare_ids_test.bzl"])
-
-exports_files(["extract_image_id.sh"])
+# Extracts the manifest.json file from the image's tarball
+# and finds the image id in it
+tar -xf $tar_path "manifest.json"
+i=1
+while [ true ]
+do
+  if [ $(cut -d '"' -f$i manifest.json) = "Config" ]
+  then
+    image_id=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
+    break
+  fi
+  i=$(expr $i + 1)
+done
+echo $image_id
