@@ -27,6 +27,8 @@ container_image(
     debs = [
         "//testdata:pkg1.deb",
         "//testdata:pkg2.deb",
+        "//testdata:pkg_control_gz.deb",
+        "//testdata:pkg_control_xz.deb",
         # TODO: (tejaldesai) Once we figure out how to selectively disable tests using build_tag_filters
         # ":busybox-static_ubuntu1_amd64.deb",
     ],
