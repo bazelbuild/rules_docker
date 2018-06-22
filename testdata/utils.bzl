@@ -13,7 +13,7 @@
 # limitations under the License.
 """Utility Rules for testing"""
 
-def generate_deb(name, args = [], metadata_compression_type='none'):
+def generate_deb(name, args = [], metadata_compression_type = "none"):
     args_str = "--metadata_compression " + metadata_compression_type
     if args:
         args_str = " -a" + " -a ".join(args)
