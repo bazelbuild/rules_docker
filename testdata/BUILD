@@ -913,3 +913,13 @@ generate_deb(
 generate_deb(
     name = "pkg2",
 )
+
+generate_deb(
+    name = "pkg_control_gz",
+    metadata_compression_type = "gzip",
+)
+
+generate_deb(
+    name = "pkg_control_xz",
+    metadata_compression_type = "xz",
+)

@@ -14,8 +14,11 @@
 """This tool build tar files from a list of inputs."""
 
 from contextlib import contextmanager
+import gzip
+import io
 import os
 import os.path
+import subprocess
 import sys
 import re
 import tarfile
@@ -212,9 +215,18 @@ class TarFile(object):
 
   @contextmanager
   def write_temp_file(self, data, suffix='tar', mode='wb'):
+    # deb(5) states members may optionally be compressed with gzip or xz
+    if suffix.endswith('.gz'):
+      with gzip.GzipFile(fileobj=io.BytesIO(data)) as f:
+        data = f.read()
+      suffix = suffix[:-3]
+    elif suffix.endswith('.xz'):
+      data = self._xz_decompress(data)
+      suffix = suffix[:-3]
+
     (_, tmpfile) = tempfile.mkstemp(suffix=suffix)
     try:
-      with open(tmpfile, mode='wb') as f:
+      with open(tmpfile, mode=mode) as f:
         f.write(data)
       yield tmpfile
     finally:
@@ -276,6 +288,28 @@ class TarFile(object):
       raise self.DebError(deb + ' does not contains a data file!')
     if not pkg_metadata_found:
       raise self.DebError(deb + ' does not contains a control file!')
+
+  @staticmethod
+  def _xzcat_decompress(data):
+    """Decompresses the xz-encrypted bytes in data by piping to xz."""
+    if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
+      raise RuntimeError('Cannot handle .xz compression: xz not found.')
+
+    xz_proc = subprocess.Popen(
+      ['xz', '--decompress', '--stdout'],
+      stdin=subprocess.PIPE,
+      stdout=subprocess.PIPE)
+    return xz_proc.communicate(data)[0]
+
+  def _xz_decompress(self, data):
+    """Decompress xz-compressed bytes, using the lzma module when available, falling back to xzcat"""
+    try:
+      import lzma
+      decompress = lzma.decompress
+    except ImportError:
+      decompress = self._xzcat_decompress
+    return decompress(data)
+
 
 def main(unused_argv):
   # Parse modes arguments

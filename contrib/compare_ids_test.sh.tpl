@@ -18,10 +18,11 @@ ID={id}
 
 for image in {tars}
 do
+  current_id=$({id_script_path} $image)
   if [ ${#ID} = 0 ] # Checks if ID has been assigned yet
   then
-    ID=$({id_script_path} $image)
-  elif [ $({id_script_path} $image) != $ID ]
+    ID=$current_id
+  elif [ $current_id != $ID ]
   then
     exit 1
   fi
