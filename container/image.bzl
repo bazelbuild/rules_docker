@@ -369,6 +369,7 @@ _attrs = dict(_layer.attrs.items() + {
 }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
 
 _outputs = dict(_layer.outputs)
+
 _outputs["out"] = "%{name}.tar"
 
 image = struct(

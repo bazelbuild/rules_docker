@@ -69,12 +69,17 @@ compare_ids_test(
     id = "<my_image_sha256>",
 )
 """
+
 compare_ids_test = rule(
-    implementation = _compare_ids_test_impl,
-    test = True,
     attrs = {
-        "images": attr.label_list(mandatory = True, allow_files = True),
-        "id": attr.string(mandatory = False, default = ""),
+        "images": attr.label_list(
+            mandatory = True,
+            allow_files = True,
+        ),
+        "id": attr.string(
+            mandatory = False,
+            default = "",
+        ),
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,
@@ -86,4 +91,6 @@ compare_ids_test = rule(
             default = "extract_image_id.sh",
         ),
     },
+    test = True,
+    implementation = _compare_ids_test_impl,
 )
