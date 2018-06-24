@@ -82,6 +82,7 @@ load(
     "//skylib:serialize.bzl",
     _serialize_dict = "dict_to_associative_list",
 )
+load("//container:providers.bzl", "ImageInfo")
 
 def _get_base_config(ctx, name, base):
     if ctx.files.base or base:
@@ -327,11 +328,17 @@ def _impl(
         files = unzipped_layers + diff_ids + [config_file, config_digest] +
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
+
     return struct(
-        runfiles = runfiles,
-        files = depset([output_layer]),
-        container_parts = container_parts,
-    )
+      container_parts = container_parts,
+      providers = [
+        ImageInfo(
+          container_parts = container_parts,
+        ),
+        DefaultInfo(
+          executable = output_executable,
+          files = depset([output_layer]),
+          runfiles = runfiles)])
 
 _attrs = dict(_layer.attrs.items() + {
     "base": attr.label(allow_files = container_filetype),

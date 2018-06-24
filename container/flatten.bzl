@@ -18,6 +18,7 @@ load(
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
+load("//container:providers.bzl", "FlattenInfo")
 
 def _impl(ctx):
     """Core implementation of container_flatten."""
@@ -55,7 +56,8 @@ def _impl(ctx):
         use_default_shell_env = True,
         mnemonic = "Flatten",
     )
-    return struct()
+
+    return [FlattenInfo()]
 
 container_flatten = rule(
     attrs = dict({
