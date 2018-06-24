@@ -13,13 +13,19 @@
 # limitations under the License.
 """Provider definitions"""
 
-BundleInfo = provider(fields=["container_images", "stamp"])
+# A provider containing information about a container bundle
+BundleInfo = provider(fields = ["container_images", "stamp"])
+
+# A provider identifying container_flatten rules
 FlattenInfo = provider()
+
+# A provider containing information needed in container_push and other rules
 ImageInfo = provider(fields = ["container_parts"])
-ImportInfo = provider(fields=["container_parts"])
+
+# A provider containing information needed in container_push and other rules
+ImportInfo = provider(fields = ["container_parts"])
 
 # A provider containing information needed in container_image and other rules.
-
 LayerInfo = provider(fields = [
     "zipped_layer",
     "blob_sum",
@@ -28,5 +34,12 @@ LayerInfo = provider(fields = [
     "env",
 ])
 
-PushInfo = provider()
+# A provier identifying container_push rules
+PushInfo = provider(fields = [
+  "registry", 
+  "repository", 
+  "tag",
+  "stamp",
+  "stamp_inputs",
+])
 

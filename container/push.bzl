@@ -101,7 +101,12 @@ def _impl(ctx):
 
     return struct(
       providers = [
-        PushInfo(), 
+        PushInfo(
+            registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
+            repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
+            tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
+            stamp = ctx.attr.stamp,
+            stamp_inputs = stamp_inputs), 
         DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles)])
 
 container_push = rule(
