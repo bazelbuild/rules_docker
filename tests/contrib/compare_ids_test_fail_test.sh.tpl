@@ -29,17 +29,17 @@ touch WORKSPACE
 echo > BUILD {test_code}
 
 # Link the test files we will be using
-ln ../{bzl_path}
+ln -s ../{bzl_path}
 
-ln ../{tpl_path}
+ln -s ../{tpl_path}
 
-ln ../{extractor_path}
+ln -s ../{extractor_path}
 
 tar_num=0
 for i in {tars}
 do
   # Link the supplied tars and rename them to 0.tar, 1.tar, etc.
-  mv $(ln -v ../$i | cut -d "'" -f2) ${tar_num}.tar
+  mv $(ln -vs ../$i | cut -d "'" -f2) ${tar_num}.tar
   tar_num=$(expr $tar_num + 1)
 done
 
