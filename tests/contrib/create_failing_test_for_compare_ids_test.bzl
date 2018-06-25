@@ -20,24 +20,31 @@ load("//:compare_ids_test.bzl", "compare_ids_test")
 compare_ids_test(
     name = "test",
     id = {id},
-    tars = {tars},
+    images = {tars},
 )
 '
     """.format(
         id = repr(ctx.attr.id),
         # When linked, the tars will be placed into the base folder, and renamed 0.tar, 1.tar, ... etc
-        tars = repr([str(i) + ".tar" for i in range(len(ctx.attr.tars))]),
+        tars = repr([str(i) + ".tar" for i in range(len(ctx.attr.images))]),
     )
 
+    if ctx.attr.negate:
+        if_modifier = " ! "
+    else:
+        if_modifier = ""
+
     tar_files = []
-    for tar in ctx.attr.tars:
+    for tar in ctx.attr.images:
         tar_files += list(tar.files)
 
     tars_string = ""
     for tar_file in tar_files:
         tars_string += tar_file.short_path + " "
 
-    runfiles = ctx.runfiles(files = tar_files + [ctx.file._compare_ids_test_bzl, ctx.file._compare_ids_test_sh_tpl])
+    runfiles = ctx.runfiles(files = tar_files + [ctx.file._compare_ids_test_bzl, ctx.file._compare_ids_test_sh_tpl, ctx.file._extract_image_id])
+
+    reg_exps = "'" + "' '".join(ctx.attr.reg_exps) + "'"  # Produces string of form (Necessary because of spaces): " 'reg exp 1' 'reg exp 2'"
 
     ctx.actions.expand_template(
         template = ctx.file._executable_template,
@@ -47,7 +54,10 @@ compare_ids_test(
             "{test_code}": test_code,
             "{bzl_path}": ctx.file._compare_ids_test_bzl.short_path,
             "{tpl_path}": ctx.file._compare_ids_test_sh_tpl.short_path,
+            "{extractor_path}": ctx.file._extract_image_id.short_path,
             "{name}": ctx.attr.name,
+            "{reg_exps}": reg_exps,
+            "{if_modifier}": if_modifier,
         },
         is_executable = True,
     )
@@ -58,7 +68,7 @@ compare_ids_test(
 Test to test correctness of failure cases of the compare_ids_test.
 
 Args: Same as in compare_ids_test
-    tars: List of Labels which refer to the docker image tarballs (from docker save)
+    images: List of Labels which refer to the docker image tarballs (from docker save)
     id: (optional) the id we want the images in the tarballs to have
 
 This test passes only if the compare_ids_test it generates fails
@@ -69,12 +79,12 @@ Examples of use:
 
 create_failing_test_for_compare_ids_test(
     name = "test1",
-    tars = ["image.tar", "image_with_diff_id.tar"],
+    images = ["image.tar", "image_with_diff_id.tar"],
 )
 
 create_failing_test_for_compare_ids_test(
     name = "test2",
-    tars = ["image.tar"],
+    images = ["image.tar"],
     id = "<my_wrong_image_sha256>",
 )
 """
@@ -82,8 +92,10 @@ create_failing_test_for_compare_ids_test = rule(
     implementation = _create_failing_test_for_compare_ids_test_impl,
     test = True,
     attrs = {
-        "tars": attr.label_list(mandatory = True, allow_files = True),
+        "images": attr.label_list(mandatory = True, allow_files = True),
         "id": attr.string(mandatory = False, default = ""),
+        "reg_exps": attr.string_list(mandatory = False, default = [".*Executed .* fail.*"]),
+        "negate": attr.bool(mandatory = False, default = False),
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,
@@ -98,6 +110,11 @@ create_failing_test_for_compare_ids_test = rule(
             allow_files = True,
             single_file = True,
             default = "//contrib:compare_ids_test.sh.tpl",
+        ),
+        "_extract_image_id": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = "//contrib:extract_image_id.sh",
         ),
     },
 )

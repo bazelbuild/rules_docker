@@ -20,6 +20,7 @@
 
 set -eux
 
+# Create a new workspace where we will run bazel and make sure tests fail
 mkdir -p new_temp_workspace_{name}
 cd new_temp_workspace_{name}
 
@@ -27,20 +28,35 @@ touch WORKSPACE
 
 echo > BUILD {test_code}
 
+# Link the test files we will be using
 ln ../{bzl_path}
 
 ln ../{tpl_path}
 
-k=0
+ln ../{extractor_path}
+
+tar_num=0
 for i in {tars}
 do
-  mv $(ln -v ../$i | cut -d "'" -f2) $k.tar
-  k=`expr $k + 1`
+  # Link the supplied tars and rename them to 0.tar, 1.tar, etc.
+  mv $(ln -v ../$i | cut -d "'" -f2) ${tar_num}.tar
+  tar_num=$(expr $tar_num + 1)
 done
 
-if bazel test --test_output=all //:test
-then
-  exit 1
-fi
+# Save the output from the bazel call (this is in an if because the bazel
+# call is expected to fail, but should not terminate the script)
+if out="$(bazel test --test_output=all //:test 2>&1)"; then :; fi
+
+for reg_exp in {reg_exps}
+do
+  if [[ {if_modifier} $out =~ $reg_exp ]]
+  then
+    :
+  else
+    echo "'$reg_exp'" did not match >&2
+    exit 1
+  fi
+done
 
 exit 0
+

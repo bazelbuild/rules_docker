@@ -61,7 +61,7 @@ compare_ids_test(
 
 create_failing_test_for_compare_ids_test(
     name = "test_compare_ids_test_diff_ids_fails",
-    tars = [
+    images = [
         "@distroless_fixed_id//image",
         "@distroless_fixed_id_2//image",
     ],
@@ -70,18 +70,20 @@ create_failing_test_for_compare_ids_test(
 create_failing_test_for_compare_ids_test(
     name = "test_compare_ids_test_wrong_id_fails",
     id = "wrong_id",
-    tars = ["@distroless_fixed_id//image"],
+    images = ["@distroless_fixed_id//image"],
 )
 
 create_failing_test_for_compare_ids_test(
     name = "test_compare_ids_test_one_tar_no_id_fails",
-    tars = ["@distroless_fixed_id//image"],
+    images = ["@distroless_fixed_id//image"],
+    reg_exps = [".*One tar provided\. Need either second tar or an id to compare it to\..*"],
 )
 
 create_failing_test_for_compare_ids_test(
-    name = "test_compare_ids_test_no_tars_with_id_fails",
+    name = "test_compare_ids_test_no_images_with_id_fails",
     id = "some_id",
-    tars = [],
+    images = [],
+    reg_exps = [".*No images provided for test.*"],
 )
 
 genrule(
@@ -93,5 +95,16 @@ genrule(
 create_failing_test_for_compare_ids_test(
     name = "test_compare_ids_invalid_tar_fails",
     id = "some_id",
-    tars = ["invalid.tar"],
+    images = ["invalid.tar"],
+    reg_exps = [".*Unable to extract manifest\.json, make sure .* is a valid docker image.*"],
+)
+
+# This test makes sure that passing tests don't pass the failure case test
+create_failing_test_for_compare_ids_test(
+    name = "passing_compare_ids_test_test",
+    images = [
+        ":duplicate1",
+        ":duplicate2",
+    ],
+    negate = True,
 )
