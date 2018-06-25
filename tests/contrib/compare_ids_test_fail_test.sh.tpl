@@ -39,7 +39,7 @@ tar_num=0
 for i in {tars}
 do
   # Link the supplied tars and rename them to 0.tar, 1.tar, etc.
-  mv $(ln -vs ../$i | cut -d "'" -f2) ${tar_num}.tar
+  eval mv $(ln -vs ../$i | cut -d " " -f1) ${tar_num}.tar
   tar_num=$(expr $tar_num + 1)
 done
 
