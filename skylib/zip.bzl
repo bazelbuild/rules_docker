@@ -20,6 +20,7 @@ def gzip(ctx, artifact):
         command = "%s -n < %s > %s" % (ctx.executable.gzip.path, artifact.path, out.path),
         inputs = [artifact, ctx.executable.gzip],
         outputs = [out],
+        use_default_shell_env = True,
         mnemonic = "GZIP",
     )
     return out
@@ -31,6 +32,7 @@ def gunzip(ctx, artifact):
         command = "%s -d < %s > %s" % (ctx.executable.gzip.path, artifact.path, out.path),
         inputs = [artifact, ctx.executable.gzip],
         outputs = [out],
+        use_default_shell_env = True,
         mnemonic = "GUNZIP",
     )
     return out
