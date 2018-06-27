@@ -30,8 +30,8 @@ container = struct(
 CONTAINERREGISTRY_RELEASE = "v0.0.27"
 
 # The release of the container-structure-test repository to use.
-# Updated on June 8, 2018.
-STRUCTURE_TEST_COMMIT = "2cf1a517baea7d6705619f6acab580ce01d3489d"
+# Updated on June 27, 2018.
+STRUCTURE_TEST_COMMIT = "439a22aa83c758fe0abc78dde5612de446aeb457"
 
 _local_tool_build_template = """
 sh_binary(
