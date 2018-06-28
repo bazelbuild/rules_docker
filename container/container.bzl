@@ -31,7 +31,7 @@ CONTAINERREGISTRY_RELEASE = "v0.0.27"
 
 # The release of the container-structure-test repository to use.
 # Updated on June 27, 2018.
-STRUCTURE_TEST_COMMIT = "439a22aa83c758fe0abc78dde5612de446aeb457"
+STRUCTURE_TEST_COMMIT = "10895cbf60e8c7bc8940652da65ffc4630c52b42"
 
 _local_tool_build_template = """
 sh_binary(
