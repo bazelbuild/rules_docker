@@ -124,14 +124,18 @@ def _container_import_impl(ctx):
     )
 
     return struct(
-      container_parts = container_parts,
-      providers = [
-        ImportInfo(
-          container_parts = container_parts),
-        DefaultInfo(
-          executable = ctx.outputs.executable,
-          files = depset([ctx.outputs.out]),
-          runfiles = runfiles)])
+        container_parts = container_parts,
+        providers = [
+            ImportInfo(
+                container_parts = container_parts,
+            ),
+            DefaultInfo(
+                executable = ctx.outputs.executable,
+                files = depset([ctx.outputs.out]),
+                runfiles = runfiles,
+            ),
+        ],
+    )
 
 container_import = rule(
     attrs = dict({

@@ -330,15 +330,18 @@ def _impl(
     )
 
     return struct(
-      container_parts = container_parts,
-      providers = [
-        ImageInfo(
-          container_parts = container_parts,
-        ),
-        DefaultInfo(
-          executable = output_executable,
-          files = depset([output_layer]),
-          runfiles = runfiles)])
+        container_parts = container_parts,
+        providers = [
+            ImageInfo(
+                container_parts = container_parts,
+            ),
+            DefaultInfo(
+                executable = output_executable,
+                files = depset([output_layer]),
+                runfiles = runfiles,
+            ),
+        ],
+    )
 
 _attrs = dict(_layer.attrs.items() + {
     "base": attr.label(allow_files = container_filetype),

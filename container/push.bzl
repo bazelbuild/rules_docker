@@ -92,22 +92,26 @@ def _impl(ctx):
     )
 
     runfiles = ctx.runfiles(
-      files = [
-        ctx.executable._pusher,
-        image["config"],
-      ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-      stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
-      list(ctx.attr._pusher.default_runfiles.files)) # provider?
+        files = [
+                    ctx.executable._pusher,
+                    image["config"],
+                ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
+                stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
+                list(ctx.attr._pusher.default_runfiles.files),
+    )
 
     return struct(
-      providers = [
-        PushInfo(
-            registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
-            repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
-            tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
-            stamp = ctx.attr.stamp,
-            stamp_inputs = stamp_inputs), 
-        DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles)])
+        providers = [
+            PushInfo(
+                registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
+                repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
+                tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
+                stamp = ctx.attr.stamp,
+                stamp_inputs = stamp_inputs,
+            ),
+            DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
+        ],
+    )
 
 container_push = rule(
     attrs = dict({

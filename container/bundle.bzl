@@ -63,16 +63,20 @@ def _container_bundle_impl(ctx):
         stamp_files = [ctx.info_file, ctx.version_file]
 
     return struct(
-      container_images = images,
-      stamp = ctx.attr.stamp,
-      providers = [
-        BundleInfo(
-          container_images = images,
-          stamp = ctx.attr.stamp),
-        DefaultInfo(
-          files = depset(),
-          executable = ctx.outputs.executable, 
-          runfiles = ctx.runfiles(files = (stamp_files + runfiles)))])
+        container_images = images,
+        stamp = ctx.attr.stamp,
+        providers = [
+            BundleInfo(
+                container_images = images,
+                stamp = ctx.attr.stamp,
+            ),
+            DefaultInfo(
+                files = depset(),
+                executable = ctx.outputs.executable,
+                runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
+            ),
+        ],
+    )
 
 container_bundle_ = rule(
     attrs = dict({

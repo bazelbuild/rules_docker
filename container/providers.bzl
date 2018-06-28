@@ -36,10 +36,9 @@ LayerInfo = provider(fields = [
 
 # A provier containing information exposed by container_push rules
 PushInfo = provider(fields = [
-  "registry", 
-  "repository", 
-  "tag",
-  "stamp",
-  "stamp_inputs",
+    "registry",
+    "repository",
+    "tag",
+    "stamp",
+    "stamp_inputs",
 ])
-
