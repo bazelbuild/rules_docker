@@ -26,6 +26,7 @@ load(
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
+load("//container:providers.bzl", "PushInfo")
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
@@ -90,12 +91,27 @@ def _impl(ctx):
         executable = True,
     )
 
-    return struct(runfiles = ctx.runfiles(files = [
-                                                      ctx.executable._pusher,
-                                                      image["config"],
-                                                  ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-                                                  stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
-                                                  list(ctx.attr._pusher.default_runfiles.files)))
+    runfiles = ctx.runfiles(
+        files = [
+                    ctx.executable._pusher,
+                    image["config"],
+                ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
+                stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
+                list(ctx.attr._pusher.default_runfiles.files),
+    )
+
+    return struct(
+        providers = [
+            PushInfo(
+                registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
+                repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
+                tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
+                stamp = ctx.attr.stamp,
+                stamp_inputs = stamp_inputs,
+            ),
+            DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
+        ],
+    )
 
 container_push = rule(
     attrs = dict({
