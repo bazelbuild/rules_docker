@@ -141,7 +141,7 @@ def _impl(
   """
     name = name or ctx.label.name
     file_map = file_map or {}
-    files = files or ctx.files.files # providers?
+    files = files or ctx.files.files
     empty_files = empty_files or ctx.attr.empty_files
     empty_dirs = empty_dirs or ctx.attr.empty_dirs
     directory = directory or ctx.attr.directory
