@@ -40,6 +40,7 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
+load("//container:providers.bzl", "LayerInfo")
 
 def _magic_path(ctx, f, output_layer):
     # Right now the logic this uses is a bit crazy/buggy, so to support
@@ -108,16 +109,6 @@ def build_layer(
 def zip_layer(ctx, layer):
     zipped_layer = _gzip(ctx, layer)
     return zipped_layer, _sha256(ctx, zipped_layer)
-
-# A provider containing information needed in container_image and other rules.
-
-LayerInfo = provider(fields = [
-    "zipped_layer",
-    "blob_sum",
-    "unzipped_layer",
-    "diff_id",
-    "env",
-])
 
 def _impl(
         ctx,

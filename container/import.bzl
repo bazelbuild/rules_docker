@@ -42,6 +42,7 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
+load("//container:providers.bzl", "ImportInfo")
 
 def _is_filetype(filename, extensions):
     for filetype in extensions:
@@ -121,10 +122,19 @@ def _container_import_impl(ctx):
                      container_parts["config_digest"],
                  ]),
     )
+
     return struct(
-        runfiles = runfiles,
-        files = depset([ctx.outputs.out]),
         container_parts = container_parts,
+        providers = [
+            ImportInfo(
+                container_parts = container_parts,
+            ),
+            DefaultInfo(
+                executable = ctx.outputs.executable,
+                files = depset([ctx.outputs.out]),
+                runfiles = runfiles,
+            ),
+        ],
     )
 
 container_import = rule(
