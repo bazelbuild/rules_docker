@@ -30,11 +30,6 @@ compare_ids_test(
         tars = repr([str(i) + ".tar" for i in range(len(ctx.attr.images))]),
     )
 
-    if ctx.attr.negate:
-        if_modifier = " ! "
-    else:
-        if_modifier = ""
-
     tar_files = []
     for tar in ctx.attr.images:
         tar_files += list(tar.files)
@@ -59,7 +54,6 @@ compare_ids_test(
             "{extractor_path}": ctx.file._extract_image_id.short_path,
             "{name}": ctx.attr.name,
             "{reg_exps}": reg_exps,
-            "{if_modifier}": if_modifier,
         },
         is_executable = True,
     )
@@ -76,7 +70,7 @@ Args:
         of the bazel call for the rule to pass (ex. if we want to make sure
         a rule failed we would use the default value: ".*Executed .* fail.*")
         to match text where at least one test failed.
-    negate: if True, negates the value of the test
+
 This test passes only if the compare_ids_test it generates fails
 
 Each tarball must contain exactly one image.
@@ -101,7 +95,6 @@ create_failing_test_for_compare_ids_test = rule(
         "images": attr.label_list(mandatory = True, allow_files = True),
         "id": attr.string(mandatory = False, default = ""),
         "reg_exps": attr.string_list(mandatory = False, default = [".*Executed .* fail.*"]),
-        "negate": attr.bool(mandatory = False, default = False),
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,

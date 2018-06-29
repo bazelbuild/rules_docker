@@ -60,7 +60,7 @@ if out="$(bazel test --test_output=all //:test 2>&1)"; then :; fi
 
 for reg_exp in {reg_exps}
 do
-  if ! [[ {if_modifier} $out =~ $reg_exp ]]
+  if ! [[ $out =~ $reg_exp ]]
   then
     echo "'$reg_exp'" did not match >&2
     exit 1
