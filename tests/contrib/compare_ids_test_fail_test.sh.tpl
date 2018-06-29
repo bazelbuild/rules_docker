@@ -56,7 +56,10 @@ done
 
 # Save the output from the bazel call (this is in an if because the bazel
 # call is expected to fail, but should not terminate the script)
-if out="$(bazel test --test_output=all //:test 2>&1)"; then :; fi
+if out="$(bazel test --test_output=all //:test 2>&1)"
+then
+  exit 1;
+fi
 
 for reg_exp in {reg_exps}
 do

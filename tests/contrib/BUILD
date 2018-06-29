@@ -65,12 +65,14 @@ create_failing_test_for_compare_ids_test(
         "@distroless_fixed_id//image",
         "@distroless_fixed_id_2//image",
     ],
+    reg_exps = [".*Executed .* fail.*"],
 )
 
 create_failing_test_for_compare_ids_test(
     name = "test_compare_ids_test_wrong_id_fails",
     id = "wrong_id",
     images = ["@distroless_fixed_id//image"],
+    reg_exps = [".*Executed .* fail.*"],
 )
 
 create_failing_test_for_compare_ids_test(

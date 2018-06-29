@@ -66,10 +66,9 @@ Test to test correctness of failure cases of the compare_ids_test.
 Args:
     images: List of Labels which refer to the docker image tarballs (from docker save)
     id: (optional) the id we want the images in the tarballs to have
-    reg_exps: a list of regular expressions that must match the output text
-        of the bazel call for the rule to pass (ex. if we want to make sure
-        a rule failed we would use the default value: ".*Executed .* fail.*")
-        to match text where at least one test failed.
+    reg_exps: (optional) a list of regular expressions that must match the output text
+        of the bazel call. (Ex [".*Executed .* fail.*"] makes sure the given test failed
+        as opposed to failing to build)
 
 This test passes only if the compare_ids_test it generates fails
 
@@ -94,7 +93,7 @@ create_failing_test_for_compare_ids_test = rule(
     attrs = {
         "images": attr.label_list(mandatory = True, allow_files = True),
         "id": attr.string(mandatory = False, default = ""),
-        "reg_exps": attr.string_list(mandatory = False, default = [".*Executed .* fail.*"]),
+        "reg_exps": attr.string_list(mandatory = False, default = []),
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,
