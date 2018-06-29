@@ -29,24 +29,27 @@ touch WORKSPACE
 echo > BUILD {test_code}
 
 # Link the test files we will be using and make sure the links point to real files
-# No second operand means it just links the file in the currend directory,
+# No second operand means it just links the file in the current directory,
 # under the same name
+
+# Link compare_ids_test.bzl
 ln -s ../{bzl_path}
 test -f $(basename {bzl_path})
 
+# Link compare_ids_test.sh.tpl
 ln -s ../{tpl_path}
 test -f $(basename {tpl_path})
 
+# Link extract_image_id.sh
 ln -s ../{extractor_path}
 test -f $(basename {extractor_path})
 
 
-
 tar_num=0
-for i in {tars}
+for tar in {tars}
 do
   # Link the supplied tars and rename them to 0.tar, 1.tar, etc.
-  eval mv $(ln -vs ../$i | cut -d " " -f1) ${tar_num}.tar
+  eval mv $(ln -vs ../$tar | cut -d " " -f1) ${tar_num}.tar
   test -f ${tar_num}.tar
   tar_num=$(expr $tar_num + 1)
 done
@@ -57,10 +60,8 @@ if out="$(bazel test --test_output=all //:test 2>&1)"; then :; fi
 
 for reg_exp in {reg_exps}
 do
-  if [[ {if_modifier} $out =~ $reg_exp ]]
+  if ! [[ {if_modifier} $out =~ $reg_exp ]]
   then
-    :
-  else
     echo "'$reg_exp'" did not match >&2
     exit 1
   fi

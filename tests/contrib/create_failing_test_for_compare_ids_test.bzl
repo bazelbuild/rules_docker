@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # Implementation of create_failing_test_for_compare_ids_test rule
+
 def _create_failing_test_for_compare_ids_test_impl(ctx):
     test_code = """ '
 load("//:compare_ids_test.bzl", "compare_ids_test")
@@ -44,7 +45,8 @@ compare_ids_test(
 
     runfiles = ctx.runfiles(files = tar_files + [ctx.file._compare_ids_test_bzl, ctx.file._compare_ids_test_sh_tpl, ctx.file._extract_image_id])
 
-    reg_exps = "'" + "' '".join(ctx.attr.reg_exps) + "'"  # Produces string of form (Necessary because of spaces): " 'reg exp 1' 'reg exp 2'"
+    # Produces string of form (Necessary because of spaces): " 'reg exp 1' 'reg exp 2'"
+    reg_exps = "'" + "' '".join(ctx.attr.reg_exps) + "'"
 
     ctx.actions.expand_template(
         template = ctx.file._executable_template,
@@ -67,10 +69,14 @@ compare_ids_test(
 """
 Test to test correctness of failure cases of the compare_ids_test.
 
-Args: Same as in compare_ids_test
+Args:
     images: List of Labels which refer to the docker image tarballs (from docker save)
     id: (optional) the id we want the images in the tarballs to have
-
+    reg_exps: a list of regular expressions that must match the output text
+        of the bazel call for the rule to pass (ex. if we want to make sure
+        a rule failed we would use the default value: ".*Executed .* fail.*")
+        to match text where at least one test failed.
+    negate: if True, negates the value of the test
 This test passes only if the compare_ids_test it generates fails
 
 Each tarball must contain exactly one image.
