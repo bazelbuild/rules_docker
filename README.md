@@ -445,10 +445,6 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_go/archive/{HEAD}.tar.gz"],
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
-
-go_repositories()
-
 load(
     "@io_bazel_rules_docker//go:image.bzl",
     _go_image_repos = "repositories",
