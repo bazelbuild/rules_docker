@@ -63,7 +63,7 @@ fi
 
 for reg_exp in {reg_exps}
 do
-  if ! [[ $out =~ $reg_exp ]]
+  if ! [[ "$out" =~ $reg_exp ]]
   then
     echo "'$reg_exp'" did not match >&2
     exit 1

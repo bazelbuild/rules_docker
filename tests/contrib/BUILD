@@ -37,7 +37,7 @@ rename_image(
 
 alias(
     name = "duplicate1",
-    actual = "@distroless_cc//image",
+    actual = "@distroless_fixed_id//image",
 )
 
 alias(
@@ -99,4 +99,25 @@ create_failing_test_for_compare_ids_test(
     id = "some_id",
     images = ["invalid.tar"],
     reg_exps = [".*Unable to extract manifest\.json, make sure .* is a valid docker image.*"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_some_diff_ids_fails",
+    images = [
+        "duplicate1",
+        "duplicate2",
+        "@distroless_fixed_id_2//image",
+    ],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_some_invalid_tar_fails",
+    images = [
+        "duplicate1",
+        "invalid.tar",
+    ],
+    reg_exps = [
+        ".*Unable to extract manifest\.json, make sure .* is a valid docker image.*",
+        ".*FAILED.*",
+    ],
 )
