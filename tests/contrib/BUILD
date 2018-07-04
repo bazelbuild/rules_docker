@@ -14,6 +14,7 @@
 
 load("//contrib:rename_image.bzl", "rename_image")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
+load("//tests/contrib:create_failing_test_for_compare_ids_test.bzl", "create_failing_test_for_compare_ids_test")
 
 sh_test(
     name = "rename_image_test",
@@ -36,7 +37,7 @@ rename_image(
 
 alias(
     name = "duplicate1",
-    actual = "@distroless_cc//image",
+    actual = "@distroless_fixed_id//image",
 )
 
 alias(
@@ -56,4 +57,67 @@ compare_ids_test(
     name = "test_id_compare_ids_test",
     id = "d86477c0011ee23ba00c9d2ffce09d15a0a9282e9af1f54309ecbb7b2c6736cc",
     images = ["@distroless_fixed_id//image"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_diff_ids_fails",
+    images = [
+        "@distroless_fixed_id//image",
+        "@distroless_fixed_id_2//image",
+    ],
+    reg_exps = [".*Executed .* fail.*"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_wrong_id_fails",
+    id = "wrong_id",
+    images = ["@distroless_fixed_id//image"],
+    reg_exps = [".*Executed .* fail.*"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_one_tar_no_id_fails",
+    images = ["@distroless_fixed_id//image"],
+    reg_exps = [".*One tar provided\. Need either second tar or an id to compare it to\..*"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_no_images_with_id_fails",
+    id = "some_id",
+    images = [],
+    reg_exps = [".*No images provided for test.*"],
+)
+
+genrule(
+    name = "make_invalid_tar",
+    outs = ["invalid.tar"],
+    cmd = "touch random_file.txt && tar -c random_file.txt > $@",
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_invalid_tar_fails",
+    id = "some_id",
+    images = ["invalid.tar"],
+    reg_exps = [".*Unable to extract manifest\.json, make sure .* is a valid docker image.*"],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_diff_ids_fails_no_regex",
+    images = [
+        "duplicate1",
+        "duplicate2",
+        "@distroless_fixed_id_2//image",
+    ],
+)
+
+create_failing_test_for_compare_ids_test(
+    name = "test_compare_ids_test_invalid_tar_fails_multi_regex",
+    images = [
+        "duplicate1",
+        "invalid.tar",
+    ],
+    reg_exps = [
+        ".*Unable to extract manifest\.json, make sure .* is a valid docker image.*",
+        ".*FAILED.*",
+    ],
 )

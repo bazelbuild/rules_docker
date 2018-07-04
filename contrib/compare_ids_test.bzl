@@ -19,7 +19,7 @@ def _compare_ids_test_impl(ctx):
         tar_files += list(image.files)
 
     if (len(tar_files) == 0):
-        fail("No tar files provided for test.")
+        fail("No images provided for test.")
 
     if (len(tar_files) == 1 and not ctx.attr.id):
         fail("One tar provided. Need either second tar or an id to compare it to.")
