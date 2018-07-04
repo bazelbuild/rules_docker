@@ -632,8 +632,8 @@ class ImageTest(unittest.TestCase):
         '/usr/bin/java',
         '-cp',
         '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
-        '/app/io_bazel_rules_docker/../scala/lib/scala-library.jar:'+
-        '/app/io_bazel_rules_docker/../scala/lib/scala-reflect.jar:'+
+        '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_library/scala-library-2.11.12.jar:'+
+        '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary',
