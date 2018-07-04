@@ -95,14 +95,14 @@ genrule(
 )
 
 create_failing_test_for_compare_ids_test(
-    name = "test_compare_ids_invalid_tar_fails",
+    name = "test_compare_ids_test_invalid_tar_fails",
     id = "some_id",
     images = ["invalid.tar"],
     reg_exps = [".*Unable to extract manifest\.json, make sure .* is a valid docker image.*"],
 )
 
 create_failing_test_for_compare_ids_test(
-    name = "test_compare_ids_test_some_diff_ids_fails",
+    name = "test_compare_ids_test_diff_ids_fails_no_regex",
     images = [
         "duplicate1",
         "duplicate2",
@@ -111,7 +111,7 @@ create_failing_test_for_compare_ids_test(
 )
 
 create_failing_test_for_compare_ids_test(
-    name = "test_compare_ids_some_invalid_tar_fails",
+    name = "test_compare_ids_test_invalid_tar_fails_multi_regex",
     images = [
         "duplicate1",
         "invalid.tar",
