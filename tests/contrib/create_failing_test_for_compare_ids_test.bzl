@@ -41,7 +41,10 @@ compare_ids_test(
     runfiles = ctx.runfiles(files = tar_files + [ctx.file._compare_ids_test_bzl, ctx.file._compare_ids_test_sh_tpl, ctx.file._extract_image_id])
 
     # Produces string of form (Necessary because of spaces): " 'reg exp 1' 'reg exp 2'"
-    reg_exps = "'" + "' '".join(ctx.attr.reg_exps) + "'"
+    if len(ctx.attr.reg_exps) > 0:
+        reg_exps = "'" + "' '".join(ctx.attr.reg_exps) + "'"
+    else:
+        reg_exps = ''
 
     ctx.actions.expand_template(
         template = ctx.file._executable_template,
