@@ -22,16 +22,20 @@ tar = tarfile.open(tar_path, mode='r')
 
 
 decoder = JSONDecoder()
-# Extracts it as a file object (not to the disk)
 try:
+    # Extracts it as a file object (not to the disk)
     manifest = tar.extractfile("manifest.json").read().decode("utf-8")
 except:
     print >> sys.stderr, "Unable to extract manifest.json, make sure {} is a valid docker image.".format(tar_path)
     exit(1)
+
+# Get the manifest dictionary from JSON
 manifest = decoder.decode(manifest)[0]
 
+# The name of the config file is of the form <image_id>.config
 config_file = manifest["Config"]
 
+# Get the id
 id = config_file.split(".")[0]
 
 print(id)
