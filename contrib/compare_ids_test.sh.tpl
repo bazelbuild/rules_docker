@@ -18,7 +18,7 @@ ID={id}
 
 for image in {tars}
 do
-  current_id=$({id_script_path} $image)
+  current_id=$(python {id_script_path} $image)
   if [ ${#ID} = 0 ] # Checks if ID has been assigned yet
   then
     ID=$current_id

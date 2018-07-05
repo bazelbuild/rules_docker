@@ -88,7 +88,7 @@ compare_ids_test = rule(
         "_id_extract_script": attr.label(
             allow_files = True,
             single_file = True,
-            default = "extract_image_id.sh",
+            default = "extract_image_id.py",
         ),
     },
     test = True,

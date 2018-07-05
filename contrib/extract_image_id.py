@@ -22,8 +22,9 @@ tar = tarfile.open(tar_path, mode='r')
 
 
 decoder = JSONDecoder()
-manifest = decoder.decode(tar.extractfile(
-    "manifest.json").read().decode("utf-8"))[0]
+# Extracts it as a file object (not to the disk)
+manifest = tar.extractfile("manifest.json").read().decode("utf-8")
+manifest = decoder.decode(manifest)[0]
 
 config_file = manifest["Config"]
 
