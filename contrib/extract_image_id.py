@@ -26,7 +26,8 @@ try:
     # Extracts it as a file object (not to the disk)
     manifest = tar.extractfile("manifest.json").read().decode("utf-8")
 except:
-    print >> sys.stderr, "Unable to extract manifest.json, make sure {} is a valid docker image.".format(tar_path)
+    print >> sys.stderr, "Unable to extract manifest.json, make sure {} is a valid docker image.\
+    ".format(tar_path)
     exit(1)
 
 # Get the manifest dictionary from JSON
