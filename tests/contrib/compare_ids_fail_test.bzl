@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Implementation of create_failing_test_for_compare_ids_test rule
+# Implementation of compare_ids_fail_test rule
 
-def _create_failing_test_for_compare_ids_test_impl(ctx):
+def _impl(ctx):
     test_code = """ '
 load("//:compare_ids_test.bzl", "compare_ids_test")
 
@@ -38,7 +38,11 @@ compare_ids_test(
     for tar_file in tar_files:
         tars_string += tar_file.short_path + " "
 
-    runfiles = ctx.runfiles(files = tar_files + [ctx.file._compare_ids_test_bzl, ctx.file._compare_ids_test_sh_tpl, ctx.file._extract_image_id])
+    runfiles = ctx.runfiles(files = tar_files + [
+        ctx.file._compare_ids_test_bzl,
+        ctx.file._compare_ids_test_sh_tpl,
+        ctx.file._extract_image_id,
+    ])
 
     # Produces string of form (Necessary because of spaces): " 'reg exp 1' 'reg exp 2'"
     reg_exps = ""
@@ -78,19 +82,19 @@ Each tarball must contain exactly one image.
 
 Examples of use:
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test1",
     images = ["image.tar", "image_with_diff_id.tar"],
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test2",
     images = ["image.tar"],
     id = "<my_wrong_image_sha256>",
 )
 """
-create_failing_test_for_compare_ids_test = rule(
-    implementation = _create_failing_test_for_compare_ids_test_impl,
+compare_ids_fail_test = rule(
+    implementation = _impl,
     test = True,
     attrs = {
         "images": attr.label_list(mandatory = True, allow_files = True),
@@ -99,7 +103,7 @@ create_failing_test_for_compare_ids_test = rule(
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,
-            default = "compare_ids_test_fail_test.sh.tpl",
+            default = "compare_ids_fail_test.sh.tpl",
         ),
         "_compare_ids_test_bzl": attr.label(
             allow_files = True,
