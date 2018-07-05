@@ -14,7 +14,7 @@
 
 load("//contrib:rename_image.bzl", "rename_image")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
-load("//tests/contrib:create_failing_test_for_compare_ids_test.bzl", "create_failing_test_for_compare_ids_test")
+load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 
 sh_test(
     name = "rename_image_test",
@@ -59,7 +59,7 @@ compare_ids_test(
     images = ["@distroless_fixed_id//image"],
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test_compare_ids_test_diff_ids_fails",
     images = [
         "@distroless_fixed_id//image",
@@ -68,20 +68,20 @@ create_failing_test_for_compare_ids_test(
     reg_exps = [".*Executed .* fail.*"],
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test_compare_ids_test_wrong_id_fails",
     id = "wrong_id",
     images = ["@distroless_fixed_id//image"],
     reg_exps = [".*Executed .* fail.*"],
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test_compare_ids_test_one_tar_no_id_fails",
     images = ["@distroless_fixed_id//image"],
     reg_exps = [".*One tar provided\. Need either second tar or an id to compare it to\..*"],
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test_compare_ids_test_no_images_with_id_fails",
     id = "some_id",
     images = [],
@@ -94,14 +94,14 @@ genrule(
     cmd = "touch random_file.txt && tar -c random_file.txt > $@",
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test_compare_ids_test_invalid_tar_fails",
     id = "some_id",
     images = ["invalid.tar"],
     reg_exps = [".*Unable to extract manifest\.json, make sure .* is a valid docker image.*"],
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test_compare_ids_test_diff_ids_fails_no_regex",
     images = [
         "duplicate1",
@@ -110,7 +110,7 @@ create_failing_test_for_compare_ids_test(
     ],
 )
 
-create_failing_test_for_compare_ids_test(
+compare_ids_fail_test(
     name = "test_compare_ids_test_invalid_tar_fails_multi_regex",
     images = [
         "duplicate1",
