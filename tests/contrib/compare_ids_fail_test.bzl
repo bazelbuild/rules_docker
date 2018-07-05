@@ -118,7 +118,7 @@ compare_ids_fail_test = rule(
         "_extract_image_id": attr.label(
             allow_files = True,
             single_file = True,
-            default = "//contrib:extract_image_id.sh",
+            default = "//contrib:extract_image_id.py",
         ),
     },
 )
