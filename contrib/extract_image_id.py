@@ -33,7 +33,7 @@ except:
 # Get the manifest dictionary from JSON
 manifest = decoder.decode(manifest)[0]
 
-# The name of the config file is of the form <image_id>.config
+# The name of the config file is of the form <image_id>.json
 config_file = manifest["Config"]
 
 # Get the id
