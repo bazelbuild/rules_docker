@@ -26,8 +26,7 @@ decoder = JSONDecoder()
 try:
     manifest = tar.extractfile("manifest.json").read().decode("utf-8")
 except:
-    print("Unable to extract manifest.json, make sure {} is a valid docker image.".format(
-        tar_path), file=sys.stderr)
+    print >> sys.stderr, "Unable to extract manifest.json, make sure {} is a valid docker image.".format(tar_path)
     exit(1)
 manifest = decoder.decode(manifest)[0]
 
