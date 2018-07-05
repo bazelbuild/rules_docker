@@ -619,7 +619,7 @@ class ImageTest(unittest.TestCase):
         'arg0',
         'arg1'])
 
-  def test_go_image_args(self):
+  def test_rust_image_args(self):
     with TestImage('rust_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/rust_image_binary',
