@@ -99,14 +99,18 @@ maven_jar(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "f5f35de94d2d64e48fb4aef87cf89248b8980cb25f9ff1449575af8d904f41be",
-    strip_prefix = "rules_scala-0bac7fe86fdde1cfba3bb2c8a04de5e12de47bcd",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/0bac7fe86fdde1cfba3bb2c8a04de5e12de47bcd.tar.gz"],
+    sha256 = "50465838809fee66cab66fa20ed3d68c667f663958ede10fbe504a0d18481016",
+    strip_prefix = "rules_scala-5874a2441596fe9a0bf80e167a4d7edd945c221e",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/5874a2441596fe9a0bf80e167a4d7edd945c221e.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
 
 scala_repositories()
+
+load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
+
+scala_register_toolchains()
 
 # For our groovy_image test.
 http_archive(
