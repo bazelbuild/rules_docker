@@ -113,7 +113,7 @@ compare_ids_fail_test = rule(
         "_compare_ids_test_sh_tpl": attr.label(
             allow_files = True,
             single_file = True,
-            default = "//contrib:compare_ids_test.sh.tpl",
+            default = "//contrib:compare_ids_test.py.tpl",
         ),
         "_extract_image_id": attr.label(
             allow_files = True,

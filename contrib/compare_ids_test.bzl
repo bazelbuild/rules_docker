@@ -24,10 +24,6 @@ def _compare_ids_test_impl(ctx):
     if (len(tar_files) == 1 and not ctx.attr.id):
         fail("One tar provided. Need either second tar or an id to compare it to.")
 
-    tars_string = ""
-    for tar in tar_files:
-        tars_string += tar.short_path + " "
-
     runfiles = ctx.runfiles(files = tar_files + [ctx.file._id_extract_script])
 
     ctx.actions.expand_template(
@@ -35,8 +31,8 @@ def _compare_ids_test_impl(ctx):
         output = ctx.outputs.executable,
         substitutions = {
             "{id}": ctx.attr.id,
-            "{tars}": tars_string,
-            "{id_script_path}": ctx.file._id_extract_script.short_path,
+            "{tars}": repr([i.short_path for i in tar_files]),
+            "{extract_image_id_path}": ctx.file._id_extract_script.short_path,
         },
         is_executable = True,
     )
@@ -83,7 +79,7 @@ compare_ids_test = rule(
         "_executable_template": attr.label(
             allow_files = True,
             single_file = True,
-            default = "compare_ids_test.sh.tpl",
+            default = "compare_ids_test.py.tpl",
         ),
         "_id_extract_script": attr.label(
             allow_files = True,
