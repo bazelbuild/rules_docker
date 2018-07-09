@@ -214,6 +214,15 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         _external_dir(ctx): _runfiles_dir(ctx),
     })
 
+    if ctx.attr.null_entrypoint and ctx.attr.entrypoint:
+        fail("You can specify only one of entrypoint and null_entrypoint")
+
+    # Use entrypoint so we can easily add arguments when the resulting
+    # image is `docker run ...`.
+    # Per: https://docs.docker.com/engine/reference/builder/#entrypoint
+    # we should use the "exec" (list) form of entrypoint.
+    entrypoint = (None if ctx.attr.null_entrypoint else ctx.attr.entrypoint + [_binary_name(ctx)] + ctx.attr.args)
+
     return _container.image.implementation(
         ctx,
         # We use all absolute paths.
@@ -221,11 +230,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         file_map = file_map,
         empty_files = empty_files,
         symlinks = symlinks,
-        # Use entrypoint so we can easily add arguments when the resulting
-        # image is `docker run ...`.
-        # Per: https://docs.docker.com/engine/reference/builder/#entrypoint
-        # we should use the "exec" (list) form of entrypoint.
-        entrypoint = ctx.attr.entrypoint + [_binary_name(ctx)] + ctx.attr.args,
+        entrypoint = entrypoint,
     )
 
 app_layer = rule(
@@ -241,7 +246,17 @@ app_layer = rule(
         "lang_layers": attr.label_list(allow_files = True),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
-        "entrypoint": attr.string_list(default = []),
+        # Prefix to the binary invocation. Similar to bazel's
+        # `--run_under` command line flag. Useful for overriding
+        # interpreters, etc.
+        "entrypoint": attr.string_list(),
+        # Reset the entrypoint to null instead of defaulting to an
+        # exec style invocation of the binary. If this is true,
+        # then `entrypoint` attribute must be empty.
+        # This is especially needed when base images specify their own cmd,
+        # and container registry tools don't reset them.
+        # https://github.com/google/containerregistry/pull/86
+        "null_entrypoint": attr.bool(),
 
         # Whether each dependency is laid out in a manner that is agnostic
         # of the binary in which it is participating.  This can increase
