@@ -27,7 +27,7 @@ container = struct(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.27"
+CONTAINERREGISTRY_RELEASE = "v0.0.28"
 
 # The release of the container-structure-test repository to use.
 # Updated on June 29, 2018.
