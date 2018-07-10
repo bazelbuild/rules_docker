@@ -106,6 +106,7 @@ load(
     "//lang:image.bzl",
     "dep_layer_impl",
     "layer_file_path",
+    "runfiles_dir",
 )
 
 def _jar_dep_layer_impl(ctx):
@@ -138,6 +139,7 @@ jar_dep_layer = rule(
 def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
+    workdir = ctx.attr.workdir or '/'.join([runfiles_dir(ctx), ctx.workspace_name])
     available = depset()
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
@@ -166,12 +168,13 @@ def _jar_app_layer_impl(ctx):
 
     binary_path = layer_file_path(ctx, ctx.files.binary[0])
     classpath_path = layer_file_path(ctx, classpath_file)
+    args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
     entrypoint = [
         "/usr/bin/java",
         "-cp",
         # Support optionally passing the classpath as a file.
         "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
-    ] + ctx.attr.jvm_flags + [ctx.attr.main_class] + ctx.attr.args
+    ] + ctx.attr.jvm_flags + [ctx.attr.main_class] + args
 
     file_map = {
         layer_file_path(ctx, f): f
@@ -184,6 +187,7 @@ def _jar_app_layer_impl(ctx):
         directory = "/",
         file_map = file_map,
         entrypoint = entrypoint,
+        workdir = workdir,
     )
 
 jar_app_layer = rule(
@@ -215,7 +219,9 @@ jar_app_layer = rule(
         "directory": attr.string(default = "/app"),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
+        "workdir": attr.string(default = ""),
         "legacy_run_behavior": attr.bool(default = False),
+        "data": attr.label_list(cfg="data", allow_files=True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
@@ -271,6 +277,7 @@ def java_image(
         jar_layers = layers,
         visibility = visibility,
         args = kwargs.get("args"),
+        data = kwargs.get("data"),
     )
 
 def _war_dep_layer_impl(ctx):

@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+import os
 
 from testdata import py_image_library
 
@@ -19,6 +21,8 @@ def main():
   print('Second: %d' % py_image_library.fn(2))
   print('Third: %d' % py_image_library.fn(3))
   print('Fourth: %d' % py_image_library.fn(4))
+  if len(sys.argv) > 1:
+    print(os.stat(sys.argv[2]))
 
 
 if __name__ == '__main__':

@@ -100,7 +100,8 @@ def incremental_load(
         output,
         stamp = False,
         run = False,
-        run_flags = None):
+        run_flags = None,
+        args_len = 0):
     """Generate the incremental load statement."""
     stamp_files = []
     if stamp:
@@ -158,8 +159,10 @@ def incremental_load(
             ),
         ]
         if run:
+            # bazel automatically passes ctx.attr.args to the binary on run, so need to truncate
+            # them here to not pass twice, as they are already part of the docker entrypoint
             run_statements += [
-                "docker run %s %s \"$@\"" % (run_flags, tag_reference),
+                "docker run %s %s \"${@:%s}\"" % (run_flags, tag_reference, str(args_len + 1)),
             ]
 
     ctx.template_action(

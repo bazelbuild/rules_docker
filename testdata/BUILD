@@ -678,8 +678,10 @@ py_image(
     srcs = ["py_image.py"],
     args = [
         "arg0",
-        "arg1",
+        "$(location :BUILD)",
+        "arg2",
     ],
+    data = [":BUILD"],
     layers = [
         ":py_image_library",
     ],
@@ -702,7 +704,9 @@ py3_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     layers = [
         ":py_image_library",
     ],
@@ -731,7 +735,9 @@ cc_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     # This creates an empty layer, due to linking.
     layers = [":cc_image_library"],
 )
@@ -765,7 +771,9 @@ java_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     jvm_flags = ["-XX:MaxPermSize=128M"],
     layers = [":java_image_library"],
     main_class = "examples.images.Binary",
@@ -814,7 +822,9 @@ scala_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -841,7 +851,9 @@ groovy_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -862,7 +874,9 @@ go_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
     tags = [
         "tag1",
@@ -878,7 +892,9 @@ rust_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
 )
 
 load("//d:image.bzl", "d_image")

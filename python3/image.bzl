@@ -74,6 +74,8 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
 
+    args = kwargs.pop("args", None)
+
     native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
 
     # TODO(mattmoor): Consider making the directory into which the app
@@ -94,5 +96,6 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         lang_layers = layers,
         visibility = visibility,
         tags = tags,
-        args = kwargs.get("args"),
+        args = args,
+        data = kwargs.get("data"),
     )

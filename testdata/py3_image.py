@@ -19,6 +19,8 @@ def main():
   print('Second: %d' % py3_image_library.fn(2))
   print('Third: %d' % py3_image_library.fn(3))
   print('Fourth: %d' % py3_image_library.fn(4))
+  if len(sys.argv) > 1:
+    print(os.stat(sys.argv[2]))
 
 
 if __name__ == '__main__':

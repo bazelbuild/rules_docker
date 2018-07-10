@@ -151,4 +151,5 @@ def nodejs_image(
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
+        data = kwargs.get("data"),
     )
