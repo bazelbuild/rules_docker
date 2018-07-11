@@ -285,7 +285,7 @@ def _impl(
             env = layer.env,
             base_config = config_file,
             layer_name = str(i),
-            workdir = workdir,
+            workdir = workdir or ctx.attr.workdir,
         )
 
     # Construct a temporary name based on the build target.

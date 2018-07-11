@@ -39,6 +39,8 @@ def TestBundleImage(name, image_name):
 
 class ImageTest(unittest.TestCase):
 
+  maxDiff = None
+
   def assertTarballContains(self, tar, paths):
     self.assertEqual(paths, tar.getnames())
 
@@ -462,6 +464,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary',
+        './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
@@ -495,6 +498,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker',
         './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata',
         './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/cc_image.binary',
+        './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -541,7 +545,7 @@ class ImageTest(unittest.TestCase):
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
-        '-XX:MaxPermSize=128M', 'examples.images.Binary', 'arg0', 'arg1'])
+        '-XX:MaxPermSize=128M', 'examples.images.Binary', 'arg0', 'arg1', 'testdata/BUILD'])
 
   def test_war_image(self):
     with TestImage('war_image') as img:
@@ -572,7 +576,9 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/cc_image.binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
   # def test_d_image_args(self):
@@ -588,7 +594,9 @@ class ImageTest(unittest.TestCase):
         '/usr/bin/python',
         '/app/testdata/py_image.binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_py3_image_args(self):
     with TestImage('py3_image') as img:
@@ -596,7 +604,9 @@ class ImageTest(unittest.TestCase):
         '/usr/bin/python',
         '/app/testdata/py3_image.binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_java_image_args(self):
     with TestImage('java_image') as img:
@@ -610,21 +620,27 @@ class ImageTest(unittest.TestCase):
         '-XX:MaxPermSize=128M',
         'examples.images.Binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_go_image_args(self):
     with TestImage('go_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/go_image.binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_rust_image_args(self):
     with TestImage('rust_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/rust_image_binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_scala_image_args(self):
     with TestImage('scala_image') as img:
@@ -639,7 +655,9 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/scala_image.binary',
         'examples.images.Binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_groovy_image_args(self):
     with TestImage('groovy_image') as img:
@@ -654,7 +672,9 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
         'examples.images.Binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_nodejs_image_args(self):
     with TestImage('nodejs_image') as img:

@@ -678,8 +678,8 @@ py_image(
     srcs = ["py_image.py"],
     args = [
         "arg0",
+        "arg1",
         "$(location :BUILD)",
-        "arg2",
     ],
     data = [":BUILD"],
     layers = [
