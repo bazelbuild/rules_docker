@@ -325,7 +325,6 @@ def _impl(
         output_executable,
         run = not ctx.attr.legacy_run_behavior,
         run_flags = ctx.attr.docker_run_flags,
-        args_len = len(ctx.attr.args),
     )
     _assemble_image(ctx, images, output_tarball)
 

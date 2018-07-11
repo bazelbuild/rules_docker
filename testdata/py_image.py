@@ -21,6 +21,7 @@ def main():
   print('Second: %d' % py_image_library.fn(2))
   print('Third: %d' % py_image_library.fn(3))
   print('Fourth: %d' % py_image_library.fn(4))
+  print(sys.argv)
   if len(sys.argv) > 1:
     print(os.stat(sys.argv[2]))
 
