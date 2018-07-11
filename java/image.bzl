@@ -139,7 +139,7 @@ jar_dep_layer = rule(
 def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
-    workdir = ctx.attr.workdir or '/'.join([runfiles_dir(ctx), ctx.workspace_name])
+    workdir = ctx.attr.workdir or "/".join([runfiles_dir(ctx), ctx.workspace_name])
     available = depset()
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
@@ -221,7 +221,7 @@ jar_app_layer = rule(
         "data_path": attr.string(default = "."),
         "workdir": attr.string(default = ""),
         "legacy_run_behavior": attr.bool(default = False),
-        "data": attr.label_list(cfg="data", allow_files=True),
+        "data": attr.label_list(cfg = "data", allow_files = True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,

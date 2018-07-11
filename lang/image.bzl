@@ -166,7 +166,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     runfiles = runfiles or _default_runfiles
     emptyfiles = emptyfiles or _default_emptyfiles
-    workdir = ctx.attr.workdir or '/'.join([runfiles_dir(ctx), ctx.workspace_name])
+    workdir = ctx.attr.workdir or "/".join([runfiles_dir(ctx), ctx.workspace_name])
 
     # Compute the set of runfiles that have been made available
     # in our base image, tracking absolute paths.
@@ -258,7 +258,7 @@ app_layer = rule(
         "workdir": attr.string(default = ""),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
-        "data": attr.label_list(cfg="data", allow_files=True),
+        "data": attr.label_list(cfg = "data", allow_files = True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
