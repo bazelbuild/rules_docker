@@ -39,8 +39,6 @@ def TestBundleImage(name, image_name):
 
 class ImageTest(unittest.TestCase):
 
-  maxDiff = None
-
   def assertTarballContains(self, tar, paths):
     self.assertEqual(paths, tar.getnames())
 
