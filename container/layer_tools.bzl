@@ -158,8 +158,8 @@ def incremental_load(
             ),
         ]
         if run:
-            # bazel automatically passes ctx.attr.args to the binary on run, so need to truncate
-            # them here to not pass twice, as they are already part of the docker entrypoint
+            # bazel automatically passes ctx.attr.args to the binary on run, so args get passed in
+            # twice. See https://github.com/bazelbuild/rules_docker/issues/374
             run_statements += [
                 "docker run %s %s \"$@\"" % (run_flags, tag_reference),
             ]

@@ -17,6 +17,9 @@ import os
 from testdata import py3_image_library
 
 def main():
+  """
+  This method expects a valid file path as its third arg.
+  """
   print('First: %d' % py3_image_library.fn(1))
   print('Second: %d' % py3_image_library.fn(2))
   print('Third: %d' % py3_image_library.fn(3))

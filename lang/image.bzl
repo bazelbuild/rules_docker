@@ -215,6 +215,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         _external_dir(ctx): runfiles_dir(ctx),
     })
 
+    # args of the form $(location :some_target) are expanded to the path of the underlying file
     args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
 
     return _container.image.implementation(
@@ -258,7 +259,7 @@ app_layer = rule(
         "workdir": attr.string(default = ""),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
-        "data": attr.label_list(cfg = "data", allow_files = True),
+        "data": attr.label_list(allow_files = True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,

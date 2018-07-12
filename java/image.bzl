@@ -168,6 +168,7 @@ def _jar_app_layer_impl(ctx):
 
     binary_path = layer_file_path(ctx, ctx.files.binary[0])
     classpath_path = layer_file_path(ctx, classpath_file)
+    # args of the form $(location :some_target) are expanded to the path of the underlying file
     args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
     entrypoint = [
         "/usr/bin/java",
