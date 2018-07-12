@@ -94,6 +94,6 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         lang_layers = layers,
         visibility = visibility,
         tags = tags,
-        args = args,
+        args = kwargs.get("args"),
         data = kwargs.get("data"),
     )
