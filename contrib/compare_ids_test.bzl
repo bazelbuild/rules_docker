@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Implementation of compare_ids_test
-def _compare_ids_test_impl(ctx):
+def compare_ids_test(images, id = None):
     tar_files = []
     for image in ctx.attr.images:
         tar_files += list(image.files)
