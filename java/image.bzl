@@ -222,7 +222,7 @@ jar_app_layer = rule(
         "data_path": attr.string(default = "."),
         "workdir": attr.string(default = ""),
         "legacy_run_behavior": attr.bool(default = False),
-        "data": attr.label_list(cfg = "data", allow_files = True),
+        "data": attr.label_list(allow_files = True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
