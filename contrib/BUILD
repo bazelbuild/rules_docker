@@ -24,3 +24,8 @@ exports_files(["compare_ids_test.py.tpl"])
 exports_files(["compare_ids_test.bzl"])
 
 exports_files(["extract_image_id.py"])
+
+py_binary(
+    name = "extract_image_id",
+    srcs = [":extract_image_id.py"],
+)
