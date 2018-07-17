@@ -99,7 +99,8 @@ def _image_config(
         creation_time = None,
         env = None,
         base_config = None,
-        layer_name = None):
+        layer_name = None,
+        workdir = None):
     """Create the configuration for a new container image."""
     config = ctx.new_file(name + "." + layer_name + ".config")
 
@@ -147,8 +148,8 @@ def _image_config(
 
     if ctx.attr.user:
         args += ["--user=" + ctx.attr.user]
-    if ctx.attr.workdir:
-        args += ["--workdir=" + ctx.attr.workdir]
+    if workdir:
+        args += ["--workdir=" + workdir]
 
     inputs = layer_names
     for layer_name in layer_names:
@@ -206,7 +207,8 @@ def _impl(
         tars = None,
         output_executable = None,
         output_tarball = None,
-        output_layer = None):
+        output_layer = None,
+        workdir = None):
     """Implementation for the container_image rule.
 
   Args:
@@ -229,6 +231,7 @@ def _impl(
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
     output_layer: File, overrides ctx.outputs.layer
+    workdir: str, overrides ctx.attr.workdir
   """
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
@@ -282,6 +285,7 @@ def _impl(
             env = layer.env,
             base_config = config_file,
             layer_name = str(i),
+            workdir = workdir or ctx.attr.workdir,
         )
 
     # Construct a temporary name based on the build target.

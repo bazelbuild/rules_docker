@@ -73,7 +73,6 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
 
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
-
     native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
 
     # TODO(mattmoor): Consider making the directory into which the app
@@ -95,4 +94,5 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
+        data = kwargs.get("data"),
     )
