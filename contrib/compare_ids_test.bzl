@@ -39,7 +39,7 @@ def _compare_ids_test_impl(ctx):
 
     ctx.actions.write(
         output = ctx.outputs.executable,
-        content = "python " + compare_ids_test_exectuable.short_path + " " + args,
+        content = "python {} {}".format(compare_ids_test_exectuable.short_path, args),
         is_executable = True,
     )
 
