@@ -301,7 +301,7 @@ cc_image(
 
 ### cc_image (external binary)
 
-To use `cc_image` (or `go_image`, `d_image`, `rust_image) with an external
+To use `cc_image` (or `go_image`, `d_image`, `rust_image`) with an external
 `cc_binary` (or the like) target, then your `BUILD` file should instead look
 like:
 ```python
