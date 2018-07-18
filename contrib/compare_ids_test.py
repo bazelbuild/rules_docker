@@ -18,13 +18,12 @@ import os
 from extract_image_id import get_id
 import argparse
 
-def compare_ids(tars, id = None):
 
-    # Uses all given arguments as list of tars to compare
+def compare_ids(tars, id=None):
 
     for image in tars:
         current_id = get_id(image)
-        if id == None:  # Checks if ID has been assigned yet
+        if id == None:
             id = current_id
         elif current_id != id:
             exit(1)
@@ -35,10 +34,12 @@ def compare_ids(tars, id = None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("tars", nargs='+', type = str, default = [])
+    parser.add_argument("tars", nargs='+', type=str, default=[])
 
-    parser.add_argument("--id", type = str, default = None)
+    parser.add_argument("--id", type=str, default=None)
 
     args = parser.parse_args()
 
-    print(args.tars)
+    print(get_id)
+
+    compare_ids(args.tars, args.id)

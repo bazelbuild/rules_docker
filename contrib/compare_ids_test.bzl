@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Implementation of compare_ids_test
-def compare_ids_test(images, id = None):
+def _compare_ids_test_impl(ctx):
     tar_files = []
     for image in ctx.attr.images:
         tar_files += list(image.files)
@@ -24,16 +24,22 @@ def compare_ids_test(images, id = None):
     if (len(tar_files) == 1 and not ctx.attr.id):
         fail("One tar provided. Need either second tar or an id to compare it to.")
 
-    runfiles = ctx.runfiles(files = tar_files + [ctx.file._id_extract_script])
+    runfiles = ctx.runfiles(files = tar_files + ctx.files._compare_ids_test_script)
 
-    ctx.actions.expand_template(
-        template = ctx.file._executable_template,
+    id_args = []
+    if ctx.attr.id:
+        id_args = ["--id", ctx.attr.id]
+
+    args = " ".join([f.short_path for f in tar_files] + id_args)
+
+    # The compare_ids_test target (produced by the py_binary rule) produces 2 files,
+    # the executable and the source code. This retrieves the executable. A better method
+    # of retrieving it would be ideal, but I could not find one.
+    compare_ids_test_exectuable = ctx.files._compare_ids_test_script[1]
+
+    ctx.actions.write(
         output = ctx.outputs.executable,
-        substitutions = {
-            "{id}": ctx.attr.id,
-            "{tars}": repr([i.short_path for i in tar_files]),
-            "{extract_image_id_path}": ctx.file._id_extract_script.short_path,
-        },
+        content = "python " + compare_ids_test_exectuable.short_path + " " + args,
         is_executable = True,
     )
 
@@ -76,15 +82,9 @@ compare_ids_test = rule(
             mandatory = False,
             default = "",
         ),
-        "_executable_template": attr.label(
+        "_compare_ids_test_script": attr.label(
             allow_files = True,
-            single_file = True,
-            default = "compare_ids_test.py.tpl",
-        ),
-        "_id_extract_script": attr.label(
-            allow_files = True,
-            single_file = True,
-            default = "extract_image_id.py",
+            default = ":compare_ids_test",
         ),
     },
     test = True,

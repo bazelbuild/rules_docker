@@ -16,6 +16,17 @@
 
 def _impl(ctx):
     test_code = """ '
+py_binary(
+    name = "extract_image_id",
+    srcs = [":extract_image_id.py"],
+)
+
+py_binary(
+    name = "compare_ids_test",
+    srcs = [":compare_ids_test.py"],
+    deps = ["extract_image_id"]
+)
+
 load("//:compare_ids_test.bzl", "compare_ids_test")
 
 compare_ids_test(
@@ -40,7 +51,7 @@ compare_ids_test(
 
     runfiles = ctx.runfiles(files = tar_files + [
         ctx.file._compare_ids_test_bzl,
-        ctx.file._compare_ids_test_sh_tpl,
+        ctx.file._compare_ids_test,
         ctx.file._extract_image_id,
     ])
 
@@ -56,7 +67,7 @@ compare_ids_test(
             "{tars}": tars_string,
             "{test_code}": test_code,
             "{bzl_path}": ctx.file._compare_ids_test_bzl.short_path,
-            "{tpl_path}": ctx.file._compare_ids_test_sh_tpl.short_path,
+            "{test_bin_path}": ctx.file._compare_ids_test.short_path,
             "{extractor_path}": ctx.file._extract_image_id.short_path,
             "{name}": ctx.attr.name,
             "{reg_exps}": reg_exps,
@@ -110,10 +121,10 @@ compare_ids_fail_test = rule(
             single_file = True,
             default = "//contrib:compare_ids_test.bzl",
         ),
-        "_compare_ids_test_sh_tpl": attr.label(
+        "_compare_ids_test": attr.label(
             allow_files = True,
             single_file = True,
-            default = "//contrib:compare_ids_test.py.tpl",
+            default = "//contrib:compare_ids_test.py",
         ),
         "_extract_image_id": attr.label(
             allow_files = True,

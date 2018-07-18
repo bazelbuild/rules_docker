@@ -36,9 +36,9 @@ echo > BUILD {test_code}
 ln -s ../{bzl_path}
 test -f $(basename {bzl_path})
 
-# Link compare_ids_test.sh.tpl
-ln -s ../{tpl_path}
-test -f $(basename {tpl_path})
+# Link compare_ids_test.py
+ln -s ../{test_bin_path}
+test -f $(basename {test_bin_path})
 
 # Link extract_image_id.sh
 ln -s ../{extractor_path}
