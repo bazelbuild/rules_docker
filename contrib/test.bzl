@@ -97,7 +97,7 @@ _container_test = rule(
             ],
         ),
         "_structure_test": attr.label(
-            default = Label("//contrib:structure_test_executable"),
+            default = Label("@structure_test//:container_structure_test"),
             cfg = "target",
             executable = True,
             allow_files = True,
