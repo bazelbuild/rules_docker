@@ -24,12 +24,3 @@ exports_files(["compare_ids_test.sh.tpl"])
 exports_files(["compare_ids_test.bzl"])
 
 exports_files(["extract_image_id.sh"])
-
-alias(
-    name = "structure_test_executable",
-    actual = select({
-        "@bazel_tools//src/conditions:darwin": "@structure_test_darwin//file",
-        "@bazel_tools//src/conditions:darwin_x86_64": "@structure_test_darwin//file",
-        "//conditions:default": "@structure_test_linux//file",
-    }),
-)
