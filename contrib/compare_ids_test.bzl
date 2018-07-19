@@ -32,14 +32,9 @@ def _compare_ids_test_impl(ctx):
 
     args = " ".join([f.short_path for f in tar_files] + id_args)
 
-    # The compare_ids_test target (produced by the py_binary rule) produces 2 files,
-    # the executable and the source code. This retrieves the executable. A better method
-    # of retrieving it would be ideal, but I could not find one.
-    compare_ids_test_exectuable = ctx.files._compare_ids_test_script[1]
-
     ctx.actions.write(
         output = ctx.outputs.executable,
-        content = "python {} {}".format(compare_ids_test_exectuable.short_path, args),
+        content = "python {} {}".format(ctx.executable._compare_ids_test_script.short_path, args),
         is_executable = True,
     )
 
@@ -85,6 +80,8 @@ compare_ids_test = rule(
         "_compare_ids_test_script": attr.label(
             allow_files = True,
             default = ":compare_ids_test",
+            executable = True,
+            cfg = "host",
         ),
     },
     test = True,

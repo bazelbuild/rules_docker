@@ -40,6 +40,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(get_id)
-
     compare_ids(args.tars, args.id)

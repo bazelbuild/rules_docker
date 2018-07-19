@@ -25,8 +25,8 @@ mkdir -p new_temp_workspace_{name}
 cd new_temp_workspace_{name}
 
 touch WORKSPACE
-
-echo > BUILD {test_code}
+mkdir test_folder
+echo > test_folder/BUILD {test_code}
 
 # Link the test files we will be using and make sure the links point to real files
 # No second operand means it just links the file in the current directory,
@@ -44,19 +44,24 @@ test -f $(basename {test_bin_path})
 ln -s ../{extractor_path}
 test -f $(basename {extractor_path})
 
+# Link BUILD
+ln -s ../{BUILD_path}
+test -f $(basename {BUILD_path})
 
+cd test_folder
 tar_num=0
 for tar in {tars}
 do
   # Link the supplied tars and rename them to 0.tar, 1.tar, etc.
-  eval mv $(ln -vs ../$tar | cut -d " " -f1) ${tar_num}.tar
+  eval mv $(ln -vs ../../$tar | cut -d " " -f1) ${tar_num}.tar
   test -f ${tar_num}.tar
   tar_num=$(expr $tar_num + 1)
 done
+cd ..
 
 # Save the output from the bazel call (this is in an if because the bazel
 # call is expected to fail, but should not terminate the script)
-if out="$(bazel test --test_output=all //:test 2>&1)"
+if out="$(bazel test --test_output=all //test_folder:test_for_failure 2>&1)"
 then
   exit 1;
 fi
@@ -71,4 +76,3 @@ do
 done
 
 exit 0
-

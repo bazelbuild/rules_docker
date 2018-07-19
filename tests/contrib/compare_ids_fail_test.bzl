@@ -16,21 +16,10 @@
 
 def _impl(ctx):
     test_code = """ '
-py_binary(
-    name = "extract_image_id",
-    srcs = [":extract_image_id.py"],
-)
-
-py_binary(
-    name = "compare_ids_test",
-    srcs = [":compare_ids_test.py"],
-    deps = ["extract_image_id"]
-)
-
 load("//:compare_ids_test.bzl", "compare_ids_test")
 
 compare_ids_test(
-    name = "test",
+    name = "test_for_failure",
     id = {id},
     images = {tars},
 )
@@ -53,6 +42,7 @@ compare_ids_test(
         ctx.file._compare_ids_test_bzl,
         ctx.file._compare_ids_test,
         ctx.file._extract_image_id,
+        ctx.file._BUILD
     ])
 
     # Produces string of form (Necessary because of spaces): " 'reg exp 1' 'reg exp 2'"
@@ -71,6 +61,7 @@ compare_ids_test(
             "{extractor_path}": ctx.file._extract_image_id.short_path,
             "{name}": ctx.attr.name,
             "{reg_exps}": reg_exps,
+            "{BUILD_path}": ctx.file._BUILD.short_path,
         },
         is_executable = True,
     )
@@ -130,6 +121,11 @@ compare_ids_fail_test = rule(
             allow_files = True,
             single_file = True,
             default = "//contrib:extract_image_id.py",
+        ),
+        "_BUILD": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = "//contrib:BUILD",
         ),
     },
 )
