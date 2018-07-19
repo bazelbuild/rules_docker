@@ -21,23 +21,23 @@ import argparse
 
 def compare_ids(tars, id=None):
 
-    for image in tars:
-        current_id = get_id(image)
-        if id == None:
-            id = current_id
-        elif current_id != id:
-            exit(1)
+  for image in tars:
+    current_id = get_id(image)
+    if id == None:
+      id = current_id
+    elif current_id != id:
+      exit(1)
 
-    exit(0)
+  exit(0)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+  parser = argparse.ArgumentParser()
 
-    parser.add_argument("tars", nargs='+', type=str, default=[])
+  parser.add_argument("tars", nargs="+", type=str, default=[])
 
-    parser.add_argument("--id", type=str, default=None)
+  parser.add_argument("--id", type=str, default=None)
 
-    args = parser.parse_args()
+  args = parser.parse_args()
 
-    compare_ids(args.tars, args.id)
+  compare_ids(args.tars, args.id)

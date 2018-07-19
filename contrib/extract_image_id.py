@@ -19,28 +19,30 @@ import sys
 
 
 def get_id(tar_path):
-    tar = tarfile.open(tar_path, mode='r')
+  tar = tarfile.open(tar_path, mode="r")
 
-    decoder = JSONDecoder()
-    try:
-        # Extracts it as a file object (not to the disk)
-        manifest = tar.extractfile("manifest.json").read().decode("utf-8")
-    except:
-        print("Unable to extract manifest.json, make sure {} is a valid docker image.\
-        ".format(tar_path), file=sys.stderr)
-        exit(1)
+  decoder = JSONDecoder()
+  try:
+    # Extracts it as a file object (not to the disk)
+    manifest = tar.extractfile("manifest.json").read().decode("utf-8")
+  except:
+    print(
+        "Unable to extract manifest.json, make sure {} is a valid docker image.\
+        ".format(tar_path),
+        file=sys.stderr)
+    exit(1)
 
-    # Get the manifest dictionary from JSON
-    manifest = decoder.decode(manifest)[0]
+  # Get the manifest dictionary from JSON
+  manifest = decoder.decode(manifest)[0]
 
-    # The name of the config file is of the form <image_id>.json
-    config_file = manifest["Config"]
+  # The name of the config file is of the form <image_id>.json
+  config_file = manifest["Config"]
 
-    # Get the id
-    id = config_file.split(".")[0]
+  # Get the id
+  id = config_file.split(".")[0]
 
-    return id
+  return id
 
 
 if __name__ == "__main__":
-    tar_path = sys.argv[1]
+  tar_path = sys.argv[1]
