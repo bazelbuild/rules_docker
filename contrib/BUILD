@@ -23,7 +23,6 @@ exports_files(["compare_ids_test.py"])
 
 exports_files(["compare_ids_test.bzl"])
 
-
 exports_files(["extract_image_id.py"])
 
 py_binary(

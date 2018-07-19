@@ -42,7 +42,7 @@ compare_ids_test(
         ctx.file._compare_ids_test_bzl,
         ctx.file._compare_ids_test,
         ctx.file._extract_image_id,
-        ctx.file._BUILD
+        ctx.file._BUILD,
     ])
 
     # Produces string of form (Necessary because of spaces): " 'reg exp 1' 'reg exp 2'"
