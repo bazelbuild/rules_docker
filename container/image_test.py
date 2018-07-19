@@ -677,8 +677,6 @@ class ImageTest(unittest.TestCase):
   def test_nodejs_image_args(self):
     with TestImage('nodejs_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
-        'sh',
-        '-c',
         '/app/testdata/nodejs_image.binary',
         'arg0',
         'arg1'])
