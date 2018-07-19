@@ -21,6 +21,7 @@ load("//container:import.bzl", "container_import")
 load("//container:load.bzl", "container_load")
 load("//container:pull.bzl", "container_pull")
 load("//container:push.bzl", "container_push")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 container = struct(
     image = image,
@@ -28,10 +29,6 @@ container = struct(
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.28"
-
-# The release of the container-structure-test repository to use.
-# Updated on June 29, 2018.
-STRUCTURE_TEST_COMMIT = "5714a926044ab8b0f947ba031f56da3698d954d2"
 
 _local_tool_build_template = """
 sh_binary(
@@ -180,24 +177,20 @@ py_library(
             commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
         )
 
-    if "structure_test" not in excludes:
-        native.git_repository(
-            name = "structure_test",
-            remote = "https://github.com/GoogleContainerTools/container-structure-test.git",
-            commit = STRUCTURE_TEST_COMMIT,
+    if "structure_test_linux" not in excludes:
+        http_file(
+            name = "structure_test_linux",
+            executable = True,
+            sha256 = "543577685b33f0483bd4df72534ac9f84c17c9315d8afdcc536cce3591bb8f7c",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-linux-amd64"],
         )
-        native.git_repository(
-            name = "runtimes_common",
-            commit = "9828ee5659320cebbfd8d34707c36648ca087888",
-            remote = "https://github.com/GoogleCloudPlatform/runtimes-common.git",
-        )
-        native.new_http_archive(
-            name = "docker_credential_gcr",
-            build_file_content = """package(default_visibility = ["//visibility:public"])
-exports_files(["docker-credential-gcr"])""",
-            sha256 = "3f02de988d69dc9c8d242b02cc10d4beb6bab151e31d63cb6af09dd604f75fce",
-            type = "tar.gz",
-            url = "https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v1.4.3/docker-credential-gcr_linux_amd64-1.4.3.tar.gz",
+
+    if "structure_test_darwin" not in excludes:
+        http_file(
+            name = "structure_test_darwin",
+            executable = True,
+            sha256 = "c1bc8664d411c6df23c002b41ab1b9a3d72ae930f194a997468bfae2f54ca751",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-darwin-amd64"],
         )
 
     # For skylark_library.
