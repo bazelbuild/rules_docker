@@ -260,6 +260,7 @@ app_layer = rule(
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
+        "ports": attr.string_list(default = []),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
