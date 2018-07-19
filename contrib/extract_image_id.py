@@ -1,4 +1,3 @@
-#!/bin/python
 # Copyright 2015 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,24 +11,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Extracts the id of a docker image from its tarball.
+
+Takes one argument, the path to the tarball.
+"""
+
+
 from __future__ import print_function
-import tarfile
 from json import JSONDecoder
 import sys
+import tarfile
 
 
 def get_id(tar_path):
+  """Extracts the id of a docker image from its tarball.
+
+  Args:
+    tar_path: str path to the tarball
+
+
+  Returns:
+    str id of the image
+
+  """
   tar = tarfile.open(tar_path, mode="r")
 
   decoder = JSONDecoder()
   try:
     # Extracts it as a file object (not to the disk)
     manifest = tar.extractfile("manifest.json").read().decode("utf-8")
-  except:
-    print(
-        "Unable to extract manifest.json, make sure {} is a valid docker image.\
-        ".format(tar_path),
-        file=sys.stderr)
+  except Exception as e:
+    print((
+        "Unable to extract manifest.json, make sure {} "
+        "is a valid docker image.\n").format(tar_path),
+          e,
+          file=sys.stderr)
     exit(1)
 
   # Get the manifest dictionary from JSON
@@ -39,10 +55,11 @@ def get_id(tar_path):
   config_file = manifest["Config"]
 
   # Get the id
-  id = config_file.split(".")[0]
+  id_ = config_file.split(".")[0]
 
-  return id
+  return id_
 
 
 if __name__ == "__main__":
-  tar_path = sys.argv[1]
+  path = sys.argv[1]
+  print(get_id(path))

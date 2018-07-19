@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright 2015 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +11,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-import os
-from extract_image_id import get_id
+"""Compares the ids of the given valid image tarballs.
+
+usage: compare_ids_test.py [-h] [--id ID] tars [tars ...]
+
+positional arguments:
+  tars
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --id ID
+
+Used in compare_ids_test.bzl
+  More info can be found there
+
+"""
 import argparse
 
+from extract_image_id import get_id
 
-def compare_ids(tars, id=None):
+
+def compare_ids(tars, id_=None):
+  """Compares the ids of the given valid image tarballs.
+
+  Args:
+    tars: list of str paths to the image tarballs
+    id_: (optional) the id we want the images to have
+          if None, just makes sure they are all the same
+
+  """
 
   for image in tars:
     current_id = get_id(image)
-    if id == None:
-      id = current_id
-    elif current_id != id:
+    if id_ is None:
+      id_ = current_id
+    elif current_id != id_:
       exit(1)
 
   exit(0)
