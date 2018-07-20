@@ -21,7 +21,11 @@ load("//container:import.bzl", "container_import")
 load("//container:load.bzl", "container_load")
 load("//container:pull.bzl", "container_pull")
 load("//container:push.bzl", "container_push")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+load(
+    "@bazel_tools//tools/build_defs/repo:http.bzl",
+    "http_archive",
+    "http_file",
+)
 
 container = struct(
     image = image,
@@ -61,28 +65,28 @@ def repositories():
     excludes = native.existing_rules().keys()
 
     if "puller" not in excludes:
-        native.http_file(
+        http_file(
             name = "puller",
-            url = ("https://storage.googleapis.com/containerregistry-releases/" +
-                   CONTAINERREGISTRY_RELEASE + "/puller.par"),
+            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
             sha256 = "c834a311a1d2ade959c38c262dfead3b180ba022d196c4a96453d4bfa01e83da",
             executable = True,
         )
 
     if "importer" not in excludes:
-        native.http_file(
+        http_file(
             name = "importer",
-            url = ("https://storage.googleapis.com/containerregistry-releases/" +
-                   CONTAINERREGISTRY_RELEASE + "/importer.par"),
+            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+                     CONTAINERREGISTRY_RELEASE + "/importer.par")],
             sha256 = "19643df59bb1dc750e97991e7071c601aa2debe94f6ad72e5f23ab8ae77da46f",
             executable = True,
         )
 
     if "containerregistry" not in excludes:
-        native.http_archive(
+        http_archive(
             name = "containerregistry",
-            url = ("https://github.com/google/containerregistry/archive/" +
-                   CONTAINERREGISTRY_RELEASE + ".tar.gz"),
+            urls = [("https://github.com/google/containerregistry/archive/" +
+                     CONTAINERREGISTRY_RELEASE + ".tar.gz")],
             sha256 = "07b9d06e46a9838bef712116bbda7e094ede37be010c1f8c0a3f32f2eeca6384",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
@@ -171,10 +175,11 @@ py_library(
 
     # For packaging python tools.
     if "subpar" not in excludes:
-        native.git_repository(
+        http_archive(
             name = "subpar",
-            remote = "https://github.com/google/subpar.git",
-            commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
+            sha256 = "ee65e35c1cd9a723fb4d501e8055e10b34a27a0a557d10312af7b83d8e0101f5",
+            strip_prefix = "subpar-7e12cc130eb8f09c8cb02c3585a91a4043753c56",
+            urls = ["https://github.com/google/subpar/archive/7e12cc130eb8f09c8cb02c3585a91a4043753c56.tar.gz"],
         )
 
     if "structure_test_linux" not in excludes:
@@ -195,10 +200,11 @@ py_library(
 
     # For skylark_library.
     if "bazel_skylib" not in excludes:
-        native.git_repository(
+        http_archive(
             name = "bazel_skylib",
-            remote = "https://github.com/bazelbuild/bazel-skylib.git",
-            tag = "0.2.0",
+            sha256 = "981624731d7371061ca56d532fa00d33bdda3e9d62e085698880346a01d0a6ef",
+            strip_prefix = "bazel-skylib-0.2.0",
+            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.2.0.tar.gz"],
         )
 
     if "gzip" not in excludes:
