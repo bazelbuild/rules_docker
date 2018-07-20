@@ -60,7 +60,7 @@ container_load = repository_rule(
         ),
         "_importer": attr.label(
             executable = True,
-            default = Label("@importer//file"),
+            default = Label("@importer//file:downloaded"),
             cfg = "host",
         ),
     },
