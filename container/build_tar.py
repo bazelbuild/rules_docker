@@ -248,6 +248,7 @@ class TarFile(object):
     except (KeyError, TypeError) as e:
       raise self.DebError(deb + ' contains invalid Metadata! Exeception {0}'.format(e))
     except Exception as e:
+      print("Exception dealing with file {}, {}".format(metadata_tar, deb))
       raise self.DebError('Unknown Exception {0}. Please report an issue at'
                           ' github.com/bazelbuild/rules_docker.'.format(e))
 
