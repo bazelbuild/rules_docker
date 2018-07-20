@@ -61,5 +61,4 @@ def get_id(tar_path):
 
 
 if __name__ == "__main__":
-  path = sys.argv[1]
-  print(get_id(path))
+  print(get_id(sys.argv[1]))
