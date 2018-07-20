@@ -27,6 +27,11 @@ import tempfile
 from tools.build_defs.pkg import archive
 from third_party.py import gflags
 
+try:
+    import lzma
+except ImportError:
+    from backports import lzma
+
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
 gflags.MarkFlagAsRequired('output')
 
@@ -272,7 +277,11 @@ class TarFile(object):
       while current:
         parts = current.filename.split(".")
         name = parts[0]
-        ext = '.'.join(parts[1:])
+        if parts[-1] == 'xz':
+          current.data = lzma.decompress(current.data)
+          ext = '.'.join(parts[1:-1])
+        else:
+            ext = '.'.join(parts[1:])
         if name == 'data':
           pkg_data_found = True
           # Add pkg_data to image tar
