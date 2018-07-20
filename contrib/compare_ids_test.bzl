@@ -24,20 +24,17 @@ def _compare_ids_test_impl(ctx):
     if (len(tar_files) == 1 and not ctx.attr.id):
         fail("One tar provided. Need either second tar or an id to compare it to.")
 
-    tars_string = ""
-    for tar in tar_files:
-        tars_string += tar.short_path + " "
+    runfiles = ctx.runfiles(files = tar_files + ctx.files._compare_ids_test_script)
 
-    runfiles = ctx.runfiles(files = tar_files + [ctx.file._id_extract_script])
+    id_args = []
+    if ctx.attr.id:
+        id_args = ["--id", ctx.attr.id]
 
-    ctx.actions.expand_template(
-        template = ctx.file._executable_template,
+    args = " ".join([f.short_path for f in tar_files] + id_args)
+
+    ctx.actions.write(
         output = ctx.outputs.executable,
-        substitutions = {
-            "{id}": ctx.attr.id,
-            "{tars}": tars_string,
-            "{id_script_path}": ctx.file._id_extract_script.short_path,
-        },
+        content = "python {} {}".format(ctx.executable._compare_ids_test_script.short_path, args),
         is_executable = True,
     )
 
@@ -80,15 +77,11 @@ compare_ids_test = rule(
             mandatory = False,
             default = "",
         ),
-        "_executable_template": attr.label(
+        "_compare_ids_test_script": attr.label(
             allow_files = True,
-            single_file = True,
-            default = "compare_ids_test.sh.tpl",
-        ),
-        "_id_extract_script": attr.label(
-            allow_files = True,
-            single_file = True,
-            default = "extract_image_id.sh",
+            default = ":compare_ids_test",
+            executable = True,
+            cfg = "host",
         ),
     },
     test = True,
