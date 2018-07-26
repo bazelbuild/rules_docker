@@ -774,7 +774,10 @@ java_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
-    jvm_flags = ["-XX:MaxPermSize=128M"],
+    jvm_flags = [
+        "-XX:MaxPermSize=128M",
+        "-Dbuild.location=$(location :BUILD)",
+    ],
     layers = [":java_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -825,6 +828,7 @@ scala_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -854,6 +858,7 @@ groovy_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
 )
