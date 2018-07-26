@@ -11,20 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load(
+    "//skylib:filetype.bzl",
+    container_filetype = "container",
+)
 
 # Implementation of idd
 def _impl(ctx):
-    tar1 = ctx.files.image1[0]
-    tar2 = ctx.files.image2[0]
-
-    runfiles = ctx.runfiles(files = [tar1, tar2] + ctx.files._idd_script)
+    runfiles = ctx.runfiles(files = [ctx.file.image1, ctx.file.image2] + ctx.files._idd_script)
 
     ctx.actions.write(
         output = ctx.outputs.executable,
         content = "set -x && python {idd_script} {tar1_path} {tar2_path} {args}".format(
             idd_script = ctx.executable._idd_script.short_path,
-            tar1_path = tar1.short_path,
-            tar2_path = tar2.short_path,
+            tar1_path = ctx.file.image1.short_path,
+            tar2_path = ctx.file.image2.short_path,
             args = " ".join(ctx.attr.args),
         ),
     )
@@ -53,8 +54,8 @@ idd(
 idd = rule(
     implementation = _impl,
     attrs = {
-        "image1": attr.label(mandatory = True, allow_files = True),
-        "image2": attr.label(mandatory = True, allow_files = True),
+        "image1": attr.label(mandatory = True, allow_files = container_filetype, single_file = True),
+        "image2": attr.label(mandatory = True, allow_files = container_filetype, single_file = True),
         "_idd_script": attr.label(
             default = ":idd",
             executable = True,
