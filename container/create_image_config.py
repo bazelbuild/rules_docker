@@ -70,6 +70,12 @@ parser.add_argument('--stamp-info-file', action='append', required=False,
                     help=('A list of files from which to read substitutions '
                           'to make in the provided fields, e.g. {BUILD_USER}'))
 
+parser.add_argument('--null_entrypoint', action='store', default=False,
+                    help='If True, "Entrypoint" will be set to null.')
+
+parser.add_argument('--null_cmd', action='store', default=False,
+                    help='If True, "Cmd" will be set to null.')
+
 _PROCESSOR_ARCHITECTURE = 'amd64'
 
 _OPERATING_SYSTEM = 'linux'
@@ -167,6 +173,14 @@ def main():
       ports=args.ports, volumes=args.volumes, workdir=Stamp(args.workdir)),
                                   architecture=_PROCESSOR_ARCHITECTURE,
                                   operating_system=_OPERATING_SYSTEM)
+
+  if ('config' in output and 'Cmd' in output['config'] and
+      args.null_cmd == "True"):
+    del (output['config']['Cmd'])
+
+  if ('config' in output and 'Entrypoint' in output['config'] and
+      args.null_entrypoint == "True"):
+    del (output['config']['Entrypoint'])
 
   with open(args.output, 'w') as fp:
     json.dump(output, fp, sort_keys=True)

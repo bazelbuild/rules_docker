@@ -100,7 +100,9 @@ def _image_config(
         env = None,
         base_config = None,
         layer_name = None,
-        workdir = None):
+        workdir = None,
+        null_entrypoint = False,
+        null_cmd = False):
     """Create the configuration for a new container image."""
     config = ctx.new_file(name + "." + layer_name + ".config")
 
@@ -131,6 +133,10 @@ def _image_config(
     ] + [
         "--volumes=%s" % x
         for x in ctx.attr.volumes
+    ] + [
+        "--null_entrypoint=%s" % null_entrypoint,
+    ] + [
+        "--null_cmd=%s" % null_cmd,
     ]
     if creation_time:
         args += ["--creation_time=%s" % creation_time]
@@ -208,7 +214,9 @@ def _impl(
         output_executable = None,
         output_tarball = None,
         output_layer = None,
-        workdir = None):
+        workdir = None,
+        null_cmd = None,
+        null_entrypoint = None):
     """Implementation for the container_image rule.
 
   Args:
@@ -232,6 +240,8 @@ def _impl(
     output_tarball: File, overrides ctx.outputs.out
     output_layer: File, overrides ctx.outputs.layer
     workdir: str, overrides ctx.attr.workdir
+    null_cmd: bool, overrides ctx.attr.null_cmd
+    null_entrypoint: bool, overrides ctx.attr.null_entrypoint
   """
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
@@ -240,6 +250,8 @@ def _impl(
     output_executable = output_executable or ctx.outputs.executable
     output_tarball = output_tarball or ctx.outputs.out
     output_layer = output_layer or ctx.outputs.layer
+    null_cmd = null_cmd or ctx.attr.null_cmd
+    null_entrypoint = ctx.attr.null_entrypoint
 
     # composite a layer from the container_image rule attrs,
     image_layer = _layer.implementation(
@@ -286,6 +298,8 @@ def _impl(
             base_config = config_file,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
+            null_entrypoint = null_entrypoint,
+            null_cmd = null_cmd,
         )
 
     # Construct a temporary name based on the build target.
@@ -380,6 +394,13 @@ _attrs = dict(_layer.attrs.items() + {
         executable = True,
         allow_files = True,
     ),
+    # null_cmd and null_entrypoint are hidden attributes from users.
+    # They are needed because specifying cmd or entrypoint as {None, [] or ""}
+    # and not specifying them at all in the container_image rule would both make
+    # ctx.attr.cmd or ctx.attr.entrypoint to be [].
+    # We need these flags to distinguish them.
+    "null_cmd": attr.bool(default = False),
+    "null_entrypoint": attr.bool(default = False),
 }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
 
 _outputs = dict(_layer.outputs)
@@ -532,15 +553,46 @@ def container_image(**kwargs):
   Args:
     **kwargs: See above.
   """
-    if "cmd" in kwargs:
-        kwargs["cmd"] = _validate_command("cmd", kwargs["cmd"])
-    for reserved in ["label_files", "label_file_strings"]:
+    reserved_attrs = [
+        "label_files",
+        "label_file_strings",
+        "null_cmd",
+        "null_entrypoint",
+    ]
+
+    for reserved in reserved_attrs:
         if reserved in kwargs:
             fail("reserved for internal use by container_image macro", attr = reserved)
+
     if "labels" in kwargs:
         files = sorted({v[1:]: None for v in kwargs["labels"].values() if v[0] == "@"}.keys())
         kwargs["label_files"] = files
         kwargs["label_file_strings"] = files
+
+    # If cmd is set but set to None, [] or "",
+    # we interpret it as users want to set it to null.
+    if "cmd" in kwargs:
+        if not kwargs["cmd"]:
+            kwargs["null_cmd"] = True
+
+            # _impl defines "cmd" as string_list. Turn "" into [] before
+            # passing to it.
+            if kwargs["cmd"] == "":
+                kwargs["cmd"] = []
+        else:
+            kwargs["cmd"] = _validate_command("cmd", kwargs["cmd"])
+
+    # If entrypoint is set but set to None, [] or "",
+    # we interpret it as users want to set it to null.
     if "entrypoint" in kwargs:
-        kwargs["entrypoint"] = _validate_command("entrypoint", kwargs["entrypoint"])
+        if not kwargs["entrypoint"]:
+            kwargs["null_entrypoint"] = True
+
+            # _impl defines "entrypoint" as string_list. Turn "" into [] before
+            # passing to it.
+            if kwargs["entrypoint"] == "":
+                kwargs["entrypoint"] = []
+        else:
+            kwargs["entrypoint"] = _validate_command("entrypoint", kwargs["entrypoint"])
+
     container_image_(**kwargs)

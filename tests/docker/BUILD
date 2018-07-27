@@ -39,3 +39,53 @@ container_test(
     configs = ["//tests/docker/configs:deb_image_with_dpkgs.yaml"],
     image = ":deb_image_with_dpkgs",
 )
+
+container_image(
+    name = "image_with_some_cmd_entrypoint",
+    base = "@distroless_base//image",
+    cmd = ["foo"],
+    entrypoint = ["bar"],
+)
+
+container_test(
+    name = "image_with_some_cmd_entrypoint_test",
+    configs = ["//tests/docker/configs:image_with_some_cmd_entrypoint.yaml"],
+    image = ":image_with_some_cmd_entrypoint",
+)
+
+container_image(
+    name = "image_should_still_have_cmd_entrypoint",
+    base = ":image_with_some_cmd_entrypoint",
+)
+
+container_test(
+    name = "image_should_still_have_cmd_entrypoint_test",
+    configs = ["//tests/docker/configs:image_with_some_cmd_entrypoint.yaml"],
+    image = ":image_should_still_have_cmd_entrypoint",
+)
+
+container_image(
+    name = "image_with_null_cmd_entrypoint",
+    base = ":image_with_some_cmd_entrypoint",
+    cmd = [],
+    entrypoint = None,
+)
+
+container_test(
+    name = "image_with_null_cmd_entrypoint_test",
+    configs = ["//tests/docker/configs:image_with_null_cmd_entrypoint.yaml"],
+    image = ":image_with_null_cmd_entrypoint",
+)
+
+container_image(
+    name = "image_with_null_cmd_entrypoint_2",
+    base = ":image_with_some_cmd_entrypoint",
+    cmd = "",
+    entrypoint = "",
+)
+
+container_test(
+    name = "image_with_null_cmd_entrypoint_2_test",
+    configs = ["//tests/docker/configs:image_with_null_cmd_entrypoint.yaml"],
+    image = ":image_with_null_cmd_entrypoint_2",
+)
