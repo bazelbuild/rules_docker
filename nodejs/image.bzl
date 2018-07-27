@@ -117,14 +117,13 @@ def nodejs_image(
 
     layers = [
         # Put the Node binary into its own layer.
-        "@nodejs//:node/bin/node",
+        "@nodejs//:node",
         # node_modules can get large, it should be in its own layer.
         node_modules,
     ] + layers
 
     nodejs_binary(
         name = binary_name,
-        node = "@nodejs//:node/bin/node",
         node_modules = node_modules,
         data = data + layers,
         **kwargs
