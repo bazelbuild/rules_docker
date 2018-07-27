@@ -19,11 +19,22 @@ exports_files(["push-all.sh.tpl"])
 
 exports_files(["structure-test.sh.tpl"])
 
-exports_files(["compare_ids_test.sh.tpl"])
+exports_files(["compare_ids_test.py"])
 
 exports_files(["compare_ids_test.bzl"])
 
-exports_files(["extract_image_id.sh"])
+exports_files(["extract_image_id.py"])
+
+py_binary(
+    name = "extract_image_id",
+    srcs = [":extract_image_id.py"],
+)
+
+py_binary(
+    name = "compare_ids_test",
+    srcs = [":compare_ids_test.py"],
+    deps = ["extract_image_id"],
+)
 
 alias(
     name = "structure_test_executable",
