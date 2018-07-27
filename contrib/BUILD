@@ -44,3 +44,8 @@ alias(
         "//conditions:default": "@structure_test_linux//file",
     }),
 )
+
+py_binary(
+    name = "idd",
+    srcs = ["idd.py"],
+)
