@@ -47,7 +47,7 @@ Ex.
 idd(
     name = "name",
     image1 = "@<image1>//image",
-    image2 = ""hopefully_identical_image.tar",
+    image2 = "hopefully_identical_image.tar",
     args = ["-v", "-d"]
 )
 """
