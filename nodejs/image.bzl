@@ -82,7 +82,7 @@ _dep_layer = rule(
         # of the binary in which it is participating.  This can increase
         # sharing of the dependency's layer across images, but requires a
         # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = False),
+        "agnostic_dep_layout": attr.bool(default = True),
         # The binary target for which we are synthesizing an image.
         # This is needed iff agnostic_dep_layout.
         "binary": attr.label(mandatory = False),
@@ -142,9 +142,7 @@ def nodejs_image(
     app_layer(
         name = name,
         base = base,
-        entrypoint = ["sh", "-c"],
-        # Node.JS hates symlinks.
-        agnostic_dep_layout = False,
+        agnostic_dep_layout = True,
         binary = binary_name,
         lang_layers = layers,
         visibility = visibility,
