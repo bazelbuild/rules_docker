@@ -169,14 +169,16 @@ def _jar_app_layer_impl(ctx):
     binary_path = layer_file_path(ctx, ctx.files.binary[0])
     classpath_path = layer_file_path(ctx, classpath_file)
 
-    # args of the form $(location :some_target) are expanded to the path of the underlying file
+    # args and jvm flags of the form $(location :some_target) are expanded to the path of the underlying file
     args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
+    jvm_flags = [ctx.expand_location(flag, ctx.attr.data) for flag in ctx.attr.jvm_flags]
+
     entrypoint = [
         "/usr/bin/java",
         "-cp",
         # Support optionally passing the classpath as a file.
         "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
-    ] + ctx.attr.jvm_flags + [ctx.attr.main_class] + args
+    ] + jvm_flags + [ctx.attr.main_class] + args
 
     file_map = {
         layer_file_path(ctx, f): f

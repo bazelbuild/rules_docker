@@ -543,7 +543,13 @@ class ImageTest(unittest.TestCase):
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
-        '-XX:MaxPermSize=128M', 'examples.images.Binary', 'arg0', 'arg1', 'testdata/BUILD'])
+        '-XX:MaxPermSize=128M',
+        '-Dbuild.location=testdata/BUILD',
+        'examples.images.Binary',
+        'arg0',
+        'arg1',
+        'testdata/BUILD'
+      ])
 
   def test_war_image(self):
     with TestImage('war_image') as img:
@@ -622,6 +628,7 @@ class ImageTest(unittest.TestCase):
         +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary',
         '-XX:MaxPermSize=128M',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
         'arg1',
@@ -661,6 +668,7 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
         'arg1',
@@ -678,6 +686,7 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
         'arg1',
