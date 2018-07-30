@@ -13,8 +13,13 @@
 # limitations under the License.
 
 load("//contrib:rename_image.bzl", "rename_image")
+load("//contrib:idd.bzl", "idd")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
+load(
+    "@bazel_tools//tools/build_rules:test_rules.bzl",
+    "file_test",
+)
 
 sh_test(
     name = "rename_image_test",
@@ -120,4 +125,20 @@ compare_ids_fail_test(
         ".*Unable to extract manifest\.json, make sure .* is a valid docker image.*",
         ".*FAILED.*",
     ],
+)
+
+idd(
+    name = "test_idd_rule",
+    args = [
+        "-v",
+        "-d",
+    ],
+    image1 = "@distroless_base//image",
+    image2 = "@distroless_base//image",
+)
+
+file_test(
+    name = "test_idd_rule_output",
+    file = ":test_idd_rule",
+    regexp = "^set -x && python .*idd .*image.tar .*image.tar -v -d$",
 )
