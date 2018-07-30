@@ -23,7 +23,6 @@ import sys
 import re
 import tarfile
 import tempfile
-import warnings
 
 from tools.build_defs.pkg import archive
 from third_party.py import gflags
