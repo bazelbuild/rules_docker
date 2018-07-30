@@ -281,7 +281,7 @@ class TarFile(object):
             except ImportError:
               raise self.DebError(
                 "You are trying to build package {deb} from a .xz file "
-                "without lzma installed".fromat(deb=deb)
+                "without lzma installed".format(deb=deb)
               )
           current.data = lzma.decompress(current.data)
           ext = '.'.join(parts[1:-1])
