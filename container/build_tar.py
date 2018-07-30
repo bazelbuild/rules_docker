@@ -28,18 +28,6 @@ import warnings
 from tools.build_defs.pkg import archive
 from third_party.py import gflags
 
-lzma = None
-try:
-  import lzma
-except ImportError:
-  try:
-    from backports import lzma
-  except ImportError:
-    warnings.warn(
-      "Could not find the lzma module. Building from XZ compressed tar files"
-      " will fail."
-    )
-
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
 gflags.MarkFlagAsRequired('output')
 
@@ -285,12 +273,17 @@ class TarFile(object):
       while current:
         parts = current.filename.split(".")
         name = parts[0]
-        if parts[-1] == 'xz':
-          if lzma is None:
-            raise self.DebError(
-              "You are trying to build package {deb} from a .tar.xz file "
-              "without lzma installed".fromat(deb=deb)
-            )
+        if parts[-1].lower() == 'xz':
+          try:
+            import lzma
+          except ImportError:
+            try:
+              from backports import lzma
+            except ImportError:
+              raise self.DebError(
+                "You are trying to build package {deb} from a .xz file "
+                "without lzma installed".fromat(deb=deb)
+              )
           current.data = lzma.decompress(current.data)
           ext = '.'.join(parts[1:-1])
         else:
