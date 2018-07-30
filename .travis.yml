@@ -17,6 +17,9 @@ install: true
 services:
   - docker
 
+before_install:
+  - sudo apt-get install liblzma-dev
+  - sudo pip install backports.lzma
 addons:
   apt:
     sources:
