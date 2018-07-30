@@ -543,7 +543,13 @@ class ImageTest(unittest.TestCase):
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
-        '-XX:MaxPermSize=128M', 'examples.images.Binary', 'arg0', 'arg1', 'testdata/BUILD'])
+        '-XX:MaxPermSize=128M',
+        '-Dbuild.location=testdata/BUILD',
+        'examples.images.Binary',
+        'arg0',
+        'arg1',
+        'testdata/BUILD'
+      ])
 
   def test_war_image(self):
     with TestImage('war_image') as img:
@@ -573,6 +579,8 @@ class ImageTest(unittest.TestCase):
     with TestImage('cc_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/cc_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -591,6 +599,8 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/python',
         '/app/testdata/py_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -601,6 +611,8 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/python',
         '/app/testdata/py3_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -616,6 +628,7 @@ class ImageTest(unittest.TestCase):
         +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary',
         '-XX:MaxPermSize=128M',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
         'arg1',
@@ -626,6 +639,8 @@ class ImageTest(unittest.TestCase):
     with TestImage('go_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/go_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -635,6 +650,8 @@ class ImageTest(unittest.TestCase):
     with TestImage('rust_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/rust_image_binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -651,6 +668,7 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
         'arg1',
@@ -668,6 +686,7 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
         'arg1',
@@ -677,11 +696,12 @@ class ImageTest(unittest.TestCase):
   def test_nodejs_image_args(self):
     with TestImage('nodejs_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
-        'sh',
-        '-c',
         '/app/testdata/nodejs_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+      ])
 
 
 if __name__ == '__main__':
