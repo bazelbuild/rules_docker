@@ -579,6 +579,8 @@ class ImageTest(unittest.TestCase):
     with TestImage('cc_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/cc_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -597,6 +599,8 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/python',
         '/app/testdata/py_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -607,6 +611,8 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/python',
         '/app/testdata/py3_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -633,6 +639,8 @@ class ImageTest(unittest.TestCase):
     with TestImage('go_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/go_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -642,6 +650,8 @@ class ImageTest(unittest.TestCase):
     with TestImage('rust_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/rust_image_binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
         'arg1',
         'testdata/BUILD',
@@ -686,11 +696,12 @@ class ImageTest(unittest.TestCase):
   def test_nodejs_image_args(self):
     with TestImage('nodejs_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
-        'sh',
-        '-c',
         '/app/testdata/nodejs_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+      ])
 
 
 if __name__ == '__main__':
