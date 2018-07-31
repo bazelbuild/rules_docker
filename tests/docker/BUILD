@@ -41,51 +41,101 @@ container_test(
 )
 
 container_image(
-    name = "image_with_some_cmd_entrypoint",
+    name = "set_cmd",
+    base = "@distroless_base//image",
+    cmd = ["foo"],
+)
+
+container_test(
+    name = "set_cmd_test",
+    configs = ["//tests/docker/configs:set_cmd.yaml"],
+    image = ":set_cmd",
+)
+
+container_image(
+    name = "set_entrypoint",
+    base = "@distroless_base//image",
+    entrypoint = ["bar"],
+)
+
+container_test(
+    name = "set_entrypoint_test",
+    configs = ["//tests/docker/configs:set_entrypoint.yaml"],
+    image = ":set_entrypoint",
+)
+
+container_image(
+    name = "set_cmd_and_entrypoint",
     base = "@distroless_base//image",
     cmd = ["foo"],
     entrypoint = ["bar"],
 )
 
 container_test(
-    name = "image_with_some_cmd_entrypoint_test",
-    configs = ["//tests/docker/configs:image_with_some_cmd_entrypoint.yaml"],
-    image = ":image_with_some_cmd_entrypoint",
+    name = "set_cmd_and_entrypoint_test",
+    configs = ["//tests/docker/configs:set_cmd_and_entrypoint.yaml"],
+    image = ":set_cmd_and_entrypoint",
 )
 
 container_image(
-    name = "image_should_still_have_cmd_entrypoint",
-    base = ":image_with_some_cmd_entrypoint",
+    name = "base_with_cmd_and_entrypoint",
+    base = ":set_cmd_and_entrypoint",
 )
 
 container_test(
-    name = "image_should_still_have_cmd_entrypoint_test",
-    configs = ["//tests/docker/configs:image_with_some_cmd_entrypoint.yaml"],
-    image = ":image_should_still_have_cmd_entrypoint",
+    name = "base_with_cmd_and_entrypoint_test",
+    configs = ["//tests/docker/configs:set_cmd_and_entrypoint.yaml"],
+    image = ":base_with_cmd_and_entrypoint",
 )
 
 container_image(
-    name = "image_with_null_cmd_entrypoint",
-    base = ":image_with_some_cmd_entrypoint",
-    cmd = [],
+    name = "null_cmd_and_entrypoint_none",
+    base = ":set_cmd_and_entrypoint",
+    cmd = None,
     entrypoint = None,
 )
 
 container_test(
-    name = "image_with_null_cmd_entrypoint_test",
-    configs = ["//tests/docker/configs:image_with_null_cmd_entrypoint.yaml"],
-    image = ":image_with_null_cmd_entrypoint",
+    name = "null_cmd_and_entrypoint_none_test",
+    configs = ["//tests/docker/configs:null_cmd_and_entrypoint.yaml"],
+    image = ":null_cmd_and_entrypoint_none",
 )
 
 container_image(
-    name = "image_with_null_cmd_entrypoint_2",
-    base = ":image_with_some_cmd_entrypoint",
+    name = "null_cmd_and_entrypoint_empty_str",
+    base = ":set_cmd_and_entrypoint",
     cmd = "",
     entrypoint = "",
 )
 
 container_test(
-    name = "image_with_null_cmd_entrypoint_2_test",
-    configs = ["//tests/docker/configs:image_with_null_cmd_entrypoint.yaml"],
-    image = ":image_with_null_cmd_entrypoint_2",
+    name = "null_cmd_and_entrypoint_empty_str_test",
+    configs = ["//tests/docker/configs:null_cmd_and_entrypoint.yaml"],
+    image = ":null_cmd_and_entrypoint_empty_str",
+)
+
+container_image(
+    name = "null_cmd_and_entrypoint_empty_list",
+    base = ":set_cmd_and_entrypoint",
+    cmd = [],
+    entrypoint = [],
+)
+
+container_test(
+    name = "null_cmd_and_entrypoint_empty_list_test",
+    configs = ["//tests/docker/configs:null_cmd_and_entrypoint.yaml"],
+    image = ":null_cmd_and_entrypoint_empty_list",
+)
+
+container_image(
+    name = "set_cmd_and_entrypoint_null_on_base",
+    base = ":null_cmd_and_entrypoint_none",
+    cmd = ["foo"],
+    entrypoint = ["bar"],
+)
+
+container_test(
+    name = "set_cmd_and_entrypoint_null_on_base_test",
+    configs = ["//tests/docker/configs:set_cmd_and_entrypoint.yaml"],
+    image = ":set_cmd_and_entrypoint_null_on_base",
 )

@@ -497,10 +497,13 @@ def _validate_command(name, argument):
 #      # https://docs.docker.com/engine/reference/builder/#entrypoint
 #      entrypoint="...", or
 #      entrypoint=[...],            -- exec form
+#      Set entrypoint to None, [] or "" will set the Entrypoint of the image to
+#      be null.
 #
 #      # https://docs.docker.com/engine/reference/builder/#cmd
 #      cmd="...", or
 #      cmd=[...],                   -- exec form
+#      Set cmd to None, [] or "" will set the Cmd of the image to be null.
 #
 #      # https://docs.docker.com/engine/reference/builder/#expose
 #      ports=[...],

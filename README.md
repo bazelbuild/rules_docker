@@ -1375,7 +1375,12 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#entrypoint">List
                of entrypoints to add in the image.</a></p>
-	<p>This field supports stamp variables.</p>
+        <p>
+          Set <code>entrypoint</code> to <code>None</code>, <code>[]</code>
+          or <code>""</code> will set the <code>Entrypoint</code> of the image
+          to be <code>null</code>.
+        </p>
+	      <p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -1384,7 +1389,12 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
                of commands to execute in the image.</a></p>
-	<p>This field supports stamp variables.</p>
+        <p>
+          Set <code>cmd</code> to <code>None</code>, <code>[]</code>
+          or <code>""</code> will set the <code>Cmd</code> of the image to be
+          <code>null</code>.
+        </p>
+	      <p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
