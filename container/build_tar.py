@@ -272,17 +272,7 @@ class TarFile(object):
         parts = current.filename.split(".")
         name = parts[0]
         if parts[-1].lower() == 'xz':
-          try:
-            import lzma
-          except ImportError:
-            try:
-              from backports import lzma
-            except ImportError:
-              raise self.DebError(
-                "You are trying to build package {deb} from a .xz file "
-                "without lzma installed".format(deb=deb)
-              )
-          current.data = lzma.decompress(current.data)
+          current.data = self._xz_decompress(current.data)
           ext = '.'.join(parts[1:-1])
         else:
             ext = '.'.join(parts[1:])
@@ -321,7 +311,11 @@ class TarFile(object):
       import lzma
       decompress = lzma.decompress
     except ImportError:
-      decompress = self._xzcat_decompress
+      try:
+        from backports import lzma
+        decompress = lzma.decompress
+      except ImportError:
+        decompress = self._xzcat_decompress
     return decompress(data)
 
 
