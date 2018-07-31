@@ -271,7 +271,11 @@ class TarFile(object):
       while current:
         parts = current.filename.split(".")
         name = parts[0]
-        ext = '.'.join(parts[1:])
+        if parts[-1].lower() == 'xz':
+          current.data = self._xz_decompress(current.data)
+          ext = '.'.join(parts[1:-1])
+        else:
+            ext = '.'.join(parts[1:])
         if name == 'data':
           pkg_data_found = True
           # Add pkg_data to image tar
@@ -307,7 +311,11 @@ class TarFile(object):
       import lzma
       decompress = lzma.decompress
     except ImportError:
-      decompress = self._xzcat_decompress
+      try:
+        from backports import lzma
+        decompress = lzma.decompress
+      except ImportError:
+        decompress = self._xzcat_decompress
     return decompress(data)
 
 
