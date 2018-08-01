@@ -24,7 +24,10 @@ def _compare_ids_test_impl(ctx):
     if (len(tar_files) == 1 and not ctx.attr.id):
         fail("One tar provided. Need either second tar or an id to compare it to.")
 
-    runfiles = ctx.runfiles(files = tar_files + ctx.files._compare_ids_test_script)
+    runfiles = ctx.runfiles(
+        files = tar_files +
+                ctx.attr._compare_ids_test_script[DefaultInfo].data_runfiles.files.to_list(),
+    )
 
     id_args = []
     if ctx.attr.id:
