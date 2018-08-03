@@ -63,7 +63,7 @@ def _layer_pair(ctx, layer):
 
     zipped_layer = layer if zipped else _gzip(ctx, layer)
     unzipped_layer = layer if unzipped else _gunzip(ctx, layer)
-    return zipped_layer, unzipped_layer, _sha256(ctx, unzipped_layer)
+    return zipped_layer, unzipped_layer
 
 def _repository_name(ctx):
     """Compute the repository name for the current rule."""
@@ -77,11 +77,11 @@ def _container_import_impl(ctx):
     unzipped_layers = []
     diff_ids = []
     for layer in ctx.files.layers:
-        blobsums += [_sha256(ctx, layer)]
-        zipped, unzipped, diff_id = _layer_pair(ctx, layer)
+        zipped, unzipped = _layer_pair(ctx, layer)
         zipped_layers += [zipped]
         unzipped_layers += [unzipped]
-        diff_ids += [diff_id]
+        blobsums += [_sha256(ctx, zipped)]
+        diff_ids += [_sha256(ctx, unzipped)]
 
     # These are the constituent parts of the Container image, which each
     # rule in the chain must preserve.
