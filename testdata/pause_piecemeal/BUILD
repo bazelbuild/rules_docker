@@ -37,7 +37,7 @@ genrule(
 ) for id in PAUSE_LAYERS]
 
 # this needs to be in a seperate package than the rest of the testdata because
-# it generates identically named artifacts as pause_piecemeal.
+# it generates identically named artifacts as pause_piecemeal_gz.
 container_import(
     name = "image",
     config = ":pause_config.json",
