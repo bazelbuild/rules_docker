@@ -369,12 +369,12 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_pause_piecemeal(self):
-    with TestImage('import/pause_piecemeal') as img:
+    with TestImage('pause_piecemeal/image') as img:
       self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
       self.assertEqual(2, len(img.fs_layers()))
 
   def test_pause_piecemeal_gz(self):
-    with TestImage('import/gz/pause_piecemeal_gz') as img:
+    with TestImage('pause_piecemeal_gz/image') as img:
       self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
 
   def test_build_with_tag(self):
