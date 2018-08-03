@@ -128,8 +128,6 @@ TEST_TARGETS = [
     "dashdash_entrypoint",
     "base_based_warning",
     "cc_based_warning",
-    "pause_piecemeal",
-    "pause_piecemeal_gz",
     "cc_image",
     # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
     # "d_image",
@@ -150,6 +148,8 @@ TEST_DATA = [
     for t in TEST_TARGETS
 ] + [
     "//testdata:stamped_bundle_test",
+    "//testdata/import:pause_piecemeal.tar",
+    "//testdata/import/gz:pause_piecemeal_gz.tar",
 ]
 
 py_test(
