@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of container_push based on google/containerregistry.
+"""An implementation of container_push based on google/go-containerregistry.
 
-This wraps the containerregistry.tools.fast_pusher executable in a
-Bazel rule for publishing images.
+This wraps the container/pusher go executable in a Bazel rule for publishing
+images.
 """
 
 load(
@@ -105,9 +105,9 @@ def _impl(ctx):
             PushInfo(
                 registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
                 repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
-                tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
                 stamp = ctx.attr.stamp,
                 stamp_inputs = stamp_inputs,
+                tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
             ),
             DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
         ],
@@ -136,7 +136,7 @@ container_push = rule(
             allow_files = True,
         ),
         "_pusher": attr.label(
-            default = Label("@containerregistry//:pusher"),
+            default = Label("//container/pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,

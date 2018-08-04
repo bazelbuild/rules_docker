@@ -31,3 +31,8 @@ config_setting(
     name = "optimized",
     values = {"compilation_mode": "opt"},
 )
+
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/bazelbuild/rules_docker
+gazelle(name = "gazelle")
