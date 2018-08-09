@@ -90,6 +90,12 @@ def _get_base_config(ctx, name, base):
         l = _get_layers(ctx, name, ctx.attr.base, base)
         return l.get("config")
 
+def _get_base_manifest(ctx, name, base):
+  if ctx.files.base or base:
+    # The base is the first layer in container_parts if provided.
+    layer = _get_layers(ctx, name, ctx.attr.base, base)
+    return layer.get("manifest")
+
 def _image_config(
         ctx,
         name,
@@ -99,12 +105,15 @@ def _image_config(
         creation_time = None,
         env = None,
         base_config = None,
+        base_manifest = None,
+        operating_system = None,
         layer_name = None,
         workdir = None,
         null_entrypoint = False,
         null_cmd = False):
     """Create the configuration for a new container image."""
     config = ctx.new_file(name + "." + layer_name + ".config")
+    manifest = ctx.new_file(name + "." + layer_name + ".manifest")
 
     label_file_dict = _string_to_label(
         ctx.files.label_files,
@@ -121,6 +130,8 @@ def _image_config(
 
     args = [
         "--output=%s" % config.path,
+    ] + [
+        "--manifestoutput=%s" % manifest.path,
     ] + [
         "--entrypoint=%s" % x
         for x in entrypoint
@@ -168,6 +179,13 @@ def _image_config(
         args += ["--base=%s" % base_config.path]
         inputs += [base_config]
 
+    if base_manifest:
+      args += ["--basemanifest=%s" % base_manifest.path]
+      inputs += [base_manifest]
+
+    if operating_system:
+      args += ["--operating_system=%s" % operating_system]
+
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
         args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
@@ -177,11 +195,11 @@ def _image_config(
         executable = ctx.executable.create_image_config,
         arguments = args,
         inputs = inputs,
-        outputs = [config],
+        outputs = [config, manifest],
         use_default_shell_env = True,
         mnemonic = "ImageConfig",
     )
-    return config, _sha256(ctx, config)
+    return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)
 
 def _repository_name(ctx):
     """Compute the repository name for the current rule."""
@@ -211,6 +229,7 @@ def _impl(
         layers = None,
         debs = None,
         tars = None,
+        operating_system = None,
         output_executable = None,
         output_tarball = None,
         output_layer = None,
@@ -236,6 +255,7 @@ def _impl(
     layers: label List, overrides ctx.attr.layers
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
+    operating_system: Operating system to target (e.g. linux, windows)
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
     output_layer: File, overrides ctx.outputs.layer
@@ -246,6 +266,7 @@ def _impl(
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
+    operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
     output_executable = output_executable or ctx.outputs.executable
     output_tarball = output_tarball or ctx.outputs.out
@@ -266,6 +287,7 @@ def _impl(
         debs = debs,
         tars = tars,
         env = env,
+        operating_system = operating_system,
         output_layer = output_layer,
     )
 
@@ -285,9 +307,13 @@ def _impl(
     # Get the config for the base layer
     config_file = _get_base_config(ctx, name, base)
 
+    # Get the manifest for the base layer
+    manifest_file = _get_base_manifest(ctx, name, base)
+    manifest_digest = None
+
     # Generate the new config layer by layer, using the attributes specified and the diff_id
     for i, layer in enumerate(layers):
-        config_file, config_digest = _image_config(
+        config_file, config_digest, manifest_file, manifest_digest = _image_config(
             ctx,
             name = name,
             layer_names = [layer_diff_ids[i]],
@@ -296,6 +322,8 @@ def _impl(
             creation_time = creation_time,
             env = layer.env,
             base_config = config_file,
+            base_manifest = manifest_file,
+            operating_system = operating_system,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
             null_entrypoint = null_entrypoint,
@@ -311,6 +339,10 @@ def _impl(
         # The path to the v2.2 configuration file.
         "config": config_file,
         "config_digest": config_digest,
+
+        # The path to the v2.2 manifest file.
+        "manifest": manifest_file,
+        "manifest_digest": manifest_digest,
 
         # A list of paths to the layer .tar.gz files
         "zipped_layer": zipped_layers,
@@ -440,9 +472,12 @@ container_image_ = rule(
 #       "a"
 #   ],
 # NOTE: prefacing a command with 'exec' just ends up with the former
-def _validate_command(name, argument):
+def _validate_command(name, argument, operating_system):
     if type(argument) == type(""):
-        return ["/bin/sh", "-c", argument]
+        if (operating_system == "windows"):
+          return ["cmd.exe", "/c", argument]
+        else:
+          return ["/bin/sh", "-c", argument]
     elif type(argument) == type([]):
         return argument
     elif argument:
@@ -556,6 +591,11 @@ def container_image(**kwargs):
   Args:
     **kwargs: See above.
   """
+    operating_system = None
+
+    if ("operating_system" in kwargs):
+        operating_system = kwargs["operating_system"]
+
     reserved_attrs = [
         "label_files",
         "label_file_strings",
@@ -583,7 +623,7 @@ def container_image(**kwargs):
             if kwargs["cmd"] == "":
                 kwargs["cmd"] = []
         else:
-            kwargs["cmd"] = _validate_command("cmd", kwargs["cmd"])
+            kwargs["cmd"] = _validate_command("cmd", kwargs["cmd"], operating_system)
 
     # If entrypoint is set but set to None, [] or "",
     # we interpret it as users want to set it to null.
@@ -596,6 +636,6 @@ def container_image(**kwargs):
             if kwargs["entrypoint"] == "":
                 kwargs["entrypoint"] = []
         else:
-            kwargs["entrypoint"] = _validate_command("entrypoint", kwargs["entrypoint"])
+            kwargs["entrypoint"] = _validate_command("entrypoint", kwargs["entrypoint"], operating_system)
 
     container_image_(**kwargs)

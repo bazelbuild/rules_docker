@@ -13,7 +13,7 @@
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
 
-load("//container:container.bzl", "container_image")
+load("//container:container.bzl", "container_image", "container_import")
 load("//contrib:test.bzl", "container_test")
 
 container_test(
@@ -138,4 +138,23 @@ container_test(
     name = "set_cmd_and_entrypoint_null_on_base_test",
     configs = ["//tests/docker/configs:set_cmd_and_entrypoint.yaml"],
     image = ":set_cmd_and_entrypoint_null_on_base",
+)
+
+container_import(
+    name = "import_windows_base_image",
+    config = "windowsservercore.1803.config.json",
+    manifest = "windowsservercore.1803.manifest.json",
+)
+
+container_image(
+    name = "basic_windows_image",
+    base = ":import_windows_base_image",
+    cmd = ["cmd.exe /c echo bar"],
+    operating_system = "windows",
+)
+
+container_test(
+    name = "create_basic_windows_image_test",
+    configs = ["//tests/docker/configs:windows_image.yaml"],
+    image = ":basic_windows_image",
 )

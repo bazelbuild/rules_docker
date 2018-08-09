@@ -1,0 +1,28 @@
+[
+  {
+      "Config": "fc9cd8b52f1abe17698bbb770a259ad8d86af3ad9f4f9f29e11e68a4666679cc.json",
+      "RepoTags": null,
+      "Layers": [
+          "eb23344c2c24ea298496e5d52e9d6fedab64f780b35985072a5d819f45592f21\\layer.tar",
+          "61be9db22bcf7445fed99094164f9de168d4c9dcb0a6e93beb3a9f6038db0da9\\layer.tar"
+      ],
+      "LayerSources": {
+          "sha256:70bba925263c1c193fa7bc7f79b1aa062707b09fe7774c7896b8aaf091b901a9": {
+              "mediaType": "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip",
+              "size": 1659688273,
+              "digest": "sha256:d9e8b01179bfc94a5bdb1810fbd76b999aa52016001ace2d3a4c4bc7065a9601",
+              "urls": [
+                  "https://go.microsoft.com/fwlink/?linkid=873595"
+              ]
+          },
+          "sha256:aa10afa36c78a1a1775d9bb44d90cfe5cfe3f93fd6b48cba8a2586661a0e4da6": {
+              "mediaType": "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip",
+              "size": 493521205,
+              "digest": "sha256:e30fefc566f71c5dd5786e4783ff4ae3ad98804d5279c14dcf806c813fdf8f66",
+              "urls": [
+                  "https://go.microsoft.com/fwlink/?linkid=2005408"
+              ]
+          }
+      }
+  }
+]

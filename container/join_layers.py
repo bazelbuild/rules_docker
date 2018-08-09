@@ -43,7 +43,12 @@ parser.add_argument('--tags', action='append', required=True,
                           'and the layer they tag. '
                           'e.g. ubuntu=deadbeef,gcr.io/blah/debian=baadf00d'))
 
-parser.add_argument('--layer', action='append', required=True,
+parser.add_argument('--manifests', action='append', required=False,
+                    help=('An associative list of fully qualified tag names '
+                          'and the manifest associated'
+                          'e.g. ubuntu=deadbeef,gcr.io/blah/debian=baadf00d'))
+
+parser.add_argument('--layer', action='append', required=False,
                     help=('Each entry is an equivalence class with 4 parts: '
                           'diff_id, blob_sum, unzipped layer, zipped layer.'))
 
@@ -62,15 +67,32 @@ class FromParts(v2_2_image.DockerImage):
   compressed and uncompressed forms available.
   """
 
-  def __init__(self, config_file, diffid_to_blobsum,
+  def __init__(self, config_file, manifest_file, diffid_to_blobsum,
                blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy):
     self._config = config_file
+    self._manifest = manifest_file
+    self._foreign_layer_sources = {}
+    self._blobsum_to_diffid = {}
     self._blobsum_to_unzipped = blobsum_to_unzipped
     self._blobsum_to_zipped = blobsum_to_zipped
     self._blobsum_to_legacy = blobsum_to_legacy
     config = json.loads(self._config)
+    manifest_list = []
+
+    if self._manifest:
+      manifest_list = json.loads(self._manifest)
     content = self.config_file().encode('utf-8')
-    self._manifest = json.dumps({
+
+    for i, diff_id in enumerate(diffid_to_blobsum):
+      self._blobsum_to_diffid[diffid_to_blobsum.values()[i]] = diff_id
+
+    for manifest in manifest_list:
+      if 'LayerSources' in manifest:
+        layer_sources = manifest['LayerSources']
+        for diff_id in layer_sources.keys():
+          self._foreign_layer_sources[diff_id] = layer_sources[diff_id]
+
+    manifest = {
         'schemaVersion': 2,
         'mediaType': docker_http.MANIFEST_SCHEMA2_MIME,
         'config': {
@@ -80,13 +102,18 @@ class FromParts(v2_2_image.DockerImage):
         },
         'layers': [
             {
-                'mediaType': docker_http.LAYER_MIME,
+                'mediaType': self.diff_id_to_media_type(diff_id),
                 'size': self.blob_size(diffid_to_blobsum[diff_id]),
                 'digest': diffid_to_blobsum[diff_id]
             }
             for diff_id in config['rootfs']['diff_ids']
         ]
-    }, sort_keys=True)
+    }
+    
+    if self._foreign_layer_sources:
+      manifest['LayerSources'] = self._foreign_layer_sources
+
+    self._manifest = json.dumps(manifest, sort_keys=True)
 
   def manifest(self):
     """Override."""
@@ -99,7 +126,10 @@ class FromParts(v2_2_image.DockerImage):
   # Could be large, do not memoize
   def uncompressed_blob(self, digest):
     """Override."""
-    if digest not in self._blobsum_to_unzipped:
+    
+    if self._blobsum_to_diffid[digest] in self._foreign_layer_sources:
+      return bytearray()
+    elif digest not in self._blobsum_to_unzipped:
       return self._blobsum_to_legacy[digest].uncompressed_blob(digest)
     with open(self._blobsum_to_unzipped[digest], 'r') as reader:
       return reader.read()
@@ -114,10 +144,20 @@ class FromParts(v2_2_image.DockerImage):
 
   def blob_size(self, digest):
     """Override."""
-    if digest not in self._blobsum_to_zipped:
+    diff_id = self._blobsum_to_diffid[digest]
+    if diff_id in self._foreign_layer_sources:
+      return self._foreign_layer_sources[diff_id]['digest']
+    elif digest not in self._blobsum_to_zipped:
       return self._blobsum_to_legacy[digest].blob_size(digest)
     info = os.stat(self._blobsum_to_zipped[digest])
     return info.st_size
+
+  def diff_id_to_media_type(self, diff_id):
+    """Override."""
+    if diff_id in self._foreign_layer_sources:
+      return docker_http.FOREIGN_LAYER_MIME
+    else:
+      return docker_http.LAYER_MIME
 
   # __enter__ and __exit__ allow use as a context manager.
   def __enter__(self):
@@ -127,7 +167,7 @@ class FromParts(v2_2_image.DockerImage):
     pass
 
 
-def create_bundle(output, tag_to_config, diffid_to_blobsum,
+def create_bundle(output, tag_to_config, tag_to_manifest, diffid_to_blobsum,
                   blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy):
   """Creates a Docker image from a list of layers.
 
@@ -147,17 +187,39 @@ def create_bundle(output, tag_to_config, diffid_to_blobsum,
 
     tag_to_image = {}
     for (tag, config) in six.iteritems(tag_to_config):
+      manifest = None
+      if tag in tag_to_manifest:
+        manifest = tag_to_manifest[tag]
       tag_to_image[tag] = FromParts(
-          config, diffid_to_blobsum,
+          config, manifest, diffid_to_blobsum,
           blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy)
 
     v2_2_save.multi_image_tarball(tag_to_image, tar)
 
+def create_tag_to_file(stamp_info, tags):
+  tag_to_file = {}
+
+  if tags:
+    for entry in tags:
+      elts = entry.split('=')
+      if len(elts) != 2:
+        raise Exception('Expected associative list key=value, got: %s' % entry)
+      (fq_tag, config_filename) = elts
+
+      formatted_tag = fq_tag.format(**stamp_info)
+      tag = docker_name.Tag(formatted_tag, strict=False)
+      config_file = utils.ExtractValue(config_filename)
+
+      # Add the mapping in one direction.
+      tag_to_file[tag] = config_file
+
+  return tag_to_file
 
 def main():
   args = parser.parse_args()
 
   tag_to_config = {}
+  tag_to_manifest = {}
   stamp_info = {}
   diffid_to_blobsum = {}
   blobsum_to_unzipped = {}
@@ -174,18 +236,8 @@ def main():
                    "using '%s'" % (key, value))
           stamp_info[key] = value
 
-  for entry in args.tags:
-    elts = entry.split('=')
-    if len(elts) != 2:
-      raise Exception('Expected associative list key=value, got: %s' % entry)
-    (fq_tag, config_filename) = elts
-
-    formatted_tag = fq_tag.format(**stamp_info)
-    tag = docker_name.Tag(formatted_tag, strict=False)
-    config_file = utils.ExtractValue(config_filename)
-
-    # Add the mapping in one direction.
-    tag_to_config[tag] = config_file
+  tag_to_config = create_tag_to_file(stamp_info, args.tags)
+  tag_to_manifest = create_tag_to_file(stamp_info, args.manifests)
 
   # Do this first so that if there is overlap with the loop below it wins.
   blobsum_to_legacy = {}
@@ -199,22 +251,36 @@ def main():
         diffid_to_blobsum[diff_id] = blob_sum
         blobsum_to_legacy[blob_sum] = legacy_image
 
-  for entry in args.layer:
-    elts = entry.split('=')
-    if len(elts) != 4:
-      raise Exception('Expected associative list key=value, got: %s' % entry)
-    (diffid_filename, blobsum_filename,
-     unzipped_filename, zipped_filename) = elts
+  if args.layer:
+    for entry in args.layer:
+      elts = entry.split('=')
+      if len(elts) != 4:
+        raise Exception('Expected associative list key=value, got: %s' % entry)
+      (diffid_filename, blobsum_filename,
+      unzipped_filename, zipped_filename) = elts
 
-    diff_id = 'sha256:' + utils.ExtractValue(diffid_filename)
-    blob_sum = 'sha256:' + utils.ExtractValue(diffid_filename)
+      diff_id = 'sha256:' + utils.ExtractValue(diffid_filename)
+      blob_sum = 'sha256:' + utils.ExtractValue(blobsum_filename)
 
-    diffid_to_blobsum[diff_id] = blob_sum
-    blobsum_to_unzipped[blob_sum] = unzipped_filename
-    blobsum_to_zipped[blob_sum] = zipped_filename
+      diffid_to_blobsum[diff_id] = blob_sum
+      blobsum_to_unzipped[blob_sum] = unzipped_filename
+      blobsum_to_zipped[blob_sum] = zipped_filename
+
+  # add foreign layers
+  for tag, manifest_file in tag_to_manifest.items():
+    manifest_list = json.loads(manifest_file)
+    for manifest in manifest_list:
+      if 'LayerSources' in manifest:
+        config = json.loads(tag_to_config[tag])
+        layer_sources = manifest['LayerSources']
+        for diff_id in config['rootfs']['diff_ids']:
+          if diff_id in layer_sources:
+            layer = layer_sources[diff_id]
+            blob_sum = layer['digest']
+            diffid_to_blobsum[diff_id] = blob_sum
 
   create_bundle(
-      args.output, tag_to_config, diffid_to_blobsum,
+      args.output, tag_to_config, tag_to_manifest, diffid_to_blobsum,
       blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy)
 
 
