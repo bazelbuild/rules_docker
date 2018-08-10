@@ -4,6 +4,7 @@ platforms:
     build_targets:
     - "..."
     test_targets:
+    # We are running the rest of test targets remotely only.
     - "//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
@@ -14,6 +15,7 @@ platforms:
     build_targets:
     - "..."
     test_targets:
+    # We are running the rest of test targets remotely only.
     - "//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
