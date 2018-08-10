@@ -2,18 +2,28 @@
 platforms:
   ubuntu1404:
     build_targets:
+    # We are running the skipped targets remotely only.
+    - "--"
     - "..."
+    - "-//docker/..."
+    - "-//skylib/..."
+    - "-//tools/..."
     test_targets:
-    # We are running the rest of test targets remotely only.
+    # We are running the skipped targets remotely only.
     - "--"
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
   ubuntu1604:
     build_targets:
+    # We are running the skipped targets remotely only.
+    - "--"
     - "..."
+    - "-//docker/..."
+    - "-//skylib/..."
+    - "-//tools/..."
     test_targets:
-    # We are running the rest of test targets remotely only.
+    # We are running the skipped targets remotely only.
     - "--"
     - "..."
     - "-//tests/container/..."
