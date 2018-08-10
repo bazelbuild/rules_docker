@@ -4,12 +4,22 @@ platforms:
     build_targets:
     - "..."
     test_targets:
-    - "..."
+    - "//tests/contrib:test_compare_ids_test_diff_ids_fails"
+    - "//tests/contrib:test_compare_ids_test_invalid_tar_fails"
+    - "//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
+    - "//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
+    - "//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
+    - "//tests/contrib:test_compare_ids_test_wrong_id_fails"
   ubuntu1604:
     build_targets:
     - "..."
     test_targets:
-    - "..."
+    - "//tests/contrib:test_compare_ids_test_diff_ids_fails"
+    - "//tests/contrib:test_compare_ids_test_invalid_tar_fails"
+    - "//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
+    - "//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
+    - "//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
+    - "//tests/contrib:test_compare_ids_test_wrong_id_fails"
   macos:
     build_targets:
     - "..."
