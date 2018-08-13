@@ -85,10 +85,9 @@ def repositories():
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
-            urls = [("https://github.com/google/containerregistry/archive/" +
-                     CONTAINERREGISTRY_RELEASE + ".tar.gz")],
-            sha256 = "fe7cf5786dc731dbbd5c1c37502a40ad85e01200ce7d69174043791ac01df23c",
-            strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
+            urls = [("https://github.com/nowens03/containerregistry/archive/v0.0.33.tar.gz")],
+            sha256 = "c8f1d4a1fd1e2c1378dabe47de9cd055fe46ed7ab347c31d339f57e687f69826",
+            strip_prefix = "containerregistry-0.0.33",
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)

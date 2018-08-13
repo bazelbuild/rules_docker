@@ -56,7 +56,7 @@ def _impl(ctx):
     blobs = image.get("zipped_layer", [])
     layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
     config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
-    manifest_arg = "--tar_manifest=%s" % _get_runfile_path(ctx, image["manifest"])
+    manifest_arg = "--manifest=%s" % _get_runfile_path(ctx, image["manifest"])
 
     ctx.template_action(
         template = ctx.file._tag_tpl,

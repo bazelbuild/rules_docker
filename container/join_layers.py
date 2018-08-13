@@ -59,7 +59,6 @@ parser.add_argument('--stamp-info-file', action='append', required=False,
                     help=('If stamping these layers, the list of files from '
                           'which to obtain workspace information'))
 
-
 class FromParts(v2_2_image.DockerImage):
   """This accesses a more efficient on-disk format than FromTarball.
 
@@ -71,28 +70,19 @@ class FromParts(v2_2_image.DockerImage):
                blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy):
     self._config = config_file
     self._manifest = manifest_file
-    self._foreign_layer_sources = {}
     self._blobsum_to_diffid = {}
     self._blobsum_to_unzipped = blobsum_to_unzipped
     self._blobsum_to_zipped = blobsum_to_zipped
     self._blobsum_to_legacy = blobsum_to_legacy
+    self._diffid_to_blobsum = diffid_to_blobsum
     config = json.loads(self._config)
-    manifest_list = []
 
-    if self._manifest:
-      manifest_list = json.loads(self._manifest)
     content = self.config_file().encode('utf-8')
 
     for i, diff_id in enumerate(diffid_to_blobsum):
       self._blobsum_to_diffid[diffid_to_blobsum.values()[i]] = diff_id
 
-    for manifest in manifest_list:
-      if 'LayerSources' in manifest:
-        layer_sources = manifest['LayerSources']
-        for diff_id in layer_sources.keys():
-          self._foreign_layer_sources[diff_id] = layer_sources[diff_id]
-
-    manifest = {
+    self._manifest = json.dumps({
         'schemaVersion': 2,
         'mediaType': docker_http.MANIFEST_SCHEMA2_MIME,
         'config': {
@@ -101,19 +91,10 @@ class FromParts(v2_2_image.DockerImage):
             'digest': 'sha256:' + hashlib.sha256(content).hexdigest()
         },
         'layers': [
-            {
-                'mediaType': self.diff_id_to_media_type(diff_id),
-                'size': self.blob_size(diffid_to_blobsum[diff_id]),
-                'digest': diffid_to_blobsum[diff_id]
-            }
+            self.diff_id_to_layer_manifest_json(diff_id)
             for diff_id in config['rootfs']['diff_ids']
         ]
-    }
-    
-    if self._foreign_layer_sources:
-      manifest['LayerSources'] = self._foreign_layer_sources
-
-    self._manifest = json.dumps(manifest, sort_keys=True)
+    }, sort_keys=True)
 
   def manifest(self):
     """Override."""
@@ -126,11 +107,12 @@ class FromParts(v2_2_image.DockerImage):
   # Could be large, do not memoize
   def uncompressed_blob(self, digest):
     """Override."""
-    
-    if self._blobsum_to_diffid[digest] in self._foreign_layer_sources:
+
+    if self.blobsum_to_media_type(digest) == docker_http.FOREIGN_LAYER_MIME:
       return bytearray()
     elif digest not in self._blobsum_to_unzipped:
       return self._blobsum_to_legacy[digest].uncompressed_blob(digest)
+
     with open(self._blobsum_to_unzipped[digest], 'r') as reader:
       return reader.read()
 
@@ -145,19 +127,42 @@ class FromParts(v2_2_image.DockerImage):
   def blob_size(self, digest):
     """Override."""
     diff_id = self._blobsum_to_diffid[digest]
-    if diff_id in self._foreign_layer_sources:
-      return self._foreign_layer_sources[diff_id]['digest']
+    if self.blobsum_to_media_type(digest) == docker_http.FOREIGN_LAYER_MIME:
+      return self.blobsum_to_manifest_layer(digest)['size']
     elif digest not in self._blobsum_to_zipped:
       return self._blobsum_to_legacy[digest].blob_size(digest)
     info = os.stat(self._blobsum_to_zipped[digest])
     return info.st_size
 
-  def diff_id_to_media_type(self, diff_id):
-    """Override."""
-    if diff_id in self._foreign_layer_sources:
-      return docker_http.FOREIGN_LAYER_MIME
+  def diff_id_to_manifest_layer(self, diff_id):
+    return self.blobsum_to_manifest_layer(self._diffid_to_blobsum[diff_id])
+
+  def blobsum_to_manifest_layer(self, digest):
+    if self._manifest:
+      manifest = json.loads(self._manifest)
+      if 'layers' in manifest:
+        for layer in manifest['layers']:
+          if layer['digest'] == digest:
+            return layer
+    return None
+
+  def blobsum_to_media_type(self, digest):
+    manifest_layer = self.blobsum_to_manifest_layer(digest)
+    if manifest_layer:
+      return manifest_layer['mediaType']
+    return docker_http.LAYER_MIME
+
+  def diff_id_to_layer_manifest_json(self, diff_id):
+    manifest_layer = self.diff_id_to_manifest_layer(diff_id)
+
+    if manifest_layer:
+      return manifest_layer
     else:
-      return docker_http.LAYER_MIME
+      return {
+          'mediaType': docker_http.LAYER_MIME,
+          'size': self.blob_size(self._diffid_to_blobsum[diff_id]),
+          'digest': self._diffid_to_blobsum[diff_id]
+      }
 
   # __enter__ and __exit__ allow use as a context manager.
   def __enter__(self):
@@ -268,16 +273,14 @@ def main():
 
   # add foreign layers
   for tag, manifest_file in tag_to_manifest.items():
-    manifest_list = json.loads(manifest_file)
-    for manifest in manifest_list:
-      if 'LayerSources' in manifest:
-        config = json.loads(tag_to_config[tag])
-        layer_sources = manifest['LayerSources']
-        for diff_id in config['rootfs']['diff_ids']:
-          if diff_id in layer_sources:
-            layer = layer_sources[diff_id]
-            blob_sum = layer['digest']
-            diffid_to_blobsum[diff_id] = blob_sum
+    manifest = json.loads(manifest_file)
+    if 'layers' in manifest:
+      config = json.loads(tag_to_config[tag])
+      for i, layer in enumerate(manifest['layers']):
+        diff_id = config['rootfs']['diff_ids'][i]
+        if layer['mediaType'] == docker_http.FOREIGN_LAYER_MIME:
+          blob_sum = layer['digest']
+          diffid_to_blobsum[diff_id] = blob_sum
 
   create_bundle(
       args.output, tag_to_config, tag_to_manifest, diffid_to_blobsum,

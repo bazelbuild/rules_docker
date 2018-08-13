@@ -1,6 +1,4 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  cmd: ["cmd.exe /c echo bar"]
-  os: 'windows'
-  'os.version': "10.0.17134.165"
+  cmd: ["echo bar"]
