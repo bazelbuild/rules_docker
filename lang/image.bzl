@@ -163,7 +163,7 @@ dep_layer = rule(
     implementation = dep_layer_impl,
 )
 
-def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
+def app_layer_impl(ctx, runfiles = None, emptyfiles = None, emptydirs = []):
     """Appends the app layer with all remaining runfiles."""
 
     runfiles = runfiles or _default_runfiles
@@ -226,6 +226,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         directory = "/",
         file_map = file_map,
         empty_files = empty_files,
+        empty_dirs = emptydirs,
         symlinks = symlinks,
         workdir = workdir,
         # Use entrypoint so we can easily add arguments when the resulting

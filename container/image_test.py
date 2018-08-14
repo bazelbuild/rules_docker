@@ -39,6 +39,12 @@ def TestBundleImage(name, image_name):
 
 class ImageTest(unittest.TestCase):
 
+  def assertTarballNumSymlinksTopLayer(self, img, nr):
+    buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+    with tarfile.open(fileobj=buf, mode='r') as layer:
+      nr_tar_symlinks = len([ti for ti in layer.getmembers() if ti.type == tarfile.SYMTYPE])
+      self.assertEqual(nr, nr_tar_symlinks)
+
   def assertTarballContains(self, tar, paths):
     self.assertEqual(paths, tar.getnames())
 
@@ -574,60 +580,110 @@ class ImageTest(unittest.TestCase):
         './jetty/webapps/ROOT/WEB-INF/lib/javax.servlet-api-3.0.1.jar',
       ])
 
+
   def test_nodejs_image(self):
     self.maxDiff = None
     with TestImage('nodejs_image') as img:
-      # Check the application layer, which is on top.
-      self.assertTopLayerContains(img, [
-        '.',
+      # Check the application layer, which is on top, it also contains symlinks to the bottom layers.
+      self.assertTopLayerContains(img, ['.',
         './app',
         './app/testdata',
-        './app/testdata/nodejs_image.binary.runfiles',
-        './app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker',
-        './app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker/testdata',
-        './app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image.binary_bin.sh',
-        './app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image.binary',
-        './app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image.js',
-        './app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image.binary_bin_loader.js',
-        './app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image.binary_bin',
-        # The path normalization for symlinks should match',
-        # files to avoid this redundancy.',
+        './app/testdata/nodejs_image.binary_bin.runfiles',
+        './app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker',
+        './app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker/testdata',
+        './app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker/testdata/nodejs_image.js',
+        './app/testdata/nodejs_image.binary_bin.runfiles/bazel_tools',
+        './app/testdata/nodejs_image.binary_bin.runfiles/bazel_tools/tools',
+        './app/testdata/nodejs_image.binary_bin.runfiles/bazel_tools/tools/bash',
+        './app/testdata/nodejs_image.binary_bin.runfiles/bazel_tools/tools/bash/runfiles',
+        './app/testdata/nodejs_image.binary_bin.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash',
+        './app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker/testdata/nodejs_image.binary_bin_loader.js',
+        './app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker/testdata/nodejs_image.binary_bin.sh',
+        './app/io_bazel_rules_docker',
         '/app',
         '/app/testdata',
-        '/app/testdata/nodejs_image.binary',
-        '/app/testdata/nodejs_image.binary.runfiles',
-        '/app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker',
-        '/app/testdata/nodejs_image.binary.runfiles/io_bazel_rules_docker/external',
+        '/app/testdata/nodejs_image.binary_bin.runfiles',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/node',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/node.js',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/nodejs',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/nodejs/bin',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/nodejs/bin/node',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/node_args.sh',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/LICENSE-MIT.txt',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/README.md',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/bin',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/bin/jsesc',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/jsesc.js',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/man',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/man/jsesc.1',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/package.json',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/.bin',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/.bin/jsesc',
+        '/app/testdata/nodejs_image.binary_bin',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker/external',
       ])
 
       # Check that the next layer contains node_modules
-      # self.assertLayerNContains(img, 1, [
-      #   '.',
-      #   './app',
-      #   './app/testdata',
-      #   './app/testdata/nodejs_image.binary.runfiles',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/LICENSE-MIT.txt',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/README.md',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/bin',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/bin/jsesc',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/jsesc.js',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/man',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/man/jsesc.1',
-      #   './app/testdata/nodejs_image.binary.runfiles/npm_deps/node_modules/jsesc/package.json',
-      # ])
+      layerOneFiles = [
+        '.',
+        './app',
+        './app/npm_deps',
+        './app/npm_deps/node_modules',
+        './app/npm_deps/node_modules/jsesc',
+        './app/npm_deps/node_modules/jsesc/LICENSE-MIT.txt',
+        './app/npm_deps/node_modules/jsesc/README.md',
+        './app/npm_deps/node_modules/jsesc/bin',
+        './app/npm_deps/node_modules/jsesc/bin/jsesc',
+        './app/npm_deps/node_modules/jsesc/jsesc.js',
+        './app/npm_deps/node_modules/jsesc/man',
+        './app/npm_deps/node_modules/jsesc/man/jsesc.1',
+        './app/npm_deps/node_modules/jsesc/package.json',
+        './app/npm_deps/node_modules/.bin',
+        './app/npm_deps/node_modules/.bin/jsesc',
+      ]
+      self.assertLayerNContains(img, 1, layerOneFiles)
 
-      # self.assertLayerNContains(img, 2, [
-      #   '.',
-      #   './app',
-      #   './app/testdata',
-      #   './app/testdata/nodejs_image.binary.runfiles',
-      #   './app/testdata/nodejs_image.binary.runfiles/nodejs',
-      #   './app/testdata/nodejs_image.binary.runfiles/nodejs/bin',
-      #   './app/testdata/nodejs_image.binary.runfiles/nodejs/bin/node',
-      # ])
+      # Check that the next layer contains node_args
+      layerTwoFiles = [
+        '.',
+        './app',
+        './app/nodejs',
+        './app/nodejs/bin',
+        './app/nodejs/bin/node_args.sh'
+      ]
+      self.assertLayerNContains(img, 2, layerTwoFiles)
+
+      # Check that the next layer contains node runfiles
+      layerThreeFiles = [
+        '.',
+        './app',
+        './app/nodejs',
+        './app/nodejs/bin',
+        './app/nodejs/bin/node.js',
+        './app/nodejs/bin/nodejs',
+        './app/nodejs/bin/nodejs/bin',
+        './app/nodejs/bin/nodejs/bin/node'
+      ]
+      self.assertLayerNContains(img, 3, layerThreeFiles)
+
+      # Check that the next layer contains node
+      layerFourFiles = [
+        '.',
+        './app',
+        './app/nodejs',
+        './app/nodejs/bin',
+        './app/nodejs/bin/node',
+      ]
+      self.assertLayerNContains(img, 4, layerFourFiles)
+
+      # Check that top layer contains symlinks that map to the bottom layers
+      self.assertTarballNumSymlinksTopLayer(img, 13)
 
   def test_cc_image_args(self):
     with TestImage('cc_image') as img:
@@ -750,7 +806,7 @@ class ImageTest(unittest.TestCase):
   def test_nodejs_image_args(self):
     with TestImage('nodejs_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/nodejs_image.binary',
+        '/app/testdata/nodejs_image.binary_bin',
       ])
       self.assertConfigEqual(img, 'Cmd', [
         'arg0',

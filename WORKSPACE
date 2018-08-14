@@ -172,9 +172,9 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "779edee08986ab40dbf8b1ad0260f3cc8050f1e96ccd2a88dc499848bbdb787f",
-    strip_prefix = "rules_nodejs-0.11.1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.11.1.zip"],
+    sha256 = "7b7d04c215f332d47251eef623e027ea43470e8347d4d0987205002005d54505",
+    strip_prefix = "rules_nodejs-571c603f70bf39a012cec3592d122ab22de438b0",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/571c603f70bf39a012cec3592d122ab22de438b0.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")

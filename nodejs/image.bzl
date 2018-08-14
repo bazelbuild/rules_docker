@@ -18,10 +18,10 @@ The signature of this rule is compatible with nodejs_binary.
 
 load(
     "//lang:image.bzl",
-    "app_layer_impl",
     "app_layer_attrs",
-    "dep_layer_impl",
+    "app_layer_impl",
     "dep_layer_attrs",
+    "dep_layer_impl",
 )
 load(
     "//container:container.bzl",
@@ -61,6 +61,14 @@ DEFAULT_BASE = select({
     "//conditions:default": "@nodejs_debug_image_base//image",
 })
 
+load("@build_bazel_rules_nodejs//:defs.bzl", "SourcesInfo")
+
+def _app_runfiles(dep):
+    if SourcesInfo in dep:
+        return dep[SourcesInfo].data
+    else:
+        return _runfiles(dep)
+
 def _runfiles(dep):
     return dep.default_runfiles.files + dep.data_runfiles.files + dep.files
 
@@ -78,7 +86,8 @@ _dep_layer = rule(
 )
 
 def _app_layer_impl(ctx):
-  return app_layer_impl(ctx, runfiles=_runfiles, emptyfiles=_emptyfiles)
+    empty_dirs = ["/".join(["/app", ctx.workspace_name])]
+    return app_layer_impl(ctx, runfiles = _app_runfiles, emptyfiles = _emptyfiles, emptydirs = empty_dirs)
 
 _app_layer = rule(
     attrs = app_layer_attrs,
@@ -104,6 +113,7 @@ def nodejs_image(
     **kwargs: See nodejs_binary.
   """
     binary_name = name + ".binary"
+    node_binary_name = binary_name + "_bin"
 
     nodejs_binary(
         name = binary_name,
@@ -115,6 +125,8 @@ def nodejs_image(
     layers = [
         # Put the Node binary into its own layer.
         "@nodejs//:node",
+        "@nodejs//:minimal_node_runfiles",
+        "@nodejs//:bin/node_args.sh",
         # node_modules can get large, it should be in its own layer.
         node_modules,
     ] + layers
@@ -124,7 +136,7 @@ def nodejs_image(
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        _dep_layer(name = this_name, base = base, dep = dep, binary = binary_name, agnostic_dep_layout = True)
+        _dep_layer(name = this_name, base = base, dep = dep, binary = node_binary_name, agnostic_dep_layout = True)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -133,7 +145,7 @@ def nodejs_image(
         name = name,
         base = base,
         agnostic_dep_layout = True,
-        binary = binary_name,
+        binary = node_binary_name,
         lang_layers = layers,
         visibility = visibility,
         tags = tags,
