@@ -32,7 +32,7 @@ container = struct(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.29"
+CONTAINERREGISTRY_RELEASE = "v0.0.30"
 
 _local_tool_build_template = """
 sh_binary(
@@ -85,9 +85,10 @@ def repositories():
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
-            urls = [("https://github.com/nowens03/containerregistry/archive/v0.0.33.tar.gz")],
-            sha256 = "c8f1d4a1fd1e2c1378dabe47de9cd055fe46ed7ab347c31d339f57e687f69826",
-            strip_prefix = "containerregistry-0.0.33",
+            urls = [("https://github.com/google/containerregistry/archive/" +
+                     CONTAINERREGISTRY_RELEASE + ".tar.gz")],
+            sha256 = "10fb9ffa1dde14c81f5c12593666bf1d9e9f53727b8cda9abeb0012d08e57fd1",
+            strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
