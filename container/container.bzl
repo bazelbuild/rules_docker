@@ -69,7 +69,7 @@ def repositories():
             name = "puller",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
-            sha256 = "e6722a4771431c72d20955abb5617a824e120f949853a156a9743cce0b88d097",
+            sha256 = "89a7c48df0fd5fb839d452599cc054a6550c18563394d4401428ab2e094d4f0b",
             executable = True,
         )
 
@@ -78,7 +78,7 @@ def repositories():
             name = "importer",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
-            sha256 = "2a330290ccbab447ce0f7a6c1135457662e161333dc0123faddb5cdbcb538ec6",
+            sha256 = "3c1f299df498b0712386c52e1eb5499e00d58143ae10fc4b5c12bf0deffb55b6",
             executable = True,
         )
 
