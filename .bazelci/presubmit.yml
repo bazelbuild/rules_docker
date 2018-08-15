@@ -35,6 +35,26 @@ platforms:
     - "--"
     - "..."
     - "-//tests/docker/..."
+  windows:
+    build_flags:
+    - "--copt=-w"
+    - "--host_copt=-w"
+    build_targets:
+    # We are running the skipped targets remotely only.
+    - "--"
+    - "..."
+    - "-//docker/..."
+    - "-//skylib/..."
+    - "-//tools/..."
+    test_flags:
+    - "--copt=-w"
+    - "--host_copt=-w"
+    test_targets:
+    # We are running the skipped targets remotely only.
+    - "--"
+    - "..."
+    - "-//tests/container/..."
+    - "-//tests/docker/..."
   # We are selecting to test only the targets that build on RBE
   # because the default image does not support `docker`.
   rbe_ubuntu1604:
