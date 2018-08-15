@@ -91,10 +91,10 @@ def _get_base_config(ctx, name, base):
         return l.get("config")
 
 def _get_base_manifest(ctx, name, base):
-  if ctx.files.base or base:
-    # The base is the first layer in container_parts if provided.
-    layer = _get_layers(ctx, name, ctx.attr.base, base)
-    return layer.get("manifest")
+    if ctx.files.base or base:
+        # The base is the first layer in container_parts if provided.
+        layer = _get_layers(ctx, name, ctx.attr.base, base)
+        return layer.get("manifest")
 
 def _image_config(
         ctx,
@@ -106,6 +106,7 @@ def _image_config(
         env = None,
         base_config = None,
         base_manifest = None,
+        architecture = None,
         operating_system = None,
         layer_name = None,
         workdir = None,
@@ -180,11 +181,14 @@ def _image_config(
         inputs += [base_config]
 
     if base_manifest:
-      args += ["--basemanifest=%s" % base_manifest.path]
-      inputs += [base_manifest]
+        args += ["--basemanifest=%s" % base_manifest.path]
+        inputs += [base_manifest]
+
+    if architecture:
+        args += ["--architecture=%s" % architecture]
 
     if operating_system:
-      args += ["--operating_system=%s" % operating_system]
+        args += ["--operating_system=%s" % operating_system]
 
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
@@ -229,6 +233,7 @@ def _impl(
         layers = None,
         debs = None,
         tars = None,
+        architecture = None,
         operating_system = None,
         output_executable = None,
         output_tarball = None,
@@ -255,6 +260,7 @@ def _impl(
     layers: label List, overrides ctx.attr.layers
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
+    architecture: Processor architecture to targ (e.g. amd64, arm64)
     operating_system: Operating system to target (e.g. linux, windows)
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
@@ -266,6 +272,7 @@ def _impl(
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
+    architecture = architecture or ctx.attr.architecture
     operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
     output_executable = output_executable or ctx.outputs.executable
@@ -323,6 +330,7 @@ def _impl(
             env = layer.env,
             base_config = config_file,
             base_manifest = manifest_file,
+            architecture = architecture,
             operating_system = operating_system,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
@@ -457,12 +465,19 @@ container_image_ = rule(
 # python list form.
 #
 # The Dockerfile construct:
-#   ENTRYPOINT "/foo"
+#   ENTRYPOINT "/foo" for Linux:
 # Results in:
 #   "Entrypoint": [
 #       "/bin/sh",
 #       "-c",
 #       "\"/foo\""
+#   ],
+#   ENTRYPOINT "foo" for Windows:
+# Results in:
+#   "Entrypoint": [
+#       "%WinDir%\system32\cmd.exe",
+#       "/c",
+#       "\"foo\""
 #   ],
 # Whereas:
 #   ENTRYPOINT ["/foo", "a"]
@@ -475,9 +490,9 @@ container_image_ = rule(
 def _validate_command(name, argument, operating_system):
     if type(argument) == type(""):
         if (operating_system == "windows"):
-          return ["cmd.exe", "/c", argument]
+            return ["%WinDir%\system32\cmd.exe", "/c", argument]
         else:
-          return ["/bin/sh", "-c", argument]
+            return ["/bin/sh", "-c", argument]
     elif type(argument) == type([]):
         return argument
     elif argument:
@@ -595,6 +610,11 @@ def container_image(**kwargs):
 
     if ("operating_system" in kwargs):
         operating_system = kwargs["operating_system"]
+        if operating_system != "linux" and operating_system != "windows":
+            fail(
+                "invalid operating_system(%s) specified. Must be 'linux' or 'windows'" % operating_system,
+                attr = operating_system,
+            )
 
     reserved_attrs = [
         "label_files",

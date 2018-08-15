@@ -83,12 +83,12 @@ def _container_import_impl(ctx):
         blobsums += [_sha256(ctx, zipped)]
         diff_ids += [_sha256(ctx, unzipped)]
 
-    manifest = ""
-    manifest_digest = ""
+    manifest = None
+    manifest_digest = None
 
-    if not (len(ctx.files.manifest) == 0):
-      manifest = ctx.files.manifest[0]
-      manifest_digest =_sha256(ctx, ctx.files.manifest[0])
+    if (len(ctx.files.manifest) > 0):
+        manifest = ctx.files.manifest[0]
+        manifest_digest = _sha256(ctx, ctx.files.manifest[0])
 
     # These are the constituent parts of the Container image, which each
     # rule in the chain must preserve.
@@ -98,9 +98,9 @@ def _container_import_impl(ctx):
         "config": ctx.files.config[0],
         "config_digest": _sha256(ctx, ctx.files.config[0]),
 
-      # The path to the optional v2.2 manifest file.
-      "manifest": manifest,
-      "manifest_digest": manifest_digest,
+        # The path to the optional v2.2 manifest file.
+        "manifest": manifest,
+        "manifest_digest": manifest_digest,
 
         # A list of paths to the layer .tar.gz files
         "zipped_layer": zipped_layers,
@@ -134,10 +134,14 @@ def _container_import_impl(ctx):
                  ]),
     )
     if (len(ctx.files.manifest) > 0):
-      runfiles = runfiles.merge(
-        ctx.runfiles(
-          files = ([container_parts["manifest"],
-                    container_parts["manifest_digest"]])))
+        runfiles = runfiles.merge(
+            ctx.runfiles(
+                files = ([
+                    container_parts["manifest"],
+                    container_parts["manifest_digest"],
+                ]),
+            ),
+        )
 
     return struct(
         container_parts = container_parts,
@@ -157,7 +161,7 @@ container_import = rule(
     attrs = dict({
         "config": attr.label(allow_files = [".json"]),
         "manifest": attr.label(allow_files = [".json"], mandatory = False),
-        "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype, mandatory = False),
+        "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype, mandatory = True),
         "repository": attr.string(default = "bazel"),
     }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items()),
     executable = True,

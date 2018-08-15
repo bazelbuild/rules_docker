@@ -143,19 +143,20 @@ container_test(
 container_import(
     name = "import_windows_base_image",
     config = "windowsservercore.1803.config.json",
+    layers = [],
     manifest = "windowsservercore.1803.manifest.json",
 )
 
 container_image(
     name = "basic_windows_image",
     base = ":import_windows_base_image",
-    cmd = ['echo bar'],
+    cmd = ["echo bar"],
     operating_system = "windows",
 )
 
 container_test(
     name = "basic_windows_image_test",
     configs = ["//tests/docker/configs:windows_image.yaml"],
-    driver = 'tar',
+    driver = "tar",
     image = ":basic_windows_image",
 )

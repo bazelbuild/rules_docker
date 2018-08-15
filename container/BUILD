@@ -77,8 +77,8 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "@bazel_tools//third_party/py/gflags",
         ":archive",
+        "@bazel_tools//third_party/py/gflags",
     ],
 )
 

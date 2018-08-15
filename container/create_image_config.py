@@ -32,7 +32,7 @@ parser.add_argument('--base', action='store',
                     help='The parent image.')
 
 parser.add_argument('--basemanifest', action='store',
-                    help='The parent image.')
+                    help='The parent image manifest.')
 
 parser.add_argument('--output', action='store', required=True,
                     help='The output file to generate.')
@@ -86,6 +86,7 @@ parser.add_argument('--architecture', action='store', default='amd64',
                     help=('Architecture to create docker image for, e.g. {amd64}'))
 
 parser.add_argument('--operating_system', action='store', default='linux',
+                    choices=['linux', 'windows'],
                     help=('Operating system to create docker image for, e.g. {linux}'))
 
 def KeyValueToDict(pair):

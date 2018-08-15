@@ -42,7 +42,9 @@ gflags.DEFINE_string(
 gflags.DEFINE_multistring(
     'empty_root_dir',
     [],
-    'An empty dir to add to the layer')
+    'An empty root directory to add to the layer.  This will create a directory that'
+    'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
+    '"root_directory"')
 
 gflags.DEFINE_multistring('tar', [], 'A tar file to add to the layer')
 
@@ -83,7 +85,8 @@ gflags.DEFINE_multistring('owner_names', None,
                           'path/to/file=root.root.')
 
 gflags.DEFINE_string(
-    'root_directory', './', 'Default root directory is named "."')
+    'root_directory', './', 'Default root directory is named "."'
+    'Windows docker images require this be named "Files" instead of "."')
 
 FLAGS = gflags.FLAGS
 

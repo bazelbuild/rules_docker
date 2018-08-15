@@ -85,12 +85,15 @@ def build_layer(
         "--mode=" + ctx.attr.mode,
     ]
 
-    if (operating_system == 'windows'):
-      args += ["--root_directory=Files"]
-      empty_root_dirs = ['Files', 'Hives']
-      args += ["--empty_root_dir=%s" % f for f in empty_root_dirs or []]
-      args += ["--modes=Hives=40777"]
-      args += ["--modes=Files=40777"]
+    # Windows layer.tar require two separate root directories instead of just 1
+    # 'Files' is the equivalent of '.' in Linux images.
+    # 'Hives' is unique to Windows Docker images.  It is where per layer registry
+    # changes are stored.  rules_docker doesn't support registry deltas, but the
+    # directory is required for compatibility on Windows.
+    if (operating_system == "windows"):
+        args += ["--root_directory=Files"]
+        empty_root_dirs = ["Files", "Hives"]
+        args += ["--empty_root_dir=%s" % f for f in empty_root_dirs or []]
 
     args += ["--file=%s=%s" % (f.path, _magic_path(ctx, f, layer)) for f in files]
     args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
@@ -174,7 +177,7 @@ def _impl(
         symlinks = symlinks,
         debs = debs,
         tars = tars,
-        operating_system = operating_system
+        operating_system = operating_system,
     )
 
     # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
@@ -206,8 +209,8 @@ _layer_attrs = dict({
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "empty_dirs": attr.string_list(),
-    "architecture": attr.string(default="amd64", mandatory = False),
-    "operating_system": attr.string(default="linux", mandatory = False),
+    "architecture": attr.string(default = "amd64", mandatory = False),
+    "operating_system": attr.string(default = "linux", mandatory = False),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",

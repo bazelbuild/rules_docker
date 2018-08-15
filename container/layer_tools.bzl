@@ -69,15 +69,14 @@ def assemble(ctx, images, output, stamp = False):
         ]
 
         if image.get("manifest"):
-          args += [
-            "--manifests=" + tag + "=@" + image["manifest"].path
-          ]
+            args += [
+                "--manifests=" + tag + "=@" + image["manifest"].path,
+            ]
 
         inputs += [image["config"]]
 
         if image.get("manifest"):
-          inputs += [image["manifest"]]
-
+            inputs += [image["manifest"]]
 
         for i in range(0, len(image["diff_id"])):
             args += [

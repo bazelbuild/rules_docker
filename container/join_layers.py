@@ -70,7 +70,6 @@ class FromParts(v2_2_image.DockerImage):
                blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy):
     self._config = config_file
     self._manifest = manifest_file
-    self._blobsum_to_diffid = {}
     self._blobsum_to_unzipped = blobsum_to_unzipped
     self._blobsum_to_zipped = blobsum_to_zipped
     self._blobsum_to_legacy = blobsum_to_legacy
@@ -78,9 +77,6 @@ class FromParts(v2_2_image.DockerImage):
     config = json.loads(self._config)
 
     content = self.config_file().encode('utf-8')
-
-    for i, diff_id in enumerate(diffid_to_blobsum):
-      self._blobsum_to_diffid[diffid_to_blobsum.values()[i]] = diff_id
 
     self._manifest = json.dumps({
         'schemaVersion': 2,
@@ -126,7 +122,6 @@ class FromParts(v2_2_image.DockerImage):
 
   def blob_size(self, digest):
     """Override."""
-    diff_id = self._blobsum_to_diffid[digest]
     if self.blobsum_to_media_type(digest) == docker_http.FOREIGN_LAYER_MIME:
       return self.blobsum_to_manifest_layer(digest)['size']
     elif digest not in self._blobsum_to_zipped:
@@ -201,24 +196,32 @@ def create_bundle(output, tag_to_config, tag_to_manifest, diffid_to_blobsum,
 
     v2_2_save.multi_image_tarball(tag_to_image, tar)
 
-def create_tag_to_file(stamp_info, tags):
-  tag_to_file = {}
+def create_tag_to_file_content_map(stamp_info, tag_file_pairs):
+  """
+    Creates a Docker image tag to file content map.
 
-  if tags:
-    for entry in tags:
+    Args:
+      stamp_info - Tag substitutions to make in the input tags, e.g. {BUILD_USER}
+      tag_file_pairs - List of input tags and file names
+          (e.g. ...:image=@bazel-out/...image.0.config)
+  """
+  tag_to_file_content = {}
+
+  if tag_file_pairs:
+    for entry in tag_file_pairs:
       elts = entry.split('=')
       if len(elts) != 2:
         raise Exception('Expected associative list key=value, got: %s' % entry)
-      (fq_tag, config_filename) = elts
+      (fq_tag, filename) = elts
 
       formatted_tag = fq_tag.format(**stamp_info)
       tag = docker_name.Tag(formatted_tag, strict=False)
-      config_file = utils.ExtractValue(config_filename)
+      file_contents = utils.ExtractValue(filename)
 
       # Add the mapping in one direction.
-      tag_to_file[tag] = config_file
+      tag_to_file_content[tag] = file_contents
 
-  return tag_to_file
+  return tag_to_file_content
 
 def main():
   args = parser.parse_args()
@@ -241,8 +244,8 @@ def main():
                    "using '%s'" % (key, value))
           stamp_info[key] = value
 
-  tag_to_config = create_tag_to_file(stamp_info, args.tags)
-  tag_to_manifest = create_tag_to_file(stamp_info, args.manifests)
+  tag_to_config = create_tag_to_file_content_map(stamp_info, args.tags)
+  tag_to_manifest = create_tag_to_file_content_map(stamp_info, args.manifests)
 
   # Do this first so that if there is overlap with the loop below it wins.
   blobsum_to_legacy = {}
@@ -272,6 +275,16 @@ def main():
       blobsum_to_zipped[blob_sum] = zipped_filename
 
   # add foreign layers
+  #
+  # Windows base images distributed by Microsoft are using foreign layers.
+  # Foreign layers are not stored in the Docker repository like normal layers.
+  # Instead they include a list of URLs where the layer can be downloaded.
+  # This is done because Windows base images are large (2+GB).  When someone
+  # pulls a Windows image, it downloads the foreign layers from those URLs
+  # instead of requesting the blob from the registry.
+  # When adding foreign layers through bazel, the actual layer blob is not
+  # present on the system.  Instead the base image manifest is used to
+  # describe the parent image layers.
   for tag, manifest_file in tag_to_manifest.items():
     manifest = json.loads(manifest_file)
     if 'layers' in manifest:
