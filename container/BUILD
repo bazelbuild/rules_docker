@@ -64,20 +64,13 @@ py_binary(
     ],
 )
 
-py_library(
-    name = "archive",
-    srcs = ["archive.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-)
-
 py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":archive",
+        "@bazel_source//tools/build_defs/pkg:archive",
         "@bazel_tools//third_party/py/gflags",
     ],
 )

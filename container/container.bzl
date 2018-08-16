@@ -91,6 +91,14 @@ def repositories():
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
+    # TODO(nichow): Remove after bazel 0.17.0 is released
+    if "bazel_source" not in excludes:
+        http_archive(
+            name = "bazel_source",
+            urls = [("https://releases.bazel.build/0.17.0/rc1/bazel-0.17.0rc1-dist.zip")],
+            sha256 = "a9afd2b16a21085bd6c0a70a23acce30b105a8af3a7b3c92a4b83bea6b623fd8",
+        )
+
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
     # once transitive workspace instantiation lands.
 

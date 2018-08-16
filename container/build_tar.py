@@ -24,7 +24,7 @@ import re
 import tarfile
 import tempfile
 
-import archive
+from bazel_source.tools.build_defs.pkg import archive
 from third_party.py import gflags
 
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
