@@ -34,6 +34,19 @@ load(
     _JETTY_DIGESTS = "DIGESTS",
 )
 
+load(
+    "//container:container.bzl",
+    _container = "container",
+)
+
+load(
+    "//lang:image.bzl",
+    "dep_layer_impl",
+    "layer_file_path",
+    "runfiles_dir",
+)
+
+
 def repositories():
     # Call the core "repositories" function to reduce boilerplate.
     # This is idempotent if folks call it themselves.
@@ -88,10 +101,7 @@ DEFAULT_JETTY_BASE = select({
     "//conditions:default": "@jetty_image_base//image",
 })
 
-load(
-    "//container:container.bzl",
-    _container = "container",
-)
+
 
 def java_files(f):
     files = []
@@ -101,13 +111,6 @@ def java_files(f):
     if hasattr(f, "files"):  # a jar file
         files += list(f.files)
     return files
-
-load(
-    "//lang:image.bzl",
-    "dep_layer_impl",
-    "layer_file_path",
-    "runfiles_dir",
-)
 
 def _jar_dep_layer_impl(ctx):
     """Appends a layer for a single dependency's runfiles."""
