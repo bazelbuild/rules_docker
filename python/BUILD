@@ -14,3 +14,9 @@
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+py_runtime(
+    name = "py_runtime_2",
+    files = [],
+    interpreter_path = "/usr/bin/python2",
+)
