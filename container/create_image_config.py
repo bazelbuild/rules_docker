@@ -31,8 +31,14 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--base', action='store',
                     help='The parent image.')
 
+parser.add_argument('--basemanifest', action='store',
+                    help='The parent image manifest.')
+
 parser.add_argument('--output', action='store', required=True,
                     help='The output file to generate.')
+
+parser.add_argument('--manifestoutput', action='store', required=False,
+                    help='The manifest output file to generate.')
 
 parser.add_argument('--layer', action='append', default=[],
                     help='Layer sha256 hashes that make up this image')
@@ -76,10 +82,11 @@ parser.add_argument('--null_entrypoint', action='store', default=False,
 parser.add_argument('--null_cmd', action='store', default=False,
                     help='If True, "Cmd" will be set to null.')
 
+parser.add_argument('--operating_system', action='store', default='linux',
+                    choices=['linux', 'windows'],
+                    help=('Operating system to create docker image for, e.g. {linux}'))
+
 _PROCESSOR_ARCHITECTURE = 'amd64'
-
-_OPERATING_SYSTEM = 'linux'
-
 
 def KeyValueToDict(pair):
   """Converts an iterable object of key=value pairs to dictionary."""
@@ -122,6 +129,12 @@ def main():
     with open(args.base, 'r') as r:
       base_json = r.read()
   data = json.loads(base_json)
+
+  base_manifest_json = '{}'
+  if args.basemanifest:
+    with open(args.basemanifest, 'r') as r:
+      base_manifest_json = r.read()
+  manifestdata = json.loads(base_manifest_json)
 
   layers = []
   for layer in args.layer:
@@ -172,7 +185,7 @@ def main():
       },
       ports=args.ports, volumes=args.volumes, workdir=Stamp(args.workdir)),
                                   architecture=_PROCESSOR_ARCHITECTURE,
-                                  operating_system=_OPERATING_SYSTEM)
+                                  operating_system=args.operating_system)
 
   if ('config' in output and 'Cmd' in output['config'] and
       args.null_cmd == "True"):
@@ -186,6 +199,10 @@ def main():
     json.dump(output, fp, sort_keys=True)
     fp.write('\n')
 
+  if (args.manifestoutput):
+    with open(args.manifestoutput, 'w') as fp:
+      json.dump(manifestdata, fp, sort_keys=False)
+      fp.write('\n')
 
 if __name__ == '__main__':
   main()

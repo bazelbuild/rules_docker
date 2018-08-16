@@ -125,13 +125,18 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     intermediate_image_name = "%s:intermediate" % sanitized_name
     image_tar_name = "intermediate_bundle_%s" % name
 
-    # Give the image a predictable name when loaded
-    container_bundle(
-        name = image_tar_name,
-        images = {
-            intermediate_image_name: image,
-        },
-    )
+    if driver == "tar":
+        intermediate_image_name = image
+        image_tar_name = image
+    else:
+        # Give the image a predictable name when loaded
+        container_bundle(
+            name = image_tar_name,
+            images = {
+                intermediate_image_name: image,
+            },
+        )
+
     _container_test(
         name = name,
         image_name = intermediate_image_name,

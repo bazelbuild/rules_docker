@@ -24,7 +24,7 @@ import re
 import tarfile
 import tempfile
 
-from tools.build_defs.pkg import archive
+from bazel_source.tools.build_defs.pkg import archive
 from third_party.py import gflags
 
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
@@ -38,6 +38,13 @@ gflags.DEFINE_multistring('empty_dir', [], 'An empty dir to add to the layer')
 
 gflags.DEFINE_string(
     'mode', None, 'Force the mode on the added files (in octal).')
+
+gflags.DEFINE_multistring(
+    'empty_root_dir',
+    [],
+    'An empty root directory to add to the layer.  This will create a directory that'
+    'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
+    '"root_directory"')
 
 gflags.DEFINE_multistring('tar', [], 'A tar file to add to the layer')
 
@@ -77,6 +84,10 @@ gflags.DEFINE_multistring('owner_names', None,
                           'Specify the owner names of individual files, e.g. '
                           'path/to/file=root.root.')
 
+gflags.DEFINE_string(
+    'root_directory', './', 'Default root directory is named "."'
+    'Windows docker images require this be named "Files" instead of "."')
+
 FLAGS = gflags.FLAGS
 
 
@@ -98,13 +109,18 @@ class TarFile(object):
     else:
       return os.path.basename(os.path.splitext(filename)[0])
 
-  def __init__(self, output, directory, compression):
+  def __init__(self, output, directory, compression, root_directory):
     self.directory = directory
     self.output = output
     self.compression = compression
+    self.root_directory = root_directory
 
   def __enter__(self):
-    self.tarfile = archive.TarFileWriter(self.output, self.compression)
+    self.tarfile = archive.TarFileWriter(
+        self.output,
+        self.compression,
+        self.root_directory
+    )
     return self
 
   def __exit__(self, t, v, traceback):
@@ -187,6 +203,23 @@ class TarFile(object):
     """
     self.add_empty_file(destpath, mode=mode, ids=ids, names=names,
                         kind=tarfile.DIRTYPE)
+
+  def add_empty_root_dir(self, destpath, mode=None, ids=None, names=None):
+    """Add a directory to the root of the tar file.
+
+    Args:
+       destpath: the name of the directory in the layer
+       mode: force to set the specified mode, defaults to 644
+       ids: (uid, gid) for the file to set ownership
+       names: (username, groupname) for the file to set ownership.
+
+    An empty directory will be created as `destfile` in the root layer.
+    """
+    original_root_directory = self.tarfile.root_directory
+    self.tarfile.root_directory = destpath
+    self.add_empty_dir(
+        destpath, mode=mode, ids=ids, names=names)
+    self.tarfile.root_directory = original_root_directory
 
   def add_tar(self, tar):
     """Merge a tar file into the destination tar file.
@@ -358,7 +391,7 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression) as output:
+  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory) as output:
     def file_attributes(filename):
       if filename[0] == '/':
         filename = filename[1:]
@@ -375,6 +408,8 @@ def main(unused_argv):
       output.add_empty_file(f, **file_attributes(f))
     for f in FLAGS.empty_dir:
       output.add_empty_dir(f, **file_attributes(f))
+    for f in FLAGS.empty_root_dir:
+      output.add_empty_root_dir(f, **file_attributes(f))
     for tar in FLAGS.tar:
       output.add_tar(tar)
     for deb in FLAGS.deb:

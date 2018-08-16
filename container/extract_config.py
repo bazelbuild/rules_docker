@@ -27,6 +27,8 @@ parser.add_argument('--tarball', action='store', required=True,
 parser.add_argument('--output', action='store', required=True,
                     help='The output file to which we write the config.')
 
+parser.add_argument('--manifestoutput', action='store', required=True,
+                    help='The output file to which we write the manifest.')
 
 # Main program to create a docker image. It expect to be run with:
 #   extract_config --tarball=image.tar \
@@ -37,6 +39,8 @@ def main():
   with docker_image.FromTarball(args.tarball) as img:
     with open(args.output, 'w') as f:
       f.write(img.config_file())
+    with open(args.manifestoutput, 'w') as f:
+      f.write(img.manifest())
 
 
 if __name__ == '__main__':

@@ -1,0 +1,27 @@
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+    "config": {
+       "mediaType": "application/vnd.docker.container.image.v1+json",
+       "size": 784,
+       "digest": "sha256:fc9cd8b52f1abe17698bbb770a259ad8d86af3ad9f4f9f29e11e68a4666679cc"
+    },
+    "layers": [
+       {
+          "mediaType": "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip",
+          "size": 1659688273,
+          "digest": "sha256:d9e8b01179bfc94a5bdb1810fbd76b999aa52016001ace2d3a4c4bc7065a9601",
+          "urls": [
+             "https://go.microsoft.com/fwlink/?linkid=873595"
+          ]
+       },
+       {
+          "mediaType": "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip",
+          "size": 493521205,
+          "digest": "sha256:e30fefc566f71c5dd5786e4783ff4ae3ad98804d5279c14dcf806c813fdf8f66",
+          "urls": [
+             "https://go.microsoft.com/fwlink/?linkid=2005408"
+          ]
+       }
+    ]
+ }

@@ -20,6 +20,7 @@ load(
 
 def _extract_layers(ctx, name, artifact):
     config_file = ctx.new_file(name + "." + artifact.basename + ".config")
+    manifest_file = ctx.new_file(name + "." + artifact.basename + ".manifest")
     ctx.action(
         executable = ctx.executable.extract_config,
         arguments = [
@@ -27,9 +28,11 @@ def _extract_layers(ctx, name, artifact):
             artifact.path,
             "--output",
             config_file.path,
+            "--manifestoutput",
+            manifest_file.path,
         ],
         inputs = [artifact],
-        outputs = [config_file],
+        outputs = [config_file, manifest_file],
         mnemonic = "ExtractConfig",
     )
     return {
@@ -38,6 +41,7 @@ def _extract_layers(ctx, name, artifact):
         # I believe we would for a checked in tarball to be usable
         # with docker_bundle + bazel run.
         "legacy": artifact,
+        "manifest": manifest_file,
     }
 
 def get_from_target(ctx, name, attr_target, file_target = None):
@@ -63,7 +67,16 @@ def assemble(ctx, images, output, stamp = False):
         args += [
             "--tags=" + tag + "=@" + image["config"].path,
         ]
+
+        if image.get("manifest"):
+            args += [
+                "--manifests=" + tag + "=@" + image["manifest"].path,
+            ]
+
         inputs += [image["config"]]
+
+        if image.get("manifest"):
+            inputs += [image["manifest"]]
 
         for i in range(0, len(image["diff_id"])):
             args += [
