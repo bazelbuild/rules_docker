@@ -1,0 +1,44 @@
+{
+    "architecture": "amd64",
+    "config": {
+        "Hostname": "",
+        "Domainname": "",
+        "User": "",
+        "AttachStdin": false,
+        "AttachStdout": false,
+        "AttachStderr": false,
+        "Tty": false,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Env": null,
+        "Cmd": [
+            "c:\\windows\\system32\\cmd.exe"
+        ],
+        "Image": "",
+        "Volumes": null,
+        "WorkingDir": "",
+        "Entrypoint": null,
+        "OnBuild": null,
+        "Labels": null
+    },
+    "created": "2018-07-10T15:03:09.8411592-07:00",
+    "history": [
+        {
+            "created": "2018-04-12T09:20:54.053Z",
+            "created_by": "Apply image 10.0.17134.1"
+        },
+        {
+            "created": "2018-07-07T22:48:41.6201766Z",
+            "created_by": "Install update 10.0.17134.165"
+        }
+    ],
+    "os": "windows",
+    "os.version": "10.0.17134.165",
+    "rootfs": {
+        "type": "layers",
+        "diff_ids": [
+            "sha256:70bba925263c1c193fa7bc7f79b1aa062707b09fe7774c7896b8aaf091b901a9",
+            "sha256:aa10afa36c78a1a1775d9bb44d90cfe5cfe3f93fd6b48cba8a2586661a0e4da6"
+        ]
+    }
+}

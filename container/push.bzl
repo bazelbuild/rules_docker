@@ -56,6 +56,7 @@ def _impl(ctx):
     blobs = image.get("zipped_layer", [])
     layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
     config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
+    manifest_arg = "--manifest=%s" % _get_runfile_path(ctx, image["manifest"])
 
     ctx.template_action(
         template = ctx.file._tag_tpl,
@@ -78,9 +79,10 @@ def _impl(ctx):
                 ),
             ),
             "%{stamp}": stamp_arg,
-            "%{image}": "%s %s %s %s" % (
+            "%{image}": "%s %s %s %s %s" % (
                 legacy_base_arg,
                 config_arg,
+                manifest_arg,
                 digest_arg,
                 layer_arg,
             ),
@@ -95,6 +97,7 @@ def _impl(ctx):
         files = [
                     ctx.executable._pusher,
                     image["config"],
+                    image["manifest"],
                 ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
                 stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
                 list(ctx.attr._pusher.default_runfiles.files),
