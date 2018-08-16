@@ -82,12 +82,11 @@ parser.add_argument('--null_entrypoint', action='store', default=False,
 parser.add_argument('--null_cmd', action='store', default=False,
                     help='If True, "Cmd" will be set to null.')
 
-parser.add_argument('--architecture', action='store', default='amd64',
-                    help=('Architecture to create docker image for, e.g. {amd64}'))
-
 parser.add_argument('--operating_system', action='store', default='linux',
                     choices=['linux', 'windows'],
                     help=('Operating system to create docker image for, e.g. {linux}'))
+
+_PROCESSOR_ARCHITECTURE = 'amd64'
 
 def KeyValueToDict(pair):
   """Converts an iterable object of key=value pairs to dictionary."""
@@ -185,7 +184,7 @@ def main():
         for (k, v) in six.iteritems(KeyValueToDict(args.env))
       },
       ports=args.ports, volumes=args.volumes, workdir=Stamp(args.workdir)),
-                                  architecture=args.architecture,
+                                  architecture=_PROCESSOR_ARCHITECTURE,
                                   operating_system=args.operating_system)
 
   if ('config' in output and 'Cmd' in output['config'] and

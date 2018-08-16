@@ -209,7 +209,6 @@ _layer_attrs = dict({
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "empty_dirs": attr.string_list(),
-    "architecture": attr.string(default = "amd64", mandatory = False),
     "operating_system": attr.string(default = "linux", mandatory = False),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
