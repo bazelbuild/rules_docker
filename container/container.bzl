@@ -32,7 +32,7 @@ container = struct(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.28"
+CONTAINERREGISTRY_RELEASE = "v0.0.30"
 
 _local_tool_build_template = """
 sh_binary(
@@ -69,7 +69,7 @@ def repositories():
             name = "puller",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
-            sha256 = "c834a311a1d2ade959c38c262dfead3b180ba022d196c4a96453d4bfa01e83da",
+            sha256 = "89a7c48df0fd5fb839d452599cc054a6550c18563394d4401428ab2e094d4f0b",
             executable = True,
         )
 
@@ -78,7 +78,7 @@ def repositories():
             name = "importer",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
-            sha256 = "19643df59bb1dc750e97991e7071c601aa2debe94f6ad72e5f23ab8ae77da46f",
+            sha256 = "3c1f299df498b0712386c52e1eb5499e00d58143ae10fc4b5c12bf0deffb55b6",
             executable = True,
         )
 
@@ -87,8 +87,16 @@ def repositories():
             name = "containerregistry",
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
-            sha256 = "07b9d06e46a9838bef712116bbda7e094ede37be010c1f8c0a3f32f2eeca6384",
+            sha256 = "10fb9ffa1dde14c81f5c12593666bf1d9e9f53727b8cda9abeb0012d08e57fd1",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
+        )
+
+    # TODO(nichow): Remove after bazel 0.17.0 is released
+    if "bazel_source" not in excludes:
+        http_archive(
+            name = "bazel_source",
+            urls = [("https://releases.bazel.build/0.17.0/rc1/bazel-0.17.0rc1-dist.zip")],
+            sha256 = "a9afd2b16a21085bd6c0a70a23acce30b105a8af3a7b3c92a4b83bea6b623fd8",
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
