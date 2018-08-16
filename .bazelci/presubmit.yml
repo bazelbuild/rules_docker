@@ -9,11 +9,8 @@ platforms:
     - "-//skylib/..."
     - "-//tools/..."
     test_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//tests/container/..."
-    - "-//tests/docker/..."
+    # We are running all other test targets remotely only.
+    - "//container:image_test"
   ubuntu1604:
     build_targets:
     # We are running the skipped targets remotely only.
@@ -23,11 +20,8 @@ platforms:
     - "-//skylib/..."
     - "-//tools/..."
     test_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//tests/container/..."
-    - "-//tests/docker/..."
+    # We are running all other test targets remotely only.
+    - "//container:image_test"
   macos:
     build_targets:
     - "..."
@@ -149,13 +143,8 @@ platforms:
     test_targets:
     - "--"
     - "//tests/..."
-    - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
-    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
-    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
-    - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
-    - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
-    - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     test_flags:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
+    - "--action_env=CC=/usr/local/bin/clang"
