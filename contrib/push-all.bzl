@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of container_push based on google/containerregistry.
+"""An implementation of container_push based on google/go-containerregistry.
 
 This variant of container_push accepts a container_bundle target and publishes
 the embedded image references.
@@ -119,7 +119,7 @@ container_push = rule(
             allow_files = True,
         ),
         "_pusher": attr.label(
-            default = Label("@containerregistry//:pusher"),
+            default = Label("//container/pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,
