@@ -198,8 +198,7 @@ def incremental_load(
 tools = {
     "incremental_load_template": attr.label(
         default = Label("//container:incremental_load_template"),
-        single_file = True,
-        allow_files = True,
+        allow_single_file = True,
     ),
     "join_layers": attr.label(
         default = Label("//container:join_layers"),
