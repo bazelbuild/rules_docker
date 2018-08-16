@@ -15,7 +15,6 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-
 # Python2 is a dependency of rules_docker due to its dependency on
 # containerregistry. To run builds on environments in which 'which python'
 # points to python3, you can use the py_runtime target below.
