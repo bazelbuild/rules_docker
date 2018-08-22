@@ -96,7 +96,7 @@ def repositories():
         http_archive(
             name = "bazel_source",
             urls = [("https://releases.bazel.build/0.17.0/rc1/bazel-0.17.0rc1-dist.zip")],
-            sha256 = "a9afd2b16a21085bd6c0a70a23acce30b105a8af3a7b3c92a4b83bea6b623fd8",
+            sha256 = "46dfffac884ccd51fcb493dd86463cb8c21be949fdb17634ca37805fd544beae",
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
