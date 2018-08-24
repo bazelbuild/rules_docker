@@ -677,6 +677,24 @@ py3_image(
     main = "py3_image.py",
 )
 
+container_image(
+    name = "py3_image_base_with_custom_run_flags",
+    base = "@py3_image_base//image",
+    cmd = ["-V"],
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+py3_image(
+    name = "py3_image_with_custom_run_flags",
+    srcs = ["py3_image.py"],
+    base = ":py3_image_base_with_custom_run_flags",
+    layers = [
+        ":py_image_library",
+    ],
+    main = "py3_image.py",
+)
+
 load("//cc:image.bzl", "cc_image")
 
 cc_library(
@@ -757,9 +775,42 @@ java_image(
     runtime_deps = [":java_bin_as_lib"],
 )
 
+container_image(
+    name = "java_image_base_with_custom_run_flags",
+    base = "@java_image_base//image",
+    cmd = ["-version"],
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+java_image(
+    name = "java_image_with_custom_run_flags",
+    base = ":java_image_base_with_custom_run_flags",
+    main_class = "examples.images.Binary",
+    runtime_deps = [":java_bin_as_lib"],
+)
+
 war_image(
     name = "war_image",
     srcs = ["Servlet.java"],
+    layers = [
+        ":java_image_library",
+        "@javax_servlet_api//jar:jar",
+    ],
+)
+
+container_image(
+    name = "war_image_base_with_custom_run_flags",
+    base = "@jetty_image_base//image",
+    cmd = ["-version"],
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+war_image(
+    name = "war_image_with_custom_run_flags",
+    srcs = ["Servlet.java"],
+    base = ":war_image_base_with_custom_run_flags",
     layers = [
         ":java_image_library",
         "@javax_servlet_api//jar:jar",

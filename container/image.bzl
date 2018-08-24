@@ -235,7 +235,9 @@ def _impl(
         output_layer = None,
         workdir = None,
         null_cmd = None,
-        null_entrypoint = None):
+        null_entrypoint = None,
+        legacy_run_behavior = None,
+        docker_run_flags = None):
     """Implementation for the container_image rule.
 
   Args:
@@ -262,6 +264,8 @@ def _impl(
     workdir: str, overrides ctx.attr.workdir
     null_cmd: bool, overrides ctx.attr.null_cmd
     null_entrypoint: bool, overrides ctx.attr.null_entrypoint
+    legacy_run_behavior: bool, overrides ctx.attr.legacy_run_behavior
+    docker_run_flags: str, overrides ctx.attr.docker_run_flags
   """
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
@@ -273,6 +277,8 @@ def _impl(
     output_layer = output_layer or ctx.outputs.layer
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
+    legacy_run_behavior = legacy_run_behavior or ctx.attr.legacy_run_behavior
+    docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
 
     # composite a layer from the container_image rule attrs,
     image_layer = _layer.implementation(
@@ -369,8 +375,8 @@ def _impl(
         ctx,
         images,
         output_executable,
-        run = not ctx.attr.legacy_run_behavior,
-        run_flags = ctx.attr.docker_run_flags,
+        run = not legacy_run_behavior,
+        run_flags = docker_run_flags,
     )
     _assemble_image(ctx, images, output_tarball)
 
@@ -384,6 +390,8 @@ def _impl(
         providers = [
             ImageInfo(
                 container_parts = container_parts,
+                legacy_run_behavior = legacy_run_behavior,
+                docker_run_flags = docker_run_flags,
             ),
             DefaultInfo(
                 executable = output_executable,
