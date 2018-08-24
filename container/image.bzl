@@ -272,7 +272,7 @@ def _impl(
     output_tarball = output_tarball or ctx.outputs.out
     output_layer = output_layer or ctx.outputs.layer
     null_cmd = null_cmd or ctx.attr.null_cmd
-    null_entrypoint = ctx.attr.null_entrypoint
+    null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
 
     # composite a layer from the container_image rule attrs,
     image_layer = _layer.implementation(
