@@ -14,16 +14,16 @@
 import sys
 import os
 
-from testdata import py3_image_library
+from testdata import py_image_library
 
 def main():
   """
   This method expects a valid file path as its third arg.
   """
-  print('First: %d' % py3_image_library.fn(1))
-  print('Second: %d' % py3_image_library.fn(2))
-  print('Third: %d' % py3_image_library.fn(3))
-  print('Fourth: %d' % py3_image_library.fn(4))
+  print('First: %d' % py_image_library.fn(1))
+  print('Second: %d' % py_image_library.fn(2))
+  print('Third: %d' % py_image_library.fn(3))
+  print('Fourth: %d' % py_image_library.fn(4))
   print(sys.argv)
   if len(sys.argv) > 1:
     print(os.stat(sys.argv[2]))
