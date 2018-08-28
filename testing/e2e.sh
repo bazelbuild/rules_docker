@@ -16,6 +16,23 @@ set -e
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
+TARGETS_TO_SKIP=(
+  "//testdata:py3_image_base_with_custom_run_flags"
+  "//testdata:java_image_base_with_custom_run_flags"
+  "//testdata:war_image_base_with_custom_run_flags"
+)
+
+function SHOULD_SKIP() {
+  local match="${1}"
+  for i in "${TARGETS_TO_SKIP[@]}"
+  do
+    if [[ "$i" == "$match" ]]; then
+      echo 0
+      return
+    fi
+  done
+  echo 1
+}
 
 function fail() {
   echo "FAILURE: $1"
@@ -116,10 +133,12 @@ function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
   for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
-    clear_docker
-    bazel build $target
-    # Replace : with /
-    ./bazel-bin/${target/://}
+    if [[ $(SHOULD_SKIP $target "${CONTAINER_IMAGE_TARGETS_TO_SKIP[@]}") -eq 1 ]]; then
+      clear_docker
+      bazel build $target
+      # Replace : with /
+      ./bazel-bin/${target/://}
+    fi
   done
 }
 
@@ -127,8 +146,10 @@ function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
   for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
-    clear_docker
-    bazel run $target
+    if [[ $(SHOULD_SKIP $target "${CONTAINER_IMAGE_TARGETS_TO_SKIP[@]}") -eq 1 ]]; then
+      clear_docker
+      bazel run $target
+    fi
   done
 }
 
@@ -155,7 +176,9 @@ function test_bazel_run_docker_build_incremental() {
   clear_docker
   for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
-    bazel run $target
+    if [[ $(SHOULD_SKIP $target "${CONTAINER_IMAGE_TARGETS_TO_SKIP[@]}") -eq 1 ]]; then
+      bazel run $target
+    fi
   done
 }
 
