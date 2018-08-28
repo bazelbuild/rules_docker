@@ -40,7 +40,6 @@ load(
     ":jetty.bzl",
     _JETTY_DIGESTS = "DIGESTS",
 )
-load("//container:providers.bzl", "ImageInfo")
 
 def repositories():
     # Call the core "repositories" function to reduce boilerplate.
@@ -182,14 +181,6 @@ def _jar_app_layer_impl(ctx):
         for f in unavailable + [classpath_file]
     }
 
-    # legacy_run_behavior and docker_run_flags from base override those from
-    # ctx.
-    legacy_run_behavior = ctx.attr.legacy_run_behavior
-    docker_run_flags = ctx.attr.docker_run_flags
-    if ImageInfo in ctx.attr.base:
-        legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
-        docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
-
     return _container.image.implementation(
         ctx,
         # We use all absolute paths.
@@ -197,8 +188,6 @@ def _jar_app_layer_impl(ctx):
         file_map = file_map,
         entrypoint = entrypoint,
         workdir = workdir,
-        legacy_run_behavior = legacy_run_behavior,
-        docker_run_flags = docker_run_flags,
     )
 
 jar_app_layer = rule(
@@ -294,22 +283,12 @@ def java_image(
 def _war_dep_layer_impl(ctx):
     """Appends a layer for a single dependency's runfiles."""
 
-    # legacy_run_behavior and docker_run_flags from base override those from
-    # ctx.
-    legacy_run_behavior = ctx.attr.legacy_run_behavior
-    docker_run_flags = ctx.attr.docker_run_flags
-    if ImageInfo in ctx.attr.base:
-        legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
-        docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
-
     # TODO(mattmoor): Today we run the risk of filenames colliding when
     # they get flattened.  Instead of just flattening and using basename
     # we should use a file_map based scheme.
     return _container.image.implementation(
         ctx,
         files = java_files(ctx.attr.dep),
-        legacy_run_behavior = legacy_run_behavior,
-        docker_run_flags = docker_run_flags,
     )
 
 _war_dep_layer = rule(
@@ -353,20 +332,7 @@ def _war_app_layer_impl(ctx):
     # then consider adding symlinks here.
     files = [d for d in transitive_deps if d not in available]
 
-    # legacy_run_behavior and docker_run_flags from base override those from
-    # ctx.
-    legacy_run_behavior = ctx.attr.legacy_run_behavior
-    docker_run_flags = ctx.attr.docker_run_flags
-    if ImageInfo in ctx.attr.base:
-        legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
-        docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
-
-    return _container.image.implementation(
-        ctx,
-        files = files,
-        legacy_run_behavior = legacy_run_behavior,
-        docker_run_flags = docker_run_flags,
-    )
+    return _container.image.implementation(ctx, files = files)
 
 _war_app_layer = rule(
     attrs = dict(_container.image.attrs.items() + {

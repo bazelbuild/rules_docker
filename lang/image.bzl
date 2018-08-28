@@ -18,7 +18,6 @@ load(
     "//container:container.bzl",
     _container = "container",
 )
-load("//container:providers.bzl", "ImageInfo")
 
 def _binary_name(ctx):
     # For //foo/bar/baz:blah this would translate to
@@ -114,14 +113,6 @@ def dep_layer_impl(ctx, runfiles = None, emptyfiles = None):
     filepath = layer_file_path if ctx.attr.agnostic_dep_layout else _final_file_path
     emptyfilepath = _layer_emptyfile_path if ctx.attr.agnostic_dep_layout else _final_emptyfile_path
 
-    # legacy_run_behavior and docker_run_flags from base override those from
-    # ctx.
-    legacy_run_behavior = ctx.attr.legacy_run_behavior
-    docker_run_flags = ctx.attr.docker_run_flags
-    if ImageInfo in ctx.attr.base:
-        legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
-        docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
-
     return _container.image.implementation(
         ctx,
         # We use all absolute paths.
@@ -139,8 +130,6 @@ def dep_layer_impl(ctx, runfiles = None, emptyfiles = None):
             emptyfilepath(ctx, empty)
             for empty in emptyfiles(ctx.attr.dep)
         ],
-        legacy_run_behavior = legacy_run_behavior,
-        docker_run_flags = docker_run_flags,
     )
 
 dep_layer = rule(
@@ -230,14 +219,6 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     # args of the form $(location :some_target) are expanded to the path of the underlying file
     args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
 
-    # legacy_run_behavior and docker_run_flags from base override those from
-    # ctx.
-    legacy_run_behavior = ctx.attr.legacy_run_behavior
-    docker_run_flags = ctx.attr.docker_run_flags
-    if ImageInfo in ctx.attr.base:
-        legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
-        docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
-
     return _container.image.implementation(
         ctx,
         # We use all absolute paths.
@@ -252,8 +233,6 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         # we should use the "exec" (list) form of entrypoint.
         entrypoint = ctx.attr.entrypoint + [_binary_name(ctx)],
         cmd = args,
-        legacy_run_behavior = legacy_run_behavior,
-        docker_run_flags = docker_run_flags,
     )
 
 app_layer = rule(
