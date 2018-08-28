@@ -133,7 +133,7 @@ function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
   for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
-    if [[ $(SHOULD_SKIP $target "${CONTAINER_IMAGE_TARGETS_TO_SKIP[@]}") -eq 1 ]]; then
+    if [[ $(SHOULD_SKIP $target) -eq 1 ]]; then
       clear_docker
       bazel build $target
       # Replace : with /
@@ -146,7 +146,7 @@ function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
   for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
-    if [[ $(SHOULD_SKIP $target "${CONTAINER_IMAGE_TARGETS_TO_SKIP[@]}") -eq 1 ]]; then
+    if [[ $(SHOULD_SKIP $target) -eq 1 ]]; then
       clear_docker
       bazel run $target
     fi
@@ -176,7 +176,7 @@ function test_bazel_run_docker_build_incremental() {
   clear_docker
   for target in $(bazel query 'kind("container_image", "testdata/...")');
   do
-    if [[ $(SHOULD_SKIP $target "${CONTAINER_IMAGE_TARGETS_TO_SKIP[@]}") -eq 1 ]]; then
+    if [[ $(SHOULD_SKIP $target) -eq 1 ]]; then
       bazel run $target
     fi
   done
@@ -303,7 +303,10 @@ function test_war_image() {
 function test_war_image_with_custom_run_flags() {
   cd "${ROOT}"
   clear_docker
-  bazel run testdata:war_image_with_custom_run_flags
+  # Use --norun to prevent actually running the war image. We are just checking
+  # the `docker run` command in the generated load script contains the right
+  # flags.
+  bazel run testdata:war_image_with_custom_run_flags -- --norun
   EXPECT_CONTAINS "$(cat bazel-bin/testdata/war_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
 
