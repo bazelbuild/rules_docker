@@ -99,6 +99,8 @@ def java_files(f):
     if java_common.provider in f:
         java_provider = f[java_common.provider]
         files += list(java_provider.transitive_runtime_jars)
+    if hasattr(f, "data_runfiles"):
+        files += list(f.data_runfiles.files)
     if hasattr(f, "files"):  # a jar file
         files += list(f.files)
     return files
@@ -137,6 +139,10 @@ def _jar_app_layer_impl(ctx):
     available = depset()
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
+
+    # Mark all files that are available from the JDK as available.
+    # This will prevent them from being part of the generated image.
+    available += list(ctx.files._jdk)
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
@@ -183,6 +189,9 @@ def _jar_app_layer_impl(ctx):
         ctx,
         # We use all absolute paths.
         directory = "/",
+        env = {
+            "JAVA_RUNFILES": "/app",
+        },
         file_map = file_map,
         entrypoint = entrypoint,
     )
@@ -219,6 +228,10 @@ jar_app_layer = rule(
         "workdir": attr.string(default = ""),
         "legacy_run_behavior": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
