@@ -91,6 +91,7 @@ _dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
+        "legacy_run_behavior": attr.bool(default = False),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,

@@ -125,6 +125,7 @@ jar_dep_layer = rule(
         "directory": attr.string(default = "/app"),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
+        "legacy_run_behavior": attr.bool(default = False),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
@@ -307,6 +308,7 @@ _war_dep_layer = rule(
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
+        "legacy_run_behavior": attr.bool(default = False),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,

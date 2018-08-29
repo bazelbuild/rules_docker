@@ -20,7 +20,11 @@ BundleInfo = provider(fields = ["container_images", "stamp"])
 FlattenInfo = provider()
 
 # A provider containing information exposed by container_image rules
-ImageInfo = provider(fields = ["container_parts"])
+ImageInfo = provider(fields = [
+    "container_parts",
+    "legacy_run_behavior",
+    "docker_run_flags",
+])
 
 # A provider containing information exposed by container_import rules
 ImportInfo = provider(fields = ["container_parts"])
@@ -34,7 +38,7 @@ LayerInfo = provider(fields = [
     "env",
 ])
 
-# A provier containing information exposed by container_push rules
+# A provider containing information exposed by container_push rules
 PushInfo = provider(fields = [
     "registry",
     "repository",
