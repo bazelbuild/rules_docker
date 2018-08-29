@@ -16,23 +16,6 @@ set -e
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
-TARGETS_TO_SKIP=(
-  "//testdata:py3_image_base_with_custom_run_flags"
-  "//testdata:java_image_base_with_custom_run_flags"
-  "//testdata:war_image_base_with_custom_run_flags"
-)
-
-function SHOULD_SKIP() {
-  local match="${1}"
-  for i in "${TARGETS_TO_SKIP[@]}"
-  do
-    if [[ "$i" == "$match" ]]; then
-      echo 0
-      return
-    fi
-  done
-  echo 1
-}
 
 function fail() {
   echo "FAILURE: $1"
@@ -131,25 +114,27 @@ function clear_docker() {
 
 function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(bazel query 'kind("container_image", "testdata/...") except
+    ("//testdata:py3_image_base_with_custom_run_flags" union
+    "//testdata:java_image_base_with_custom_run_flags" union
+    "//testdata:war_image_base_with_custom_run_flags")');
   do
-    if [[ $(SHOULD_SKIP $target) -eq 1 ]]; then
-      clear_docker
-      bazel build $target
-      # Replace : with /
-      ./bazel-bin/${target/://}
-    fi
+    clear_docker
+    bazel build $target
+    # Replace : with /
+    ./bazel-bin/${target/://}
   done
 }
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(bazel query 'kind("container_image", "testdata/...") except
+    ("//testdata:py3_image_base_with_custom_run_flags" union
+    "//testdata:java_image_base_with_custom_run_flags" union
+    "//testdata:war_image_base_with_custom_run_flags")');
   do
-    if [[ $(SHOULD_SKIP $target) -eq 1 ]]; then
-      clear_docker
-      bazel run $target
-    fi
+    clear_docker
+    bazel run $target
   done
 }
 
@@ -174,11 +159,12 @@ function test_bazel_run_docker_import_clean() {
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(bazel query 'kind("container_image", "testdata/...") except
+    ("//testdata:py3_image_base_with_custom_run_flags" union
+    "//testdata:java_image_base_with_custom_run_flags" union
+    "//testdata:war_image_base_with_custom_run_flags")');
   do
-    if [[ $(SHOULD_SKIP $target) -eq 1 ]]; then
-      bazel run $target
-    fi
+    bazel run $target
   done
 }
 
@@ -274,7 +260,6 @@ function test_java_image_with_custom_run_flags() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
   EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
-
 
 function test_java_sandwich_image() {
   cd "${ROOT}"
