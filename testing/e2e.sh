@@ -16,6 +16,12 @@ set -e
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
+CONTAINER_IMAGE_TARGETS_QUERY="
+bazel query 'kind(\"container_image\", \"testdata/...\") except
+    (\"//testdata:py3_image_base_with_custom_run_flags\" union
+    \"//testdata:java_image_base_with_custom_run_flags\" union
+    \"//testdata:war_image_base_with_custom_run_flags\")'
+"
 
 function fail() {
   echo "FAILURE: $1"
@@ -114,10 +120,7 @@ function clear_docker() {
 
 function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...") except
-    ("//testdata:py3_image_base_with_custom_run_flags" union
-    "//testdata:java_image_base_with_custom_run_flags" union
-    "//testdata:war_image_base_with_custom_run_flags")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
     bazel build $target
@@ -128,10 +131,7 @@ function test_bazel_build_then_run_docker_build_clean() {
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...") except
-    ("//testdata:py3_image_base_with_custom_run_flags" union
-    "//testdata:java_image_base_with_custom_run_flags" union
-    "//testdata:war_image_base_with_custom_run_flags")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
     bazel run $target
@@ -159,10 +159,7 @@ function test_bazel_run_docker_import_clean() {
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("container_image", "testdata/...") except
-    ("//testdata:py3_image_base_with_custom_run_flags" union
-    "//testdata:java_image_base_with_custom_run_flags" union
-    "//testdata:war_image_base_with_custom_run_flags")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     bazel run $target
   done
