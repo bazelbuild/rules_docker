@@ -21,53 +21,90 @@ load("//container:import.bzl", "container_import")
 load("//container:load.bzl", "container_load")
 load("//container:pull.bzl", "container_pull")
 load("//container:push.bzl", "container_push")
+load(
+    "@bazel_tools//tools/build_defs/repo:http.bzl",
+    "http_archive",
+    "http_file",
+)
 
 container = struct(
     image = image,
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.26"
+CONTAINERREGISTRY_RELEASE = "v0.0.30"
 
-# The release of the container-structure-test repository to use.
-# Updated around 1/22/2018.
-STRUCTURE_TEST_COMMIT = "b97925142b1a09309537e648ade11b4af47ff7ad"
+_local_tool_build_template = """
+sh_binary(
+    name = "{name}",
+    srcs = ["bin/{name}"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+def _local_tool(repository_ctx):
+    rctx = repository_ctx
+    realpath = rctx.which(rctx.name)
+    rctx.symlink(realpath, "bin/%s" % rctx.name)
+    rctx.file(
+        "WORKSPACE",
+        'workspace(name = "{}")\n'.format(rctx.name),
+    )
+    rctx.file(
+        "BUILD",
+        _local_tool_build_template.format(name = rctx.name),
+    )
+
+local_tool = repository_rule(
+    local = True,
+    implementation = _local_tool,
+)
 
 def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
 
     if "puller" not in excludes:
-        native.http_file(
+        http_file(
             name = "puller",
-            url = ("https://storage.googleapis.com/containerregistry-releases/" +
-                   CONTAINERREGISTRY_RELEASE + "/puller.par"),
-            sha256 = "42309ba47bb28d1e1b81ef72789dcca396095e191d4f0e49e2e23c297edd27fb",
+            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
+            sha256 = "89a7c48df0fd5fb839d452599cc054a6550c18563394d4401428ab2e094d4f0b",
             executable = True,
         )
 
     if "importer" not in excludes:
-        native.http_file(
+        http_file(
             name = "importer",
-            url = ("https://storage.googleapis.com/containerregistry-releases/" +
-                   CONTAINERREGISTRY_RELEASE + "/importer.par"),
-            sha256 = "0a2490584c96bcf961242364d961859b94926182f20a217754730e7097ea6cde",
+            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+                     CONTAINERREGISTRY_RELEASE + "/importer.par")],
+            sha256 = "3c1f299df498b0712386c52e1eb5499e00d58143ae10fc4b5c12bf0deffb55b6",
             executable = True,
         )
 
     if "containerregistry" not in excludes:
-        native.git_repository(
+        http_archive(
             name = "containerregistry",
-            remote = "https://github.com/google/containerregistry.git",
-            tag = CONTAINERREGISTRY_RELEASE,
+            urls = [("https://github.com/google/containerregistry/archive/" +
+                     CONTAINERREGISTRY_RELEASE + ".tar.gz")],
+            sha256 = "10fb9ffa1dde14c81f5c12593666bf1d9e9f53727b8cda9abeb0012d08e57fd1",
+            strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
-        # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
-        # once transitive workspace instantiation lands.
+    # TODO(nichow): Remove after bazel 0.17.0 is released
+    if "bazel_source" not in excludes:
+        http_archive(
+            name = "bazel_source",
+            urls = [("https://releases.bazel.build/0.17.0/rc1/bazel-0.17.0rc1-dist.zip")],
+            sha256 = "46dfffac884ccd51fcb493dd86463cb8c21be949fdb17634ca37805fd544beae",
+        )
+
+    # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
+    # once transitive workspace instantiation lands.
 
     if "httplib2" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
-        native.new_http_archive(
+        http_archive(
             name = "httplib2",
             url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3",
             sha256 = "d9f568c183d1230f271e9c60bd99f3f2b67637c3478c9068fea29f7cca3d911f",
@@ -82,10 +119,10 @@ py_library(
 )""",
         )
 
-        # Used by oauth2client
+    # Used by oauth2client
     if "six" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
-        native.new_http_archive(
+        http_archive(
             name = "six",
             url = "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz",
             sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
@@ -106,10 +143,10 @@ py_library(
 )""",
         )
 
-        # Used for authentication in containerregistry
+    # Used for authentication in containerregistry
     if "oauth2client" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
-        native.new_http_archive(
+        http_archive(
             name = "oauth2client",
             url = "https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0",
             sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
@@ -127,10 +164,10 @@ py_library(
 )""",
         )
 
-        # Used for parallel execution in containerregistry
+    # Used for parallel execution in containerregistry
     if "concurrent" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
-        native.new_http_archive(
+        http_archive(
             name = "concurrent",
             url = "https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5",
             sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
@@ -144,25 +181,41 @@ py_library(
 )""",
         )
 
-        # For packaging python tools.
+    # For packaging python tools.
     if "subpar" not in excludes:
-        native.git_repository(
+        http_archive(
             name = "subpar",
-            remote = "https://github.com/google/subpar",
-            commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
+            sha256 = "ee65e35c1cd9a723fb4d501e8055e10b34a27a0a557d10312af7b83d8e0101f5",
+            strip_prefix = "subpar-7e12cc130eb8f09c8cb02c3585a91a4043753c56",
+            urls = ["https://github.com/google/subpar/archive/7e12cc130eb8f09c8cb02c3585a91a4043753c56.tar.gz"],
         )
 
-    if "structure_test" not in excludes:
-        native.git_repository(
-            name = "structure_test",
-            remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
-            commit = STRUCTURE_TEST_COMMIT,
+    if "structure_test_linux" not in excludes:
+        http_file(
+            name = "structure_test_linux",
+            executable = True,
+            sha256 = "543577685b33f0483bd4df72534ac9f84c17c9315d8afdcc536cce3591bb8f7c",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-linux-amd64"],
         )
 
-        # For skylark_library.
+    if "structure_test_darwin" not in excludes:
+        http_file(
+            name = "structure_test_darwin",
+            executable = True,
+            sha256 = "c1bc8664d411c6df23c002b41ab1b9a3d72ae930f194a997468bfae2f54ca751",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-darwin-amd64"],
+        )
+
+    # For skylark_library.
     if "bazel_skylib" not in excludes:
-        native.git_repository(
+        http_archive(
             name = "bazel_skylib",
-            remote = "https://github.com/bazelbuild/bazel-skylib.git",
-            tag = "0.2.0",
+            sha256 = "981624731d7371061ca56d532fa00d33bdda3e9d62e085698880346a01d0a6ef",
+            strip_prefix = "bazel-skylib-0.2.0",
+            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.2.0.tar.gz"],
+        )
+
+    if "gzip" not in excludes:
+        local_tool(
+            name = "gzip",
         )

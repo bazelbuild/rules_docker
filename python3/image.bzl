@@ -18,8 +18,8 @@ The signature of this rule is compatible with py_binary.
 
 load(
     "//lang:image.bzl",
-    "dep_layer",
     "app_layer",
+    "dep_layer",
 )
 load(
     "//container:container.bzl",
@@ -71,8 +71,8 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
     if "main" not in kwargs:
         kwargs["main"] = name + ".py"
 
-        # TODO(mattmoor): Consider using par_binary instead, so that
-        # a single target can be used for all three.
+    # TODO(mattmoor): Consider using par_binary instead, so that
+    # a single target can be used for all three.
 
     native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
 
@@ -95,4 +95,5 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
+        data = kwargs.get("data"),
     )

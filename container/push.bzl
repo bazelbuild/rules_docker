@@ -26,6 +26,7 @@ load(
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
+load("//container:providers.bzl", "PushInfo")
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
@@ -55,6 +56,7 @@ def _impl(ctx):
     blobs = image.get("zipped_layer", [])
     layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
     config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
+    manifest_arg = "--manifest=%s" % _get_runfile_path(ctx, image["manifest"])
 
     ctx.template_action(
         template = ctx.file._tag_tpl,
@@ -77,9 +79,10 @@ def _impl(ctx):
                 ),
             ),
             "%{stamp}": stamp_arg,
-            "%{image}": "%s %s %s %s" % (
+            "%{image}": "%s %s %s %s %s" % (
                 legacy_base_arg,
                 config_arg,
+                manifest_arg,
                 digest_arg,
                 layer_arg,
             ),
@@ -90,18 +93,33 @@ def _impl(ctx):
         executable = True,
     )
 
-    return struct(runfiles = ctx.runfiles(files = [
-                                                      ctx.executable._pusher,
-                                                      image["config"],
-                                                  ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-                                                  stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
-                                                  list(ctx.attr._pusher.default_runfiles.files)))
+    runfiles = ctx.runfiles(
+        files = [
+                    ctx.executable._pusher,
+                    image["config"],
+                    image["manifest"],
+                ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
+                stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
+                list(ctx.attr._pusher.default_runfiles.files),
+    )
+
+    return struct(
+        providers = [
+            PushInfo(
+                registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
+                repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
+                tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
+                stamp = ctx.attr.stamp,
+                stamp_inputs = stamp_inputs,
+            ),
+            DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
+        ],
+    )
 
 container_push = rule(
     attrs = dict({
         "image": attr.label(
-            allow_files = [".tar"],
-            single_file = True,
+            allow_single_file = [".tar"],
             mandatory = True,
         ),
         "registry": attr.string(mandatory = True),
@@ -116,8 +134,7 @@ container_push = rule(
         ),
         "_tag_tpl": attr.label(
             default = Label("//container:push-tag.sh.tpl"),
-            single_file = True,
-            allow_files = True,
+            allow_single_file = True,
         ),
         "_pusher": attr.label(
             default = Label("@containerregistry//:pusher"),

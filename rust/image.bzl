@@ -18,8 +18,8 @@ The signature of this rule is compatible with rust_binary.
 
 load(
     "//lang:image.bzl",
-    "dep_layer",
     "app_layer",
+    "dep_layer",
 )
 load(
     "//cc:image.bzl",
@@ -65,4 +65,5 @@ def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwarg
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
+        data = kwargs.get("data"),
     )

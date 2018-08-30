@@ -18,8 +18,8 @@ The signature of this rule is compatible with nodejs_binary.
 
 load(
     "//lang:image.bzl",
-    "dep_layer_impl",
     "app_layer",
+    "dep_layer_impl",
 )
 load(
     "//container:container.bzl",
@@ -69,7 +69,7 @@ def _dep_layer_impl(ctx):
     return dep_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
 
 _dep_layer = rule(
-    attrs = _container.image.attrs + {
+    attrs = dict(_container.image.attrs.items() + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -82,7 +82,7 @@ _dep_layer = rule(
         # of the binary in which it is participating.  This can increase
         # sharing of the dependency's layer across images, but requires a
         # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = False),
+        "agnostic_dep_layout": attr.bool(default = True),
         # The binary target for which we are synthesizing an image.
         # This is needed iff agnostic_dep_layout.
         "binary": attr.label(mandatory = False),
@@ -91,7 +91,8 @@ _dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
-    },
+        "legacy_run_behavior": attr.bool(default = False),
+    }.items()),
     executable = True,
     outputs = _container.image.outputs,
     implementation = _dep_layer_impl,
@@ -117,7 +118,7 @@ def nodejs_image(
 
     layers = [
         # Put the Node binary into its own layer.
-        "@nodejs//:bin/node",
+        "@nodejs//:node",
         # node_modules can get large, it should be in its own layer.
         node_modules,
     ] + layers
@@ -142,12 +143,11 @@ def nodejs_image(
     app_layer(
         name = name,
         base = base,
-        entrypoint = ["sh", "-c"],
-        # Node.JS hates symlinks.
-        agnostic_dep_layout = False,
+        agnostic_dep_layout = True,
         binary = binary_name,
         lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
+        data = kwargs.get("data"),
     )

@@ -23,6 +23,8 @@ from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 
 TEST_DATA_TARGET_BASE='testdata'
+DIR_PERMISSION=448 # decimal for oct 0700
+PASSWD_FILE_MODE=420  # decimal for oct 0644
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
@@ -54,6 +56,12 @@ class ImageTest(unittest.TestCase):
 
   def assertDigest(self, img, digest):
     self.assertEqual(img.digest(), 'sha256:' + digest)
+
+  def assertTarInfo(self, tarinfo, uid, gid, mode, isdir):
+    self.assertEqual(tarinfo.uid, uid)
+    self.assertEqual(tarinfo.gid, gid)
+    self.assertEqual(tarinfo.mode, mode)
+    self.assertEqual(tarinfo.isdir(), isdir)
 
   def test_files_base(self):
     with TestImage('files_base') as img:
@@ -361,12 +369,12 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_pause_piecemeal(self):
-    with TestImage('pause_piecemeal') as img:
+    with TestImage('pause_piecemeal/image') as img:
       self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
       self.assertEqual(2, len(img.fs_layers()))
 
   def test_pause_piecemeal_gz(self):
-    with TestImage('pause_piecemeal_gz') as img:
+    with TestImage('pause_piecemeal_gz/image') as img:
       self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
 
   def test_build_with_tag(self):
@@ -386,6 +394,24 @@ class ImageTest(unittest.TestCase):
         self.assertEqual(
           'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
           content)
+        self.assertEqual(layer.getmember("./etc/passwd").mode, PASSWD_FILE_MODE)
+
+  def test_with_passwd_tar(self):
+    with TestImage('with_passwd_tar') as img:
+      self.assertDigest(img, 'b8f091c370d6a8a6f74e11327f52e579f73dd93d9cf82e39e83b3096bb0c2256')
+      self.assertEqual(1, len(img.fs_layers()))
+      self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
+
+      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      with tarfile.open(fileobj=buf, mode='r') as layer:
+        content = layer.extractfile('./etc/password').read()
+        self.assertEqual(
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          content)
+        self.assertEqual(layer.getmember("./etc/password").mode, PASSWD_FILE_MODE)
+        self.assertTarInfo(layer.getmember("./root"), 0, 0, DIR_PERMISSION, True)
+        self.assertTarInfo(layer.getmember("./myhomedir"), 1234, 2345, DIR_PERMISSION, True)
+
 
   def test_with_group(self):
     with TestImage('with_group') as img:
@@ -436,6 +462,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary',
+        './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
@@ -469,6 +496,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker',
         './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata',
         './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/cc_image.binary',
+        './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -515,7 +543,13 @@ class ImageTest(unittest.TestCase):
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
-        '-XX:MaxPermSize=128M', 'examples.images.Binary', 'arg0', 'arg1'])
+        '-XX:MaxPermSize=128M',
+        '-Dbuild.location=testdata/BUILD',
+        'examples.images.Binary',
+        'arg0',
+        'arg1',
+        'testdata/BUILD'
+      ])
 
   def test_war_image(self):
     with TestImage('war_image') as img:
@@ -545,31 +579,44 @@ class ImageTest(unittest.TestCase):
     with TestImage('cc_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/cc_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
-  def test_d_image_args(self):
-    with TestImage('d_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/d_image_binary',
-        'arg0',
-        'arg1'])
+  # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+  # def test_d_image_args(self):
+  #  with TestImage('d_image') as img:
+  #    self.assertConfigEqual(img, 'Entrypoint', [
+  #      '/app/testdata/d_image_binary',
+  #      'arg0',
+  #      'arg1'])
 
   def test_py_image_args(self):
     with TestImage('py_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/python',
         '/app/testdata/py_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_py3_image_args(self):
     with TestImage('py3_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/python',
         '/app/testdata/py3_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_java_image_args(self):
     with TestImage('java_image') as img:
@@ -581,23 +628,34 @@ class ImageTest(unittest.TestCase):
         +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary',
         '-XX:MaxPermSize=128M',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_go_image_args(self):
     with TestImage('go_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/go_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
-  def test_go_image_args(self):
+  def test_rust_image_args(self):
     with TestImage('rust_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
         '/app/testdata/rust_image_binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_scala_image_args(self):
     with TestImage('scala_image') as img:
@@ -605,14 +663,17 @@ class ImageTest(unittest.TestCase):
         '/usr/bin/java',
         '-cp',
         '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
-        '/app/io_bazel_rules_docker/../scala/lib/scala-library.jar:'+
-        '/app/io_bazel_rules_docker/../scala/lib/scala-reflect.jar:'+
+        '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_library/scala-library-2.11.12.jar:'+
+        '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_groovy_image_args(self):
     with TestImage('groovy_image') as img:
@@ -625,18 +686,22 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
+        '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
-        'arg1'])
+        'arg1',
+        'testdata/BUILD',
+      ])
 
   def test_nodejs_image_args(self):
     with TestImage('nodejs_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
-        'sh',
-        '-c',
         '/app/testdata/nodejs_image.binary',
+      ])
+      self.assertConfigEqual(img, 'Cmd', [
         'arg0',
-        'arg1'])
+        'arg1',
+      ])
 
 
 if __name__ == '__main__':

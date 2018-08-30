@@ -20,7 +20,6 @@ load(
     "container_flatten",
     "container_image",
     "container_layer",
-    "container_import",
 )
 load("//testdata:utils.bzl", "generate_deb")
 
@@ -491,7 +490,7 @@ oci_pushall(
     bundle = ":bundle_to_push",
 )
 
-load("//contrib:passwd.bzl", "passwd_entry", "passwd_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
 
 passwd_entry(
     name = "root_user",
@@ -528,9 +527,25 @@ pkg_tar(
     package_dir = "etc",
 )
 
+passwd_tar(
+    name = "password",
+    entries = [
+        ":root_user",
+        ":foobar_user",
+    ],
+    passwd_file_pkg_dir = "etc",
+)
+
 container_image(
     name = "with_passwd",
     tars = [":passwd_tar"],
+)
+
+container_image(
+    name = "with_passwd_tar",
+    tars = [
+        ":password",
+    ],
 )
 
 load("//contrib:group.bzl", "group_entry", "group_file")
@@ -607,49 +622,6 @@ container_image(
     base = "@distroless_cc//image",
 )
 
-PAUSE_CONFIG = "2b58359142b094165abfc9ad9c327c453a3eaa624d0c5ee8f0ed1ab50483603b.json"
-
-genrule(
-    name = "pause_config",
-    srcs = [":pause.tar"],
-    outs = ["pause_config.json"],
-    cmd = ("tar xOf $(location :pause.tar) %s " +
-           "> $(location :pause_config.json)") % PAUSE_CONFIG,
-)
-
-PAUSE_LAYERS = [
-    "9285c41a2f85a67c85185be04743004e806fd1e16777f2230166281f4e49cb4c",
-    "da7bd81140ca921a067c604a3ba3f54d4e0d51ba5276cd9f32ad6a28e588f470",
-]
-
-[genrule(
-    name = "extract_%s" % id,
-    srcs = [":pause.tar"],
-    outs = ["%s.tar" % id],
-    cmd = ("tar xOf $(location :pause.tar) %s/layer.tar " +
-           "> $(location :%s.tar)") % (id, id),
-) for id in PAUSE_LAYERS]
-
-[genrule(
-    name = "extract_%s_gz" % id,
-    srcs = [":pause.tar"],
-    outs = ["%s.tar.gz" % id],
-    cmd = ("tar xOf $(location :pause.tar) %s/layer.tar " +
-           "| gzip -n > $(location :%s.tar.gz)") % (id, id),
-) for id in PAUSE_LAYERS]
-
-container_import(
-    name = "pause_piecemeal",
-    config = ":pause_config.json",
-    layers = ["%s.tar" % x for x in PAUSE_LAYERS],
-)
-
-container_import(
-    name = "pause_piecemeal_gz",
-    config = ":pause_config.json",
-    layers = ["%s.tar.gz" % x for x in PAUSE_LAYERS],
-)
-
 load("//python:image.bzl", "py_image")
 
 py_library(
@@ -663,7 +635,9 @@ py_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     layers = [
         ":py_image_library",
     ],
@@ -686,7 +660,9 @@ py3_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     layers = [
         ":py_image_library",
     ],
@@ -695,6 +671,26 @@ py3_image(
 py3_image(
     name = "py3_image_with_main",
     srcs = ["py3_image.py"],
+    layers = [
+        ":py_image_library",
+    ],
+    main = "py3_image.py",
+)
+
+# The following `container_image` and `py3_image` combination shows how to set
+# custom `docker_run_flags` in `py3_image`.
+# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
+container_image(
+    name = "py3_image_base_with_custom_run_flags",
+    base = "@py3_image_base//image",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+py3_image(
+    name = "py3_image_with_custom_run_flags",
+    srcs = ["py3_image.py"],
+    base = ":py3_image_base_with_custom_run_flags",
     layers = [
         ":py_image_library",
     ],
@@ -715,7 +711,9 @@ cc_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     # This creates an empty layer, due to linking.
     layers = [":cc_image_library"],
 )
@@ -749,8 +747,13 @@ java_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
-    jvm_flags = ["-XX:MaxPermSize=128M"],
+    data = [":BUILD"],
+    jvm_flags = [
+        "-XX:MaxPermSize=128M",
+        "-Dbuild.location=$(location :BUILD)",
+    ],
     layers = [":java_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -774,9 +777,46 @@ java_image(
     runtime_deps = [":java_bin_as_lib"],
 )
 
+# The following `container_image` and `java_image` combination shows how to set
+# custom `docker_run_flags` in `java_image`.
+# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
+container_image(
+    name = "java_image_base_with_custom_run_flags",
+    base = "@java_image_base//image",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+java_image(
+    name = "java_image_with_custom_run_flags",
+    base = ":java_image_base_with_custom_run_flags",
+    main_class = "examples.images.Binary",
+    runtime_deps = [":java_bin_as_lib"],
+)
+
 war_image(
     name = "war_image",
     srcs = ["Servlet.java"],
+    layers = [
+        ":java_image_library",
+        "@javax_servlet_api//jar:jar",
+    ],
+)
+
+# The following `container_image` and `war_image` combination shows how to set
+# custom `docker_run_flags` in `war_image`.
+# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
+container_image(
+    name = "war_image_base_with_custom_run_flags",
+    base = "@jetty_image_base//image",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+war_image(
+    name = "war_image_with_custom_run_flags",
+    srcs = ["Servlet.java"],
+    base = ":war_image_base_with_custom_run_flags",
     layers = [
         ":java_image_library",
         "@javax_servlet_api//jar:jar",
@@ -798,7 +838,10 @@ scala_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
+    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -825,7 +868,10 @@ groovy_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
+    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
 )
@@ -846,7 +892,9 @@ go_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
     importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
     tags = [
         "tag1",
@@ -862,19 +910,22 @@ rust_image(
     args = [
         "arg0",
         "arg1",
+        "$(location :BUILD)",
     ],
+    data = [":BUILD"],
 )
 
 load("//d:image.bzl", "d_image")
 
-d_image(
-    name = "d_image",
-    srcs = ["main.d"],
-    args = [
-        "arg0",
-        "arg1",
-    ],
-)
+# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+#d_image(
+#    name = "d_image",
+#    srcs = ["main.d"],
+#    args = [
+#        "arg0",
+#        "arg1",
+#    ],
+#)
 
 load("//nodejs:image.bzl", "nodejs_image")
 
@@ -895,4 +946,14 @@ generate_deb(
 
 generate_deb(
     name = "pkg2",
+)
+
+generate_deb(
+    name = "pkg_control_gz",
+    metadata_compression_type = "gzip",
+)
+
+generate_deb(
+    name = "pkg_control_xz",
+    metadata_compression_type = "xz",
 )

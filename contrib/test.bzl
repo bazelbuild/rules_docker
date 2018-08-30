@@ -23,7 +23,7 @@ load(
 )
 
 def _impl(ctx):
-    config_str = " ".join(["$(pwd)/" + c.short_path for c in ctx.files.configs])
+    config_str = " ".join(["--config $(pwd)/" + c.short_path for c in ctx.files.configs])
 
     if ctx.attr.driver == "tar":
         # no need to load if we're using raw tar
@@ -35,17 +35,21 @@ def _impl(ctx):
         load_statement = "docker load -i %s" % ctx.file.image_tar.short_path
         image_name = ctx.attr.image_name
 
-        # Generate a shell script to execute structure_tests with the correct flags.
+    quiet_str = "--quiet"
+    if ctx.attr.verbose:
+        quiet_str = ""
+
+    # Generate a shell script to execute structure_tests with the correct flags.
     ctx.actions.expand_template(
         template = ctx.file._structure_test_tpl,
         output = ctx.outputs.executable,
         substitutions = {
             "%{load_statement}": load_statement,
             "%{configs}": config_str,
-            "%{workspace_name}": ctx.workspace_name,
             "%{test_executable}": ctx.executable._structure_test.short_path,
             "%{image}": image_name,
             "%{driver}": ctx.attr.driver,
+            "%{quiet}": quiet_str,
         },
         is_executable = True,
     )
@@ -93,7 +97,7 @@ _container_test = rule(
             ],
         ),
         "_structure_test": attr.label(
-            default = Label("@structure_test//:go_default_test"),
+            default = Label("//contrib:structure_test_executable"),
             cfg = "target",
             executable = True,
             allow_files = True,
@@ -113,18 +117,26 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     """A macro to predictably rename the image under test before threading
     it to the container test rule."""
 
-    # Remove commonly encountered characters that Docker will choke on
-    sanitized_name = image.replace(":", "").replace("@", "").replace("/", "")
+    # Remove commonly encountered characters that Docker will choke on.
+    # Include the package name in the new image tag to avoid conflicts on naming
+    # when running multiple container_test on images with the same target name
+    # from different packages.
+    sanitized_name = (native.package_name() + image).replace(":", "").replace("@", "").replace("/", "")
     intermediate_image_name = "%s:intermediate" % sanitized_name
     image_tar_name = "intermediate_bundle_%s" % name
 
-    # Give the image a predictable name when loaded
-    container_bundle(
-        name = image_tar_name,
-        images = {
-            intermediate_image_name: image,
-        },
-    )
+    if driver == "tar":
+        intermediate_image_name = image
+        image_tar_name = image
+    else:
+        # Give the image a predictable name when loaded
+        container_bundle(
+            name = image_tar_name,
+            images = {
+                intermediate_image_name: image,
+            },
+        )
+
     _container_test(
         name = name,
         image_name = intermediate_image_name,

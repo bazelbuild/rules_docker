@@ -82,11 +82,15 @@ or `container_image` target).
 Add the following to your `WORKSPACE` file to add the external repositories:
 
 ```python
-git_repository(
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
     name = "io_bazel_rules_docker",
-    remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.4.0",
+    sha256 = "5d64414477ffe87b16e248986c0731aee821ea3d626121cfeeec4ef7096812ca",
+    strip_prefix = "rules_docker-0.5.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.5.0.tar.gz"],
 )
+
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
@@ -297,7 +301,7 @@ cc_image(
 
 ### cc_image (external binary)
 
-To use `cc_image` (or `go_image`, `d_image`, `rust_image) with an external
+To use `cc_image` (or `go_image`, `d_image`, `rust_image`) with an external
 `cc_binary` (or the like) target, then your `BUILD` file should instead look
 like:
 ```python
@@ -378,11 +382,15 @@ utilizing the `gcr.io/google-appengine/debian9` image as our base.
 To use `nodejs_image`, add the following to `WORKSPACE`:
 
 ```python
-git_repository(
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
     name = "build_bazel_rules_nodejs",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
     # Replace with a real commit SHA
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_nodejs.git",
+    strip_prefix = "rules_nodejs-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/{HEAD}.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
@@ -425,16 +433,17 @@ nodejs_image(
 To use `go_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Go rules before setting up the go_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_go",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_go.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_go-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_go/archive/{HEAD}.tar.gz"],
 )
-
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
-
-go_repositories()
 
 load(
     "@io_bazel_rules_docker//go:image.bzl",
@@ -453,8 +462,13 @@ go_image(
     name = "go_image",
     srcs = ["main.go"],
     importpath = "github.com/your/path/here",
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
 )
 ```
+Notice that it is important to explicitly specify `goarch`, `goos`, and `pure`
+as the binary should be built for Linux since it will run on a Linux container.
 
 ### go_image (custom base)
 
@@ -574,11 +588,16 @@ war_image(
 To use `scala_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Scala rules before setting up the scala_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_scala",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_scala.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_scala-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -610,11 +629,16 @@ scala_image(
 To use `groovy_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Groovy rules before setting up the groovy_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_groovy",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_groovy.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_groovy-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -646,11 +670,16 @@ groovy_image(
 To use `rust_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the Rust rules before setting up the rust_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_rust",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_rust.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_rust-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -681,11 +710,16 @@ rust_image(
 To use `d_image`, add the following to `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # You *must* import the D rules before setting up the d_image rules.
-git_repository(
+http_archive(
     name = "io_bazel_rules_d",
-    commit = "{HEAD}",
-    remote = "https://github.com/bazelbuild/rules_d.git",
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    # Replace with a real commit SHA
+    strip_prefix = "rules_d-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/{HEAD}.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
@@ -1341,7 +1375,12 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#entrypoint">List
                of entrypoints to add in the image.</a></p>
-	<p>This field supports stamp variables.</p>
+        <p>
+          Set <code>entrypoint</code> to <code>None</code>, <code>[]</code>
+          or <code>""</code> will set the <code>Entrypoint</code> of the image
+          to be <code>null</code>.
+        </p>
+	      <p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>
@@ -1350,7 +1389,12 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
                of commands to execute in the image.</a></p>
-	<p>This field supports stamp variables.</p>
+        <p>
+          Set <code>cmd</code> to <code>None</code>, <code>[]</code>
+          or <code>""</code> will set the <code>Cmd</code> of the image to be
+          <code>null</code>.
+        </p>
+	      <p>This field supports stamp variables.</p>
       </td>
     </tr>
     <tr>

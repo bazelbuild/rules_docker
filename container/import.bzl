@@ -27,6 +27,7 @@ load(
     "//skylib:zip.bzl",
     _gunzip = "gunzip",
     _gzip = "gzip",
+    _zip_tools = "tools",
 )
 load(
     "//container:layer_tools.bzl",
@@ -41,6 +42,7 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
+load("//container:providers.bzl", "ImportInfo")
 
 def _is_filetype(filename, extensions):
     for filetype in extensions:
@@ -61,7 +63,7 @@ def _layer_pair(ctx, layer):
 
     zipped_layer = layer if zipped else _gzip(ctx, layer)
     unzipped_layer = layer if unzipped else _gunzip(ctx, layer)
-    return zipped_layer, unzipped_layer, _sha256(ctx, unzipped_layer)
+    return zipped_layer, unzipped_layer
 
 def _repository_name(ctx):
     """Compute the repository name for the current rule."""
@@ -75,19 +77,30 @@ def _container_import_impl(ctx):
     unzipped_layers = []
     diff_ids = []
     for layer in ctx.files.layers:
-        blobsums += [_sha256(ctx, layer)]
-        zipped, unzipped, diff_id = _layer_pair(ctx, layer)
+        zipped, unzipped = _layer_pair(ctx, layer)
         zipped_layers += [zipped]
         unzipped_layers += [unzipped]
-        diff_ids += [diff_id]
+        blobsums += [_sha256(ctx, zipped)]
+        diff_ids += [_sha256(ctx, unzipped)]
 
-        # These are the constituent parts of the Container image, which each
-        # rule in the chain must preserve.
+    manifest = None
+    manifest_digest = None
+
+    if (len(ctx.files.manifest) > 0):
+        manifest = ctx.files.manifest[0]
+        manifest_digest = _sha256(ctx, ctx.files.manifest[0])
+
+    # These are the constituent parts of the Container image, which each
+    # rule in the chain must preserve.
 
     container_parts = {
         # The path to the v2.2 configuration file.
         "config": ctx.files.config[0],
         "config_digest": _sha256(ctx, ctx.files.config[0]),
+
+        # The path to the optional v2.2 manifest file.
+        "manifest": manifest,
+        "manifest_digest": manifest_digest,
 
         # A list of paths to the layer .tar.gz files
         "zipped_layer": zipped_layers,
@@ -120,18 +133,37 @@ def _container_import_impl(ctx):
                      container_parts["config_digest"],
                  ]),
     )
+    if (len(ctx.files.manifest) > 0):
+        runfiles = runfiles.merge(
+            ctx.runfiles(
+                files = ([
+                    container_parts["manifest"],
+                    container_parts["manifest_digest"],
+                ]),
+            ),
+        )
+
     return struct(
-        runfiles = runfiles,
-        files = depset([ctx.outputs.out]),
         container_parts = container_parts,
+        providers = [
+            ImportInfo(
+                container_parts = container_parts,
+            ),
+            DefaultInfo(
+                executable = ctx.outputs.executable,
+                files = depset([ctx.outputs.out]),
+                runfiles = runfiles,
+            ),
+        ],
     )
 
 container_import = rule(
     attrs = dict({
         "config": attr.label(allow_files = [".json"]),
-        "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype),
+        "manifest": attr.label(allow_files = [".json"], mandatory = False),
+        "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype, mandatory = True),
         "repository": attr.string(default = "bazel"),
-    }.items() + _hash_tools.items() + _layer_tools.items()),
+    }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items()),
     executable = True,
     outputs = {
         "out": "%{name}.tar",

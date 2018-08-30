@@ -14,14 +14,17 @@
 """This tool build tar files from a list of inputs."""
 
 from contextlib import contextmanager
+import gzip
+import io
 import os
 import os.path
+import subprocess
 import sys
 import re
 import tarfile
 import tempfile
 
-from tools.build_defs.pkg import archive
+from bazel_source.tools.build_defs.pkg import archive
 from third_party.py import gflags
 
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
@@ -35,6 +38,13 @@ gflags.DEFINE_multistring('empty_dir', [], 'An empty dir to add to the layer')
 
 gflags.DEFINE_string(
     'mode', None, 'Force the mode on the added files (in octal).')
+
+gflags.DEFINE_multistring(
+    'empty_root_dir',
+    [],
+    'An empty root directory to add to the layer.  This will create a directory that'
+    'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
+    '"root_directory"')
 
 gflags.DEFINE_multistring('tar', [], 'A tar file to add to the layer')
 
@@ -74,6 +84,10 @@ gflags.DEFINE_multistring('owner_names', None,
                           'Specify the owner names of individual files, e.g. '
                           'path/to/file=root.root.')
 
+gflags.DEFINE_string(
+    'root_directory', './', 'Default root directory is named "."'
+    'Windows docker images require this be named "Files" instead of "."')
+
 FLAGS = gflags.FLAGS
 
 
@@ -89,19 +103,24 @@ class TarFile(object):
 
   @staticmethod
   def parse_pkg_name(metadata, filename):
-    pkg_name_match = TarFile.PKG_NAME_RE.match(metadata)
+    pkg_name_match = TarFile.PKG_NAME_RE.match(str(metadata))
     if pkg_name_match:
       return pkg_name_match.group('pkg_name')
     else:
       return os.path.basename(os.path.splitext(filename)[0])
 
-  def __init__(self, output, directory, compression):
+  def __init__(self, output, directory, compression, root_directory):
     self.directory = directory
     self.output = output
     self.compression = compression
+    self.root_directory = root_directory
 
   def __enter__(self):
-    self.tarfile = archive.TarFileWriter(self.output, self.compression)
+    self.tarfile = archive.TarFileWriter(
+        self.output,
+        self.compression,
+        self.root_directory
+    )
     return self
 
   def __exit__(self, t, v, traceback):
@@ -185,6 +204,23 @@ class TarFile(object):
     self.add_empty_file(destpath, mode=mode, ids=ids, names=names,
                         kind=tarfile.DIRTYPE)
 
+  def add_empty_root_dir(self, destpath, mode=None, ids=None, names=None):
+    """Add a directory to the root of the tar file.
+
+    Args:
+       destpath: the name of the directory in the layer
+       mode: force to set the specified mode, defaults to 644
+       ids: (uid, gid) for the file to set ownership
+       names: (username, groupname) for the file to set ownership.
+
+    An empty directory will be created as `destfile` in the root layer.
+    """
+    original_root_directory = self.tarfile.root_directory
+    self.tarfile.root_directory = destpath
+    self.add_empty_dir(
+        destpath, mode=mode, ids=ids, names=names)
+    self.tarfile.root_directory = original_root_directory
+
   def add_tar(self, tar):
     """Merge a tar file into the destination tar file.
 
@@ -212,9 +248,18 @@ class TarFile(object):
 
   @contextmanager
   def write_temp_file(self, data, suffix='tar', mode='wb'):
+    # deb(5) states members may optionally be compressed with gzip or xz
+    if suffix.endswith('.gz'):
+      with gzip.GzipFile(fileobj=io.BytesIO(data)) as f:
+        data = f.read()
+      suffix = suffix[:-3]
+    elif suffix.endswith('.xz'):
+      data = self._xz_decompress(data)
+      suffix = suffix[:-3]
+
     (_, tmpfile) = tempfile.mkstemp(suffix=suffix)
     try:
-      with open(tmpfile, mode='wb') as f:
+      with open(tmpfile, mode=mode) as f:
         f.write(data)
       yield tmpfile
     finally:
@@ -224,11 +269,11 @@ class TarFile(object):
     try:
       with tarfile.open(metadata_tar) as tar:
         # Metadata is expected to be in a file.
-        control_file_member = filter(lambda f: os.path.basename(f.name) == TarFile.PKG_METADATA_FILE, tar.getmembers())
+        control_file_member = list(filter(lambda f: os.path.basename(f.name) == TarFile.PKG_METADATA_FILE, tar.getmembers()))
         if not control_file_member:
            raise self.DebError(deb + ' does not Metadata File!')
         control_file = tar.extractfile(control_file_member[0])
-        metadata = ''.join(control_file.readlines())
+        metadata = b''.join(control_file.readlines())
         destination_file = os.path.join(TarFile.DPKG_STATUS_DIR,
                                         TarFile.parse_pkg_name(metadata, deb))
         with self.write_temp_file(data=metadata) as metadata_file:
@@ -259,7 +304,11 @@ class TarFile(object):
       while current:
         parts = current.filename.split(".")
         name = parts[0]
-        ext = '.'.join(parts[1:])
+        if parts[-1].lower() == 'xz':
+          current.data = self._xz_decompress(current.data)
+          ext = '.'.join(parts[1:-1])
+        else:
+            ext = '.'.join(parts[1:])
         if name == 'data':
           pkg_data_found = True
           # Add pkg_data to image tar
@@ -276,6 +325,32 @@ class TarFile(object):
       raise self.DebError(deb + ' does not contains a data file!')
     if not pkg_metadata_found:
       raise self.DebError(deb + ' does not contains a control file!')
+
+  @staticmethod
+  def _xzcat_decompress(data):
+    """Decompresses the xz-encrypted bytes in data by piping to xz."""
+    if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
+      raise RuntimeError('Cannot handle .xz compression: xz not found.')
+
+    xz_proc = subprocess.Popen(
+      ['xz', '--decompress', '--stdout'],
+      stdin=subprocess.PIPE,
+      stdout=subprocess.PIPE)
+    return xz_proc.communicate(data)[0]
+
+  def _xz_decompress(self, data):
+    """Decompress xz-compressed bytes, using the lzma module when available, falling back to xzcat"""
+    try:
+      import lzma
+      decompress = lzma.decompress
+    except ImportError:
+      try:
+        from backports import lzma
+        decompress = lzma.decompress
+      except ImportError:
+        decompress = self._xzcat_decompress
+    return decompress(data)
+
 
 def main(unused_argv):
   # Parse modes arguments
@@ -316,7 +391,7 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression) as output:
+  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory) as output:
     def file_attributes(filename):
       if filename[0] == '/':
         filename = filename[1:]
@@ -333,6 +408,8 @@ def main(unused_argv):
       output.add_empty_file(f, **file_attributes(f))
     for f in FLAGS.empty_dir:
       output.add_empty_dir(f, **file_attributes(f))
+    for f in FLAGS.empty_root_dir:
+      output.add_empty_root_dir(f, **file_attributes(f))
     for tar in FLAGS.tar:
       output.add_tar(tar)
     for deb in FLAGS.deb:

@@ -11,14 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+import os
 
 from testdata import py_image_library
 
 def main():
+  """
+  This method expects a valid file path as its third arg.
+  """
   print('First: %d' % py_image_library.fn(1))
   print('Second: %d' % py_image_library.fn(2))
   print('Third: %d' % py_image_library.fn(3))
   print('Fourth: %d' % py_image_library.fn(4))
+  print(sys.argv)
+  if len(sys.argv) > 1:
+    print(os.stat(sys.argv[2]))
 
 
 if __name__ == '__main__':

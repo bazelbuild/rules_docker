@@ -28,72 +28,72 @@ def _binary_name(ctx):
         ctx.attr.binary.label.name,
     ])
 
-def _runfiles_dir(ctx):
+def runfiles_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles
     return _binary_name(ctx) + ".runfiles"
 
-    # The directory relative to which all ".short_path" paths are relative.
+# The directory relative to which all ".short_path" paths are relative.
 
 def _reference_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles/foo
-    return "/".join([_runfiles_dir(ctx), ctx.workspace_name])
+    return "/".join([runfiles_dir(ctx), ctx.workspace_name])
 
-    # The special "external" directory which is an alternate way of accessing
-    # other repositories.
+# The special "external" directory which is an alternate way of accessing
+# other repositories.
 
 def _external_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles/foo/external
     return "/".join([_reference_dir(ctx), "external"])
 
-    # The final location that this file needs to exist for the foo_binary target to
-    # properly execute.
+# The final location that this file needs to exist for the foo_binary target to
+# properly execute.
 
 def _final_emptyfile_path(ctx, name):
     if not name.startswith("external/"):
         # Names that don't start with external are relative to our own workspace.
         return _reference_dir(ctx) + "/" + name
 
-        # References to workspace-external dependencies, which are identifiable
-        # because their path begins with external/, are inconsistent with the
-        # form of their File counterparts, whose ".short_form" is relative to
-        #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
-        # whereas we see:
-        #    external/foreign-workspace/...
-        # so we "fix" the empty files' paths by removing "external/" and basing them
-        # directly on the runfiles path.
+    # References to workspace-external dependencies, which are identifiable
+    # because their path begins with external/, are inconsistent with the
+    # form of their File counterparts, whose ".short_form" is relative to
+    #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
+    # whereas we see:
+    #    external/foreign-workspace/...
+    # so we "fix" the empty files' paths by removing "external/" and basing them
+    # directly on the runfiles path.
 
-    return "/".join([_runfiles_dir(ctx), name[len("external/"):]])
+    return "/".join([runfiles_dir(ctx), name[len("external/"):]])
 
-    # The final location that this file needs to exist for the foo_binary target to
-    # properly execute.
+# The final location that this file needs to exist for the foo_binary target to
+# properly execute.
 
 def _final_file_path(ctx, f):
     return "/".join([_reference_dir(ctx), f.short_path])
 
-    # The foo_binary independent location in which we store a particular dependency's
-    # file such that it can be shared.
+# The foo_binary independent location in which we store a particular dependency's
+# file such that it can be shared.
 
 def _layer_emptyfile_path(ctx, name):
     if not name.startswith("external/"):
         # Names that don't start with external are relative to our own workspace.
         return "/".join([ctx.attr.directory, ctx.workspace_name, name])
 
-        # References to workspace-external dependencies, which are identifiable
-        # because their path begins with external/, are inconsistent with the
-        # form of their File counterparts, whose ".short_form" is relative to
-        #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
-        # whereas we see:
-        #    external/foreign-workspace/...
-        # so we "fix" the empty files' paths by removing "external/" and basing them
-        # directly on the runfiles path.
+    # References to workspace-external dependencies, which are identifiable
+    # because their path begins with external/, are inconsistent with the
+    # form of their File counterparts, whose ".short_form" is relative to
+    #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
+    # whereas we see:
+    #    external/foreign-workspace/...
+    # so we "fix" the empty files' paths by removing "external/" and basing them
+    # directly on the runfiles path.
 
     return "/".join([ctx.attr.directory, name[len("external/"):]])
 
-    # The foo_binary independent location in which we store a particular dependency's
-    # file such that it can be shared.
+# The foo_binary independent location in which we store a particular dependency's
+# file such that it can be shared.
 
 def layer_file_path(ctx, f):
     return "/".join([ctx.attr.directory, ctx.workspace_name, f.short_path])
@@ -155,6 +155,7 @@ dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
+        "legacy_run_behavior": attr.bool(default = False),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
@@ -166,6 +167,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     runfiles = runfiles or _default_runfiles
     emptyfiles = emptyfiles or _default_emptyfiles
+    workdir = ctx.attr.workdir or "/".join([runfiles_dir(ctx), ctx.workspace_name])
 
     # Compute the set of runfiles that have been made available
     # in our base image, tracking absolute paths.
@@ -180,8 +182,8 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
             for f in emptyfiles(dep)
         })
 
-        # Compute the set of remaining runfiles to include into the
-        # application layer.
+    # Compute the set of remaining runfiles to include into the
+    # application layer.
 
     file_map = {
         _final_file_path(ctx, f): f
@@ -211,8 +213,11 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         _binary_name(ctx): _final_file_path(ctx, ctx.executable.binary),
         # Create a directory symlink from <workspace>/external to the runfiles
         # root, since they may be accessed via either path.
-        _external_dir(ctx): _runfiles_dir(ctx),
+        _external_dir(ctx): runfiles_dir(ctx),
     })
+
+    # args of the form $(location :some_target) are expanded to the path of the underlying file
+    args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
 
     return _container.image.implementation(
         ctx,
@@ -221,11 +226,13 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         file_map = file_map,
         empty_files = empty_files,
         symlinks = symlinks,
+        workdir = workdir,
         # Use entrypoint so we can easily add arguments when the resulting
         # image is `docker run ...`.
         # Per: https://docs.docker.com/engine/reference/builder/#entrypoint
         # we should use the "exec" (list) form of entrypoint.
-        entrypoint = ctx.attr.entrypoint + [_binary_name(ctx)] + ctx.attr.args,
+        entrypoint = ctx.attr.entrypoint + [_binary_name(ctx)],
+        cmd = args,
     )
 
 app_layer = rule(
@@ -251,9 +258,10 @@ app_layer = rule(
 
         # Override the defaults.
         "data_path": attr.string(default = "."),
-        "workdir": attr.string(default = "/app"),
+        "workdir": attr.string(default = ""),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
+        "data": attr.label_list(allow_files = True),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,

@@ -21,8 +21,8 @@ load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
-    "jar_dep_layer",
     "jar_app_layer",
+    "jar_dep_layer",
     _repositories = "repositories",
 )
 
@@ -77,6 +77,7 @@ def scala_image(
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
+        data = kwargs.get("data"),
     )
 
 def repositories():

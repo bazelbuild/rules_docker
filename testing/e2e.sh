@@ -1,5 +1,5 @@
-#!/bin/bash -e
-
+#!/usr/bin/env bash
+set -e
 # Copyright 2015 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,12 @@
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
+CONTAINER_IMAGE_TARGETS_QUERY="
+bazel query 'kind(\"container_image\", \"testdata/...\") except
+    (\"//testdata:py3_image_base_with_custom_run_flags\" union
+    \"//testdata:java_image_base_with_custom_run_flags\" union
+    \"//testdata:war_image_base_with_custom_run_flags\")'
+"
 
 function fail() {
   echo "FAILURE: $1"
@@ -114,7 +120,7 @@ function clear_docker() {
 
 function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
     bazel build $target
@@ -125,7 +131,7 @@ function test_bazel_build_then_run_docker_build_clean() {
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
     bazel run $target
@@ -153,7 +159,7 @@ function test_bazel_run_docker_import_clean() {
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     bazel run $target
   done
@@ -187,6 +193,20 @@ EOF
   EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
   EXPECT_CONTAINS "$(cat output.txt)" "Third: 6"
   EXPECT_CONTAINS "$(cat output.txt)" "Fourth: 7"
+  rm -f output.txt
+}
+
+function test_py3_image_with_custom_run_flags() {
+  cd "${ROOT}"
+  clear_docker
+  cat > output.txt <<EOF
+$(bazel run "$@" testdata:py3_image_with_custom_run_flags)
+EOF
+  EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
+  EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
+  EXPECT_CONTAINS "$(cat output.txt)" "Third: 6"
+  EXPECT_CONTAINS "$(cat output.txt)" "Fourth: 7"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/py3_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
   rm -f output.txt
 }
 
@@ -231,6 +251,13 @@ function test_java_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image)" "Hello World"
 }
 
+function test_java_image_with_custom_run_flags() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
+}
+
 function test_java_sandwich_image() {
   cd "${ROOT}"
   clear_docker
@@ -253,6 +280,16 @@ function test_war_image() {
   sleep 5
   EXPECT_CONTAINS "$(curl localhost:8080)" "Hello World"
   docker rm -f "${ID}"
+}
+
+function test_war_image_with_custom_run_flags() {
+  cd "${ROOT}"
+  clear_docker
+  # Use --norun to prevent actually running the war image. We are just checking
+  # the `docker run` command in the generated load script contains the right
+  # flags.
+  bazel run testdata:war_image_with_custom_run_flags -- --norun
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/war_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
 
 function test_scala_image() {
@@ -307,6 +344,8 @@ test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
 test_py_image -c opt
 test_py_image -c dbg
+test_py3_image_with_custom_run_flags -c opt
+test_py3_image_with_custom_run_flags -c dbg
 test_cc_image -c opt
 test_cc_image -c dbg
 test_cc_binary_as_image -c opt
@@ -317,10 +356,13 @@ test_go_image_busybox
 test_go_image_with_tags
 test_java_image -c opt
 test_java_image -c dbg
+test_java_image_with_custom_run_flags -c opt
+test_java_image_with_custom_run_flags -c dbg
 test_java_sandwich_image -c opt
 test_java_sandwich_image -c dbg
 test_java_bin_as_lib_image
 test_war_image
+test_war_image_with_custom_run_flags
 test_scala_image -c opt
 test_scala_image -c dbg
 test_scala_sandwich_image -c opt
@@ -331,7 +373,8 @@ test_groovy_scala_image -c opt
 test_groovy_scala_image -c dbg
 test_rust_image -c opt
 test_rust_image -c dbg
-test_d_image -c opt
-test_d_image -c dbg
+# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+# test_d_image -c opt
+# test_d_image -c dbg
 test_nodejs_image -c opt
 test_nodejs_image -c dbg

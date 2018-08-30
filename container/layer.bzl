@@ -27,6 +27,7 @@ load(
 load(
     "//skylib:zip.bzl",
     _gzip = "gzip",
+    _zip_tools = "tools",
 )
 load(
     "//container:layer_tools.bzl",
@@ -39,6 +40,7 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
+load("//container:providers.bzl", "LayerInfo")
 
 def _magic_path(ctx, f, output_layer):
     # Right now the logic this uses is a bit crazy/buggy, so to support
@@ -52,6 +54,10 @@ def _magic_path(ctx, f, output_layer):
             dirname(output_layer.short_path),
             _canonicalize_path(ctx.attr.data_path),
         )
+
+        # data path get get calculated incorrectly for external repo
+        if data_path.startswith("/.."):
+            data_path = data_path[1:]
         return strip_prefix(f.short_path, data_path)
     else:
         # Otherwise, files are added without a directory prefix at all.
@@ -68,7 +74,8 @@ def build_layer(
         directory = None,
         symlinks = None,
         debs = None,
-        tars = None):
+        tars = None,
+        operating_system = None):
     """Build the current layer for appending it to the base layer"""
     layer = output_layer
     build_layer_exec = ctx.executable.build_layer
@@ -77,6 +84,16 @@ def build_layer(
         "--directory=" + directory,
         "--mode=" + ctx.attr.mode,
     ]
+
+    # Windows layer.tar require two separate root directories instead of just 1
+    # 'Files' is the equivalent of '.' in Linux images.
+    # 'Hives' is unique to Windows Docker images.  It is where per layer registry
+    # changes are stored.  rules_docker doesn't support registry deltas, but the
+    # directory is required for compatibility on Windows.
+    if (operating_system == "windows"):
+        args += ["--root_directory=Files"]
+        empty_root_dirs = ["Files", "Hives"]
+        args += ["--empty_root_dir=%s" % f for f in empty_root_dirs or []]
 
     args += ["--file=%s=%s" % (f.path, _magic_path(ctx, f, layer)) for f in files]
     args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
@@ -104,16 +121,6 @@ def zip_layer(ctx, layer):
     zipped_layer = _gzip(ctx, layer)
     return zipped_layer, _sha256(ctx, zipped_layer)
 
-    # A provider containing information needed in container_image and other rules.
-
-LayerInfo = provider(fields = [
-    "zipped_layer",
-    "blob_sum",
-    "unzipped_layer",
-    "diff_id",
-    "env",
-])
-
 def _impl(
         ctx,
         name = None,
@@ -126,6 +133,7 @@ def _impl(
         debs = None,
         tars = None,
         env = None,
+        operating_system = None,
         output_layer = None):
     """Implementation for the container_layer rule.
 
@@ -139,6 +147,7 @@ def _impl(
     directory: str, overrides ctx.attr.directory
     symlinks: str Dict, overrides ctx.attr.symlinks
     env: str Dict, overrides ctx.attr.env
+    operating_system: operating system to target (e.g. linux, windows)
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
     output_layer: File, overrides ctx.outputs.layer
@@ -150,6 +159,7 @@ def _impl(
     empty_dirs = empty_dirs or ctx.attr.empty_dirs
     directory = directory or ctx.attr.directory
     symlinks = symlinks or ctx.attr.symlinks
+    operating_system = operating_system or ctx.attr.operating_system
     debs = debs or ctx.files.debs
     tars = tars or ctx.files.tars
     output_layer = output_layer or ctx.outputs.layer
@@ -167,6 +177,7 @@ def _impl(
         symlinks = symlinks,
         debs = debs,
         tars = tars,
+        operating_system = operating_system,
     )
 
     # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
@@ -198,13 +209,14 @@ _layer_attrs = dict({
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "empty_dirs": attr.string_list(),
+    "operating_system": attr.string(default = "linux", mandatory = False),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
-}.items() + _hash_tools.items() + _layer_tools.items())
+}.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
 
 _layer_outputs = {
     "layer": "%{name}-layer.tar",
