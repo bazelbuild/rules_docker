@@ -212,6 +212,28 @@ def _repository_name(ctx):
 
     return _join_path(ctx.attr.repository, ctx.label.package)
 
+def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
+    blobsums = image.get("blobsum", [])
+    digest_args = ["--digest=%s" % f.path for f in blobsums]
+    blobs = image.get("zipped_layer", [])
+    layer_args = ["--layer=%s" % f.path for f in blobs]
+    config_arg = "--config=%s" % image["config"].path
+    output_digest_arg = "--output-digest=%s" % output_digest.path
+
+    arguments = [config_arg, output_digest_arg] + layer_args + digest_args
+    if image.get("legacy"):
+        arguments.append("--tarball=%s" % image["legacy"].path)
+
+    ctx.actions.run(
+        outputs = [output_digest],
+        inputs = [image["config"]] + blobsums + blobs +
+                 ([image["legacy"]] if image.get("legacy") else []),
+        executable = ctx.executable._digester,
+        arguments = arguments,
+        mnemonic = "ImageDigest",
+        progress_message = "Extracting image digest of %s" % image_tarball.short_path,
+    )
+
 def _impl(
         ctx,
         name = None,
@@ -232,6 +254,7 @@ def _impl(
         operating_system = None,
         output_executable = None,
         output_tarball = None,
+        output_digest = None,
         output_layer = None,
         workdir = None,
         null_cmd = None,
@@ -258,6 +281,7 @@ def _impl(
     operating_system: Operating system to target (e.g. linux, windows)
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
+    output_digest: File, overrides ctx.outputs.digest
     output_layer: File, overrides ctx.outputs.layer
     workdir: str, overrides ctx.attr.workdir
     null_cmd: bool, overrides ctx.attr.null_cmd
@@ -270,6 +294,7 @@ def _impl(
     creation_time = creation_time or ctx.attr.creation_time
     output_executable = output_executable or ctx.outputs.executable
     output_tarball = output_tarball or ctx.outputs.out
+    output_digest = output_digest or ctx.outputs.digest
     output_layer = output_layer or ctx.outputs.layer
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
@@ -357,6 +382,9 @@ def _impl(
         # A list of paths to the layer digests.
         "blobsum": shas,
 
+        # The File containing digest of the image.
+        "digest": output_digest,
+
         # A list of paths to the layer .tar files
         "unzipped_layer": unzipped_layers,
         # A list of paths to the layer diff_ids.
@@ -381,6 +409,7 @@ def _impl(
         run_flags = docker_run_flags,
     )
     _assemble_image(ctx, images, output_tarball)
+    _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 
     runfiles = ctx.runfiles(
         files = unzipped_layers + diff_ids + [config_file, config_digest] +
@@ -443,11 +472,17 @@ _attrs = dict(_layer.attrs.items() + {
     # We need these flags to distinguish them.
     "null_cmd": attr.bool(default = False),
     "null_entrypoint": attr.bool(default = False),
+    "_digester": attr.label(
+        default = "@containerregistry//:digester",
+        cfg = "host",
+        executable = True,
+    ),
 }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
 
 _outputs = dict(_layer.outputs)
 
 _outputs["out"] = "%{name}.tar"
+_outputs["digest"] = "%{name}.digest"
 
 image = struct(
     attrs = _attrs,
