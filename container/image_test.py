@@ -451,6 +451,7 @@ class ImageTest(unittest.TestCase):
           self.assertEqual(0o777, memberfile.mode)
 
   def test_py_image(self):
+    print("!!!!!!!!! STARTING !!!!")
     with TestImage('py_image') as img:
       # Check the application layer, which is on top.
       self.assertTopLayerContains(img, [
@@ -462,7 +463,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary',
-        './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
+        './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD-2',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
@@ -475,6 +476,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/py_image.binary',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/external',
       ])
+      print("DOOONNEEE")
 
       # Check the library layer, which is one below our application layer.
       self.assertLayerNContains(img, 1, [

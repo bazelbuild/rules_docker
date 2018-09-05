@@ -28,7 +28,6 @@ load(
     "//lang:image.bzl",
     "dep_layer_impl",
     "layer_file_path",
-    "runfiles_dir",
 )
 
 # Load the resolved digests.
@@ -135,7 +134,6 @@ jar_dep_layer = rule(
 def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
-    workdir = ctx.attr.workdir or "/".join([runfiles_dir(ctx), ctx.workspace_name])
     available = depset()
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
@@ -187,7 +185,6 @@ def _jar_app_layer_impl(ctx):
         directory = "/",
         file_map = file_map,
         entrypoint = entrypoint,
-        workdir = workdir,
     )
 
 jar_app_layer = rule(

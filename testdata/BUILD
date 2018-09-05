@@ -25,6 +25,8 @@ load("//testdata:utils.bzl", "generate_deb")
 
 exports_files(["pause.tar"])
 
+exports_files(["BUILD"])
+
 genrule(
     name = "gen",
     outs = ["gen.out"],
