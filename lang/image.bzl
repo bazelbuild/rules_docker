@@ -28,7 +28,7 @@ def _binary_name(ctx):
         ctx.attr.binary.label.name,
     ])
 
-def runfiles_dir(ctx):
+def _runfiles_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles
     return _binary_name(ctx) + ".runfiles"
@@ -38,7 +38,7 @@ def runfiles_dir(ctx):
 def _reference_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles/foo
-    return "/".join([runfiles_dir(ctx), ctx.workspace_name])
+    return "/".join([_runfiles_dir(ctx), ctx.workspace_name])
 
 # The special "external" directory which is an alternate way of accessing
 # other repositories.
@@ -65,7 +65,7 @@ def _final_emptyfile_path(ctx, name):
     # so we "fix" the empty files' paths by removing "external/" and basing them
     # directly on the runfiles path.
 
-    return "/".join([runfiles_dir(ctx), name[len("external/"):]])
+    return "/".join([_runfiles_dir(ctx), name[len("external/"):]])
 
 # The final location that this file needs to exist for the foo_binary target to
 # properly execute.
@@ -167,7 +167,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     runfiles = runfiles or _default_runfiles
     emptyfiles = emptyfiles or _default_emptyfiles
-    workdir = ctx.attr.workdir or "/".join([runfiles_dir(ctx), ctx.workspace_name])
+    workdir = ctx.attr.workdir or "/".join([_runfiles_dir(ctx), ctx.workspace_name])
 
     # Compute the set of runfiles that have been made available
     # in our base image, tracking absolute paths.
@@ -213,7 +213,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         _binary_name(ctx): _final_file_path(ctx, ctx.executable.binary),
         # Create a directory symlink from <workspace>/external to the runfiles
         # root, since they may be accessed via either path.
-        _external_dir(ctx): runfiles_dir(ctx),
+        _external_dir(ctx): _runfiles_dir(ctx),
     })
 
     # args of the form $(location :some_target) are expanded to the path of the underlying file
