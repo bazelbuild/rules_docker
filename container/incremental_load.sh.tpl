@@ -19,10 +19,27 @@ set -eu
 # This is a generated file that loads all docker layers built by "docker_build".
 
 function guess_runfiles() {
-    pushd ${BASH_SOURCE[0]}.runfiles > /dev/null 2>&1
-    pwd
-    popd > /dev/null 2>&1
+  pushd ${BASH_SOURCE[0]}.runfiles > /dev/null 2>&1
+  pwd
+  popd > /dev/null 2>&1
 }
+
+function get_runfile() {
+  if [[ -f "$RUNFILES/$1" ]]; then
+    echo "$RUNFILES/$1"
+  else
+    rel="__main__/../"
+    abs="__main__/external/"
+    fn=${1/$rel/$abs}
+    echo "${MANIFEST[$fn]}"
+  fi
+}
+
+declare -A MANIFEST
+while IFS='' read -r line || [[ -n "$line" ]]; do
+  IFS=$' ' read -r from to <<< "$line"
+  MANIFEST["$from"]="$to"
+done < "${BASH_SOURCE[0]}.runfiles/MANIFEST"
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
@@ -42,7 +59,7 @@ trap cleanup EXIT
 
 
 function load_legacy() {
-  local tarball="${RUNFILES}/$1"
+  local tarball=$(get_runfile $1)
 
   # docker load has elision of preloaded layers built in.
   echo "Loading legacy tarball base $1..."
@@ -97,7 +114,8 @@ function find_diffbase() {
   NEW_DIFF_IDS=()
   while test $# -gt 0
   do
-    local diff_id="$(cat "${RUNFILES}/$1")"
+    local fn=$(get_runfile $1)
+    local diff_id="$(cat "$fn")"
     # Throwaway the layer, we only want diff id.
     shift 2
 
@@ -113,7 +131,7 @@ function find_diffbase() {
 
 function import_config() {
   # Create an image from the image configuration file.
-  local name="${RUNFILES}/$1"
+  local name=$(get_runfile $1)
   shift 1
 
   local tmp_dir="$(mktemp -d)"
@@ -145,8 +163,9 @@ function import_config() {
   # additional layers the Docker daemon already has.
   while test $# -gt 0
   do
-    local diff_id="$(cat "${RUNFILES}/$1")"
-    local layer="${RUNFILES}/$2"
+    local fn=$(get_runfile $1)
+    local diff_id="$(cat "$fn")"
+    local layer=$(get_runfile $2)
 
     DIFF_IDS+=("\"sha256:${diff_id}\"")
 
@@ -166,8 +185,9 @@ function import_config() {
   MISSING=()
   while test $# -gt 0
   do
-    local diff_id="$(cat "${RUNFILES}/$1")"
-    local layer="${RUNFILES}/$2"
+    local fn=$(get_runfile $1)
+    local diff_id="$(cat "$fn")"
+    local layer=$(get_runfile $2)
     shift 2
 
     ALL_QUOTED+=("\"${diff_id}.tar\"")
@@ -198,7 +218,8 @@ EOF
 }
 
 function tag_layer() {
-  local name="$(cat "${RUNFILES}/$2")"
+  local fn=$(get_runfile $2)
+  local name="$(cat "$fn")"
 
   local TAG="$1"
   echo "Tagging ${name} as ${TAG}"
@@ -206,7 +227,7 @@ function tag_layer() {
 }
 
 function read_variables() {
-  local file="${RUNFILES}/$1"
+  local file=$(get_runfile $1)
   local new_file="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_new')"
   echo "${new_file}" >> "${TEMP_FILES}"
 
