@@ -146,11 +146,11 @@ file_test(
 )
 
 container_bundle(
-  name= "create_empty_bundle",
-  images={}
+    name = "create_empty_bundle",
+    images = {},
 )
 
 docker_push(
     name = "test_docker_push_empty_bundle",
-    bundle = ":create_empty_bundle"
+    bundle = ":create_empty_bundle",
 )
