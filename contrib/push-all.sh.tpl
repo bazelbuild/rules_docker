@@ -32,8 +32,8 @@ function async() {
 %{push_statements}
 
 # Wait for all of the subprocesses, failing the script if any of them failed.
-# See https://github.com/bazelbuild/rules_docker/issues/511 on why we do
-# the verbose expansion for the PIDS instead of just PIDS[@]
-for pid in ${PIDS[@]+"${PIDS[@]}"}; do
-    wait ${pid}
-done
+if [ "${#PIDS[@]}" != 0 ]; then
+    for pid in ${PIDS[@]}; do
+        wait ${pid}
+    done
+fi
