@@ -177,6 +177,9 @@ def _jar_app_layer_impl(ctx):
     file_map = {
         layer_file_path(ctx, f): f
         for f in unavailable + [classpath_file]
+    } + {
+        layer_file_path(ctx, f): f
+        for f in ctx.files.data
     }
 
     return _container.image.implementation(

@@ -40,7 +40,7 @@ def TestBundleImage(name, image_name):
 class ImageTest(unittest.TestCase):
 
   def assertTarballContains(self, tar, paths):
-    self.assertEqual(paths, tar.getnames())
+    self.assertEqual(paths, tar.getnames(), msg = str(tar.getnames()))
 
   def assertLayerNContains(self, img, n, paths):
     buf = cStringIO.StringIO(img.blob(img.fs_layers()[n]))
@@ -521,7 +521,8 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/java_image.binary.jar',
         './app/io_bazel_rules_docker/testdata/java_image.binary',
-        './app/io_bazel_rules_docker/testdata/java_image.classpath'
+        './app/io_bazel_rules_docker/testdata/java_image.classpath',
+        './app/io_bazel_rules_docker/testdata/BUILD',
       ])
 
       self.assertLayerNContains(img, 1, [
