@@ -17,6 +17,9 @@
 *.mod
 *.smod
 
+# Python 2 bytecode files
+*.pyc
+
 # Compiled Static libraries
 *.lai
 *.la
