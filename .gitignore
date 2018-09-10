@@ -34,6 +34,9 @@
 # Emacs garbage
 *~
 
+# Vim garbage
+*.swp
+
 # Bazel directories
 bazel-*
 bazel-bin
