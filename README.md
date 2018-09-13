@@ -1209,6 +1209,16 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       </td>
     </tr>
     <tr>
+      <td><code><i>name</i>.digest</code></td>
+      <td>
+        <code>The full Docker image's digest</code>
+        <p>
+            An image digest that can be used to refer to that image. Unlike tags,
+            digest references are immutable i.e. always refer to the same content.
+        </p>
+      </td>
+    </tr>
+    <tr>
       <td><code><i>name</i>-layer.tar</code></td>
       <td>
         <code>An image of the current layer</code>

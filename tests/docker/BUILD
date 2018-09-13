@@ -15,6 +15,10 @@ package(default_visibility = ["//visibility:public"])
 
 load("//container:container.bzl", "container_image", "container_import")
 load("//contrib:test.bzl", "container_test")
+load(
+    "@bazel_tools//tools/build_rules:test_rules.bzl",
+    "file_test",
+)
 
 container_test(
     name = "structure_test",
@@ -159,4 +163,16 @@ container_test(
     configs = ["//tests/docker/configs:windows_image.yaml"],
     driver = "tar",
     image = ":basic_windows_image",
+)
+
+file_test(
+    name = "test_digest_output1",
+    content = "sha256:fd90e88f1c5dfedf89df4469747ada0a28d7c34196bb2ac879cff6f259f65ba5",
+    file = ":deb_image_with_dpkgs.digest",
+)
+
+file_test(
+    name = "test_digest_output2",
+    content = "sha256:acff18cc59851acc448c0f106ccefdd13907a91835d61b8b34f85a974a2e540a",
+    file = ":null_cmd_and_entrypoint_none.digest",
 )
