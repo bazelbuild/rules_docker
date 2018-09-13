@@ -58,7 +58,7 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py3_image_base//image",
 })
 
-def py3_image(name, base = None, deps = [], layers = [], **kwargs):
+def py3_image(name, base = None, deps = [], layers = [], directory = "/app", workdir = "/app", **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
@@ -76,12 +76,10 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
 
     native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
 
-    # TODO(mattmoor): Consider making the directory into which the app
-    # is placed configurable.
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
+        dep_layer(name = this_name, base = base, dep = dep, directory = directory)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -93,6 +91,8 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         binary = binary_name,
         lang_layers = layers,
         visibility = visibility,
+        directory = directory,
+        workdir = workdir,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
