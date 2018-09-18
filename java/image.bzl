@@ -99,6 +99,8 @@ def java_files(f):
     if java_common.provider in f:
         java_provider = f[java_common.provider]
         files += list(java_provider.transitive_runtime_jars)
+    if hasattr(f, "data_runfiles"):
+        files += list(f.data_runfiles.files)
     if hasattr(f, "files"):  # a jar file
         files += list(f.files)
     return files
@@ -133,8 +135,7 @@ jar_dep_layer = rule(
 
 def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
-
-    workdir = ctx.attr.workdir or "/".join([ctx.attr.directory, ctx.workspace_name])
+    workdir = ctx.attr.workdir or ctx.attr.directory
     available = depset()
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
@@ -178,15 +179,15 @@ def _jar_app_layer_impl(ctx):
     file_map = {
         layer_file_path(ctx, f): f
         for f in unavailable + [classpath_file]
-    } + {
-        layer_file_path(ctx, f): f
-        for f in ctx.files.data
     }
 
     return _container.image.implementation(
         ctx,
         # We use all absolute paths.
         directory = "/",
+        env = {
+	  "JAVA_RUNFILES": ctx.attr.directory,
+	},
         file_map = file_map,
         entrypoint = entrypoint,
         workdir = workdir,
