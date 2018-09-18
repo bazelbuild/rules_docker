@@ -24,5 +24,5 @@ licenses(["notice"])  # Apache 2.0
 java_runtime(
     name = "jdk",
     srcs = [],
-    java_home = "/usr/lib/jvm/java-8-openjdk-amd64",
+    java_home = "/usr/lib/jvm/java-8-oracle",
 )

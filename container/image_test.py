@@ -40,7 +40,7 @@ def TestBundleImage(name, image_name):
 class ImageTest(unittest.TestCase):
 
   def assertTarballContains(self, tar, paths):
-    self.assertEqual(paths, tar.getnames(), msg = str(tar.getnames()))
+    self.assertEqual(paths, tar.getnames())
 
   def assertLayerNContains(self, img, n, paths):
     buf = cStringIO.StringIO(img.blob(img.fs_layers()[n]))
