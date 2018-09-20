@@ -16,6 +16,7 @@ set -ex
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
+BAZEL_FLAGS="--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1 --action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
 CONTAINER_IMAGE_TARGETS_QUERY="
 bazel query 'kind(\"container_image\", \"testdata/...\") except
     (\"//testdata:py3_image_base_with_custom_run_flags\" union
@@ -110,7 +111,7 @@ docker_pull(
 )
 EOF
 
-  bazel build --verbose_failures --spawn_strategy=standalone :pause_based
+  bazel build $BAZEL_FLAGS --verbose_failures --spawn_strategy=standalone :pause_based
 }
 
 
@@ -123,7 +124,7 @@ function test_bazel_build_then_run_docker_build_clean() {
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
-    bazel build $target
+    bazel build $BAZEL_FLAGS $target
     # Replace : with /
     ./bazel-bin/${target/://}
   done
@@ -134,7 +135,7 @@ function test_bazel_run_docker_build_clean() {
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
-    bazel run $target
+    bazel run $BAZEL_FLAGS $target
   done
 }
 
@@ -143,7 +144,7 @@ function test_bazel_run_docker_bundle_clean() {
   for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
   do
     clear_docker
-    bazel run $target
+    bazel run $BAZEL_FLAGS $target
   done
 }
 
@@ -152,7 +153,7 @@ function test_bazel_run_docker_import_clean() {
   for target in $(bazel query 'kind("docker_import", "testdata/...")');
   do
     clear_docker
-    bazel run $target
+    bazel run $BAZEL_FLAGS $target
   done
 }
 
@@ -161,7 +162,7 @@ function test_bazel_run_docker_build_incremental() {
   clear_docker
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
-    bazel run $target
+    bazel run $BAZEL_FLAGS $target
   done
 }
 
@@ -170,7 +171,7 @@ function test_bazel_run_docker_bundle_incremental() {
   clear_docker
   for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
   do
-    bazel run $target
+    bazel run $BAZEL_FLAGS $target
   done
 }
 
@@ -179,7 +180,7 @@ function test_bazel_run_docker_import_incremental() {
   clear_docker
   for target in $(bazel query 'kind("docker_import", "testdata/...")');
   do
-    bazel run $target
+    bazel run $BAZEL_FLAGS $target
   done
 }
 
@@ -187,7 +188,7 @@ function test_py_image() {
   cd "${ROOT}"
   clear_docker
   cat > output.txt <<EOF
-$(bazel run "$@" testdata:py_image)
+$(bazel run "$BAZEL_FLAGS"  "$@" testdata:py_image)
 EOF
   EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
   EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
@@ -200,7 +201,7 @@ function test_py3_image_with_custom_run_flags() {
   cd "${ROOT}"
   clear_docker
   cat > output.txt <<EOF
-$(bazel run "$@" testdata:py3_image_with_custom_run_flags)
+$(bazel run "$BAZEL_FLAGS" "$@" testdata:py3_image_with_custom_run_flags)
 EOF
   EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
   EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
@@ -213,25 +214,25 @@ EOF
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:cc_image)" "Hello World"
 }
 
 function test_cc_binary_as_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_binary_as_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:cc_binary_as_image)" "Hello World"
 }
 
 function test_go_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:go_image)" "Hello, world!"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:go_image)" "Hello, world!"
 }
 
 function test_go_image_busybox() {
   cd "${ROOT}"
   clear_docker
-  bazel run -c dbg testdata:go_image -- --norun
+  bazel run $BAZEL_FLAGS -c dbg testdata:go_image -- --norun
   local number=$RANDOM
   EXPECT_CONTAINS "$(docker run -ti --rm --entrypoint=sh bazel/testdata:go_image -c \"echo aa${number}bb\")" "aa${number}bb"
 }
@@ -248,33 +249,33 @@ function test_go_image_with_tags() {
 function test_java_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:java_image)" "Hello World"
 }
 
 function test_java_image_with_custom_run_flags() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
   EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
 
 function test_java_sandwich_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_sandwich_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:java_sandwich_image)" "Hello World"
 }
 
 function test_java_bin_as_lib_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run testdata:java_bin_as_lib_image
+  bazel run $BAZEL_FLAGS testdata:java_bin_as_lib_image
   docker run -ti --rm bazel/testdata:java_bin_as_lib_image
 }
 
 function test_war_image() {
   cd "${ROOT}"
   clear_docker
-  bazel build testdata:war_image.tar
+  bazel build $BAZEL_FLAGS testdata:war_image.tar
   docker load -i bazel-bin/testdata/war_image.tar
   ID=$(docker run -d -p 8080:8080 bazel/testdata:war_image)
   sleep 5
@@ -288,50 +289,50 @@ function test_war_image_with_custom_run_flags() {
   # Use --norun to prevent actually running the war image. We are just checking
   # the `docker run` command in the generated load script contains the right
   # flags.
-  bazel run testdata:war_image_with_custom_run_flags -- --norun
+  bazel run $BAZEL_FLAGS testdata:war_image_with_custom_run_flags -- --norun
   EXPECT_CONTAINS "$(cat bazel-bin/testdata/war_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
 
 function test_scala_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:scala_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:scala_image)" "Hello World"
 }
 
 function test_scala_sandwich_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:scala_sandwich_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:scala_sandwich_image)" "Hello World"
 }
 
 function test_groovy_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:groovy_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:groovy_image)" "Hello World"
 }
 
 function test_groovy_scala_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:groovy_scala_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:groovy_scala_image)" "Hello World"
 }
 
 function test_rust_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:rust_image)" "Hello world"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:rust_image)" "Hello world"
 }
 
 function test_d_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:d_image)" "Hello world"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:d_image)" "Hello world"
 }
 
 function test_nodejs_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:nodejs_image)" "Hello World!"
+  EXPECT_CONTAINS "$(bazel run "$BAZEL_FLAGS" "$@" testdata:nodejs_image)" "Hello World!"
 }
 
 test_top_level
