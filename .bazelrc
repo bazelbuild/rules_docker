@@ -4,5 +4,5 @@
 # the default is overriden. java_image rules will work without use of
 # these flags but will be notoriously bigger.
 build --javabase=@local_config_java//:jdk
-build --javabase=@local_config_java//:jdk
-build --javabase=@local_config_java//:jdk
+test --javabase=@local_config_java//:jdk
+run --javabase=@local_config_java//:jdk
