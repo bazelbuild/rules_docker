@@ -14,7 +14,6 @@
 # limitations under the License.
 
 set -eu
-
 function guess_runfiles() {
     pushd ${BASH_SOURCE[0]}.runfiles > /dev/null 2>&1
     pwd
@@ -33,6 +32,8 @@ function async() {
 %{push_statements}
 
 # Wait for all of the subprocesses, failing the script if any of them failed.
-for pid in ${PIDS[@]}; do
-    wait ${pid}
-done
+if [ "${#PIDS[@]}" != 0 ]; then
+    for pid in ${PIDS[@]}; do
+        wait ${pid}
+    done
+fi

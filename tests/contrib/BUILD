@@ -20,6 +20,8 @@ load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
+load("//container:bundle.bzl", "container_bundle")
+load("//contrib:push-all.bzl", "docker_push")
 
 sh_test(
     name = "rename_image_test",
@@ -141,4 +143,14 @@ file_test(
     name = "test_idd_rule_output",
     file = ":test_idd_rule",
     regexp = "^set -x && python .*idd .*image.tar .*image.tar -v -d$",
+)
+
+container_bundle(
+    name = "create_empty_bundle",
+    images = {},
+)
+
+docker_push(
+    name = "test_docker_push_empty_bundle",
+    bundle = ":create_empty_bundle",
 )
