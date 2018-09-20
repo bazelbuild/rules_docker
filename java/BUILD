@@ -15,14 +15,3 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-# A java_runtime to use as --javabase for building/running java_image targets
-# By default the javabase set in Bazel points to the @local_jdk.
-# In order to build java_images with all their dependencies set we
-# include all transitive deps, which will include the @local_jdk unless
-# the default is overriden. Note java_image rules will work without use of
-# these flags but will be notoriously bigger.
-java_runtime(
-    name = "jdk",
-    srcs = [],
-    java_home = "/usr/lib/jvm/java-8-oracle",
-)

@@ -13,6 +13,10 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
+load("//skylib:java_configure.bzl", "java_configure")
+
+java_configure()
+
 load(
     "//container:container.bzl",
     "container_load",

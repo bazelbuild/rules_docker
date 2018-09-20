@@ -94,19 +94,38 @@ DEFAULT_JETTY_BASE = select({
     "//conditions:default": "@jetty_image_base//image",
 })
 
-def java_files(f):
+def _java_files(f, transitive_deps):
     files = []
     if java_common.provider in f:
         java_provider = f[java_common.provider]
         files += list(java_provider.transitive_runtime_jars)
+    #if transitive_deps:
     if hasattr(f, "data_runfiles"):
         files += list(f.data_runfiles.files)
     if hasattr(f, "files"):  # a jar file
         files += list(f.files)
     return files
 
+def _java_files_no_transitive_deps(f):
+    return _java_files(f, False)
+
+def _java_files_with_transitive_deps(f):
+    return _java_files(f, True)
+
 def _jar_dep_layer_impl(ctx):
     """Appends a layer for a single dependency's runfiles."""
+    # if EXPERIMENTAL_TRANSITIVE_JAVA_DEPS is set in the env as '1' then
+    # we will add to the files all the data_runfiles for this file.
+    # This effectively supports all the same deps as in the java_xx rule
+    # are included.
+    # Note setting this requires JAVA_HOME to be set in the env, as this
+    # feature depends on not using the @local_jdk as part of the build.
+    # (this is because if @local_jdk is the target javabase for the build
+    # the entire @local_jdk will be included in the image).
+    # See also: //skylib/java_configure.bzl
+    java_files = _java_files_no_transitive_deps
+    if "EXPERIMENTAL_TRANSITIVE_JAVA_DEPS" in ctx.var and ctx.var["EXPERIMENTAL_TRANSITIVE_JAVA_DEPS"] == "1":
+      java_files = _java_files_with_transitive_deps
     return dep_layer_impl(ctx, runfiles = java_files)
 
 jar_dep_layer = rule(
@@ -137,6 +156,18 @@ def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
     workdir = ctx.attr.workdir or ctx.attr.directory
     available = depset()
+    # if EXPERIMENTAL_TRANSITIVE_JAVA_DEPS is set in the env as '1' then
+    # we will add to the files all the data_runfiles for this file.
+    # This effectively supports all the same deps as in the java_xx rule
+    # are included.
+    # Note setting this requires JAVA_HOME to be set in the env, as this
+    # feature depends on not using the @local_jdk as part of the build.
+    # (this is because if @local_jdk is the target javabase for the build
+    # the entire @local_jdk will be included in the image).
+    # See also: //skylib/java_configure.bzl
+    java_files = _java_files_no_transitive_deps
+    if "EXPERIMENTAL_TRANSITIVE_JAVA_DEPS" in ctx.var and ctx.var["EXPERIMENTAL_TRANSITIVE_JAVA_DEPS"] == "1":
+      java_files = _java_files_with_transitive_deps
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
 
@@ -285,7 +316,18 @@ def java_image(
 
 def _war_dep_layer_impl(ctx):
     """Appends a layer for a single dependency's runfiles."""
-
+    # if EXPERIMENTAL_TRANSITIVE_JAVA_DEPS is set in the env as '1' then
+    # we will add to the files all the data_runfiles for this file.
+    # This effectively supports all the same deps as in the java_xx rule
+    # are included.
+    # Note setting this requires JAVA_HOME to be set in the env, as this
+    # feature depends on not using the @local_jdk as part of the build.
+    # (this is because if @local_jdk is the target javabase for the build
+    # the entire @local_jdk will be included in the image).
+    # See also: //skylib/java_configure.bzl
+    java_files = _java_files_no_transitive_deps
+    if "EXPERIMENTAL_TRANSITIVE_JAVA_DEPS" in ctx.var and ctx.var["EXPERIMENTAL_TRANSITIVE_JAVA_DEPS"] == "1":
+      java_files = _java_files_with_transitive_deps
     # TODO(mattmoor): Today we run the risk of filenames colliding when
     # they get flattened.  Instead of just flattening and using basename
     # we should use a file_map based scheme.
@@ -320,7 +362,18 @@ _war_dep_layer = rule(
 
 def _war_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
-
+    # if EXPERIMENTAL_TRANSITIVE_JAVA_DEPS is set in the env as '1' then
+    # we will add to the files all the data_runfiles for this file.
+    # This effectively supports all the same deps as in the java_xx rule
+    # are included.
+    # Note setting this requires JAVA_HOME to be set in the env, as this
+    # feature depends on not using the @local_jdk as part of the build.
+    # (this is because if @local_jdk is the target javabase for the build
+    # the entire @local_jdk will be included in the image).
+    # See also: //skylib/java_configure.bzl
+    java_files = _java_files_no_transitive_deps
+    if "EXPERIMENTAL_TRANSITIVE_JAVA_DEPS" in ctx.var and ctx.var["EXPERIMENTAL_TRANSITIVE_JAVA_DEPS"] == "1":
+      java_files = _java_files_with_transitive_deps
     available = depset()
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)

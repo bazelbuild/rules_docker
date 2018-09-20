@@ -23,6 +23,11 @@ skylark_library(
 )
 
 skylark_library(
+    name = "java_configure",
+    srcs = ["java_configure.bzl"],
+)
+
+skylark_library(
     name = "label",
     srcs = ["label.bzl"],
 )

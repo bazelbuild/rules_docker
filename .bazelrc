@@ -3,6 +3,6 @@
 # include all transitive deps, which will include the @local_jdk unless
 # the default is overriden. java_image rules will work without use of
 # these flags but will be notoriously bigger.
-build --javabase=//java:jdk
-run --javabase=//java:jdk
-test --javabase=//java:jdk
+build --javabase=@local_config_java//:jdk
+build --javabase=@local_config_java//:jdk
+build --javabase=@local_config_java//:jdk
