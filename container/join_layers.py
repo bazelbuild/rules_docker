@@ -109,7 +109,7 @@ class FromParts(v2_2_image.DockerImage):
     elif digest not in self._blobsum_to_unzipped:
       return self._blobsum_to_legacy[digest].uncompressed_blob(digest)
 
-    with open(self._blobsum_to_unzipped[digest], 'r') as reader:
+    with open(self._blobsum_to_unzipped[digest], 'rb') as reader:
       return reader.read()
 
   # Could be large, do not memoize
@@ -117,7 +117,7 @@ class FromParts(v2_2_image.DockerImage):
     """Override."""
     if digest not in self._blobsum_to_zipped:
       return self._blobsum_to_legacy[digest].blob(digest)
-    with open(self._blobsum_to_zipped[digest], 'r') as reader:
+    with open(self._blobsum_to_zipped[digest], 'rb') as reader:
       return reader.read()
 
   def blob_size(self, digest):
