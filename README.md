@@ -554,6 +554,19 @@ java_image(
 )
 ```
 
+**NEW: starting v0.5.2 `java_image` includes all transitive deps if
+`EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1` is set in the env (e.g., via `--define`
+flag and --action_env flag or directly via export).
+This feature also requires `JAVA_HOME` to be set in the env
+and requires using `--javabase=@local_config_java//:jdk.`**
+
+By default the `javabase` set in Bazel points to the `@local_jdk`.
+In order to build `java_images` with all their dependencies set we
+include all transitive deps, which will include the `@local_jdk` unless
+the default is overriden. Note `java_image` rules will work without use of
+these flags but will be notoriously bigger if
+`EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1` is set.
+
 ### war_image
 
 To use `war_image`, add the following to `WORKSPACE`:

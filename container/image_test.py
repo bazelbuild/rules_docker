@@ -519,9 +519,10 @@ class ImageTest(unittest.TestCase):
         './app',
         './app/io_bazel_rules_docker',
         './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/BUILD',
         './app/io_bazel_rules_docker/testdata/java_image.binary.jar',
         './app/io_bazel_rules_docker/testdata/java_image.binary',
-        './app/io_bazel_rules_docker/testdata/java_image.classpath'
+        './app/io_bazel_rules_docker/testdata/java_image.classpath',
       ])
 
       self.assertLayerNContains(img, 1, [
@@ -537,9 +538,10 @@ class ImageTest(unittest.TestCase):
 
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/java', '-cp',
-        ':'.join([
+        u':'.join([
           '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar',
           '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar',
+          '/app/io_bazel_rules_docker/testdata/BUILD',
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
@@ -549,6 +551,38 @@ class ImageTest(unittest.TestCase):
         'arg0',
         'arg1',
         'testdata/BUILD'
+      ])
+
+  def test_java_runfiles_as_lib_image(self):
+    with TestImage('java_runfiles_as_lib_image') as img:
+      # Check the application layer, which is on top.
+      self.assertTopLayerContains(img, [
+        '.',
+        './app',
+        './app/io_bazel_rules_docker',
+        './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
+        './app/bazel_tools',
+        './app/bazel_tools/tools',
+        './app/bazel_tools/tools/java',
+        './app/bazel_tools/tools/java/runfiles',
+        './app/bazel_tools/tools/java/runfiles/librunfiles.jar',
+        './app/io_bazel_rules_docker/testdata/foo',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.classpath',
+      ])
+
+      self.assertConfigEqual(img, 'Entrypoint', [
+        u'/usr/bin/java', u'-cp',
+        u':'.join([
+          '/app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
+          '/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar',
+          '/app/io_bazel_rules_docker/testdata/foo',
+          '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
+          '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',
+        ]),
+        u'examples.images.Runfiles'
       ])
 
   def test_war_image(self):
@@ -623,8 +657,9 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/java',
         '-cp',
-        '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar:'
+        u'/app/io_bazel_rules_docker/testdata/libjava_image_library.jar:'
         +'/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'
+        +'/app/io_bazel_rules_docker/testdata/BUILD:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary',
         '-XX:MaxPermSize=128M',
@@ -662,12 +697,14 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/java',
         '-cp',
-        '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
+        u'/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
         '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_library/scala-library-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        '/app/io_bazel_rules_docker/testdata/BUILD:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary_wrapper.sh',
         '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
@@ -680,10 +717,11 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/java',
         '-cp',
-        '/app/io_bazel_rules_docker/testdata/libgroovy_image_library-impl.jar:'+
+        u'/app/io_bazel_rules_docker/testdata/libgroovy_image_library-impl.jar:'+
         '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
         '/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.4.4/lib/groovy-2.4.4.jar:'+
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
+        '/app/io_bazel_rules_docker/testdata/BUILD:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
         '-Dbuild.location=testdata/BUILD',

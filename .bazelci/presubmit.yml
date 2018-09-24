@@ -14,6 +14,12 @@ platforms:
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    build_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    test_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
   ubuntu1604:
     build_targets:
     # We are running the skipped targets remotely only.
@@ -28,6 +34,12 @@ platforms:
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    build_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    test_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
   macos:
     build_targets:
     - "..."
@@ -35,6 +47,12 @@ platforms:
     - "--"
     - "..."
     - "-//tests/docker/..."
+    build_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    test_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
   # We are selecting to test only the targets that build on RBE
   # because the default image does not support `docker`.
   rbe_ubuntu1604:
@@ -155,7 +173,12 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    build_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
     test_flags:
+    - "--define=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
+    - "--action_env=EXPERIMENTAL_TRANSITIVE_JAVA_DEPS=1"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"

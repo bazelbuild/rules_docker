@@ -1,0 +1,8 @@
+# By default the javabase set in Bazel points to the @local_jdk.
+# In order to build java_images with all their dependencies set we
+# include all transitive deps, which will include the @local_jdk unless
+# the default is overriden. java_image rules will work without use of
+# these flags but will be notoriously bigger.
+build --javabase=@local_config_java//:jdk
+test --javabase=@local_config_java//:jdk
+run --javabase=@local_config_java//:jdk
