@@ -45,4 +45,13 @@ PushInfo = provider(fields = [
     "tag",
     "stamp",
     "stamp_inputs",
+    "docker_config", 
 ])
+
+# A provider containing information exposed by registry_credential rules
+RegistryCredentialInfo = provider(fields = {
+    "address": "Docker server address",
+    "username": "Docker basic auth username",
+    "password": "Docker basic auth password",
+    "type": "Docker credential type",
+})

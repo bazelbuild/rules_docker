@@ -26,7 +26,14 @@ load(
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
-load("//container:providers.bzl", "PushInfo")
+load("//container:providers.bzl", 
+    "PushInfo", 
+    "RegistryCredentialInfo",
+)
+load(
+    "//container:credentials.bzl",
+    _write_docker_config_file = "write_docker_config_file",
+)
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
@@ -58,25 +65,52 @@ def _impl(ctx):
     config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
     manifest_arg = "--manifest=%s" % _get_runfile_path(ctx, image["manifest"])
 
+    files = [
+        ctx.executable._pusher,
+        image["config"],
+        image["manifest"],
+    ] + image.get("blobsum", []) 
+      + image.get("zipped_layer", []) 
+      + stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) 
+      + list(ctx.attr._pusher.default_runfiles.files),
+
+    #
+    # Expanded make variables for shell script template
+    #
+    registry = ctx.expand_make_variables(
+        "registry",
+        ctx.attr.registry,
+        {},
+    )
+    repository = ctx.expand_make_variables(
+        "repository",
+        ctx.attr.repository,
+        {},
+    )
+    tag = ctx.expand_make_variables(
+        "tag",
+        ctx.attr.tag,
+        {},
+    )
+
+    #
+    # Create docker config file if requested
+    #
+    docker_config = None
+    docker_config_path = "~/.docker/config.json"
+    if ctx.attr.credential:
+        cred = ctx.attr.credential[RegistryCredentialInfo]
+        docker_config = _write_docker_config_file(ctx, registry, cred)
+        docker_config_path = _get_runfile_path(docker_config)
+        files.append(docker_config)
+
     ctx.template_action(
         template = ctx.file._tag_tpl,
         substitutions = {
             "%{tag}": "{registry}/{repository}:{tag}".format(
-                registry = ctx.expand_make_variables(
-                    "registry",
-                    ctx.attr.registry,
-                    {},
-                ),
-                repository = ctx.expand_make_variables(
-                    "repository",
-                    ctx.attr.repository,
-                    {},
-                ),
-                tag = ctx.expand_make_variables(
-                    "tag",
-                    ctx.attr.tag,
-                    {},
-                ),
+                registry = registry,
+                repository = repository,
+                tag = tag,
             ),
             "%{stamp}": stamp_arg,
             "%{image}": "%s %s %s %s %s" % (
@@ -88,20 +122,13 @@ def _impl(ctx):
             ),
             "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
+            "%{docker_config}": docker_config_path,
         },
         output = ctx.outputs.executable,
         executable = True,
     )
 
-    runfiles = ctx.runfiles(
-        files = [
-                    ctx.executable._pusher,
-                    image["config"],
-                    image["manifest"],
-                ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-                stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
-                list(ctx.attr._pusher.default_runfiles.files),
-    )
+    runfiles = ctx.runfiles(files = files)
 
     return struct(
         providers = [
@@ -111,6 +138,7 @@ def _impl(ctx):
                 tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
                 stamp = ctx.attr.stamp,
                 stamp_inputs = stamp_inputs,
+                docker_config = docker_config,
             ),
             DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
         ],
@@ -145,6 +173,9 @@ container_push = rule(
         "stamp": attr.bool(
             default = False,
             mandatory = False,
+        ),
+        "credentials": attr.label_list(
+            providers = [DockerCredentialInfo],
         ),
     }.items() + _layer_tools.items()),
     executable = True,

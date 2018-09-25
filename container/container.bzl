@@ -21,6 +21,7 @@ load("//container:import.bzl", "container_import")
 load("//container:load.bzl", "container_load")
 load("//container:pull.bzl", "container_pull")
 load("//container:push.bzl", "container_push")
+load("//container:credentials.bzl", "registry_credentials")
 load(
     "@bazel_tools//tools/build_defs/repo:http.bzl",
     "http_archive",
