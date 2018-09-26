@@ -140,20 +140,21 @@ def _jar_app_layer_impl(ctx):
     for jar in ctx.attr.jar_layers:
         available += java_files(jar)
 
-    # Mark all files that are available from the JDK as available.
-    # This will prevent them from being part of the generated image.
-    available += list(ctx.files._jdk)
-
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
     # out what it available.
-
     unavailable = depset()
     for jar in ctx.attr.deps + ctx.attr.runtime_deps:
         unavailable += java_files(jar)
 
     unavailable += java_files(ctx.attr.binary)
     unavailable = [x for x in unavailable if x not in available]
+
+    # Mark all files that are available from the JDK as available.
+    # This will prevent them from being part of the generated image.
+    jdk_files = depset()
+    jdk_files += list(ctx.files._jdk)
+    unavailable = [x for x in unavailable if x not in ctx.files._jdk]
 
     classpath = ":".join([
         layer_file_path(ctx, x)

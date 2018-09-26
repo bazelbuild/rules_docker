@@ -519,6 +519,7 @@ class ImageTest(unittest.TestCase):
         './app',
         './app/io_bazel_rules_docker',
         './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/BUILD',
         './app/io_bazel_rules_docker/testdata/java_image.binary.jar',
         './app/io_bazel_rules_docker/testdata/java_image.binary',
         './app/io_bazel_rules_docker/testdata/java_image.classpath'
@@ -540,6 +541,7 @@ class ImageTest(unittest.TestCase):
         ':'.join([
           '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar',
           '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar',
+          '/app/io_bazel_rules_docker/testdata/BUILD',
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary'
         ]),
@@ -625,6 +627,7 @@ class ImageTest(unittest.TestCase):
         '-cp',
         '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar:'
         +'/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'
+        +'/app/io_bazel_rules_docker/testdata/BUILD:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary',
         '-XX:MaxPermSize=128M',
@@ -667,7 +670,9 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        '/app/io_bazel_rules_docker/testdata/BUILD:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary:' +
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary_wrapper.sh',
         '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
@@ -684,6 +689,8 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
         '/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.4.4/lib/groovy-2.4.4.jar:'+
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
+        '/app/io_bazel_rules_docker/testdata/BUILD:'+
+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
         '-Dbuild.location=testdata/BUILD',
