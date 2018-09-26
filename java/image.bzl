@@ -99,10 +99,14 @@ def java_files(f):
     if java_common.provider in f:
         java_provider = f[java_common.provider]
         files += list(java_provider.transitive_runtime_jars)
-    if hasattr(f, "data_runfiles"):
-        files += list(f.data_runfiles.files)
     if hasattr(f, "files"):  # a jar file
         files += list(f.files)
+    return files
+
+def java_files_with_data(f):
+    files = java_files(f)
+    if hasattr(f, "data_runfiles"):
+        files += list(f.data_runfiles.files)
     return files
 
 def _jar_dep_layer_impl(ctx):
@@ -127,6 +131,10 @@ jar_dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
+	"_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),  
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
@@ -138,22 +146,21 @@ def _jar_app_layer_impl(ctx):
 
     available = depset()
     for jar in ctx.attr.jar_layers:
-        available += java_files(jar)
+        available += java_files(jar) # layers don't include data deps
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
     # out what it available.
     unavailable = depset()
     for jar in ctx.attr.deps + ctx.attr.runtime_deps:
-        unavailable += java_files(jar)
+        unavailable += java_files_with_data(jar)
 
-    unavailable += java_files(ctx.attr.binary)
+    unavailable += java_files_with_data(ctx.attr.binary)
     unavailable = [x for x in unavailable if x not in available]
 
-    # Mark all files that are available from the JDK as available.
-    # This will prevent them from being part of the generated image.
-    jdk_files = depset()
-    jdk_files += list(ctx.files._jdk)
+    # Remove files that are provided by the JDK from the unavailable set,
+    # as these will be provided by the Java image.
+    jdk_files = depset(list(ctx.files._jdk))
     unavailable = [x for x in unavailable if x not in ctx.files._jdk]
 
     classpath = ":".join([
