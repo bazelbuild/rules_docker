@@ -69,10 +69,12 @@ def _impl(ctx):
         ctx.executable._pusher,
         image["config"],
         image["manifest"],
-    ] + image.get("blobsum", []) 
-      + image.get("zipped_layer", []) 
-      + stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) 
-      + list(ctx.attr._pusher.default_runfiles.files),
+    ] 
+    files += image.get("blobsum", []) 
+    files += image.get("zipped_layer", []) 
+    files += stamp_inputs 
+    files += ([image["legacy"]] if image.get("legacy") else []) 
+    files += list(ctx.attr._pusher.default_runfiles.files)
 
     #
     # Expanded make variables for shell script template
@@ -97,11 +99,9 @@ def _impl(ctx):
     # Create docker config file if requested
     #
     docker_config = None
-    docker_config_path = "~/.docker/config.json"
     if ctx.attr.credential:
         cred = ctx.attr.credential[RegistryCredentialInfo]
         docker_config = _write_docker_config_file(ctx, registry, cred)
-        docker_config_path = _get_runfile_path(docker_config)
         files.append(docker_config)
 
     ctx.template_action(
@@ -122,7 +122,7 @@ def _impl(ctx):
             ),
             "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
-            "%{docker_config}": docker_config_path,
+            "%{client_config}": "--client-config " + _get_runfile_path(ctx, docker_config) if docker_config else "",
         },
         output = ctx.outputs.executable,
         executable = True,
@@ -174,8 +174,8 @@ container_push = rule(
             default = False,
             mandatory = False,
         ),
-        "credentials": attr.label_list(
-            providers = [DockerCredentialInfo],
+        "credential": attr.label(
+            providers = [RegistryCredentialInfo],
         ),
     }.items() + _layer_tools.items()),
     executable = True,
