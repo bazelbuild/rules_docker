@@ -32,7 +32,7 @@ load("//container:providers.bzl",
 )
 load(
     "//container:credentials.bzl",
-    _write_docker_config_file = "write_docker_config_file",
+    _write_docker_config_json_action = "write_docker_config_json_action",
 )
 
 def _get_runfile_path(ctx, f):
@@ -98,11 +98,11 @@ def _impl(ctx):
     #
     # Create docker config file if requested
     #
-    docker_config = None
+    docker_config_json = None
     if ctx.attr.credential:
-        cred = ctx.attr.credential[RegistryCredentialInfo]
-        docker_config = _write_docker_config_file(ctx, registry, cred)
-        files.append(docker_config)
+        credential = ctx.attr.credential[RegistryCredentialInfo]
+        docker_config_json = _write_docker_config_json_action(ctx, registry, credential)
+        files.append(docker_config_json)
 
     ctx.template_action(
         template = ctx.file._tag_tpl,
@@ -122,7 +122,7 @@ def _impl(ctx):
             ),
             "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
-            "%{client_config}": "--client-config " + _get_runfile_path(ctx, docker_config) if docker_config else "",
+            "%{client_config}": "--client-config " + _get_runfile_path(ctx, docker_config_json) if docker_config_json else "",
         },
         output = ctx.outputs.executable,
         executable = True,
@@ -138,7 +138,7 @@ def _impl(ctx):
                 tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
                 stamp = ctx.attr.stamp,
                 stamp_inputs = stamp_inputs,
-                docker_config = docker_config,
+                credential = credential,
             ),
             DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
         ],
@@ -175,6 +175,7 @@ container_push = rule(
             mandatory = False,
         ),
         "credential": attr.label(
+            doc = "Optional container registry credential",
             providers = [RegistryCredentialInfo],
         ),
     }.items() + _layer_tools.items()),

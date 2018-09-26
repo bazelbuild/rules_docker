@@ -1,74 +1,28 @@
 load("//container:providers.bzl", "RegistryCredentialInfo")
 
-# def write_docker_config_file(ctx, registry, credential, config_file):
-#     auths = {}
-#     if cred.type != "basic":
-#         fail("Unsupported docker credential type: %s" % cred.type)
-#     auths[registry] = struct(
-#         username = cred.username,
-#         password = cred.password,
-#     )
-#     config = struct(
-#         auths = auths,
-#     )
-#     if not config_file:
-#         config_file = ctx.actions.declare_file(".docker/config.json")
-#     ctx.actions.write(config_file, config.to_json())
-#     return config_file
+def write_docker_config_json_action(ctx, registry, credential, config_json = None):
+    """Create an action that writes a docker config file.
 
-def write_docker_config_fileOLD(ctx, registry, credential, config_file = None):
+    Args:
+      ctx: the rule ctx object
+      registry: the name of the registry to which the credential should be
+      associated
+      credential: a RegistryCredentialInfo struct
+      config_json: path to the file where the config.json should be written.
+      Defaults to %{credential.name}/.docker/config.json.
+
+    Return: The config_json file 
+    """
     if credential.type != "basic":
         fail("Unsupported docker credential type: %s" % credential.type)
-    env = ctx.configuration.default_shell_env
-    print("DEFAULT? CONFIGURATION ENV: %s" % ctx.configuration.default_shell_env)
-    print("HOST CONFIGURATION ENV: %s" % ctx.host_configuration.default_shell_env)
-    username = env.get(credential.uservar)
-    if not username:
-        fail("registry auth '%s': required environment variable '%s' is not defined (should contain basic auth username)\n%r" % (registry, credential.uservar, env))
-    password = env.get(credential.passvar)
-    if not password:
-        fail("registry auth '%s': required environment variable '%s' is not defined (should contain basic auth password)\n%r" % (registry, credential.passvar, env))
-
-    auths = {}
-    auths[registry] = struct(
-        username = username,
-        password = password,
-    )
-    config = struct(
-        auths = auths,
-    )
-    if not config_file:
-        config_file = ctx.actions.declare_file(".docker/config.json")
-    ctx.actions.write(config_file, config.to_json())
-    return config_file
-
-def write_docker_config_file(ctx, registry, credential, config_file = None):
-    if credential.type != "basic":
-        fail("Unsupported docker credential type: %s" % credential.type)
-    # env = ctx.configuration.default_shell_env
-    # print("DEFAULT? CONFIGURATION ENV: %s" % ctx.configuration.default_shell_env)
-    # print("HOST CONFIGURATION ENV: %s" % ctx.host_configuration.default_shell_env)
-    # username = env.get(credential.uservar)
-    # if not username:
-    #     fail("registry auth '%s': required environment variable '%s' is not defined (should contain basic auth username)\n%r" % (registry, credential.uservar, env))
-    # password = env.get(credential.passvar)
-    # if not password:
-    #     fail("registry auth '%s': required environment variable '%s' is not defined (should contain basic auth password)\n%r" % (registry, credential.passvar, env))
-
-    auths = {}
-    auths[registry] = struct(
-        username = "<USERNAME>",
-        password = "<PASSWORD>",
-    )
-    config = struct(
-        auths = auths,
-    )
-    if not config_file:
-        config_file = ctx.actions.declare_file(".docker/config.json")
+    if not config_json:
+        config_json = ctx.actions.declare_file("%s/.docker/config.json" % credential.name)
+    # NOTE: ctx.actions.write does not work here as we need the
+    # use_default_shell_env feature of the run_shell action.
     ctx.actions.run_shell(
         mnemonic = "WriteDockerConfig",
         inputs = [],
-        outputs = [config_file],
+        outputs = [config_json],
         command = """
 set -euo pipefail
 cat <<EOF > "%s"
@@ -81,121 +35,84 @@ cat <<EOF > "%s"
     }
 }
 EOF
-        """ % (config_file.path, registry, credential.uservar, credential.passvar),
+        """ % (config_json.path, registry, credential.user_env, credential.pass_env),
         use_default_shell_env = True,
     )
-    #ctx.actions.write(config_file, config.to_json())
-    return config_file
+    return config_json
+
 
 def _registry_credential_impl(ctx):
+    """Implementation of the registry credential
+
+    Provides the RegistryCredentialInfo object from given rule attributes.
+    """
     return [RegistryCredentialInfo(
-        uservar = ctx.attr.uservar,
-        passvar = ctx.attr.passvar,
+        name = ctx.label.name,
+        user_env = ctx.attr.user_env,
+        pass_env = ctx.attr.pass_env,
         type = ctx.attr.type,
     )]
 
 registry_credential = rule(
     implementation = _registry_credential_impl,
     attrs = {
-        "uservar": attr.string(
-            doc ="Docker basic auth username",
+        "user_env": attr.string(
+            doc ="Environment variable that contains the docker basic auth username",
             mandatory = True,
         ),
-        "passvar": attr.string(
-            doc = "Docker basic auth password",
+        "pass_env": attr.string(
+            doc = "Environmemt variable that holds the docker basic auth password",
             mandatory = True,
-        ),
-        "sha256": attr.string(
-            doc = "sha256 hash of username + password",
-            mandatory = False,
         ),
         "type": attr.string(
-            doc = "Docker credential type - only basic auth is currently supported",
+            doc = "Credential type - only basic auth is currently supported",
             default = "basic",
             values = ["basic"],
         ),
     },
 )
-
-
-def _basic_auth_credential_impl(repository_ctx):
-    env = repository_ctx.os.environ
-
-    lines = [
-        "# Generated - do not modify",
-        'load("@io_bazel_rules_docker//container:credentials.bzl", "registry_credential")',
-    ]
-
-    uservar = repository_ctx.attr.uservar
-    passvar = repository_ctx.attr.passvar
-
-    username = env.get(uservar)
-    if not username:
-        fail("Mandatory environment variable '%s' is not defined (should contain basic auth username)" % uservar)
-    password = env.get(passvar)
-    if not password:
-        fail("Mandatory environment variable '%s' is not defined (should contain basic auth password)" % passvar)
-
-    script = [
-        "import hashlib",
-        "import sys",
-        "print(hashlib.sha256(sys.argv[1]).hexdigest())"
-    ]
-    repository_ctx.file("sha256.py", "\n".join(script))
-
-    python = repository_ctx.which("python")
-    result = repository_ctx.execute([python, "./sha256.py", username + password], quiet = True)
-    if result.return_code:
-        fail("Failed to write userpass sha256: %s" % result.stderr)
-
-    lines.append("registry_credential(")
-    lines.append("    name = 'credential',")
-    lines.append("    uservar = '%s'," % uservar)
-    lines.append("    passvar = '%s'," % passvar)
-    lines.append("    sha256 = '%s'," % result.stdout.strip())
-    lines.append("    type = 'basic',")
-    lines.append("    visibility = [")
-    for e in repository_ctx.attr.visibility:
-        lines.append("        '%s'," % e)
-    lines.append("    ],")
-    lines.append(")")
-
-    repository_ctx.file("BUILD.bazel", "\n".join(lines))
-
 """
+Rule to declare a (basic auth) credential.  The credential may 
+be used by the container_push and container_pull rules.
 
-Explicitly import secrets from the environment into the workspace. The 'entries'
-is a string -> string key/value mapping such that the key is the name of the
-environment variable to import.  If the value is the special token '<REQUIRED>'
-the build will fail if the variable is unset or empty.  Otherwise the value will
-be used as the default.
+In order to avoid committing sensitive information to version control, 
+the attributes 'user_env' and 'pass_env' name environment variables that 
+hold the basic auth username and password.  
 
-    basic_auth_credential(
-        name="docker", 
-        auths = {
-            "gcr.io/my-container-registry": ["MYCR_USERNAME", "MYCR_PASSWORD"],
-        },
-    )
+The `--action_env` flag is mandatory to use this feature.  Without it, 
+the environment variables will not be visible to the action that 
+requires it.  Example:
 
-In the example above, DOCKER_URL will use the value 'index.docker.io' if the
-"DOCKER_URL" environment variable is not set.
+Define a registry credential:
 
-Then in build scripts you can reference these by importing a custom bzl file.
+```python
+load("@io_bazel_rules_docker//container:container.bzl", "registry_credential")
+registry_credential(
+    name = "private",
+    user_env = "PRIVATE_REGISTRY_USERNAME",
+    pass_env = "PRIVATE_REGISTRY_PASSWORD",
+)
+```
 
+```python
+container_push(
+    name = "push",
+    registry = "private.container-registry.io",
+    repository = "path/to/my/repo",
+    tag = "latest",
+    credential = ":private",
+)
+```
+
+Finally, add the following to your .bazelrc file:
+
+```
+build --action_env=PRIVATE_REGISTRY_USERNAME
+build --action_env=PRIVATE_REGISTRY_PASSWORD
+```
+
+In this scenario, a `private/.docker/config.json` 
+file will be written and passed to the pusher tool as 
+`pusher.par --client-config private/.docker/config.json ...` 
+at runtime.
 """
-def basic_auth_credential(**kwargs):
-    _basic_auth_credential = repository_rule(
-        implementation = _basic_auth_credential_impl,
-        attrs = {
-            "uservar": attr.string(
-                mandatory = True,
-                doc = "Name of environment variable that holds the basic auth username",
-            ),
-            "passvar": attr.string(
-                mandatory = True,
-                doc = "Name of environment variable that holds the basic auth password",
-            ),
-        },
-        environ = [kwargs.get("uservar"), kwargs.get("passvar")],
-    )
-    _basic_auth_credential(**kwargs)
