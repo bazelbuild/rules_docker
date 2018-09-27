@@ -111,7 +111,19 @@ def java_files_with_data(f):
 
 def _jar_dep_layer_impl(ctx):
     """Appends a layer for a single dependency's runfiles."""
-    return dep_layer_impl(ctx, runfiles = java_files)
+
+    # Note the use of java_files (instead of java_files_with_data) here.
+    # This causes the dep_layer to include only source files and none of
+    # the data_runfiles. This is probably not ideal -- it would be better
+    # to have the runfiles of the dependencies in the dep_layer, and only
+    # the runfiles of the java_image in the top layer. Doing this without
+    # also pulling in the JDK deps will requrie extending the dep_layer_impl
+    # with functionality to exclude certain runfiles. Rather than making it
+    # JDK specific, an option would be to add a `skipfiles = ctx.files._jdk`
+    # type option here. The app layer would also need to be updated to
+    # consider data flies include in the dep_layer as "available" so they
+    # aren't duplicated in the top layer.
+    return dep_layer_impl(ctx, runfiles = java_files_with_data)
 
 jar_dep_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -131,10 +143,6 @@ jar_dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
-        "_jdk": attr.label(
-            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
-            providers = [java_common.JavaRuntimeInfo],
-        ),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
@@ -146,7 +154,7 @@ def _jar_app_layer_impl(ctx):
 
     available = depset()
     for jar in ctx.attr.jar_layers:
-        available += java_files(jar)  # layers don't include data deps
+        available += java_files(jar)  # layers don't include runfiles
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
