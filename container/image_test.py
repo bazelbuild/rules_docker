@@ -555,7 +555,6 @@ class ImageTest(unittest.TestCase):
       ])
 
   def test_java_runfiles_image(self):
-    self.maxDiff = 10000
     with TestImage('java_runfiles_image') as img:
       # Check the application layer, which is on top.
       self.assertTopLayerContains(img, [
@@ -563,14 +562,9 @@ class ImageTest(unittest.TestCase):
         './app',
         './app/bazel_tools',
         './app/bazel_tools/tools',
-        './app/bazel_tools/tools/runfiles',
-        './app/bazel_tools/tools/runfiles/java',
-        './app/bazel_tools/tools/runfiles/java/com',
-        './app/bazel_tools/tools/runfiles/java/com/google',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools/build',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools/build/runfiles',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools/build/runfiles/librunfiles.jar',
+        './app/bazel_tools/tools/java',
+        './app/bazel_tools/tools/java/runfiles',
+        './app/bazel_tools/tools/java/runfiles/librunfiles.jar',
         './app/io_bazel_rules_docker',
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/java_runfiles_image.binary.jar',
@@ -582,7 +576,7 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/java', '-cp',
         ':'.join([
-          '/app/io_bazel_rules_docker/../bazel_tools/tools/runfiles/java/com/google/devtools/build/runfiles/librunfiles.jar',
+          '/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar',
           '/app/io_bazel_rules_docker/testdata/java_runfiles_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_runfiles_image.binary',
           '/app/io_bazel_rules_docker/testdata/foo',
@@ -602,14 +596,9 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
         './app/bazel_tools',
         './app/bazel_tools/tools',
-        './app/bazel_tools/tools/runfiles',
-        './app/bazel_tools/tools/runfiles/java',
-        './app/bazel_tools/tools/runfiles/java/com',
-        './app/bazel_tools/tools/runfiles/java/com/google',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools/build',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools/build/runfiles',
-        './app/bazel_tools/tools/runfiles/java/com/google/devtools/build/runfiles/librunfiles.jar',
+        './app/bazel_tools/tools/java',
+        './app/bazel_tools/tools/java/runfiles',
+        './app/bazel_tools/tools/java/runfiles/librunfiles.jar',
         './app/io_bazel_rules_docker/testdata/foo',
         './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
         './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',
@@ -620,7 +609,7 @@ class ImageTest(unittest.TestCase):
         '/usr/bin/java', '-cp',
         ':'.join([
           '/app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
-          '/app/io_bazel_rules_docker/../bazel_tools/tools/runfiles/java/com/google/devtools/build/runfiles/librunfiles.jar',
+          '/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar',
           '/app/io_bazel_rules_docker/testdata/foo',
           '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
           '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',

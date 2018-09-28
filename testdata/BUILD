@@ -804,7 +804,7 @@ java_image(
     ],
     main_class = "examples.images.Runfiles",
     deps = [
-        "@bazel_tools//tools/runfiles:java-runfiles",
+        "@bazel_tools//tools/java/runfiles",
     ],
 )
 
@@ -815,7 +815,7 @@ java_library(
         "foo",
     ],
     deps = [
-        "@bazel_tools//tools/runfiles:java-runfiles",
+        "@bazel_tools//tools/java/runfiles",
     ],
 )
 
