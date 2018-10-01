@@ -485,6 +485,7 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata/py_image_library.py',
       ])
 
+
   def test_cc_image(self):
     with TestImage('cc_image') as img:
       # Check the application layer, which is on top.
@@ -521,6 +522,7 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/java_image.binary.jar',
         './app/io_bazel_rules_docker/testdata/java_image.binary',
+        './app/io_bazel_rules_docker/testdata/BUILD',
         './app/io_bazel_rules_docker/testdata/java_image.classpath'
       ])
 
@@ -541,7 +543,8 @@ class ImageTest(unittest.TestCase):
           '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar',
           '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar',
           '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
-          '/app/io_bazel_rules_docker/testdata/java_image.binary'
+          '/app/io_bazel_rules_docker/testdata/java_image.binary',
+          '/app/io_bazel_rules_docker/testdata/BUILD',
         ]),
         '-XX:MaxPermSize=128M',
         '-Dbuild.location=testdata/BUILD',
@@ -551,6 +554,69 @@ class ImageTest(unittest.TestCase):
         'testdata/BUILD'
       ])
 
+  def test_java_runfiles_image(self):
+    with TestImage('java_runfiles_image') as img:
+      # Check the application layer, which is on top.
+      self.assertTopLayerContains(img, [
+        '.',
+        './app',
+        './app/bazel_tools',
+        './app/bazel_tools/tools',
+        './app/bazel_tools/tools/java',
+        './app/bazel_tools/tools/java/runfiles',
+        './app/bazel_tools/tools/java/runfiles/librunfiles.jar',
+        './app/io_bazel_rules_docker',
+        './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_image.binary.jar',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_image.binary',
+        './app/io_bazel_rules_docker/testdata/foo',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_image.classpath'
+      ])
+
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/usr/bin/java', '-cp',
+        ':'.join([
+          '/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar',
+          '/app/io_bazel_rules_docker/testdata/java_runfiles_image.binary.jar',
+          '/app/io_bazel_rules_docker/testdata/java_runfiles_image.binary',
+          '/app/io_bazel_rules_docker/testdata/foo',
+        ]),
+        'examples.images.Runfiles',
+      ])
+
+      
+  def test_java_runfiles_as_lib_image(self):
+    with TestImage('java_runfiles_as_lib_image') as img:
+      # Check the application layer, which is on top.
+      self.assertTopLayerContains(img, [
+        '.',
+        './app',
+        './app/io_bazel_rules_docker',
+        './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
+        './app/bazel_tools',
+        './app/bazel_tools/tools',
+        './app/bazel_tools/tools/java',
+        './app/bazel_tools/tools/java/runfiles',
+        './app/bazel_tools/tools/java/runfiles/librunfiles.jar',
+        './app/io_bazel_rules_docker/testdata/foo',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',
+        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.classpath',
+      ])
+
+      self.assertConfigEqual(img, 'Entrypoint', [
+        '/usr/bin/java', '-cp',
+        ':'.join([
+          '/app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
+          '/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar',
+          '/app/io_bazel_rules_docker/testdata/foo',
+          '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
+          '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',
+        ]),
+        'examples.images.Runfiles',
+      ])
+      
   def test_war_image(self):
     with TestImage('war_image') as img:
       # Check the application layer, which is on top.
@@ -626,7 +692,8 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar:'
         +'/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'
         +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
-        +'/app/io_bazel_rules_docker/testdata/java_image.binary',
+        +'/app/io_bazel_rules_docker/testdata/java_image.binary:'
+        +'/app/io_bazel_rules_docker/testdata/BUILD',
         '-XX:MaxPermSize=128M',
         '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
@@ -667,7 +734,9 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary:' +
+        '/app/io_bazel_rules_docker/testdata/BUILD:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary_wrapper.sh',
         '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
@@ -684,8 +753,10 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
         '/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.4.4/lib/groovy-2.4.4.jar:'+
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
+        '/app/io_bazel_rules_docker/testdata/groovy_image.binary:' +
+        '/app/io_bazel_rules_docker/testdata/BUILD',
         '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',

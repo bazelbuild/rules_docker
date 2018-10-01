@@ -103,9 +103,27 @@ def java_files(f):
         files += list(f.files)
     return files
 
+def java_files_with_data(f):
+    files = java_files(f)
+    if hasattr(f, "data_runfiles"):
+        files += list(f.data_runfiles.files)
+    return files
+
 def _jar_dep_layer_impl(ctx):
     """Appends a layer for a single dependency's runfiles."""
-    return dep_layer_impl(ctx, runfiles = java_files)
+
+    # Note the use of java_files (instead of java_files_with_data) here.
+    # This causes the dep_layer to include only source files and none of
+    # the data_runfiles. This is probably not ideal -- it would be better
+    # to have the runfiles of the dependencies in the dep_layer, and only
+    # the runfiles of the java_image in the top layer. Doing this without
+    # also pulling in the JDK deps will requrie extending the dep_layer_impl
+    # with functionality to exclude certain runfiles. Rather than making it
+    # JDK specific, an option would be to add a `skipfiles = ctx.files._jdk`
+    # type option here. The app layer would also need to be updated to
+    # consider data flies include in the dep_layer as "available" so they
+    # aren't duplicated in the top layer.
+    return dep_layer_impl(ctx, runfiles = java_files_with_data)
 
 jar_dep_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -136,18 +154,22 @@ def _jar_app_layer_impl(ctx):
 
     available = depset()
     for jar in ctx.attr.jar_layers:
-        available += java_files(jar)
+        available += java_files(jar)  # layers don't include runfiles
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
     # out what it available.
-
     unavailable = depset()
     for jar in ctx.attr.deps + ctx.attr.runtime_deps:
-        unavailable += java_files(jar)
+        unavailable += java_files_with_data(jar)
 
-    unavailable += java_files(ctx.attr.binary)
+    unavailable += java_files_with_data(ctx.attr.binary)
     unavailable = [x for x in unavailable if x not in available]
+
+    # Remove files that are provided by the JDK from the unavailable set,
+    # as these will be provided by the Java image.
+    jdk_files = depset(list(ctx.files._jdk))
+    unavailable = [x for x in unavailable if x not in ctx.files._jdk]
 
     classpath = ":".join([
         layer_file_path(ctx, x)
@@ -183,6 +205,9 @@ def _jar_app_layer_impl(ctx):
         ctx,
         # We use all absolute paths.
         directory = "/",
+        env = {
+            "JAVA_RUNFILES": "/app",
+        },
         file_map = file_map,
         entrypoint = entrypoint,
     )
@@ -219,6 +244,10 @@ jar_app_layer = rule(
         "workdir": attr.string(default = ""),
         "legacy_run_behavior": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
