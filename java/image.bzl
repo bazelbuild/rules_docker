@@ -26,7 +26,7 @@ load(
 )
 load(
     "//lang:image.bzl",
-    "dep_layer_impl",
+    "app_layer_impl",
     "layer_file_path",
 )
 
@@ -117,26 +117,23 @@ def _jar_dep_layer_impl(ctx):
     # the data_runfiles. This is probably not ideal -- it would be better
     # to have the runfiles of the dependencies in the dep_layer, and only
     # the runfiles of the java_image in the top layer. Doing this without
-    # also pulling in the JDK deps will requrie extending the dep_layer_impl
+    # also pulling in the JDK deps will requrie extending the app_layer_impl
     # with functionality to exclude certain runfiles. Rather than making it
     # JDK specific, an option would be to add a `skipfiles = ctx.files._jdk`
     # type option here. The app layer would also need to be updated to
     # consider data flies include in the dep_layer as "available" so they
     # aren't duplicated in the top layer.
-    return dep_layer_impl(ctx, runfiles = java_files_with_data)
+    return app_layer_impl(ctx, runfiles = java_files_with_data)
 
 jar_dep_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
-        "dep": attr.label(mandatory = True),
+        "dep": attr.label(providers = [DefaultInfo]),
 
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = False),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
@@ -227,12 +224,6 @@ jar_app_layer = rule(
         "base": attr.label(mandatory = True),
         # The main class to invoke on startup.
         "main_class": attr.string(mandatory = True),
-
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
 
         # Whether the classpath should be passed as a file.
         "_classpath_as_file": attr.bool(default = False),
@@ -326,11 +317,8 @@ _war_dep_layer = rule(
         # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
 
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = False),
 
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
@@ -372,12 +360,6 @@ _war_app_layer = rule(
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),
-
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
 
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),

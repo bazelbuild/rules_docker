@@ -160,8 +160,14 @@ def _container_import_impl(ctx):
 container_import = rule(
     attrs = dict({
         "config": attr.label(allow_files = [".json"]),
-        "manifest": attr.label(allow_files = [".json"], mandatory = False),
-        "layers": attr.label_list(allow_files = tar_filetype + tgz_filetype, mandatory = True),
+        "manifest": attr.label(
+            allow_files = [".json"],
+            mandatory = False,
+        ),
+        "layers": attr.label_list(
+            allow_files = tar_filetype + tgz_filetype,
+            mandatory = True,
+        ),
         "repository": attr.string(default = "bazel"),
     }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items()),
     executable = True,

@@ -19,7 +19,7 @@ The signature of this rule is compatible with nodejs_binary.
 load(
     "//lang:image.bzl",
     "app_layer",
-    "dep_layer_impl",
+    "app_layer_impl",
 )
 load(
     "//container:container.bzl",
@@ -66,7 +66,7 @@ def _emptyfiles(dep):
     return dep.default_runfiles.empty_filenames + dep.data_runfiles.empty_filenames
 
 def _dep_layer_impl(ctx):
-    return dep_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
+    return app_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
 
 _dep_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
@@ -78,13 +78,7 @@ _dep_layer = rule(
             allow_files = True,
         ),
 
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
         # The binary target for which we are synthesizing an image.
-        # This is needed iff agnostic_dep_layout.
         "binary": attr.label(mandatory = False),
 
         # Override the defaults.
@@ -143,9 +137,7 @@ def nodejs_image(
     app_layer(
         name = name,
         base = base,
-        agnostic_dep_layout = True,
         binary = binary_name,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),

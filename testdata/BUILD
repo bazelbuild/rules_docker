@@ -624,7 +624,7 @@ container_image(
     base = "@distroless_cc//image",
 )
 
-load("//python:image.bzl", "py_image")
+load("//python:image.bzl", "py_image", "py_layer")
 
 py_library(
     name = "py_image_library",
@@ -652,6 +652,53 @@ py_image(
         ":py_image_library",
     ],
     main = "py_image.py",
+)
+
+load("@pip_deps//:requirements.bzl", "requirement")
+
+py_library(
+    name = "py_image_library_using_six",
+    srcs = ["py_image_library_using_six.py"],
+    deps = [requirement("six")],
+)
+
+py_library(
+    name = "py_image_complex_library",
+    srcs = ["py_image_complex_library.py"],
+    deps = [
+        ":py_image_library_using_six",
+        "//testdata/test:py_image_library_using_addict",
+    ],
+)
+
+py_layer(
+    name = "py_image_complex_filter_by_path",
+    filter = "//testdata/test",
+    deps = [":py_image_complex_library"],
+)
+
+py_layer(
+    name = "py_image_complex_filter_by_path_external_deps",
+    filter = "@",
+    deps = [":py_image_complex_filter_by_path"],
+)
+
+py_layer(
+    name = "py_image_complex_external_deps",
+    filter = "@",
+    deps = [":py_image_complex_library"],
+)
+
+py_image(
+    name = "py_image_complex",
+    srcs = ["py_image_complex.py"],
+    layers = [
+        ":py_image_complex_filter_by_path_external_deps",  # addict
+        ":py_image_complex_external_deps",  # six
+        ":py_image_complex_filter_by_path",  # py_image_library_using_addict
+        ":py_image_complex_library",  # py_image_complex_library + py_image_library_using_six
+    ],
+    main = "py_image_complex.py",
 )
 
 load("//python3:image.bzl", "py3_image")

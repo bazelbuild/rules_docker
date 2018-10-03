@@ -51,11 +51,19 @@ idd(
     args = ["-v", "-d"]
 )
 """
+
 idd = rule(
-    implementation = _impl,
     attrs = {
-        "image1": attr.label(mandatory = True, allow_files = container_filetype, single_file = True),
-        "image2": attr.label(mandatory = True, allow_files = container_filetype, single_file = True),
+        "image1": attr.label(
+            mandatory = True,
+            allow_files = container_filetype,
+            single_file = True,
+        ),
+        "image2": attr.label(
+            mandatory = True,
+            allow_files = container_filetype,
+            single_file = True,
+        ),
         "_idd_script": attr.label(
             default = ":idd",
             executable = True,
@@ -64,4 +72,5 @@ idd = rule(
         ),
     },
     executable = True,
+    implementation = _impl,
 )

@@ -14,7 +14,10 @@
 """Provider definitions"""
 
 # A provider containing information exposed by container_bundle rules
-BundleInfo = provider(fields = ["container_images", "stamp"])
+BundleInfo = provider(fields = [
+    "container_images",
+    "stamp",
+])
 
 # A provider containing information exposed by container_flatten rules
 FlattenInfo = provider()
@@ -46,3 +49,18 @@ PushInfo = provider(fields = [
     "stamp",
     "stamp_inputs",
 ])
+
+# A provider containing information exposed by filter_layer rules
+FilterLayerInfo = provider(
+    fields = {
+        "runfiles": "filtered runfiles that should be installed from this layer",
+        "filtered_depset": "a filtered depset of struct(target=<target>, target_deps=<depset>)",
+    },
+)
+
+# A provider containing information exposed by filter_aspect
+FilterAspectInfo = provider(
+    fields = {
+        "depset": "a depset of struct(target=<target>, target_deps=<depset>)",
+    },
+)

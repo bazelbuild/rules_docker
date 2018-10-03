@@ -361,6 +361,51 @@ py_image(
 )
 ```
 
+You can also implement more complex fine layering strategies by using the
+`py_layer` rule and its `filter` attribute.  For example:
+```python
+# Suppose that we are synthesizing an image that depends on a complex set
+# of libraries that we want to break into layers.
+LIBS = [
+    "//pkg/complex_library",
+    # ...
+]
+# First, we extract all transitive dependencies of LIBS that are under //pkg/common.
+py_layer(
+    name = "common_deps",
+    deps = LIBS,
+    filter = "//pkg/common",
+)
+# Then, we further extract all external dependencies of the deps under //pkg/common.
+py_layer(
+    name = "common_external_deps",
+    deps = [":common_deps"],
+    filter = "@",
+)
+# We also extract all external dependencies of LIBS, which is a superset of
+# ":common_external_deps".
+py_layer(
+    name = "external_deps",
+    deps = LIBS,
+    filter = "@",
+)
+# Finally, we create the image, stacking the above filtered layers on top of one
+# another in the "layers" attribute.  The layers are applied in order, and any
+# dependencies already added to the image will not be added again.  Therefore,
+# ":external_deps" will only add the external dependencies not present in
+# ":common_external_deps".
+py_image(
+    name = "image",
+    deps = LIBS,
+    layers = [
+        ":common_external_deps",
+        ":common_deps",
+        ":external_deps",
+    ],
+    # ...
+)
+```
+
 ### py3_image
 
 To use a Python 3 runtime instead of the default of Python 2, use `py3_image`,
