@@ -145,14 +145,8 @@ For `container_bundle`, it will apply the tags you have specified.
 
 You can use these rules to access private images using standard Docker
 authentication methods.  e.g. to utilize the [Google Container Registry](
-https://gcr.io) [credential helper](
-https://github.com/GoogleCloudPlatform/docker-credential-gcr):
-
-```shell
-$ gcloud components install docker-credential-gcr
-
-$ docker-credential-gcr configure-docker
-```
+https://gcr.io). See
+[here](https://cloud.google.com/container-registry/docs/advanced-authentication) for authentication methods.
 
 See also:
  * [Amazon ECR Docker Credential Helper](

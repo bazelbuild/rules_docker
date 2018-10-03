@@ -276,10 +276,11 @@ def java_image(
         **kwargs
     )
 
+    tags = kwargs.get("tags", None)
     base = base or DEFAULT_JAVA_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        jar_dep_layer(name = this_name, base = base, dep = dep)
+        jar_dep_layer(name = this_name, base = base, dep = dep, tags = tags)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -293,6 +294,7 @@ def java_image(
         runtime_deps = runtime_deps,
         jar_layers = layers,
         visibility = visibility,
+        tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
     )
