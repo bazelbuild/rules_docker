@@ -778,6 +778,14 @@ cc_image(
     binary = ":cc_binary",
 )
 
+# Test that we can also load image from within another script.
+sh_binary(
+    name = "cc_image_wrapper",
+    srcs = ["cc_image_wrapper.sh"],
+    args = ["$(location :cc_image)"],
+    data = [":cc_image"],
+)
+
 load(
     "//java:image.bzl",
     "java_image",
