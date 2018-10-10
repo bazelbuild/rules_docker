@@ -56,6 +56,12 @@ container_import(
         repository_ctx.path("image"),
     ]
 
+    if repository_ctx.attr.cacerts:
+        args += [
+            "--cacert",
+            repository_ctx.path(repository_ctx.attr.cacerts),
+        ]
+
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
     if repository_ctx.attr.digest:
         args += [
@@ -90,6 +96,10 @@ container_pull = repository_rule(
         "repository": attr.string(mandatory = True),
         "digest": attr.string(),
         "tag": attr.string(default = "latest"),
+        "cacerts": attr.label(
+            allow_single_file = True,
+            mandatory = False,
+        ),
         "_puller": attr.label(
             executable = True,
             default = Label("@puller//file:downloaded"),
