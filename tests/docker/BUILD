@@ -171,6 +171,24 @@ container_test(
     image = ":basic_windows_image",
 )
 
+container_test(
+    name = "alpine_amd64_image_test",
+    configs = ["//tests/docker/configs:alpine_amd64.yaml"],
+    image = "@alpine_linux_amd64//image",
+)
+
+container_test(
+    name = "alpine_arm_image_test",
+    configs = ["//tests/docker/configs:alpine_arm.yaml"],
+    image = "@alpine_linux_armv6//image",
+)
+
+container_test(
+    name = "alpine_ppc64le_image_test",
+    configs = ["//tests/docker/configs:alpine_ppc64le.yaml"],
+    image = "@alpine_linux_ppc64le//image",
+)
+
 file_test(
     name = "test_digest_output1",
     content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",

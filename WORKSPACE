@@ -43,6 +43,31 @@ container_load(
     file = "//testdata:pause.tar",
 )
 
+container_pull(
+    name = "alpine_linux_amd64",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+container_pull(
+    name = "alpine_linux_armv6",
+    architecture = "arm",
+    cpu_variant = "v6",
+    os = "linux",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+container_pull(
+    name = "alpine_linux_ppc64le",
+    architecture = "ppc64le",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
 # For testing, don't change the sha on these ones
 container_pull(
     name = "distroless_fixed_id",

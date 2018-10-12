@@ -1106,6 +1106,67 @@ use with `container_image`'s `base` attribute.
         </p>
       </td>
     </tr>
+    <tr>
+      <td><code>os</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>When the specified image refers to a multi-platform
+           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
+           manifest list</a>, the desired operating system. For example,
+           <code>linux</code> or
+           <code>windows</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>os_version</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>When the specified image refers to a multi-platform
+           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
+           manifest list</a>, the desired operating system version. For example,
+           <code>10.0.10586</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>os_features</code></td>
+      <td>
+        <p><code>string list; optional</code></p>
+        <p>When the specified image refers to a multi-platform
+           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
+           manifest list</a>, the desired operating system features. For example,
+           on Windows this might be <code>["win32k"]</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>architecture</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>When the specified image refers to a multi-platform
+           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
+           manifest list</a>, the desired CPU architecture. For example,
+           <code>amd64</code> or <code>arm</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>cpu_variant</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>When the specified image refers to a multi-platform
+           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
+           manifest list</a>, the desired CPU variant. For example, for ARM you
+           may need to use <code>v6</code> or <code>v7</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>platform_features</code></td>
+      <td>
+        <p><code>string list; optional</code></p>
+        <p>When the specified image refers to a multi-platform
+           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
+           manifest list</a>, the desired features. For example, this may
+           include CPU features such as <code>["sse4", "aes"]</code>.</p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
