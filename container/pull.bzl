@@ -31,6 +31,18 @@ def python(repository_ctx):
     fail("rules_docker requires a python interpreter installed. " +
          "Please set BAZEL_PYTHON, or put it on your path.")
 
+_container_pull_attrs = {
+    "registry": attr.string(mandatory = True),
+    "repository": attr.string(mandatory = True),
+    "digest": attr.string(),
+    "tag": attr.string(default = "latest"),
+    "_puller": attr.label(
+        executable = True,
+        default = Label("@puller//file:downloaded"),
+        cfg = "host",
+    ),
+}
+
 def _impl(repository_ctx):
     """Core implementation of container_pull."""
 
@@ -84,20 +96,15 @@ container_import(
     if result.return_code:
         fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
 
-container_pull = repository_rule(
-    attrs = {
-        "registry": attr.string(mandatory = True),
-        "repository": attr.string(mandatory = True),
-        "digest": attr.string(),
-        "tag": attr.string(default = "latest"),
-        "_puller": attr.label(
-            executable = True,
-            default = Label("@puller//file:downloaded"),
-            cfg = "host",
-        ),
-    },
-    implementation = _impl,
-)
+    updated_attrs = {
+        k: getattr(repository_ctx.attr, k)
+        for k in _container_pull_attrs.keys()
+    }
+    digest_result = repository_ctx.execute(["cat", repository_ctx.path("image/digest")])
+    if digest_result.return_code:
+        fail("Failed to read digest: %s" % digest_result.stderr)
+    updated_attrs["digest"] = digest_result.stdout
+    return updated_attrs
 
 """Pulls a container image.
 
@@ -112,3 +119,8 @@ Args:
        and 'digest' remain unspecified.
   digest: (optional) the digest of the image to pull.
 """
+
+container_pull = repository_rule(
+    attrs = _container_pull_attrs,
+    implementation = _impl,
+)
