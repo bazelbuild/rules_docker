@@ -38,24 +38,24 @@ def compare_ids(tars, id_=None):
     tars: list of str paths to the image tarballs
     id_: (optional) the id we want the images to have
           if None, just makes sure they are all the same
-
+  Raises:
+    RuntimeError: Expected digest did not match actual image digest
   """
-
   for image in tars:
     current_id = get_id(image)
     if id_ is None:
       id_ = current_id
     elif current_id != id_:
-      exit(1)
-
-  exit(0)
+      raise RuntimeError("Digest mismatch: actual {} vs expected {}".format(
+          current_id,
+          id_
+          ))
 
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
 
   parser.add_argument("tars", nargs="+", type=str, default=[])
-
   parser.add_argument("--id", type=str, default=None)
 
   args = parser.parse_args()
