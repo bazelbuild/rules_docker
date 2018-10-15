@@ -87,6 +87,8 @@ def _impl(ctx):
                 layer_arg,
             ),
             "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+            "%{cacerts}": ( "--cacert " + ctx.file.cacerts.path ) \
+                 if ctx.file.cacerts else "",
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
         },
         output = ctx.outputs.executable,
@@ -100,6 +102,7 @@ def _impl(ctx):
                     image["manifest"],
                 ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
                 stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
+                ([ctx.file.cacerts] if ctx.file.cacerts else []) +
                 list(ctx.attr._pusher.default_runfiles.files),
     )
 
@@ -144,6 +147,10 @@ container_push = rule(
         ),
         "stamp": attr.bool(
             default = False,
+            mandatory = False,
+        ),
+        "cacerts": attr.label(
+            allow_single_file = True,
             mandatory = False,
         ),
     }.items() + _layer_tools.items()),
