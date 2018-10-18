@@ -173,6 +173,6 @@ file_test(
 
 file_test(
     name = "test_digest_output2",
-    content = "sha256:acff18cc59851acc448c0f106ccefdd13907a91835d61b8b34f85a974a2e540a",
+    content = "sha256:8c70e530d7d9fd0018245579af25277d3ba0d47212b092225c391c41a82debef",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
