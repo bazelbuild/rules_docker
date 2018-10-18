@@ -148,7 +148,6 @@ groovy_repositories()
 http_archive(
     name = "io_bazel_rules_go",
     sha256 = "ee5fe78fe417c685ecb77a0a725dc9f6040ae5beb44a0ba4ddb55453aad23a8a",
-    strip_prefix = "rules_go-0.13.0",
     url = "https://github.com/bazelbuild/rules_go/releases/download/0.16.0/rules_go-0.16.0.tar.gz",
 )
 
