@@ -67,7 +67,7 @@ gflags.DEFINE_string(
 gflags.DEFINE_multistring(
     'modes', None,
     'Specific mode to apply to specific file (from the file argument),'
-    ' e.g., path/to/file=0455.')
+    ' e.g., path/to/file=0o455.')
 
 gflags.DEFINE_multistring('owners', None,
                           'Specify the numeric owners of individual files, '

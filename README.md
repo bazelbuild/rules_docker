@@ -544,7 +544,7 @@ passwd_file(
 pkg_tar(
     name = "passwd_tar",
     srcs = [":passwd"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 
@@ -1156,7 +1156,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
     <tr>
       <td><code>mode</code></td>
       <td>
-        <code>String, default to 0555</code>
+        <code>String, default to 0o555</code>
         <p>
           Set the mode of files added by the <code>files</code> attribute.
         </p>
@@ -1365,7 +1365,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
     <tr>
       <td><code>mode</code></td>
       <td>
-        <code>String, default to 0555</code>
+        <code>String, default to 0o555</code>
         <p>
           Set the mode of files added by the <code>files</code> attribute.
         </p>

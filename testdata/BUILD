@@ -42,47 +42,47 @@ container_image(
 container_image(
     name = "no_data_path_image",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "data_path_image",
     data_path = ".",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "absolute_data_path_image",
     data_path = "/tools/build_defs",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "root_data_path_image",
     data_path = "/",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "gen_image",
     files = [":gen"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "files_base",
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "files_with_files_base",
     base = ":files_base",
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -90,13 +90,13 @@ container_image(
     base = ":files_base",
     files = ["bar"],
     layers = [":files_in_layer"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_layer(
     name = "files_in_layer",
     files = ["baz"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -140,7 +140,7 @@ container_image(
     name = "files_with_tar_base",
     base = ":tar_base",
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -153,7 +153,7 @@ container_image(
     name = "docker_tarball_base",
     base = "@pause_tar//image",
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -164,7 +164,7 @@ container_image(
         ":files_in_layer",
         ":tars_in_layer",
     ],
-    mode = "0644",
+    mode = "0o644",
 )
 
 # TODO(mattmoor): Test scalar entrypoint
@@ -172,7 +172,7 @@ container_image(
     name = "base_with_entrypoint",
     entrypoint = ["/bar"],
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
     ports = ["8080"],
     tars = ["two.tar"],
 )
@@ -191,7 +191,7 @@ container_image(
     base = ":base_with_entrypoint",
     cmd = ["shadowed-arg"],
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -211,7 +211,7 @@ container_image(
         "bar",
         "foo",
     ],
-    mode = "0644",
+    mode = "0o644",
     volumes = ["/logs"],
 )
 
@@ -525,7 +525,7 @@ passwd_file(
 pkg_tar(
     name = "passwd_tar",
     srcs = [":passwd"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 
@@ -580,7 +580,7 @@ group_file(
 pkg_tar(
     name = "group_tar",
     srcs = [":group"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 

@@ -201,7 +201,7 @@ _layer_attrs = dict({
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
     "files": attr.label_list(allow_files = True),
-    "mode": attr.string(default = "0555"),  # 0555 == a+rx
+    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
     "tars": attr.label_list(allow_files = tar_filetype),
     "debs": attr.label_list(allow_files = deb_filetype),
     "symlinks": attr.string_dict(),
