@@ -23,8 +23,8 @@ from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 
 TEST_DATA_TARGET_BASE='testdata'
-DIR_PERMISSION=448 # decimal for oct 0700
-PASSWD_FILE_MODE=420  # decimal for oct 0644
+DIR_PERMISSION=0o700
+PASSWD_FILE_MODE=0o644
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
