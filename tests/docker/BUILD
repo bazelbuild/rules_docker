@@ -46,7 +46,7 @@ container_test(
 
 container_image(
     name = "set_cmd",
-    base = "@distroless_base//image",
+    base = "@distroless_fixed_id//image",
     cmd = ["foo"],
 )
 
@@ -58,7 +58,7 @@ container_test(
 
 container_image(
     name = "set_entrypoint",
-    base = "@distroless_base//image",
+    base = "@distroless_fixed_id//image",
     entrypoint = ["bar"],
 )
 
@@ -70,7 +70,7 @@ container_test(
 
 container_image(
     name = "set_cmd_and_entrypoint",
-    base = "@distroless_base//image",
+    base = "@distroless_fixed_id//image",
     cmd = ["foo"],
     entrypoint = ["bar"],
 )
@@ -173,6 +173,6 @@ file_test(
 
 file_test(
     name = "test_digest_output2",
-    content = "sha256:8c70e530d7d9fd0018245579af25277d3ba0d47212b092225c391c41a82debef",
+    content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
