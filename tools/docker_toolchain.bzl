@@ -15,14 +15,14 @@
 DockerToolchainInfo = provider(
   doc="Docker toolchain rule parameters",
   fields = {
-      "exec": "Path to the docker executable",
+      "tool_path": "Path to the docker executable",
   },
 )
 
 def _docker_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         info=DockerToolchainInfo(
-          exec=ctx.attr.exec
+          tool_path=ctx.attr.tool_path
         )
     )
     return [toolchain_info]
@@ -30,6 +30,6 @@ def _docker_toolchain_impl(ctx):
 docker_toolchain = rule(
     implementation=_docker_toolchain_impl,
     attrs = {
-        "exec": attr.string(),
+        "tool_path": attr.string(),
     },
 )
