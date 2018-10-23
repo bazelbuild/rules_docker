@@ -24,17 +24,17 @@ py_binary(
 )
 
 # Docker toolchain type
-toolchain_type(name="toolchain_type_docker")
+toolchain_type(name = "toolchain_type_docker")
 
 # Default docker toolchain that expects the 'docker' executable
 # to be in the PATH
 docker_toolchain(
-    name="docker_linux_toolchain_impl",
-    tool_path="docker",
+    name = "docker_linux_toolchain_impl",
+    tool_path = "docker",
 )
 
 toolchain(
-    name="docker_linux_toolchain",
+    name = "docker_linux_toolchain",
     exec_compatible_with = [
         "@bazel_tools//platforms:linux",
         "@bazel_tools//platforms:x86_64",
@@ -46,5 +46,3 @@ toolchain(
     toolchain = ":docker_linux_toolchain_impl",
     toolchain_type = ":toolchain_type_docker",
 )
-
-

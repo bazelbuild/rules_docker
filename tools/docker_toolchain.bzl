@@ -13,22 +13,22 @@
 # limitations under the License.
 
 DockerToolchainInfo = provider(
-  doc="Docker toolchain rule parameters",
-  fields = {
-      "tool_path": "Path to the docker executable",
-  },
+    doc = "Docker toolchain rule parameters",
+    fields = {
+        "tool_path": "Path to the docker executable",
+    },
 )
 
 def _docker_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
-        info=DockerToolchainInfo(
-          tool_path=ctx.attr.tool_path
-        )
+        info = DockerToolchainInfo(
+            tool_path = ctx.attr.tool_path,
+        ),
     )
     return [toolchain_info]
 
 docker_toolchain = rule(
-    implementation=_docker_toolchain_impl,
+    implementation = _docker_toolchain_impl,
     attrs = {
         "tool_path": attr.string(),
     },
