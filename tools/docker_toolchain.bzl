@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module defines various docker toolchain rules
+This module defines docker toolchain rules
 """
 
 DockerToolchainInfo = provider(
