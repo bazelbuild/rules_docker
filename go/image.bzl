@@ -62,7 +62,15 @@ DEFAULT_BASE = select({
     "//conditions:default": "@go_image_base//image",
 })
 
-def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+def go_image(
+    name,
+    base = None,
+    deps = [],
+    layers = [],
+    binary = None,
+    stamp = None,
+    creation_time = None,
+    **kwargs):
     """Constructs a container image wrapping a go_binary target.
 
   Args:
@@ -94,4 +102,6 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        stamp = stamp,
+        creation_time = creation_time,
     )

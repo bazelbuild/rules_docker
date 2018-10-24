@@ -1,0 +1,29 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("//go:image.bzl", "go_image")
+
+go_binary(
+    name = "app",
+    srcs = ["main.go"],
+)
+
+go_image(
+    name = "image",
+    binary = ":app",
+    pure = "on",
+    stamp = True,
+)
+
+go_image(
+    name = "image_build_binary",
+    srcs = ["main.go"],
+    pure = "on",
+    creation_time = "1540414141.367007",
+)
+
+py_test(
+    name = "test_go_image",
+    srcs = ["test_go_image.py"],
+    data = [":image", ":image_build_binary"],
+)
