@@ -143,7 +143,7 @@ jar_dep_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
-    toolchains=["//tools:toolchain_type_docker"],
+    toolchains = ["//tools:toolchain_type_docker"],
     implementation = _jar_dep_layer_impl,
 )
 
@@ -243,7 +243,7 @@ jar_app_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
-    toolchains=["//tools:toolchain_type_docker"],
+    toolchains = ["//tools:toolchain_type_docker"],
     implementation = _jar_app_layer_impl,
 )
 
@@ -330,7 +330,7 @@ _war_dep_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
-    toolchains=["//tools:toolchain_type_docker"],
+    toolchains = ["//tools:toolchain_type_docker"],
     implementation = _war_dep_layer_impl,
 )
 
@@ -372,7 +372,7 @@ _war_app_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
-    toolchains=["//tools:toolchain_type_docker"],
+    toolchains = ["//tools:toolchain_type_docker"],
     implementation = _war_app_layer_impl,
 )
 

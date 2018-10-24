@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//visibility:private"])
 
 load(":docker_toolchain.bzl", "docker_toolchain")
 
@@ -24,17 +24,20 @@ py_binary(
 )
 
 # Docker toolchain type
-toolchain_type(name = "toolchain_type_docker")
+toolchain_type(
+    name = "toolchain_type_docker",
+)
 
 # Default docker toolchain that expects the 'docker' executable
 # to be in the PATH
 docker_toolchain(
-    name = "docker_linux_toolchain_impl",
+    name = "docker_default_toolchain_impl",
     tool_path = "docker",
+    visibility = ["//visibility:public"],
 )
 
 toolchain(
-    name = "docker_linux_toolchain",
+    name = "docker_default_linux_toolchain",
     exec_compatible_with = [
         "@bazel_tools//platforms:linux",
         "@bazel_tools//platforms:x86_64",
@@ -43,6 +46,34 @@ toolchain(
         "@bazel_tools//platforms:linux",
         "@bazel_tools//platforms:x86_64",
     ],
-    toolchain = ":docker_linux_toolchain_impl",
+    toolchain = ":docker_default_toolchain_impl",
+    toolchain_type = ":toolchain_type_docker",
+)
+
+toolchain(
+    name = "docker_default_windows_toolchain",
+    exec_compatible_with = [
+        "@bazel_tools//platforms:windows",
+        "@bazel_tools//platforms:x86_64",
+    ],
+    target_compatible_with = [
+        "@bazel_tools//platforms:windows",
+        "@bazel_tools//platforms:x86_64",
+    ],
+    toolchain = ":docker_default_toolchain_impl",
+    toolchain_type = ":toolchain_type_docker",
+)
+
+toolchain(
+    name = "docker_default_osx_toolchain",
+    exec_compatible_with = [
+        "@bazel_tools//platforms:osx",
+        "@bazel_tools//platforms:x86_64",
+    ],
+    target_compatible_with = [
+        "@bazel_tools//platforms:osx",
+        "@bazel_tools//platforms:x86_64",
+    ],
+    toolchain = ":docker_default_toolchain_impl",
     toolchain_type = ":toolchain_type_docker",
 )

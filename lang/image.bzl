@@ -227,7 +227,7 @@ _app_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
-    toolchains=["//tools:toolchain_type_docker"],
+    toolchains = ["//tools:toolchain_type_docker"],
     implementation = app_layer_impl,
 )
 
