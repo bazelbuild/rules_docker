@@ -31,7 +31,7 @@ function guess_runfiles() {
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
-DOCKER="${DOCKER:-docker}"
+DOCKER="%{docker_tool_path}"
 
 # Create temporary files in which to record things to clean up.
 TEMP_FILES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_files')"

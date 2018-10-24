@@ -89,6 +89,7 @@ _dep_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
+    toolchains=["//tools:toolchain_type_docker"],
     implementation = _dep_layer_impl,
 )
 

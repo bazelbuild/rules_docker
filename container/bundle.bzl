@@ -93,6 +93,7 @@ container_bundle_ = rule(
     outputs = {
         "out": "%{name}.tar",
     },
+    toolchains = ["//tools:toolchain_type_docker"],
     implementation = _container_bundle_impl,
 )
 
