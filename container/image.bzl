@@ -503,7 +503,7 @@ container_image_ = rule(
     attrs = _attrs,
     executable = True,
     outputs = _outputs,
-    toolchains = ["//tools:toolchain_type_docker"],
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
 )
 

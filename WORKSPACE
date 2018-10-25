@@ -222,10 +222,3 @@ http_archive(
     ],
 )
 
-register_toolchains(
-    # Register the default docker toolchain that expects the 'docker'
-    # executable to be in the PATH
-    "//tools:docker_default_linux_toolchain",
-    "//tools:docker_default_windows_toolchain",
-    "//tools:docker_default_osx_toolchain",
-)
