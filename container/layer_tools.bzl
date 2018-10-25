@@ -119,6 +119,8 @@ def incremental_load(
     if stamp:
         stamp_files = [ctx.info_file, ctx.version_file]
 
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+
     # Default to interactively launching the container,
     # and cleaning up when it exits.
 
@@ -180,6 +182,7 @@ def incremental_load(
     ctx.template_action(
         template = ctx.file.incremental_load_template,
         substitutions = {
+            "%{docker_tool_path}": toolchain_info.tool_path,
             # If this rule involves stamp variables than load them as bash
             # variables, and turn references to them into bash variable
             # references.

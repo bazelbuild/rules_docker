@@ -110,7 +110,7 @@ docker_pull(
 )
 EOF
 
-  bazel build --verbose_failures --spawn_strategy=standalone :pause_based
+  bazel build --verbose_failures --spawn_strategy=standalone --toolchain_resolution_debug :pause_based
 }
 
 

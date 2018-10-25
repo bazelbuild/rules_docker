@@ -174,5 +174,6 @@ container_import = rule(
     outputs = {
         "out": "%{name}.tar",
     },
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _container_import_impl,
 )

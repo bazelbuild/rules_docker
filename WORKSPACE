@@ -221,9 +221,3 @@ http_archive(
         "https://github.com/bazelbuild/bazel-toolchains/archive/cdea5b8675914d0a354d89f108de5d28e54e0edc.tar.gz",
     ],
 )
-
-register_toolchains(
-    # Register the default docker toolchain that expects the 'docker'
-    # executable to be in the PATH
-    "//tools:docker_linux_toolchain",
-)

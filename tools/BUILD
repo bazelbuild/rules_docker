@@ -13,36 +13,10 @@
 # limitations under the License.
 package(default_visibility = ["//visibility:private"])
 
-load(":docker_toolchain.bzl", "docker_toolchain")
-
 py_binary(
     name = "update_deps",
     srcs = ["update_deps.py"],
     deps = [
         "@containerregistry",
     ],
-)
-
-# Docker toolchain type
-toolchain_type(name = "toolchain_type_docker")
-
-# Default docker toolchain that expects the 'docker' executable
-# to be in the PATH
-docker_toolchain(
-    name = "docker_linux_toolchain_impl",
-    tool_path = "docker",
-)
-
-toolchain(
-    name = "docker_linux_toolchain",
-    exec_compatible_with = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
-    ],
-    target_compatible_with = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
-    ],
-    toolchain = ":docker_linux_toolchain_impl",
-    toolchain_type = ":toolchain_type_docker",
 )

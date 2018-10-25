@@ -227,6 +227,7 @@ _app_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = app_layer_impl,
 )
 
