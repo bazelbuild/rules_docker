@@ -20,4 +20,3 @@ py_binary(
         "@containerregistry",
     ],
 )
-
