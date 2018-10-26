@@ -146,6 +146,15 @@ platforms:
     - "//testdata/test:test-data"
     - "//tools/..."
     - "-//container:image_test"
+    build_flags:
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    # TODO(xingao): remove the following flags once they are in Buildkite settings.
+    - "--host_javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
+    - "--javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
+    - "--crosstool_top=@bazel_toolchains//configs/ubuntu16_04_clang/latest:crosstool_top_default"
+    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_default"
     test_targets:
     - "--"
     - "//tests/..."
@@ -156,6 +165,12 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     test_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    # TODO(xingao): remove the following flags once they are in Buildkite settings.
+    - "--host_javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
+    - "--javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
+    - "--crosstool_top=@bazel_toolchains//configs/ubuntu16_04_clang/latest:crosstool_top_default"
+    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_default"
+
