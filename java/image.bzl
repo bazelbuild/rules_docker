@@ -192,7 +192,7 @@ def _jar_app_layer_impl(ctx):
         "-cp",
         # Support optionally passing the classpath as a file.
         "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
-    ] + jvm_flags + ([ctx.attr.main_class] + args if ctx.attr.main_class != None else [])
+    ] + jvm_flags + ([ctx.attr.main_class] + args if not ctx.attr.partial_entrypoint else [])
 
     file_map = {
         layer_file_path(ctx, f): f
@@ -224,7 +224,11 @@ jar_app_layer = rule(
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The main class to invoke on startup.
-        "main_class": attr.string(mandatory = False),
+        "main_class": attr.string(mandatory = True),
+	# If partial_entrypoint is true then the entrypoint will not stop before
+	# including the value of main_class, allowing for additional jvm_flags
+	# to be provided at runtime
+	"partial_entrypoint": attr.bool(default = False),
 
         # Whether the classpath should be passed as a file.
         "_classpath_as_file": attr.bool(default = False),
@@ -255,6 +259,7 @@ def java_image(
         runtime_deps = [],
         layers = [],
         jvm_flags = [],
+	partial_entrypoint = False,
         **kwargs):
     """Builds a container image overlaying the java_binary.
 
@@ -264,7 +269,6 @@ def java_image(
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
-
     native.java_binary(
         name = binary_name,
         main_class = main_class,
@@ -297,6 +301,7 @@ def java_image(
         jar_layers = layers,
         visibility = visibility,
         tags = tags,
+	partial_entrypoint = partial_entrypoint,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
     )
