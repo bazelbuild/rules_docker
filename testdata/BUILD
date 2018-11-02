@@ -818,8 +818,6 @@ java_image(
 java_image(
     name = "java_partial_entrypoint_image",
     srcs = ["Binary.java"],
-    main_class = "examples.images.Binary",
-    partial_entrypoint = True,
     layers = [":java_image_library"],
 )
 
