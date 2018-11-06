@@ -1557,6 +1557,26 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
   </tbody>
 </table>
 
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Toolchains</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>@io_bazel_rules_docker//toolchains/docker:toolchain_type</code></td>
+      <td>
+        See <a href="toolchains/docker/readme.md#how-to-use-the-docker-toolchain">How to use the Docker Toolchain</a> for details
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 <a name="container_bundle"></a>
 ## container_bundle
 
@@ -1597,7 +1617,7 @@ A rule that aliases and saves N images into a single `docker save` tarball.
            <code>container_image</code>, or a <code>docker save</code> tarball.</p>
       </td>
     </tr>
-    <tr>
+    <tr>Toolchains
       <td><code>stamp</code></td>
       <td>
         <p><code>Bool; optional</code></p>
