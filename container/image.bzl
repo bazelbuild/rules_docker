@@ -43,6 +43,7 @@ load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
     deb_filetype = "deb",
+    rpm_filetype = "rpm",
     tar_filetype = "tar",
 )
 load(
@@ -250,6 +251,7 @@ def _impl(
         env = None,
         layers = None,
         debs = None,
+        rpms = None,
         tars = None,
         operating_system = None,
         output_executable = None,
@@ -277,6 +279,7 @@ def _impl(
     env: str Dict, overrides ctx.attr.env
     layers: label List, overrides ctx.attr.layers
     debs: File list, overrides ctx.files.debs
+    rpms: File list, overrides ctx.files.rpms
     tars: File list, overrides ctx.files.tars
     operating_system: Operating system to target (e.g. linux, windows)
     output_executable: File to use as output for script to load docker image
@@ -318,6 +321,7 @@ def _impl(
         directory = directory,
         symlinks = symlinks,
         debs = debs,
+        rpms = rpms,
         tars = tars,
         env = env,
         operating_system = operating_system,
@@ -573,7 +577,7 @@ def _validate_command(name, argument, operating_system):
 #
 #      # The directory in which to expand the specified files,
 #      # defaulting to '/'.
-#      # Only makes sense accompanying one of files/tars/debs.
+#      # Only makes sense accompanying one of files/tars/debs/rpms.
 #      directory="...",
 #
 #      # The set of archives to expand, or packages to install
@@ -581,6 +585,7 @@ def _validate_command(name, argument, operating_system):
 #      files=[...],
 #      tars=[...],
 #      debs=[...],
+#      rpms=[...],
 #
 #      # The set of symlinks to create within a given layer.
 #      symlinks = {

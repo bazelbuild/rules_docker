@@ -105,6 +105,12 @@ container_image(
 )
 
 container_image(
+    name = "tar_with_rpm",
+    base = ":tar_base",
+    rpms = ["iptables-1.6.2-3.fc27.i686.rpm"],
+)
+
+container_image(
     name = "tar_with_tar_base",
     base = ":tar_base",
     tars = ["two.tar"],

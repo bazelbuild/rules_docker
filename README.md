@@ -1070,7 +1070,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
 ## container_layer
 
 ```python
-container_layer(data_path, directory, files, mode, tars, debs, symlinks, env)
+container_layer(data_path, directory, files, mode, tars, debs, rpms, symlinks, env)
 ```
 
 A rule that assembles data into a tarball which can be use as in `layers` attr in `container_image` rule.
@@ -1139,7 +1139,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
         <p>Target directory.</p>
         <p>
           The directory in which to expand the specified files, defaulting to '/'.
-          Only makes sense accompanying one of files/tars/debs.
+          Only makes sense accompanying one of files/tars/debs/rpms.
         </p>
       </td>
     </tr>
@@ -1179,6 +1179,16 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
         <p>Debian package to install.</p>
         <p>
           A list of debian packages that will be installed in the Docker image.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>rpms</code></td>
+      <td>
+        <code>List of files, optional</code>
+        <p>RPM package to install.</p>
+        <p>
+          A list of RPM packages that will be installed in the Docker image.
         </p>
       </td>
     </tr>

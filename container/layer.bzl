@@ -17,6 +17,7 @@ load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
     deb_filetype = "deb",
+    rpm_filetype = "rpm",
     tar_filetype = "tar",
 )
 load(
@@ -74,6 +75,7 @@ def build_layer(
         directory = None,
         symlinks = None,
         debs = None,
+        rpms = None,
         tars = None,
         operating_system = None):
     """Build the current layer for appending it to the base layer"""
@@ -101,6 +103,7 @@ def build_layer(
     args += ["--empty_dir=%s" % f for f in empty_dirs or []]
     args += ["--tar=" + f.path for f in tars]
     args += ["--deb=" + f.path for f in debs]
+    args += ["--rpm=" + f.path for f in rpms]
     for k in symlinks:
         if ":" in k:
             fail("The source of a symlink cannot container ':', got: %s" % k)
@@ -110,7 +113,7 @@ def build_layer(
     ctx.action(
         executable = build_layer_exec,
         arguments = ["--flagfile=" + arg_file.path],
-        inputs = files + file_map.values() + tars + debs + [arg_file],
+        inputs = files + file_map.values() + tars + debs + rpms + [arg_file],
         outputs = [layer],
         use_default_shell_env = True,
         mnemonic = "ImageLayer",
@@ -131,6 +134,7 @@ def _impl(
         directory = None,
         symlinks = None,
         debs = None,
+        rpms = None,
         tars = None,
         env = None,
         operating_system = None,
@@ -149,6 +153,7 @@ def _impl(
     env: str Dict, overrides ctx.attr.env
     operating_system: operating system to target (e.g. linux, windows)
     debs: File list, overrides ctx.files.debs
+    rpms: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
     output_layer: File, overrides ctx.outputs.layer
   """
@@ -161,6 +166,7 @@ def _impl(
     symlinks = symlinks or ctx.attr.symlinks
     operating_system = operating_system or ctx.attr.operating_system
     debs = debs or ctx.files.debs
+    rpms = rpms or ctx.files.rpms
     tars = tars or ctx.files.tars
     output_layer = output_layer or ctx.outputs.layer
 
@@ -176,6 +182,7 @@ def _impl(
         directory = directory,
         symlinks = symlinks,
         debs = debs,
+        rpms = rpms,
         tars = tars,
         operating_system = operating_system,
     )
@@ -204,6 +211,7 @@ _layer_attrs = dict({
     "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
     "tars": attr.label_list(allow_files = tar_filetype),
     "debs": attr.label_list(allow_files = deb_filetype),
+    "rpms": attr.label_list(allow_files = rpm_filetype),
     "symlinks": attr.string_dict(),
     "env": attr.string_dict(),
     # Implicit/Undocumented dependencies.

@@ -23,6 +23,7 @@ import sys
 import re
 import tarfile
 import tempfile
+import shutil
 
 from tools.build_defs.pkg import archive
 from third_party.py import gflags
@@ -49,6 +50,8 @@ gflags.DEFINE_multistring(
 gflags.DEFINE_multistring('tar', [], 'A tar file to add to the layer')
 
 gflags.DEFINE_multistring('deb', [], 'A debian package to add to the layer')
+
+gflags.DEFINE_multistring('rpm', [], 'An rpm package to add to the layer')
 
 gflags.DEFINE_multistring(
     'link', [],
@@ -95,6 +98,9 @@ class TarFile(object):
   """A class to generates a Docker layer."""
 
   class DebError(Exception):
+    pass
+
+  class RPMError(Exception):
     pass
 
   PKG_NAME_RE = re.compile(r'Package:\s*(?P<pkg_name>\w+).*')
@@ -284,6 +290,34 @@ class TarFile(object):
       raise self.DebError('Unknown Exception {0}. Please report an issue at'
                           ' github.com/bazelbuild/rules_docker.'.format(e))
 
+  def add_rpm(self, rpm):
+    """Extract an rpm package in the output tar.
+
+    All files presents in that rpm package will be added to the
+    output tar under the same paths. No user name nor group names will
+    be added to the output.
+
+    Args:
+      rpm: the tar file to add
+
+    Raises:
+      RPMError: if the format of the rpm archive is incorrect.
+    """
+    try:
+      p1 = subprocess.Popen(["rpm2cpio", rpm], stdout=subprocess.PIPE)
+      if not os.path.exists("tmpdir"):
+        os.makedirs("tmpdir")
+      p2 = subprocess.Popen(["cpio", "-i", "-d", "-m", "-v", "-D", "tmpdir"], stdin=p1.stdout, stdout=subprocess.PIPE)
+      p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+      p2.communicate()
+      tar = tarfile.open("rpm.tar", "w")
+      tar.add("tmpdir", "")
+      tar.close()
+      self.add_tar("rpm.tar")
+    finally:
+      shutil.rmtree("tmpdir")
+      os.remove("rpm.tar")
+
   def add_deb(self, deb):
     """Extract a debian package in the output tar.
 
@@ -414,6 +448,8 @@ def main(unused_argv):
       output.add_tar(tar)
     for deb in FLAGS.deb:
       output.add_deb(deb)
+    for rpm in FLAGS.rpm:
+      output.add_rpm(rpm)
     for link in FLAGS.link:
       l = link.split(':', 1)
       output.add_link(l[0], l[1])

@@ -45,6 +45,17 @@ container_test(
 )
 
 container_image(
+    name = "rpm_image",
+    tars = ["//testdata:tar_with_rpm"],
+)
+
+container_test(
+    name = "rpm_image_test",
+    configs = ["//tests/docker/configs:rpm_image.yaml"],
+    image = ":rpm_image",
+)
+
+container_image(
     name = "set_cmd",
     base = "@distroless_fixed_id//image",
     cmd = ["foo"],

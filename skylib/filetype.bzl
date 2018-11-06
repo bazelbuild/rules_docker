@@ -29,5 +29,9 @@ deb = [
     ".udeb",
 ]
 
+rpm = [
+    ".rpm",
+]
+
 # Container images are tarballs (when exported).
 container = tar

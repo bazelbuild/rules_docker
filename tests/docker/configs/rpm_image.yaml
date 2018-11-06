@@ -1,0 +1,6 @@
+schemaVersion: '2.0.0'
+fileExistenceTests:
+- name: 'iptables binary'
+  path: '/usr/sbin/iptables'
+  shouldExist: true
+  permissions: 'Lrwxrwxrwx'
