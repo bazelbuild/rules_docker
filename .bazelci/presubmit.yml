@@ -31,11 +31,6 @@ platforms:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    # TODO(xingao): remove the following flags once they are in Buildkite settings.
-    - "--host_javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
-    - "--javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
-    - "--crosstool_top=@bazel_toolchains//configs/ubuntu16_04_clang/latest:crosstool_top_default"
-    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_default"
     test_targets:
     - "--"
     - "//tests/..."
@@ -49,9 +44,3 @@ platforms:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    # TODO(xingao): remove the following flags once they are in Buildkite settings.
-    - "--host_javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
-    - "--javabase=@bazel_toolchains//configs/ubuntu16_04_clang/latest:javabase"
-    - "--crosstool_top=@bazel_toolchains//configs/ubuntu16_04_clang/latest:crosstool_top_default"
-    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_default"
-
