@@ -261,6 +261,14 @@ def java_image(
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    main_class: This parameter is optional. If provided it will be used in the
+                compilation of any additional sources, and as part of the
+                construction of the container entrypoint. If not provided, the
+                name parameter is used as the main_class when compiling any
+                additional sources, and the main_class is not included in the
+                construction of the container entrypoint. Omitting main_class
+                allows the user to specify additional arguments to the JVM at
+                runtime.
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
