@@ -266,11 +266,11 @@ def java_image(
     binary_name = name + ".binary"
     native.java_binary(
         name = binary_name,
-        # Calling java_binary with main_class = None will work if the package binary_name
-        # contains java or javatest.  In this case, the main_class is guessed to be the
-        # same as the name parameter.  To avoid assumptions about package locations, if
-        # the main_class is None we are passing in the value of the name parameter to allow
-        # the build to proceed.
+        # Calling java_binary with main_class = None will work if the package
+        # name contains java or javatest. In this case, the main_class is
+        # guessed by the java_binary implementation. To avoid assumptions about
+        # package locations, if the main_class is None we use the value of
+        # the name parameter as main_class to allow the build to proceed.
         main_class = main_class if main_class != None else binary_name,
         # If the rule is turning a JAR built with java_library into
         # a binary, then it will appear in runtime_deps.  We are
