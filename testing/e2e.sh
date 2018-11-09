@@ -268,6 +268,12 @@ function test_java_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image)" "Hello World"
 }
 
+function test_java_partial_entrypoint_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_partial_entrypoint_image examples.images.Binary)" "Hello World"
+}
+
 function test_java_image_with_custom_run_flags() {
   cd "${ROOT}"
   clear_docker
