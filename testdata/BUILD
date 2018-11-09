@@ -27,6 +27,8 @@ exports_files(["pause.tar"])
 
 exports_files(["BUILD"])
 
+exports_files(["Runfiles.java"])
+
 genrule(
     name = "gen",
     outs = ["gen.out"],
@@ -855,35 +857,6 @@ java_image(
     base = ":java_image_base_with_custom_run_flags",
     main_class = "examples.images.Binary",
     runtime_deps = [":java_bin_as_lib"],
-)
-
-java_image(
-    name = "java_runfiles_image",
-    srcs = ["Runfiles.java"],
-    data = [
-        "foo",
-    ],
-    main_class = "examples.images.Runfiles",
-    deps = [
-        "@bazel_tools//tools/java/runfiles",
-    ],
-)
-
-java_library(
-    name = "java_runfiles_as_lib",
-    srcs = ["Runfiles.java"],
-    data = [
-        "foo",
-    ],
-    deps = [
-        "@bazel_tools//tools/java/runfiles",
-    ],
-)
-
-java_image(
-    name = "java_runfiles_as_lib_image",
-    main_class = "examples.images.Runfiles",
-    runtime_deps = [":java_runfiles_as_lib"],
 )
 
 war_image(

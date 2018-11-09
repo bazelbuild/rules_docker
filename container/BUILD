@@ -136,8 +136,6 @@ TEST_TARGETS = [
     ":go_image",
     ":groovy_image",
     ":java_image",
-    ":java_runfiles_image",
-    ":java_runfiles_as_lib_image",
     ":nodejs_image",
     ":py3_image",
     ":py_image",

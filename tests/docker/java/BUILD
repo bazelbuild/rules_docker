@@ -81,20 +81,20 @@ java_image(
 )
 
 container_test(
-    name = "java_image_entrypoint_test",
-    configs = ["//tests/docker/java/configs:java_image_entrypoint.yaml"],
+    name = "java_image_test",
+    configs = ["//tests/docker/java/configs:java_image.yaml"],
     image = ":java_image",
 )
 
 container_test(
-    name = "java_runfiles_image_entrypoint_test",
-    configs = ["//tests/docker/java/configs:java_runfiles_image_entrypoint.yaml"],
+    name = "java_runfiles_image_test",
+    configs = ["//tests/docker/java/configs:java_runfiles_image.yaml"],
     image = ":java_runfiles_image",
 )
 
 container_test(
-    name = "java_runfiles_as_lib_image_entrypoint_test",
-    configs = ["//tests/docker/java/configs:java_runfiles_as_lib_image_entrypoint.yaml"],
+    name = "java_runfiles_as_lib_image_test",
+    configs = ["//tests/docker/java/configs:java_runfiles_as_lib_image.yaml"],
     image = ":java_runfiles_as_lib_image",
 )
 
