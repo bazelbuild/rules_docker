@@ -13,4 +13,3 @@
 # limitations under the License.
 
 exports_files(glob(["*.yaml"]))
-

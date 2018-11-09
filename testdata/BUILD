@@ -816,6 +816,12 @@ java_image(
 )
 
 java_image(
+    name = "java_partial_entrypoint_image",
+    srcs = ["Binary.java"],
+    layers = [":java_image_library"],
+)
+
+java_image(
     name = "java_sandwich_image",
     srcs = ["Binary.java"],
     layers = [":scala_image_library"],

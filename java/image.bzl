@@ -192,7 +192,7 @@ def _jar_app_layer_impl(ctx):
         "-cp",
         # Support optionally passing the classpath as a file.
         "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
-    ] + jvm_flags + [ctx.attr.main_class] + args
+    ] + jvm_flags + ([ctx.attr.main_class] + args if ctx.attr.main_class != "" else [])
 
     file_map = {
         layer_file_path(ctx, f): f
@@ -224,7 +224,7 @@ jar_app_layer = rule(
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The main class to invoke on startup.
-        "main_class": attr.string(mandatory = True),
+        "main_class": attr.string(mandatory = False),
 
         # Whether the classpath should be passed as a file.
         "_classpath_as_file": attr.bool(default = False),
@@ -261,13 +261,25 @@ def java_image(
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    main_class: This parameter is optional. If provided it will be used in the
+                compilation of any additional sources, and as part of the
+                construction of the container entrypoint. If not provided, the
+                name parameter is used as the main_class when compiling any
+                additional sources, and the main_class is not included in the
+                construction of the container entrypoint. Omitting main_class
+                allows the user to specify additional arguments to the JVM at
+                runtime.
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
-
     native.java_binary(
         name = binary_name,
-        main_class = main_class,
+        # Calling java_binary with main_class = None will work if the package
+        # name contains java or javatest. In this case, the main_class is
+        # guessed by the java_binary implementation. To avoid assumptions about
+        # package locations, if the main_class is None we use the value of
+        # the name parameter as main_class to allow the build to proceed.
+        main_class = main_class if main_class != None else binary_name,
         # If the rule is turning a JAR built with java_library into
         # a binary, then it will appear in runtime_deps.  We are
         # not allowed to pass deps (even []) if there is no srcs
