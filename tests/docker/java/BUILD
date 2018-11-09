@@ -40,8 +40,49 @@ java_image(
     main_class = "examples.images.Binary",
 )
 
+java_image(
+    name = "java_runfiles_image",
+    srcs = ["//testdata:Runfiles.java"],
+    data = [
+        "//testdata:foo",
+    ],
+    main_class = "examples.images.Runfiles",
+    deps = [
+        "@bazel_tools//tools/java/runfiles",
+    ],
+)
+
+java_library(
+    name = "java_runfiles_as_lib",
+    srcs = ["//testdata:Runfiles.java"],
+    data = [
+        "//testdata:foo",
+    ],
+    deps = [
+        "@bazel_tools//tools/java/runfiles",
+    ],
+)
+
+java_image(
+    name = "java_runfiles_as_lib_image",
+    main_class = "examples.images.Runfiles",
+    runtime_deps = [":java_runfiles_as_lib"],
+)
+
 container_test(
     name = "java_image_entrypoint_test",
     configs = ["//tests/docker/java/configs:java_image_entrypoint.yaml"],
     image = ":java_image",
+)
+
+container_test(
+    name = "java_runfiles_image_entrypoint_test",
+    configs = ["//tests/docker/java/configs:java_runfiles_image_entrypoint.yaml"],
+    image = ":java_runfiles_image",
+)
+
+container_test(
+    name = "java_runfiles_as_lib_image_entrypoint_test",
+    configs = ["//tests/docker/java/configs:java_runfiles_as_lib_image_entrypoint.yaml"],
+    image = ":java_runfiles_as_lib_image",
 )
