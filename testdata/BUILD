@@ -27,6 +27,8 @@ exports_files(["pause.tar"])
 
 exports_files(["BUILD"])
 
+exports_files(["Runfiles.java"])
+
 genrule(
     name = "gen",
     outs = ["gen.out"],
