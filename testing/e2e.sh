@@ -315,18 +315,6 @@ function test_war_image_with_custom_run_flags() {
   EXPECT_CONTAINS "$(cat bazel-bin/testdata/war_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
 
-function test_java_runfiles_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_runfiles_image)" "asdf"
-}
-
-function test_java_runfiles_as_lib_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_runfiles_as_lib_image)" "asdf"
-}
-
 function test_scala_image() {
   cd "${ROOT}"
   clear_docker
@@ -399,10 +387,6 @@ test_java_image_with_custom_run_flags -c dbg
 test_java_sandwich_image -c opt
 test_java_sandwich_image -c dbg
 test_java_bin_as_lib_image
-test_java_runfiles_image -c opt
-test_java_runfiles_image -c dbg
-test_java_runfiles_as_lib_image -c opt
-test_java_runfiles_as_lib_image -c dbg
 test_war_image
 test_war_image_with_custom_run_flags
 test_scala_image -c opt

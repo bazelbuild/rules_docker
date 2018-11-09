@@ -687,45 +687,6 @@ class ImageTest(unittest.TestCase):
         './app/com_google_guava_guava/jar/guava-18.0.jar',
       ])
 
-  def test_java_runfiles_image(self):
-    with TestImage('java_runfiles_image') as img:
-      # Check the application layer, which is on top.
-      self.assertTopLayerContains(img, [
-        '.',
-        './app',
-        './app/bazel_tools',
-        './app/bazel_tools/tools',
-        './app/bazel_tools/tools/java',
-        './app/bazel_tools/tools/java/runfiles',
-        './app/bazel_tools/tools/java/runfiles/librunfiles.jar',
-        './app/io_bazel_rules_docker',
-        './app/io_bazel_rules_docker/testdata',
-        './app/io_bazel_rules_docker/testdata/java_runfiles_image.binary.jar',
-        './app/io_bazel_rules_docker/testdata/java_runfiles_image.binary',
-        './app/io_bazel_rules_docker/testdata/foo',
-        './app/io_bazel_rules_docker/testdata/java_runfiles_image.classpath'
-      ])
-
-  def test_java_runfiles_as_lib_image(self):
-    with TestImage('java_runfiles_as_lib_image') as img:
-      # Check the application layer, which is on top.
-      self.assertTopLayerContains(img, [
-        '.',
-        './app',
-        './app/io_bazel_rules_docker',
-        './app/io_bazel_rules_docker/testdata',
-        './app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
-        './app/bazel_tools',
-        './app/bazel_tools/tools',
-        './app/bazel_tools/tools/java',
-        './app/bazel_tools/tools/java/runfiles',
-        './app/bazel_tools/tools/java/runfiles/librunfiles.jar',
-        './app/io_bazel_rules_docker/testdata/foo',
-        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
-        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',
-        './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.classpath',
-      ])
-
   def test_war_image(self):
     with TestImage('war_image') as img:
       # Check the application layer, which is on top.
