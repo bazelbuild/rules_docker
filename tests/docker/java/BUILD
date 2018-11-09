@@ -80,7 +80,6 @@ java_image(
     runtime_deps = ["//testdata:java_bin_as_lib"],
 )
 
-
 container_test(
     name = "java_image_entrypoint_test",
     configs = ["//tests/docker/java/configs:java_image_entrypoint.yaml"],
