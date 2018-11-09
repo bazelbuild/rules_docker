@@ -706,18 +706,6 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata/java_runfiles_image.classpath'
       ])
 
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/java', '-cp',
-        ':'.join([
-          '/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar',
-          '/app/io_bazel_rules_docker/testdata/java_runfiles_image.binary.jar',
-          '/app/io_bazel_rules_docker/testdata/java_runfiles_image.binary',
-          '/app/io_bazel_rules_docker/testdata/foo',
-        ]),
-        'examples.images.Runfiles',
-      ])
-
-      
   def test_java_runfiles_as_lib_image(self):
     with TestImage('java_runfiles_as_lib_image') as img:
       # Check the application layer, which is on top.
@@ -738,18 +726,6 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.classpath',
       ])
 
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/java', '-cp',
-        ':'.join([
-          '/app/io_bazel_rules_docker/testdata/libjava_runfiles_as_lib.jar',
-          '/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar',
-          '/app/io_bazel_rules_docker/testdata/foo',
-          '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary.jar',
-          '/app/io_bazel_rules_docker/testdata/java_runfiles_as_lib_image.binary',
-        ]),
-        'examples.images.Runfiles',
-      ])
-      
   def test_war_image(self):
     with TestImage('war_image') as img:
       # Check the application layer, which is on top.

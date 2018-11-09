@@ -24,6 +24,12 @@ java_library(
 )
 
 java_image(
+    name = "simple_java_image",
+    main_class = "examples.images.Binary",
+    runtime_deps = ["//testdata:java_bin_as_lib"],
+)
+
+java_image(
     name = "java_image",
     srcs = ["//testdata:Binary.java"],
     args = [
@@ -40,8 +46,66 @@ java_image(
     main_class = "examples.images.Binary",
 )
 
+java_image(
+    name = "java_runfiles_image",
+    srcs = ["//testdata:Runfiles.java"],
+    data = [
+        "//testdata:foo",
+    ],
+    main_class = "examples.images.Runfiles",
+    deps = [
+        "@bazel_tools//tools/java/runfiles",
+    ],
+)
+
+java_library(
+    name = "java_runfiles_as_lib",
+    srcs = ["//testdata:Runfiles.java"],
+    data = [
+        "//testdata:foo",
+    ],
+    deps = [
+        "@bazel_tools//tools/java/runfiles",
+    ],
+)
+
+java_image(
+    name = "java_runfiles_as_lib_image",
+    main_class = "examples.images.Runfiles",
+    runtime_deps = [":java_runfiles_as_lib"],
+)
+
+java_image(
+    name = "java_partial_entrypoint_image",
+    runtime_deps = ["//testdata:java_bin_as_lib"],
+)
+
 container_test(
     name = "java_image_entrypoint_test",
     configs = ["//tests/docker/java/configs:java_image_entrypoint.yaml"],
     image = ":java_image",
+)
+
+container_test(
+    name = "java_runfiles_image_entrypoint_test",
+    configs = ["//tests/docker/java/configs:java_runfiles_image_entrypoint.yaml"],
+    image = ":java_runfiles_image",
+)
+
+container_test(
+    name = "java_runfiles_as_lib_image_entrypoint_test",
+    configs = ["//tests/docker/java/configs:java_runfiles_as_lib_image_entrypoint.yaml"],
+    image = ":java_runfiles_as_lib_image",
+)
+
+container_test(
+    name = "java_partial_entrypoint_image_test",
+    configs = ["//tests/docker/java/configs:java_partial_entrypoint.yaml"],
+    image = ":java_partial_entrypoint_image",
+)
+
+container_test(
+    name = "simple_java_entrypoint_image_test",
+    configs = ["//tests/docker/java/configs:simple_java_entrypoint.yaml"],
+    image = ":simple_java_image",
 )
