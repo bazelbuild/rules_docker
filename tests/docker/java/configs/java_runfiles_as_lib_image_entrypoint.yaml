@@ -1,6 +1,9 @@
 schemaVersion: 2.0.0
 
 metadataTest:
+  env:
+    - key: JAVA_RUNFILES
+      value: "/app"
   entrypoint: [
         '/usr/bin/java',
         '-cp',

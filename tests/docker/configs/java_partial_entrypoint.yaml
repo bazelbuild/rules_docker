@@ -1,7 +1,0 @@
-schemaVersion: 2.0.0
-
-metadataTest:
-  entrypoint: 
-    - "/usr/bin/java"
-    - "-cp"
-    - "/app/io_bazel_rules_docker/testdata/libjava_bin_as_lib.jar:/app/io_bazel_rules_docker/testdata/libjava_image_library.jar:/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:/app/io_bazel_rules_docker/tests/docker/java_partial_entrypoint_image.binary.jar:/app/io_bazel_rules_docker/tests/docker/java_partial_entrypoint_image.binary"

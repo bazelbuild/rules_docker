@@ -19,7 +19,6 @@ load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
-load("//java:image.bzl", "java_image")
 
 container_test(
     name = "structure_test",
@@ -143,29 +142,6 @@ container_test(
     name = "set_cmd_and_entrypoint_null_on_base_test",
     configs = ["//tests/docker/configs:set_cmd_and_entrypoint.yaml"],
     image = ":set_cmd_and_entrypoint_null_on_base",
-)
-
-java_image(
-    name = "java_partial_entrypoint_image",
-    runtime_deps = ["//testdata:java_bin_as_lib"],
-)
-
-container_test(
-    name = "java_partial_entrypoint_image_test",
-    configs = ["//tests/docker/configs:java_partial_entrypoint.yaml"],
-    image = ":java_partial_entrypoint_image",
-)
-
-java_image(
-    name = "java_image",
-    main_class = "examples.images.Binary",
-    runtime_deps = ["//testdata:java_bin_as_lib"],
-)
-
-container_test(
-    name = "java_entrypoint_image_test",
-    configs = ["//tests/docker/configs:java_entrypoint.yaml"],
-    image = ":java_image",
 )
 
 container_import(
