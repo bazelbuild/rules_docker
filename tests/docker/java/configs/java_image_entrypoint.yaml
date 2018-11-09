@@ -1,0 +1,13 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: [
+        '/usr/bin/java',
+        '-cp',
+        '/app/io_bazel_rules_docker/tests/docker/java/libjava_image_library.jar:/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:/app/io_bazel_rules_docker/tests/docker/java/java_image.binary.jar:/app/io_bazel_rules_docker/tests/docker/java/java_image.binary:/app/io_bazel_rules_docker/tests/docker/java/BUILD',
+        '-XX:MaxPermSize=128M',
+        '-Dbuild.location=tests/docker/java/BUILD',
+        'examples.images.Binary',
+        'arg0',
+        'arg1',
+        'tests/docker/java/BUILD']
