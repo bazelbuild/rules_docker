@@ -30,9 +30,28 @@ def _docker_toolchain_impl(ctx):
     )
     return [toolchain_info]
 
+# Regular rule used by the docker toolchain rule to specify a path to a
+# particular docker toolchain
 docker_toolchain = rule(
     implementation = _docker_toolchain_impl,
     attrs = {
         "tool_path": attr.string(),
     },
+)
+
+def _toolchain_configure_impl(repository_ctx):
+  tool_path = repository_ctx.which("docker")
+  repository_ctx.template(
+    "BUILD",
+    Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
+    {
+      "%{DOCKER_TOOL}": "%s" % tool_path
+    },
+    False,
+  )
+
+# Repository rule to automatically generate a docker toolchain rule using
+# 'which' to find the default docker toolchain in the system path
+toolchain_configure = repository_rule(
+    implementation=_toolchain_configure_impl
 )

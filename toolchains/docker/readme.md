@@ -28,6 +28,10 @@ register_toolchains(
 )
 ```
 
+The docker toolchain automatically configures itself to use the docker in your
+system path. To override this behavior, you need to call explicitly call the
+toolchain configuration function described [here](../../README.md#setup)
+
 Declare the docker toolchain as a requirement in your rule
 ```python
 your_rule = rule(
