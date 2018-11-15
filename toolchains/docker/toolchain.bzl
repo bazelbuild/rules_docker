@@ -40,18 +40,18 @@ docker_toolchain = rule(
 )
 
 def _toolchain_configure_impl(repository_ctx):
-  tool_path = repository_ctx.which("docker")
-  repository_ctx.template(
-    "BUILD",
-    Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
-    {
-      "%{DOCKER_TOOL}": "%s" % tool_path
-    },
-    False,
-  )
+    tool_path = repository_ctx.which("docker")
+    repository_ctx.template(
+        "BUILD",
+        Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
+        {
+            "%{DOCKER_TOOL}": "%s" % tool_path,
+        },
+        False,
+    )
 
 # Repository rule to automatically generate a docker toolchain rule using
 # 'which' to find the default docker toolchain in the system path
 toolchain_configure = repository_rule(
-    implementation=_toolchain_configure_impl
+    implementation = _toolchain_configure_impl,
 )

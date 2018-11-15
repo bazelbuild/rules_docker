@@ -26,8 +26,10 @@ load(
     "http_archive",
     "http_file",
 )
-load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
-     _docker_toolchain_configure="toolchain_configure")
+load(
+    "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    _docker_toolchain_configure = "toolchain_configure",
+)
 
 container = struct(
     image = image,
@@ -225,4 +227,4 @@ py_library(
     if "local_docker_config" not in excludes:
         # Automatically configure the docker toolchain rule with the default
         # docker toolchain from the system path
-        _docker_toolchain_configure(name="local_docker_config")
+        _docker_toolchain_configure(name = "local_docker_config")
