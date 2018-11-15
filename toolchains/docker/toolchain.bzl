@@ -30,7 +30,7 @@ def _docker_toolchain_impl(ctx):
     )
     return [toolchain_info]
 
-# Regular rule used by the docker toolchain rule to specify a path to the docker
+# Rule used by the docker toolchain rule to specify a path to the docker
 # binary
 docker_toolchain = rule(
     implementation = _docker_toolchain_impl,
@@ -52,7 +52,7 @@ def _toolchain_configure_impl(repository_ctx):
         False,
     )
 
-# Repository rule to automatically generate a docker_toolchain target
+# Repository rule to generate a docker_toolchain target
 toolchain_configure = repository_rule(
     implementation = _toolchain_configure_impl,
 )
