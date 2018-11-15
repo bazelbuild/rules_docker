@@ -91,13 +91,13 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.5.1.tar.gz"],
 )
 
-# Call this to override the default docker toolchain configuration. This
-# be called BEFORE calling "container_repositories" below to actually override
-# the default toolchain configuration
+# Call this to override the default docker toolchain configuration. This call
+# should be placed BEFORE the call to "container_repositories" below to actually 
+# override the default toolchain configuration
 load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure="toolchain_configure"
 )
-docker_toolchain_configure(name = "local_docker_config")
+docker_toolchain_configure(name = "docker_config")
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
