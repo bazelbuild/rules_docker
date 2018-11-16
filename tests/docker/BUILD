@@ -176,3 +176,18 @@ file_test(
     content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
+
+container_image(
+    name = "set_env_csv",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+    env = {
+        "NO_PROXY": "127.0.0.1,localhost",
+    },
+)
+
+container_test(
+    name = "set_env_csv_test",
+    configs = ["//tests/docker/configs:set_env_csv.yaml"],
+    image = ":set_env_csv",
+)

@@ -78,10 +78,6 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
-load(
-    "//skylib:serialize.bzl",
-    _serialize_dict = "dict_to_associative_list",
-)
 load("//container:providers.bzl", "ImageInfo")
 
 def _get_base_config(ctx, name, base):
@@ -156,12 +152,8 @@ def _image_config(
         # default to '{BUILD_TIMESTAMP}'.
         args += ["--creation_time={BUILD_TIMESTAMP}"]
 
-    _labels = _serialize_dict(labels)
-    if _labels:
-        args += ["--labels=%s" % x for x in _labels.split(",")]
-    _env = _serialize_dict(env)
-    if _env:
-        args += ["--env=%s" % x for x in _env.split(",")]
+    args += ["--labels=%s" % "=".join([key, value]) for key, value in labels.items()]
+    args += ["--env=%s" % "=".join([key, value]) for key, value in env.items()]
 
     if ctx.attr.user:
         args += ["--user=" + ctx.attr.user]

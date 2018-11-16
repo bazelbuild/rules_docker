@@ -33,11 +33,6 @@ skylark_library(
 )
 
 skylark_library(
-    name = "serialize",
-    srcs = ["serialize.bzl"],
-)
-
-skylark_library(
     name = "zip",
     srcs = ["zip.bzl"],
 )
