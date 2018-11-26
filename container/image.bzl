@@ -436,7 +436,7 @@ _attrs = dict(_layer.attrs.items() + {
     "base": attr.label(allow_files = container_filetype),
     "legacy_repository_naming": attr.bool(default = False),
     # TODO(mattmoor): Default this to False.
-    "legacy_run_behavior": attr.bool(default = True),
+    "legacy_run_behavior": attr.bool(default = False),
     # Run the container using host networking, so that the service is
     # available to the developer without having to poke around with
     # docker inspect.
