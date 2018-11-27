@@ -173,10 +173,9 @@ def incremental_load(
             ),
         ]
         if run:
-            # bazel automatically passes ctx.attr.args to the binary on run, so args get passed in
-            # twice. See https://github.com/bazelbuild/rules_docker/issues/374
+            # Args are embedded into the image, so omitted here.
             run_statements += [
-                "docker run %s %s \"$@\"" % (run_flags, tag_reference),
+                "docker run %s %s" % (run_flags, tag_reference),
             ]
 
     ctx.template_action(
