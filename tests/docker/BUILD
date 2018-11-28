@@ -36,6 +36,7 @@ container_image(
         # TODO: (tejaldesai) Once we figure out how to selectively disable tests using build_tag_filters
         # ":busybox-static_ubuntu1_amd64.deb",
     ],
+    workdir = "/test",
 )
 
 container_test(
