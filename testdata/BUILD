@@ -859,6 +859,13 @@ java_image(
     runtime_deps = [":java_bin_as_lib"],
 )
 
+java_image(
+    name = "java_image_arg_echo",
+    srcs = ["ArgEcho.java"],
+    args = ["arg0"],
+    main_class = "examples.images.ArgEcho",
+)
+
 war_image(
     name = "war_image",
     srcs = ["Servlet.java"],
