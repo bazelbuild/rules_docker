@@ -35,13 +35,6 @@ function CONTAINS() {
   echo "${complete}" | grep -Fsq -- "${substring}"
 }
 
-function NOT_CONTAINS() {
-  local complete="${1}"
-  local substring="${2}"
-
-  echo "${complete}" | grep -Fsqv -- "${substring}"
-}
-
 function COUNT() {
   local complete="${1}"
   local substring="${2}"
@@ -75,7 +68,7 @@ function EXPECT_NOT_CONTAINS() {
   local message="${3:-Expected '${substring}' found in '${complete}'}"
 
   echo Checking "$1" does not contain "$2"
-  NOT_CONTAINS "${complete}" "${substring}" || fail "$message"
+  ! (CONTAINS "${complete}" "${substring}") || fail "$message"
 }
 
 function stop_containers() {
