@@ -35,6 +35,13 @@ function CONTAINS() {
   echo "${complete}" | grep -Fsq -- "${substring}"
 }
 
+function COUNT() {
+  local complete="${1}"
+  local substring="${2}"
+
+  echo "${complete}" | grep -Fso -- "${substring}" | wc -l
+}
+
 function EXPECT_CONTAINS() {
   local complete="${1}"
   local substring="${2}"
@@ -42,6 +49,17 @@ function EXPECT_CONTAINS() {
 
   echo Checking "$1" contains "$2"
   CONTAINS "${complete}" "${substring}" || fail "$message"
+}
+
+function EXPECT_CONTAINS_ONCE() {
+  local complete="${1}"
+  local substring="${2}"
+  local count=$(COUNT "${complete}" "${substring}")
+
+  echo Checking "$1" contains "$2" exactly once
+  if [[ count -ne "1" ]]; then
+    fail "${3:-Expected '${substring}' found ${count} in '${complete}'}"
+  fi
 }
 
 function EXPECT_NOT_CONTAINS() {
@@ -287,6 +305,13 @@ function test_java_bin_as_lib_image() {
   docker run -ti --rm bazel/testdata:java_bin_as_lib_image
 }
 
+function test_java_image_arg_echo() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS_ONCE "$(bazel run "$@" testdata:java_image_arg_echo)" "arg0"
+  EXPECT_CONTAINS_ONCE "$(docker run -ti --rm bazel/testdata:java_image_arg_echo | tr '\r' '\n')" "arg0"
+}
+
 function test_war_image() {
   cd "${ROOT}"
   clear_docker
@@ -380,6 +405,7 @@ test_java_image_with_custom_run_flags -c dbg
 test_java_sandwich_image -c opt
 test_java_sandwich_image -c dbg
 test_java_bin_as_lib_image
+test_java_image_arg_echo
 test_war_image
 test_war_image_with_custom_run_flags
 test_scala_image -c opt

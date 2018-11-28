@@ -13,7 +13,6 @@
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
 
-load("//container:container.bzl", "container_image", "container_import")
 load("//java:image.bzl", "java_image")
 load("//contrib:test.bzl", "container_test")
 
