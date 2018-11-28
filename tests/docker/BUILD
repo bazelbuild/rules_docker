@@ -36,6 +36,7 @@ container_image(
         # TODO: (tejaldesai) Once we figure out how to selectively disable tests using build_tag_filters
         # ":busybox-static_ubuntu1_amd64.deb",
     ],
+    workdir = "/test",
 )
 
 container_test(
@@ -167,7 +168,7 @@ container_test(
 
 file_test(
     name = "test_digest_output1",
-    content = "sha256:fd90e88f1c5dfedf89df4469747ada0a28d7c34196bb2ac879cff6f259f65ba5",
+    content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
     file = ":deb_image_with_dpkgs.digest",
 )
 
