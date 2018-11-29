@@ -25,6 +25,10 @@ load("//testdata:utils.bzl", "generate_deb")
 
 exports_files(["pause.tar"])
 
+exports_files(["BUILD"])
+
+exports_files(["Runfiles.java"])
+
 genrule(
     name = "gen",
     outs = ["gen.out"],
@@ -40,47 +44,47 @@ container_image(
 container_image(
     name = "no_data_path_image",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "data_path_image",
     data_path = ".",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "absolute_data_path_image",
     data_path = "/tools/build_defs",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "root_data_path_image",
     data_path = "/",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "gen_image",
     files = [":gen"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "files_base",
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "files_with_files_base",
     base = ":files_base",
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -88,13 +92,13 @@ container_image(
     base = ":files_base",
     files = ["bar"],
     layers = [":files_in_layer"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_layer(
     name = "files_in_layer",
     files = ["baz"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -138,7 +142,7 @@ container_image(
     name = "files_with_tar_base",
     base = ":tar_base",
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -151,7 +155,7 @@ container_image(
     name = "docker_tarball_base",
     base = "@pause_tar//image",
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -162,7 +166,7 @@ container_image(
         ":files_in_layer",
         ":tars_in_layer",
     ],
-    mode = "0644",
+    mode = "0o644",
 )
 
 # TODO(mattmoor): Test scalar entrypoint
@@ -170,7 +174,7 @@ container_image(
     name = "base_with_entrypoint",
     entrypoint = ["/bar"],
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
     ports = ["8080"],
     tars = ["two.tar"],
 )
@@ -189,7 +193,7 @@ container_image(
     base = ":base_with_entrypoint",
     cmd = ["shadowed-arg"],
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -209,7 +213,7 @@ container_image(
         "bar",
         "foo",
     ],
-    mode = "0644",
+    mode = "0o644",
     volumes = ["/logs"],
 )
 
@@ -523,7 +527,7 @@ passwd_file(
 pkg_tar(
     name = "passwd_tar",
     srcs = [":passwd"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 
@@ -578,7 +582,7 @@ group_file(
 pkg_tar(
     name = "group_tar",
     srcs = [":group"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 
@@ -622,7 +626,7 @@ container_image(
     base = "@distroless_cc//image",
 )
 
-load("//python:image.bzl", "py_image")
+load("//python:image.bzl", "py_image", "py_layer")
 
 py_library(
     name = "py_image_library",
@@ -652,6 +656,53 @@ py_image(
     main = "py_image.py",
 )
 
+load("@pip_deps//:requirements.bzl", "requirement")
+
+py_library(
+    name = "py_image_library_using_six",
+    srcs = ["py_image_library_using_six.py"],
+    deps = [requirement("six")],
+)
+
+py_library(
+    name = "py_image_complex_library",
+    srcs = ["py_image_complex_library.py"],
+    deps = [
+        ":py_image_library_using_six",
+        "//testdata/test:py_image_library_using_addict",
+    ],
+)
+
+py_layer(
+    name = "py_image_complex_filter_by_path",
+    filter = "//testdata/test",
+    deps = [":py_image_complex_library"],
+)
+
+py_layer(
+    name = "py_image_complex_filter_by_path_external_deps",
+    filter = "@",
+    deps = [":py_image_complex_filter_by_path"],
+)
+
+py_layer(
+    name = "py_image_complex_external_deps",
+    filter = "@",
+    deps = [":py_image_complex_library"],
+)
+
+py_image(
+    name = "py_image_complex",
+    srcs = ["py_image_complex.py"],
+    layers = [
+        ":py_image_complex_filter_by_path_external_deps",  # addict
+        ":py_image_complex_external_deps",  # six
+        ":py_image_complex_filter_by_path",  # py_image_library_using_addict
+        ":py_image_complex_library",  # py_image_complex_library + py_image_library_using_six
+    ],
+    main = "py_image_complex.py",
+)
+
 load("//python3:image.bzl", "py3_image")
 
 py3_image(
@@ -671,6 +722,26 @@ py3_image(
 py3_image(
     name = "py3_image_with_main",
     srcs = ["py3_image.py"],
+    layers = [
+        ":py_image_library",
+    ],
+    main = "py3_image.py",
+)
+
+# The following `container_image` and `py3_image` combination shows how to set
+# custom `docker_run_flags` in `py3_image`.
+# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
+container_image(
+    name = "py3_image_base_with_custom_run_flags",
+    base = "@py3_image_base//image",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+py3_image(
+    name = "py3_image_with_custom_run_flags",
+    srcs = ["py3_image.py"],
+    base = ":py3_image_base_with_custom_run_flags",
     layers = [
         ":py_image_library",
     ],
@@ -709,6 +780,14 @@ cc_image(
     binary = ":cc_binary",
 )
 
+# Test that we can also load image from within another script.
+sh_binary(
+    name = "cc_image_wrapper",
+    srcs = ["cc_image_wrapper.sh"],
+    args = ["$(location :cc_image)"],
+    data = [":cc_image"],
+)
+
 load(
     "//java:image.bzl",
     "java_image",
@@ -739,6 +818,12 @@ java_image(
 )
 
 java_image(
+    name = "java_partial_entrypoint_image",
+    srcs = ["Binary.java"],
+    layers = [":java_image_library"],
+)
+
+java_image(
     name = "java_sandwich_image",
     srcs = ["Binary.java"],
     layers = [":scala_image_library"],
@@ -757,9 +842,53 @@ java_image(
     runtime_deps = [":java_bin_as_lib"],
 )
 
+# The following `container_image` and `java_image` combination shows how to set
+# custom `docker_run_flags` in `java_image`.
+# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
+container_image(
+    name = "java_image_base_with_custom_run_flags",
+    base = "@java_image_base//image",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+java_image(
+    name = "java_image_with_custom_run_flags",
+    base = ":java_image_base_with_custom_run_flags",
+    main_class = "examples.images.Binary",
+    runtime_deps = [":java_bin_as_lib"],
+)
+
+java_image(
+    name = "java_image_arg_echo",
+    srcs = ["ArgEcho.java"],
+    args = ["arg0"],
+    main_class = "examples.images.ArgEcho",
+)
+
 war_image(
     name = "war_image",
     srcs = ["Servlet.java"],
+    layers = [
+        ":java_image_library",
+        "@javax_servlet_api//jar:jar",
+    ],
+)
+
+# The following `container_image` and `war_image` combination shows how to set
+# custom `docker_run_flags` in `war_image`.
+# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
+container_image(
+    name = "war_image_base_with_custom_run_flags",
+    base = "@jetty_image_base//image",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+war_image(
+    name = "war_image_with_custom_run_flags",
+    srcs = ["Servlet.java"],
+    base = ":war_image_base_with_custom_run_flags",
     layers = [
         ":java_image_library",
         "@javax_servlet_api//jar:jar",

@@ -66,6 +66,26 @@ load(
 
 _py_image_repos()
 
+http_archive(
+    name = "io_bazel_rules_python",
+    sha256 = "8b32d2dbb0b0dca02e0410da81499eef8ff051dad167d6931a92579e3b2a1d48",
+    strip_prefix = "rules_python-8b5d0683a7d878b28fffe464779c8a53659fc645",
+    urls = ["https://github.com/bazelbuild/rules_python/archive/8b5d0683a7d878b28fffe464779c8a53659fc645.tar.gz"],
+)
+
+load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
+
+pip_repositories()
+
+pip_import(
+    name = "pip_deps",
+    requirements = "//testdata:requirements-pip.txt",
+)
+
+load("@pip_deps//:requirements.bzl", "pip_install")
+
+pip_install()
+
 load(
     "//python3:image.bzl",
     _py3_image_repos = "repositories",
@@ -127,9 +147,8 @@ groovy_repositories()
 # For our go_image test.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "50207a04b74fe30218b06ac4467ea3862b9a3c99d3df7686be0eae02108ea06f",
-    strip_prefix = "rules_go-0.13.0",
-    urls = ["https://github.com/bazelbuild/rules_go/archive/0.13.0.tar.gz"],
+    sha256 = "ee5fe78fe417c685ecb77a0a725dc9f6040ae5beb44a0ba4ddb55453aad23a8a",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.16.0/rules_go-0.16.0.tar.gz",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
@@ -195,9 +214,10 @@ _nodejs_image_repos()
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "7938215442cc96b1a16809f4643db14af7d91c3ef1e98d39593bb46862204537",
-    strip_prefix = "bazel-toolchains-809c13c3a96966f63c7a43c586cb4e72589184b6",
+    sha256 = "4ab012a06e80172b1d2cc68a69f12237ba2c4eb47ba34cb8099830d3b8c43dbc",
+    strip_prefix = "bazel-toolchains-646207624ed58c9dc658a135e40e578f8bbabf64",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/809c13c3a96966f63c7a43c586cb4e72589184b6.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/646207624ed58c9dc658a135e40e578f8bbabf64.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/646207624ed58c9dc658a135e40e578f8bbabf64.tar.gz",
     ],
 )

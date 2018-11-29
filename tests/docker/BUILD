@@ -15,6 +15,10 @@ package(default_visibility = ["//visibility:public"])
 
 load("//container:container.bzl", "container_image", "container_import")
 load("//contrib:test.bzl", "container_test")
+load(
+    "@bazel_tools//tools/build_rules:test_rules.bzl",
+    "file_test",
+)
 
 container_test(
     name = "structure_test",
@@ -32,6 +36,7 @@ container_image(
         # TODO: (tejaldesai) Once we figure out how to selectively disable tests using build_tag_filters
         # ":busybox-static_ubuntu1_amd64.deb",
     ],
+    workdir = "/test",
 )
 
 container_test(
@@ -42,7 +47,7 @@ container_test(
 
 container_image(
     name = "set_cmd",
-    base = "@distroless_base//image",
+    base = "@distroless_fixed_id//image",
     cmd = ["foo"],
 )
 
@@ -54,7 +59,7 @@ container_test(
 
 container_image(
     name = "set_entrypoint",
-    base = "@distroless_base//image",
+    base = "@distroless_fixed_id//image",
     entrypoint = ["bar"],
 )
 
@@ -66,7 +71,7 @@ container_test(
 
 container_image(
     name = "set_cmd_and_entrypoint",
-    base = "@distroless_base//image",
+    base = "@distroless_fixed_id//image",
     cmd = ["foo"],
     entrypoint = ["bar"],
 )
@@ -159,4 +164,31 @@ container_test(
     configs = ["//tests/docker/configs:windows_image.yaml"],
     driver = "tar",
     image = ":basic_windows_image",
+)
+
+file_test(
+    name = "test_digest_output1",
+    content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
+    file = ":deb_image_with_dpkgs.digest",
+)
+
+file_test(
+    name = "test_digest_output2",
+    content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
+    file = ":null_cmd_and_entrypoint_none.digest",
+)
+
+container_image(
+    name = "set_env_csv",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+    env = {
+        "NO_PROXY": "127.0.0.1,localhost",
+    },
+)
+
+container_test(
+    name = "set_env_csv_test",
+    configs = ["//tests/docker/configs:set_env_csv.yaml"],
+    image = ":set_env_csv",
 )

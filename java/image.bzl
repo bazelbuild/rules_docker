@@ -26,9 +26,8 @@ load(
 )
 load(
     "//lang:image.bzl",
-    "dep_layer_impl",
+    "app_layer_impl",
     "layer_file_path",
-    "runfiles_dir",
 )
 
 # Load the resolved digests.
@@ -104,51 +103,71 @@ def java_files(f):
         files += list(f.files)
     return files
 
+def java_files_with_data(f):
+    files = java_files(f)
+    if hasattr(f, "data_runfiles"):
+        files += list(f.data_runfiles.files)
+    return files
+
 def _jar_dep_layer_impl(ctx):
     """Appends a layer for a single dependency's runfiles."""
-    return dep_layer_impl(ctx, runfiles = java_files)
+
+    # Note the use of java_files (instead of java_files_with_data) here.
+    # This causes the dep_layer to include only source files and none of
+    # the data_runfiles. This is probably not ideal -- it would be better
+    # to have the runfiles of the dependencies in the dep_layer, and only
+    # the runfiles of the java_image in the top layer. Doing this without
+    # also pulling in the JDK deps will requrie extending the app_layer_impl
+    # with functionality to exclude certain runfiles. Rather than making it
+    # JDK specific, an option would be to add a `skipfiles = ctx.files._jdk`
+    # type option here. The app layer would also need to be updated to
+    # consider data flies include in the dep_layer as "available" so they
+    # aren't duplicated in the top layer.
+    return app_layer_impl(ctx, runfiles = java_files_with_data)
 
 jar_dep_layer = rule(
     attrs = dict(_container.image.attrs.items() + {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
-        "dep": attr.label(mandatory = True),
+        "dep": attr.label(providers = [DefaultInfo]),
 
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = False),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
+        "legacy_run_behavior": attr.bool(default = False),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _jar_dep_layer_impl,
 )
 
 def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
-    workdir = ctx.attr.workdir or "/".join([runfiles_dir(ctx), ctx.workspace_name])
     available = depset()
     for jar in ctx.attr.jar_layers:
-        available += java_files(jar)
+        available += java_files(jar)  # layers don't include runfiles
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
     # out what it available.
-
     unavailable = depset()
     for jar in ctx.attr.deps + ctx.attr.runtime_deps:
-        unavailable += java_files(jar)
+        unavailable += java_files_with_data(jar)
 
-    unavailable += java_files(ctx.attr.binary)
+    unavailable += java_files_with_data(ctx.attr.binary)
     unavailable = [x for x in unavailable if x not in available]
+
+    # Remove files that are provided by the JDK from the unavailable set,
+    # as these will be provided by the Java image.
+    jdk_files = depset(list(ctx.files._jdk))
+    unavailable = [x for x in unavailable if x not in ctx.files._jdk]
 
     classpath = ":".join([
         layer_file_path(ctx, x)
@@ -173,7 +192,7 @@ def _jar_app_layer_impl(ctx):
         "-cp",
         # Support optionally passing the classpath as a file.
         "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
-    ] + jvm_flags + [ctx.attr.main_class] + args
+    ] + jvm_flags + ([ctx.attr.main_class] + args if ctx.attr.main_class != "" else [])
 
     file_map = {
         layer_file_path(ctx, f): f
@@ -184,9 +203,11 @@ def _jar_app_layer_impl(ctx):
         ctx,
         # We use all absolute paths.
         directory = "/",
+        env = {
+            "JAVA_RUNFILES": "/app",
+        },
         file_map = file_map,
         entrypoint = entrypoint,
-        workdir = workdir,
     )
 
 jar_app_layer = rule(
@@ -203,13 +224,7 @@ jar_app_layer = rule(
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The main class to invoke on startup.
-        "main_class": attr.string(mandatory = True),
-
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
+        "main_class": attr.string(mandatory = False),
 
         # Whether the classpath should be passed as a file.
         "_classpath_as_file": attr.bool(default = False),
@@ -221,9 +236,14 @@ jar_app_layer = rule(
         "workdir": attr.string(default = ""),
         "legacy_run_behavior": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
+        "_jdk": attr.label(
+            default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+        ),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _jar_app_layer_impl,
 )
 
@@ -241,13 +261,25 @@ def java_image(
   Args:
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    main_class: This parameter is optional. If provided it will be used in the
+                compilation of any additional sources, and as part of the
+                construction of the container entrypoint. If not provided, the
+                name parameter is used as the main_class when compiling any
+                additional sources, and the main_class is not included in the
+                construction of the container entrypoint. Omitting main_class
+                allows the user to specify additional arguments to the JVM at
+                runtime.
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
-
     native.java_binary(
         name = binary_name,
-        main_class = main_class,
+        # Calling java_binary with main_class = None will work if the package
+        # name contains java or javatest. In this case, the main_class is
+        # guessed by the java_binary implementation. To avoid assumptions about
+        # package locations, if the main_class is None we use the value of
+        # the name parameter as main_class to allow the build to proceed.
+        main_class = main_class if main_class != None else binary_name,
         # If the rule is turning a JAR built with java_library into
         # a binary, then it will appear in runtime_deps.  We are
         # not allowed to pass deps (even []) if there is no srcs
@@ -258,10 +290,11 @@ def java_image(
         **kwargs
     )
 
+    tags = kwargs.get("tags", None)
     base = base or DEFAULT_JAVA_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        jar_dep_layer(name = this_name, base = base, dep = dep)
+        jar_dep_layer(name = this_name, base = base, dep = dep, tags = tags)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -275,6 +308,7 @@ def java_image(
         runtime_deps = runtime_deps,
         jar_layers = layers,
         visibility = visibility,
+        tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
     )
@@ -297,19 +331,18 @@ _war_dep_layer = rule(
         # The dependency whose runfiles we're appending.
         "dep": attr.label(mandatory = True),
 
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = False),
 
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
+        "legacy_run_behavior": attr.bool(default = False),
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _war_dep_layer_impl,
 )
 
@@ -343,12 +376,6 @@ _war_app_layer = rule(
         "base": attr.label(mandatory = True),
         "entrypoint": attr.string_list(default = []),
 
-        # Whether to lay out each dependency in a manner that is agnostic
-        # of the binary in which it is participating.  This can increase
-        # sharing of the dependency's layer across images, but requires a
-        # symlink forest in the app layers.
-        "agnostic_dep_layout": attr.bool(default = True),
-
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
         # WE WANT PATHS FLATTENED
@@ -357,6 +384,7 @@ _war_app_layer = rule(
     }.items()),
     executable = True,
     outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _war_app_layer_impl,
 )
 

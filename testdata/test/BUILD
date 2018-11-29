@@ -22,3 +22,11 @@ filegroup(
     name = "test-data",
     srcs = ["test"],
 )
+
+load("@pip_deps//:requirements.bzl", "requirement")
+
+py_library(
+    name = "py_image_library_using_addict",
+    srcs = ["py_image_library_using_addict.py"],
+    deps = [requirement("addict")],
+)

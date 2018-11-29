@@ -23,8 +23,8 @@ from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 
 TEST_DATA_TARGET_BASE='testdata'
-DIR_PERMISSION=448 # decimal for oct 0700
-PASSWD_FILE_MODE=420  # decimal for oct 0644
+DIR_PERMISSION=0o700
+PASSWD_FILE_MODE=0o644
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
@@ -40,6 +40,7 @@ def TestBundleImage(name, image_name):
 class ImageTest(unittest.TestCase):
 
   def assertTarballContains(self, tar, paths):
+    self.maxDiff = None
     self.assertEqual(paths, tar.getnames())
 
   def assertLayerNContains(self, img, n, paths):
@@ -468,21 +469,171 @@ class ImageTest(unittest.TestCase):
         # files to avoid this redundancy.
         '/app',
         '/app/testdata',
+        '/app/testdata/py_image.binary',
+        '/app/testdata/py_image.binary.runfiles',
+        '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker',
+        '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/external',
+      ])
+
+      # Below that, we have a layer that generates symlinks for the library layer.
+      self.assertLayerNContains(img, 1, [
+        '.',
+        '/app',
+        '/app/testdata',
         '/app/testdata/py_image.binary.runfiles',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata',
         '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py',
-        '/app/testdata/py_image.binary',
-        '/app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/external',
       ])
 
-      # Check the library layer, which is one below our application layer.
-      self.assertLayerNContains(img, 1, [
+      # Check the library layer, which is two below our application layer.
+      self.assertLayerNContains(img, 2, [
         '.',
         './app',
         './app/io_bazel_rules_docker',
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/py_image_library.py',
+      ])
+
+  def test_py_image_complex(self):
+    with TestImage('py_image_complex') as img:
+      # bazel-bin/testdata/py_image_complex-layer.tar
+      self.assertTopLayerContains(img, [
+        '.',
+        './app',
+        './app/testdata',
+        './app/testdata/py_image_complex.binary.runfiles',
+        './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker',
+        './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata',
+        './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/py_image_complex.py',
+        './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/py_image_complex.binary',
+        './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/test',
+        './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/test/__init__.py',
+        './app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0',
+        './app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/__init__.py',
+        './app/testdata/py_image_complex.binary.runfiles/__init__.py',
+        './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2',
+        './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/__init__.py',
+        './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        '/app',
+        '/app/testdata',
+        '/app/testdata/py_image_complex.binary',
+        '/app/testdata/py_image_complex.binary.runfiles',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/external',
+      ])
+
+      # bazel-bin/testdata/py_image_complex.3-symlinks-layer.tar
+      self.assertLayerNContains(img, 1, [
+        '.',
+        '/app',
+        '/app/testdata',
+        '/app/testdata/py_image_complex.binary.runfiles',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/py_image_complex_library.py',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library_using_six.py',
+      ])
+
+      # bazel-bin/testdata/py_image_complex.3-layer.tar
+      self.assertLayerNContains(img, 2, [
+        '.',
+        './app',
+        './app/io_bazel_rules_docker',
+        './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/py_image_complex_library.py',
+        './app/io_bazel_rules_docker/testdata/py_image_library_using_six.py',
+      ])
+
+      # bazel-bin/testdata/py_image_complex.2-symlinks-layer.tar
+      self.assertLayerNContains(img, 3, [
+        '.',
+        '/app',
+        '/app/testdata',
+        '/app/testdata/py_image_complex.binary.runfiles',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/test',
+        '/app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/test/py_image_library_using_addict.py',
+      ])
+
+      # bazel-bin/testdata/py_image_complex.2-layer.tar
+      self.assertLayerNContains(img, 4, [
+        '.',
+        './app',
+        './app/io_bazel_rules_docker',
+        './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/test',
+        './app/io_bazel_rules_docker/testdata/test/py_image_library_using_addict.py',
+      ])
+
+      # bazel-bin/testdata/py_image_complex.1-symlinks-layer.tar
+      self.assertLayerNContains(img, 5, [
+        '.',
+        '/app',
+        '/app/testdata',
+        '/app/testdata/py_image_complex.binary.runfiles',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six.py',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/DESCRIPTION.rst',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/METADATA',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/RECORD',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/WHEEL',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/metadata.json',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/top_level.txt',
+      ])
+
+      # bazel-bin/testdata/py_image_complex.1-layer.tar
+      self.assertLayerNContains(img, 6, [
+        '.',
+        './app',
+        './app/pypi__six_1_11_0',
+        './app/pypi__six_1_11_0/six.py',
+        './app/pypi__six_1_11_0/six-1.11.0.dist-info',
+        './app/pypi__six_1_11_0/six-1.11.0.dist-info/DESCRIPTION.rst',
+        './app/pypi__six_1_11_0/six-1.11.0.dist-info/METADATA',
+        './app/pypi__six_1_11_0/six-1.11.0.dist-info/RECORD',
+        './app/pypi__six_1_11_0/six-1.11.0.dist-info/WHEEL',
+        './app/pypi__six_1_11_0/six-1.11.0.dist-info/metadata.json',
+        './app/pypi__six_1_11_0/six-1.11.0.dist-info/top_level.txt',
+      ])
+
+
+      # bazel-bin/testdata/py_image_complex.0-symlinks-layer.tar
+      self.assertLayerNContains(img, 7, [
+        '.',
+        '/app',
+        '/app/testdata',
+        '/app/testdata/py_image_complex.binary.runfiles',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict/__init__.py',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict/addict.py',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/DESCRIPTION.rst',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/METADATA',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/RECORD',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/WHEEL',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/metadata.json',
+        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/top_level.txt',
+      ])
+
+      # bazel-bin/testdata/py_image_complex.0-layer.tar
+      self.assertLayerNContains(img, 8, [
+        '.',
+        './app',
+        './app/pypi__addict_2_1_2',
+        './app/pypi__addict_2_1_2/addict',
+        './app/pypi__addict_2_1_2/addict/__init__.py',
+        './app/pypi__addict_2_1_2/addict/addict.py',
+        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info',
+        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/DESCRIPTION.rst',
+        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/METADATA',
+        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/RECORD',
+        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/WHEEL',
+        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/metadata.json',
+        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/top_level.txt',
       ])
 
   def test_cc_image(self):
@@ -521,6 +672,7 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/java_image.binary.jar',
         './app/io_bazel_rules_docker/testdata/java_image.binary',
+        './app/io_bazel_rules_docker/testdata/BUILD',
         './app/io_bazel_rules_docker/testdata/java_image.classpath'
       ])
 
@@ -533,22 +685,6 @@ class ImageTest(unittest.TestCase):
         './app/com_google_guava_guava',
         './app/com_google_guava_guava/jar',
         './app/com_google_guava_guava/jar/guava-18.0.jar',
-      ])
-
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/java', '-cp',
-        ':'.join([
-          '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar',
-          '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar',
-          '/app/io_bazel_rules_docker/testdata/java_image.binary.jar',
-          '/app/io_bazel_rules_docker/testdata/java_image.binary'
-        ]),
-        '-XX:MaxPermSize=128M',
-        '-Dbuild.location=testdata/BUILD',
-        'examples.images.Binary',
-        'arg0',
-        'arg1',
-        'testdata/BUILD'
       ])
 
   def test_war_image(self):
@@ -618,23 +754,6 @@ class ImageTest(unittest.TestCase):
         'testdata/BUILD',
       ])
 
-  def test_java_image_args(self):
-    with TestImage('java_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/java',
-        '-cp',
-        '/app/io_bazel_rules_docker/testdata/libjava_image_library.jar:'
-        +'/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'
-        +'/app/io_bazel_rules_docker/testdata/java_image.binary.jar:'
-        +'/app/io_bazel_rules_docker/testdata/java_image.binary',
-        '-XX:MaxPermSize=128M',
-        '-Dbuild.location=testdata/BUILD',
-        'examples.images.Binary',
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
   def test_go_image_args(self):
     with TestImage('go_image') as img:
       self.assertConfigEqual(img, 'Entrypoint', [
@@ -667,7 +786,9 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image.binary',
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary:' +
+        '/app/io_bazel_rules_docker/testdata/BUILD:'+
+        '/app/io_bazel_rules_docker/testdata/scala_image.binary_wrapper.sh',
         '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',
@@ -684,8 +805,10 @@ class ImageTest(unittest.TestCase):
         '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
         '/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.4.4/lib/groovy-2.4.4.jar:'+
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
+
         '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/groovy_image.binary',
+        '/app/io_bazel_rules_docker/testdata/groovy_image.binary:' +
+        '/app/io_bazel_rules_docker/testdata/BUILD',
         '-Dbuild.location=testdata/BUILD',
         'examples.images.Binary',
         'arg0',

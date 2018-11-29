@@ -80,3 +80,6 @@ fileContentTests:
 #    command: "busybox"
 #    args: ["echo", "test"]
 #    expectedOutput: ["busybox"]
+
+metadataTest:
+  workdir: "/test"

@@ -70,8 +70,8 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "@bazel_source//tools/build_defs/pkg:archive",
         "@bazel_tools//third_party/py/gflags",
+        "@bazel_tools//tools/build_defs/pkg:archive",
     ],
 )
 
@@ -139,6 +139,7 @@ TEST_TARGETS = [
     ":nodejs_image",
     ":py3_image",
     ":py_image",
+    ":py_image_complex",
     ":rust_image",
     ":scala_image",
     ":war_image",
@@ -165,6 +166,7 @@ skylark_library(
     srcs = ["bundle.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:label",
     ],
 )
@@ -187,6 +189,7 @@ skylark_library(
     srcs = ["flatten.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:label",
     ],
 )
@@ -196,10 +199,10 @@ skylark_library(
     srcs = ["image.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
-        "//skylib:serialize",
         "//skylib:zip",
         "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
@@ -210,6 +213,7 @@ skylark_library(
     srcs = ["import.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
@@ -222,6 +226,7 @@ skylark_library(
     srcs = ["layer.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
@@ -242,6 +247,11 @@ skylark_library(
 )
 
 skylark_library(
+    name = "providers",
+    srcs = ["providers.bzl"],
+)
+
+skylark_library(
     name = "pull",
     srcs = ["pull.bzl"],
 )
@@ -251,6 +261,7 @@ skylark_library(
     srcs = ["push.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:path",
     ],
 )

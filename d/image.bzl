@@ -19,7 +19,6 @@ The signature of this rule is compatible with d_binary.
 load(
     "//lang:image.bzl",
     "app_layer",
-    "dep_layer",
 )
 load(
     "//cc:image.bzl",
@@ -51,9 +50,8 @@ def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
 
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
-        this_name = "%s_%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
-        base = this_name
+        base = app_layer(name = "%s_%d" % (name, index), base = base, dep = dep)
+        base = app_layer(name = "%s_%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
@@ -61,7 +59,6 @@ def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
         name = name,
         base = base,
         binary = binary,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),

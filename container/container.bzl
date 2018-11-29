@@ -26,13 +26,17 @@ load(
     "http_archive",
     "http_file",
 )
+load(
+    "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    _docker_toolchain_configure = "toolchain_configure",
+)
 
 container = struct(
     image = image,
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.30"
+CONTAINERREGISTRY_RELEASE = "v0.0.32"
 
 _local_tool_build_template = """
 sh_binary(
@@ -69,7 +73,7 @@ def repositories():
             name = "puller",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
-            sha256 = "89a7c48df0fd5fb839d452599cc054a6550c18563394d4401428ab2e094d4f0b",
+            sha256 = "0aea6c53809846009f42f07eb569d8b3bfa79c073b16fe97312d592f45016924",
             executable = True,
         )
 
@@ -78,7 +82,7 @@ def repositories():
             name = "importer",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
-            sha256 = "3c1f299df498b0712386c52e1eb5499e00d58143ae10fc4b5c12bf0deffb55b6",
+            sha256 = "52dd0628fe13c698772d982279db443e70585cb9912e2825e58a88eac6e0ca8c",
             executable = True,
         )
 
@@ -87,16 +91,8 @@ def repositories():
             name = "containerregistry",
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
-            sha256 = "10fb9ffa1dde14c81f5c12593666bf1d9e9f53727b8cda9abeb0012d08e57fd1",
+            sha256 = "48408e0d1861c47aac88d06efda089c46bfb3265bf3a51081853963460fbcb49",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
-        )
-
-    # TODO(nichow): Remove after bazel 0.17.0 is released
-    if "bazel_source" not in excludes:
-        http_archive(
-            name = "bazel_source",
-            urls = [("https://releases.bazel.build/0.17.0/rc1/bazel-0.17.0rc1-dist.zip")],
-            sha256 = "46dfffac884ccd51fcb493dd86463cb8c21be949fdb17634ca37805fd544beae",
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
@@ -219,3 +215,16 @@ py_library(
         local_tool(
             name = "gzip",
         )
+
+    native.register_toolchains(
+        # Register the default docker toolchain that expects the 'docker'
+        # executable to be in the PATH
+        "@io_bazel_rules_docker//toolchains/docker:default_linux_toolchain",
+        "@io_bazel_rules_docker//toolchains/docker:default_windows_toolchain",
+        "@io_bazel_rules_docker//toolchains/docker:default_osx_toolchain",
+    )
+
+    if "docker_config" not in excludes:
+        # Automatically configure the docker toolchain rule to use the default
+        # docker binary from the system path
+        _docker_toolchain_configure(name = "docker_config")

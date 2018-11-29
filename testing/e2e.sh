@@ -16,6 +16,12 @@ set -e
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
+CONTAINER_IMAGE_TARGETS_QUERY="
+bazel query 'kind(\"container_image\", \"testdata/...\") except
+    (\"//testdata:py3_image_base_with_custom_run_flags\" union
+    \"//testdata:java_image_base_with_custom_run_flags\" union
+    \"//testdata:war_image_base_with_custom_run_flags\")'
+"
 
 function fail() {
   echo "FAILURE: $1"
@@ -29,11 +35,11 @@ function CONTAINS() {
   echo "${complete}" | grep -Fsq -- "${substring}"
 }
 
-function NOT_CONTAINS() {
+function COUNT() {
   local complete="${1}"
   local substring="${2}"
 
-  echo "${complete}" | grep -Fsqv -- "${substring}"
+  echo "${complete}" | grep -Fso -- "${substring}" | wc -l
 }
 
 function EXPECT_CONTAINS() {
@@ -45,13 +51,24 @@ function EXPECT_CONTAINS() {
   CONTAINS "${complete}" "${substring}" || fail "$message"
 }
 
+function EXPECT_CONTAINS_ONCE() {
+  local complete="${1}"
+  local substring="${2}"
+  local count=$(COUNT "${complete}" "${substring}")
+
+  echo Checking "$1" contains "$2" exactly once
+  if [[ count -ne "1" ]]; then
+    fail "${3:-Expected '${substring}' found ${count} in '${complete}'}"
+  fi
+}
+
 function EXPECT_NOT_CONTAINS() {
   local complete="${1}"
   local substring="${2}"
   local message="${3:-Expected '${substring}' found in '${complete}'}"
 
   echo Checking "$1" does not contain "$2"
-  NOT_CONTAINS "${complete}" "${substring}" || fail "$message"
+  ! (CONTAINS "${complete}" "${substring}") || fail "$message"
 }
 
 function stop_containers() {
@@ -104,7 +121,7 @@ docker_pull(
 )
 EOF
 
-  bazel build --verbose_failures --spawn_strategy=standalone :pause_based
+  bazel build --verbose_failures --spawn_strategy=standalone --toolchain_resolution_debug :pause_based
 }
 
 
@@ -114,7 +131,7 @@ function clear_docker() {
 
 function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
     bazel build $target
@@ -125,7 +142,7 @@ function test_bazel_build_then_run_docker_build_clean() {
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     clear_docker
     bazel run $target
@@ -153,7 +170,7 @@ function test_bazel_run_docker_import_clean() {
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
   clear_docker
-  for target in $(bazel query 'kind("container_image", "testdata/...")');
+  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     bazel run $target
   done
@@ -190,6 +207,31 @@ EOF
   rm -f output.txt
 }
 
+function test_py_image_complex() {
+  cd "${ROOT}"
+  clear_docker
+  cat > output.txt <<EOF
+$(bazel run "$@" testdata:py_image_complex)
+EOF
+  EXPECT_CONTAINS "$(cat output.txt)" "Calling from main module: through py_image_complex_library: Six version: 1.11.0"
+  EXPECT_CONTAINS "$(cat output.txt)" "Calling from main module: through py_image_complex_library: Addict version: 2.1.2"
+  rm -f output.txt
+}
+
+function test_py3_image_with_custom_run_flags() {
+  cd "${ROOT}"
+  clear_docker
+  cat > output.txt <<EOF
+$(bazel run "$@" testdata:py3_image_with_custom_run_flags)
+EOF
+  EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
+  EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
+  EXPECT_CONTAINS "$(cat output.txt)" "Third: 6"
+  EXPECT_CONTAINS "$(cat output.txt)" "Fourth: 7"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/py3_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
+  rm -f output.txt
+}
+
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
@@ -200,6 +242,12 @@ function test_cc_binary_as_image() {
   cd "${ROOT}"
   clear_docker
   EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_binary_as_image)" "Hello World"
+}
+
+function test_cc_image_wrapper() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
 }
 
 function test_go_image() {
@@ -231,6 +279,19 @@ function test_java_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image)" "Hello World"
 }
 
+function test_java_partial_entrypoint_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_partial_entrypoint_image examples.images.Binary)" "Hello World"
+}
+
+function test_java_image_with_custom_run_flags() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
+}
+
 function test_java_sandwich_image() {
   cd "${ROOT}"
   clear_docker
@@ -244,6 +305,13 @@ function test_java_bin_as_lib_image() {
   docker run -ti --rm bazel/testdata:java_bin_as_lib_image
 }
 
+function test_java_image_arg_echo() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS_ONCE "$(bazel run "$@" testdata:java_image_arg_echo)" "arg0"
+  EXPECT_CONTAINS_ONCE "$(docker run -ti --rm bazel/testdata:java_image_arg_echo | tr '\r' '\n')" "arg0"
+}
+
 function test_war_image() {
   cd "${ROOT}"
   clear_docker
@@ -253,6 +321,16 @@ function test_war_image() {
   sleep 5
   EXPECT_CONTAINS "$(curl localhost:8080)" "Hello World"
   docker rm -f "${ID}"
+}
+
+function test_war_image_with_custom_run_flags() {
+  cd "${ROOT}"
+  clear_docker
+  # Use --norun to prevent actually running the war image. We are just checking
+  # the `docker run` command in the generated load script contains the right
+  # flags.
+  bazel run testdata:war_image_with_custom_run_flags -- --norun
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/war_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
 
 function test_scala_image() {
@@ -307,20 +385,29 @@ test_bazel_run_docker_bundle_incremental
 test_bazel_run_docker_import_incremental
 test_py_image -c opt
 test_py_image -c dbg
+test_py_image_complex -c opt
+test_py_image_complex -c dbg
+test_py3_image_with_custom_run_flags -c opt
+test_py3_image_with_custom_run_flags -c dbg
 test_cc_image -c opt
 test_cc_image -c dbg
 test_cc_binary_as_image -c opt
 test_cc_binary_as_image -c dbg
+test_cc_image_wrapper
 test_go_image -c opt
 test_go_image -c dbg
 test_go_image_busybox
 test_go_image_with_tags
 test_java_image -c opt
 test_java_image -c dbg
+test_java_image_with_custom_run_flags -c opt
+test_java_image_with_custom_run_flags -c dbg
 test_java_sandwich_image -c opt
 test_java_sandwich_image -c dbg
 test_java_bin_as_lib_image
+test_java_image_arg_echo
 test_war_image
+test_war_image_with_custom_run_flags
 test_scala_image -c opt
 test_scala_image -c dbg
 test_scala_sandwich_image -c opt

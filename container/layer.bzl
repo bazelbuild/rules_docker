@@ -201,7 +201,7 @@ _layer_attrs = dict({
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
     "files": attr.label_list(allow_files = True),
-    "mode": attr.string(default = "0555"),  # 0555 == a+rx
+    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
     "tars": attr.label_list(allow_files = tar_filetype),
     "debs": attr.label_list(allow_files = deb_filetype),
     "symlinks": attr.string_dict(),
@@ -209,7 +209,10 @@ _layer_attrs = dict({
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "empty_dirs": attr.string_list(),
-    "operating_system": attr.string(default = "linux", mandatory = False),
+    "operating_system": attr.string(
+        default = "linux",
+        mandatory = False,
+    ),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",

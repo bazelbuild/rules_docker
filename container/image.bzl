@@ -78,10 +78,6 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
-load(
-    "//skylib:serialize.bzl",
-    _serialize_dict = "dict_to_associative_list",
-)
 load("//container:providers.bzl", "ImageInfo")
 
 def _get_base_config(ctx, name, base):
@@ -156,12 +152,8 @@ def _image_config(
         # default to '{BUILD_TIMESTAMP}'.
         args += ["--creation_time={BUILD_TIMESTAMP}"]
 
-    _labels = _serialize_dict(labels)
-    if _labels:
-        args += ["--labels=%s" % x for x in _labels.split(",")]
-    _env = _serialize_dict(env)
-    if _env:
-        args += ["--env=%s" % x for x in _env.split(",")]
+    args += ["--labels=%s" % "=".join([key, value]) for key, value in labels.items()]
+    args += ["--env=%s" % "=".join([key, value]) for key, value in env.items()]
 
     if ctx.attr.user:
         args += ["--user=" + ctx.attr.user]
@@ -212,6 +204,28 @@ def _repository_name(ctx):
 
     return _join_path(ctx.attr.repository, ctx.label.package)
 
+def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
+    blobsums = image.get("blobsum", [])
+    digest_args = ["--digest=%s" % f.path for f in blobsums]
+    blobs = image.get("zipped_layer", [])
+    layer_args = ["--layer=%s" % f.path for f in blobs]
+    config_arg = "--config=%s" % image["config"].path
+    output_digest_arg = "--output-digest=%s" % output_digest.path
+
+    arguments = [config_arg, output_digest_arg] + layer_args + digest_args
+    if image.get("legacy"):
+        arguments.append("--tarball=%s" % image["legacy"].path)
+
+    ctx.actions.run(
+        outputs = [output_digest],
+        inputs = [image["config"]] + blobsums + blobs +
+                 ([image["legacy"]] if image.get("legacy") else []),
+        executable = ctx.executable._digester,
+        arguments = arguments,
+        mnemonic = "ImageDigest",
+        progress_message = "Extracting image digest of %s" % image_tarball.short_path,
+    )
+
 def _impl(
         ctx,
         name = None,
@@ -232,6 +246,7 @@ def _impl(
         operating_system = None,
         output_executable = None,
         output_tarball = None,
+        output_digest = None,
         output_layer = None,
         workdir = None,
         null_cmd = None,
@@ -258,6 +273,7 @@ def _impl(
     operating_system: Operating system to target (e.g. linux, windows)
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
+    output_digest: File, overrides ctx.outputs.digest
     output_layer: File, overrides ctx.outputs.layer
     workdir: str, overrides ctx.attr.workdir
     null_cmd: bool, overrides ctx.attr.null_cmd
@@ -270,9 +286,18 @@ def _impl(
     creation_time = creation_time or ctx.attr.creation_time
     output_executable = output_executable or ctx.outputs.executable
     output_tarball = output_tarball or ctx.outputs.out
+    output_digest = output_digest or ctx.outputs.digest
     output_layer = output_layer or ctx.outputs.layer
     null_cmd = null_cmd or ctx.attr.null_cmd
-    null_entrypoint = ctx.attr.null_entrypoint
+    null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
+
+    # legacy_run_behavior and docker_run_flags from base override those from
+    # ctx.
+    legacy_run_behavior = ctx.attr.legacy_run_behavior
+    docker_run_flags = ctx.attr.docker_run_flags
+    if ctx.attr.base and ImageInfo in ctx.attr.base:
+        legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
+        docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
 
     # composite a layer from the container_image rule attrs,
     image_layer = _layer.implementation(
@@ -303,6 +328,11 @@ def _impl(
     unzipped_layers = parent_parts.get("unzipped_layer", []) + [layer.unzipped_layer for layer in layers]
     layer_diff_ids = [layer.diff_id for layer in layers]
     diff_ids = parent_parts.get("diff_id", []) + layer_diff_ids
+    new_files = [f for f in file_map or []]
+    new_emptyfiles = empty_files or []
+    new_symlinks = [f for f in symlinks or []]
+    parent_transitive_files = parent_parts.get("transitive_files", depset())
+    transitive_files = depset(new_files + new_emptyfiles + new_symlinks, transitive = [parent_transitive_files])
 
     # Get the config for the base layer
     config_file = _get_base_config(ctx, name, base)
@@ -349,6 +379,9 @@ def _impl(
         # A list of paths to the layer digests.
         "blobsum": shas,
 
+        # The File containing digest of the image.
+        "digest": output_digest,
+
         # A list of paths to the layer .tar files
         "unzipped_layer": unzipped_layers,
         # A list of paths to the layer diff_ids.
@@ -357,6 +390,9 @@ def _impl(
         # At the root of the chain, we support deriving from a tarball
         # base image.
         "legacy": parent_parts.get("legacy"),
+
+        # Keep track of all files/emptyfiles/symlinks that we have already added to the image layers.
+        "transitive_files": transitive_files,
     }
 
     # We support incrementally loading or assembling this single image
@@ -369,10 +405,11 @@ def _impl(
         ctx,
         images,
         output_executable,
-        run = not ctx.attr.legacy_run_behavior,
-        run_flags = ctx.attr.docker_run_flags,
+        run = not legacy_run_behavior,
+        run_flags = docker_run_flags,
     )
     _assemble_image(ctx, images, output_tarball)
+    _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 
     runfiles = ctx.runfiles(
         files = unzipped_layers + diff_ids + [config_file, config_digest] +
@@ -384,6 +421,8 @@ def _impl(
         providers = [
             ImageInfo(
                 container_parts = container_parts,
+                legacy_run_behavior = legacy_run_behavior,
+                docker_run_flags = docker_run_flags,
             ),
             DefaultInfo(
                 executable = output_executable,
@@ -433,11 +472,18 @@ _attrs = dict(_layer.attrs.items() + {
     # We need these flags to distinguish them.
     "null_cmd": attr.bool(default = False),
     "null_entrypoint": attr.bool(default = False),
+    "_digester": attr.label(
+        default = "@containerregistry//:digester",
+        cfg = "host",
+        executable = True,
+    ),
 }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
 
 _outputs = dict(_layer.outputs)
 
 _outputs["out"] = "%{name}.tar"
+
+_outputs["digest"] = "%{name}.digest"
 
 image = struct(
     attrs = _attrs,
@@ -449,6 +495,7 @@ container_image_ = rule(
     attrs = _attrs,
     executable = True,
     outputs = _outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
 )
 

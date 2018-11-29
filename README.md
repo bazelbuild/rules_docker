@@ -86,11 +86,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "5d64414477ffe87b16e248986c0731aee821ea3d626121cfeeec4ef7096812ca",
-    strip_prefix = "rules_docker-0.5.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.5.0.tar.gz"],
+    sha256 = "29d109605e0d6f9c892584f07275b8c9260803bf0c6fcb7de2623b2bedc910bd",
+    strip_prefix = "rules_docker-0.5.1",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.5.1.tar.gz"],
 )
 
+# Call this to override the default docker toolchain configuration. This call
+# should be placed BEFORE the call to "container_repositories" below to actually 
+# override the default toolchain configuration
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+docker_toolchain_configure(name = "docker_config")
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
@@ -145,14 +152,8 @@ For `container_bundle`, it will apply the tags you have specified.
 
 You can use these rules to access private images using standard Docker
 authentication methods.  e.g. to utilize the [Google Container Registry](
-https://gcr.io) [credential helper](
-https://github.com/GoogleCloudPlatform/docker-credential-gcr):
-
-```shell
-$ gcloud components install docker-credential-gcr
-
-$ docker-credential-gcr configure-docker
-```
+https://gcr.io). See
+[here](https://cloud.google.com/container-registry/docs/advanced-authentication) for authentication methods.
 
 See also:
  * [Amazon ECR Docker Credential Helper](
@@ -367,6 +368,51 @@ py_image(
 )
 ```
 
+You can also implement more complex fine layering strategies by using the
+`py_layer` rule and its `filter` attribute.  For example:
+```python
+# Suppose that we are synthesizing an image that depends on a complex set
+# of libraries that we want to break into layers.
+LIBS = [
+    "//pkg/complex_library",
+    # ...
+]
+# First, we extract all transitive dependencies of LIBS that are under //pkg/common.
+py_layer(
+    name = "common_deps",
+    deps = LIBS,
+    filter = "//pkg/common",
+)
+# Then, we further extract all external dependencies of the deps under //pkg/common.
+py_layer(
+    name = "common_external_deps",
+    deps = [":common_deps"],
+    filter = "@",
+)
+# We also extract all external dependencies of LIBS, which is a superset of
+# ":common_external_deps".
+py_layer(
+    name = "external_deps",
+    deps = LIBS,
+    filter = "@",
+)
+# Finally, we create the image, stacking the above filtered layers on top of one
+# another in the "layers" attribute.  The layers are applied in order, and any
+# dependencies already added to the image will not be added again.  Therefore,
+# ":external_deps" will only add the external dependencies not present in
+# ":common_external_deps".
+py_image(
+    name = "image",
+    deps = LIBS,
+    layers = [
+        ":common_external_deps",
+        ":common_deps",
+        ":external_deps",
+    ],
+    # ...
+)
+```
+
 ### py3_image
 
 To use a Python 3 runtime instead of the default of Python 2, use `py3_image`,
@@ -505,7 +551,7 @@ passwd_file(
 pkg_tar(
     name = "passwd_tar",
     srcs = [":passwd"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 
@@ -1117,7 +1163,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
     <tr>
       <td><code>mode</code></td>
       <td>
-        <code>String, default to 0555</code>
+        <code>String, default to 0o555</code>
         <p>
           Set the mode of files added by the <code>files</code> attribute.
         </p>
@@ -1205,6 +1251,16 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
             A full Docker image containing all the layers, identical to
             what <code>docker save</code> would return. This is
             only generated on demand.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code><i>name</i>.digest</code></td>
+      <td>
+        <code>The full Docker image's digest</code>
+        <p>
+            An image digest that can be used to refer to that image. Unlike tags,
+            digest references are immutable i.e. always refer to the same content.
         </p>
       </td>
     </tr>
@@ -1316,7 +1372,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
     <tr>
       <td><code>mode</code></td>
       <td>
-        <code>String, default to 0555</code>
+        <code>String, default to 0o555</code>
         <p>
           Set the mode of files added by the <code>files</code> attribute.
         </p>
@@ -1508,6 +1564,26 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
   </tbody>
 </table>
 
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Toolchains</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>@io_bazel_rules_docker//toolchains/docker:toolchain_type</code></td>
+      <td>
+        See <a href="toolchains/docker/readme.md#how-to-use-the-docker-toolchain">How to use the Docker Toolchain</a> for details
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 <a name="container_bundle"></a>
 ## container_bundle
 
@@ -1548,7 +1624,7 @@ A rule that aliases and saves N images into a single `docker save` tarball.
            <code>container_image</code>, or a <code>docker save</code> tarball.</p>
       </td>
     </tr>
-    <tr>
+    <tr>Toolchains
       <td><code>stamp</code></td>
       <td>
         <p><code>Bool; optional</code></p>
