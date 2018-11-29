@@ -17,9 +17,9 @@ load(":toolchain.bzl", "docker_toolchain")
 load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
 
 skylark_library(
-  name = "docker",
-  srcs = ["toolchain.bzl"],
-  visibility = ["//visibility:public"],
+    name = "docker",
+    srcs = ["toolchain.bzl"],
+    visibility = ["//visibility:public"],
 )
 
 # Docker toolchain type
