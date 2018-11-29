@@ -106,7 +106,7 @@ def repositories():
         # TODO(mattmoor): Is there a clean way to override?
         http_archive(
             name = "httplib2",
-            url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3",
+            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3"],
             sha256 = "d9f568c183d1230f271e9c60bd99f3f2b67637c3478c9068fea29f7cca3d911f",
             strip_prefix = "httplib2-0.11.3/python2/httplib2/",
             type = "tar.gz",
@@ -124,7 +124,7 @@ py_library(
         # TODO(mattmoor): Is there a clean way to override?
         http_archive(
             name = "six",
-            url = "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz",
+            urls = ["https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"],
             sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
             strip_prefix = "six-1.9.0/",
             type = "tar.gz",
@@ -148,7 +148,7 @@ py_library(
         # TODO(mattmoor): Is there a clean way to override?
         http_archive(
             name = "oauth2client",
-            url = "https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0",
+            urls = ["https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0"],
             sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
             strip_prefix = "oauth2client-4.0.0/oauth2client/",
             type = "tar.gz",
@@ -169,7 +169,7 @@ py_library(
         # TODO(mattmoor): Is there a clean way to override?
         http_archive(
             name = "concurrent",
-            url = "https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5",
+            urls = ["https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5"],
             sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
             strip_prefix = "pythonfutures-3.0.5/concurrent/",
             type = "tar.gz",
