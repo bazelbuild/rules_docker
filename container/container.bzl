@@ -75,6 +75,8 @@ def repositories():
             sha256 = "2a3ccb6ef8f99ec0053b56380824a7c100ba00eb0e147d1bda748884113542f1",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
+            sha256 = "2a3ccb6ef8f99ec0053b56380824a7c100ba00eb0e147d1bda748884113542f1",
+            executable = True,
         )
 
     if "importer" not in excludes:
@@ -84,6 +86,8 @@ def repositories():
             sha256 = "0eec1a4ffb26623dbb4075e5459fa0ede36548edf872d2691ebbcb3c4ccb8cf3",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
+            sha256 = "0eec1a4ffb26623dbb4075e5459fa0ede36548edf872d2691ebbcb3c4ccb8cf3",
+            executable = True,
         )
 
     if "containerregistry" not in excludes:
@@ -93,6 +97,8 @@ def repositories():
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
+            sha256 = "8182728578f7d7178e7efcef8ce9074988a1a2667f20ecff5cf6234fba284dd3",
+            strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
