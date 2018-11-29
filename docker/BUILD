@@ -20,5 +20,8 @@ load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
 skylark_library(
     name = "docker",
     srcs = ["docker.bzl"],
-    deps = ["//container"],
+    deps = [
+        "@io_bazel_rules_docker//container",
+        "@io_bazel_rules_docker//toolchains/docker",
+    ],
 )

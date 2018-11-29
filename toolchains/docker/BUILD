@@ -14,6 +14,13 @@
 package(default_visibility = ["//visibility:private"])
 
 load(":toolchain.bzl", "docker_toolchain")
+load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
+
+skylark_library(
+    name = "docker",
+    srcs = ["toolchain.bzl"],
+    visibility = ["//visibility:public"],
+)
 
 # Docker toolchain type
 toolchain_type(
