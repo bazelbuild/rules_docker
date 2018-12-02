@@ -28,4 +28,4 @@ function guess_runfiles() {
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
-%{container_pusher} %{format} --name=%{tag} %{stamp} %{image} "$@"
+%{container_pusher} %{args} "$@"
