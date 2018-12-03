@@ -27,7 +27,6 @@ platforms:
     build_targets:
     - "--"
     - "..."
-    - "testdata/..."
     build_flags:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
