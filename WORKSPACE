@@ -135,9 +135,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "0d3f1f854d2d6fb79ef94bee6f6c23621fdc0032d72db11652a829bcb4777398",
-    strip_prefix = "rules_groovy-ad6e2a1258a1f67e1a294b114d5dcbba36322a70",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/ad6e2a1258a1f67e1a294b114d5dcbba36322a70.tar.gz"],
+    sha256 = "8c28a8f45b6d83cb2e3f3e4851618a429544603ff040a261c48602fabcea7bfc",
+    strip_prefix = "rules_groovy-a95e89c59716c5bc132ebb407f97b173fb2510e7",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/a95e89c59716c5bc132ebb407f97b173fb2510e7.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -168,14 +168,20 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "615639cfd5459fec4b8a5751112be808ab25ba647c4c1953d29bb554ef865da7",
-    strip_prefix = "rules_rust-0.0.6",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/0.0.6.tar.gz"],
+    sha256 = "500d06096a44ff6d77256635dbe6ab61b23c2be626e2acb08a4c060092e711d0",
+    strip_prefix = "rules_rust-db81b42d98e1232e001e26a50c37f2097d61a207",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/db81b42d98e1232e001e26a50c37f2097d61a207.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
 
 rust_repositories()
+
+# The following is required by rules_rust, remove once
+# https://github.com/bazelbuild/rules_rust/issues/167 is fixed
+load("@io_bazel_rules_rust//:workspace.bzl", "bazel_version")
+
+bazel_version(name = "bazel_version")
 
 # For our d_image test
 http_archive(
@@ -191,9 +197,9 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "779edee08986ab40dbf8b1ad0260f3cc8050f1e96ccd2a88dc499848bbdb787f",
-    strip_prefix = "rules_nodejs-0.11.1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.11.1.zip"],
+    sha256 = "9b72bb0aea72d7cbcfc82a01b1e25bf3d85f791e790ddec16c65e2d906382ee0",
+    strip_prefix = "rules_nodejs-0.16.2",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.16.2.zip"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
