@@ -165,17 +165,28 @@ load(
 
 _go_image_repos()
 
+#http_archive(
+#    name = "bazel_skylib",
+#    sha256 = "981624731d7371061ca56d532fa00d33bdda3e9d62e085698880346a01d0a6ef",
+#    strip_prefix = "bazel-skylib-0.6.0",
+#    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.6.0.tar.gz"],
+#)
+
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "615639cfd5459fec4b8a5751112be808ab25ba647c4c1953d29bb554ef865da7",
-    strip_prefix = "rules_rust-0.0.6",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/0.0.6.tar.gz"],
+    sha256 = "500d06096a44ff6d77256635dbe6ab61b23c2be626e2acb08a4c060092e711d0",
+    strip_prefix = "rules_rust-db81b42d98e1232e001e26a50c37f2097d61a207",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/db81b42d98e1232e001e26a50c37f2097d61a207.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
 
 rust_repositories()
+
+load("@io_bazel_rules_rust//:workspace.bzl", "bazel_version")
+
+bazel_version(name = "bazel_version")
 
 # For our d_image test
 http_archive(
@@ -191,9 +202,9 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "779edee08986ab40dbf8b1ad0260f3cc8050f1e96ccd2a88dc499848bbdb787f",
-    strip_prefix = "rules_nodejs-0.11.1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.11.1.zip"],
+    sha256 = "9b72bb0aea72d7cbcfc82a01b1e25bf3d85f791e790ddec16c65e2d906382ee0",
+    strip_prefix = "rules_nodejs-0.16.2",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.16.2.zip"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
