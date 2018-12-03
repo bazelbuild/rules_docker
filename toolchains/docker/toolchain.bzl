@@ -49,12 +49,14 @@ docker_toolchain = rule(
 
 def _toolchain_configure_impl(repository_ctx):
     tool_path = repository_ctx.which("docker")
+    # client_config could be None
+    client_config = repository_ctx.attr.client_config or ""
     repository_ctx.template(
         "BUILD",
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{DOCKER_TOOL}": "%s" % tool_path,
-            "%{DOCKER_CONFIG}": "%s"% repository_ctx.attr.client_config,
+            "%{DOCKER_CONFIG}": "%s"% client_config,
         },
         False,
     )
@@ -63,7 +65,7 @@ def _toolchain_configure_impl(repository_ctx):
 toolchain_configure = repository_rule(
     attrs = {
         "client_config": attr.string(
-            default="",
+            mandatory=False,
             doc="A custom directory for the docker client config.json"
         ),
     },
