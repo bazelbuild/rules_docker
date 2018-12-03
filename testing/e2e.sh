@@ -372,7 +372,15 @@ function test_d_image() {
 function test_nodejs_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:nodejs_image)" "Hello World!"
+  EXPECT_CONTAINS "$(bazel run testdata:nodejs_image)" "Hello World!"
+}
+
+function test_container_push() {
+  cd "${ROOT}"
+  clear_docker
+  run -d -p 5000:5000 --name registry registry:2
+  bazel build tests/docker:push_test
+  # run here file_test targets to verify test outputs of push_test
 }
 
 test_top_level
@@ -423,3 +431,4 @@ test_rust_image -c dbg
 # test_d_image -c dbg
 test_nodejs_image -c opt
 test_nodejs_image -c dbg
+test_container_push
