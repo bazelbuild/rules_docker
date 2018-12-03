@@ -132,6 +132,10 @@ load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
 
 scala_register_toolchains()
 
+# THIS COMMENT IS JUST ADDED TO CREATE A PULL REQUEST WITH THE CODE IN THE SAME STATE
+# AS UPSTREAM.
+# NOTE TRAVIS CI will fail with an error related to issues with the below repo, while 
+# BuildKite CI will pass.
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
