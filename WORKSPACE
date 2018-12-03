@@ -165,13 +165,6 @@ load(
 
 _go_image_repos()
 
-#http_archive(
-#    name = "bazel_skylib",
-#    sha256 = "981624731d7371061ca56d532fa00d33bdda3e9d62e085698880346a01d0a6ef",
-#    strip_prefix = "bazel-skylib-0.6.0",
-#    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.6.0.tar.gz"],
-#)
-
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
@@ -184,6 +177,8 @@ load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
 
 rust_repositories()
 
+# The following is required by rules_rust, remove once
+# https://github.com/bazelbuild/rules_rust/issues/167 is fixed
 load("@io_bazel_rules_rust//:workspace.bzl", "bazel_version")
 
 bazel_version(name = "bazel_version")
