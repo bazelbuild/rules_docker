@@ -19,7 +19,7 @@ DockerToolchainInfo = provider(
     doc = "Docker toolchain rule parameters",
     fields = {
         "tool_path": "Path to the docker executable",
-        "client_config": "A custom directory for the docker client config.json"
+        "client_config": "A custom directory for the docker client config.json",
     },
 )
 
@@ -41,14 +41,15 @@ docker_toolchain = rule(
             doc = "Path to the docker binary",
         ),
         "client_config": attr.string(
-            default="",
-            doc="A custom directory for the docker client config.json"
+            default = "",
+            doc = "A custom directory for the docker client config.json",
         ),
     },
 )
 
 def _toolchain_configure_impl(repository_ctx):
     tool_path = repository_ctx.which("docker")
+
     # client_config could be None
     client_config = repository_ctx.attr.client_config or ""
     repository_ctx.template(
@@ -56,7 +57,7 @@ def _toolchain_configure_impl(repository_ctx):
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{DOCKER_TOOL}": "%s" % tool_path,
-            "%{DOCKER_CONFIG}": "%s"% client_config,
+            "%{DOCKER_CONFIG}": "%s" % client_config,
         },
         False,
     )
@@ -65,8 +66,8 @@ def _toolchain_configure_impl(repository_ctx):
 toolchain_configure = repository_rule(
     attrs = {
         "client_config": attr.string(
-            mandatory=False,
-            doc="A custom directory for the docker client config.json"
+            mandatory = False,
+            doc = "A custom directory for the docker client config.json",
         ),
     },
     implementation = _toolchain_configure_impl,

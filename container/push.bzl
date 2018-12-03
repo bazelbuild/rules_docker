@@ -164,7 +164,7 @@ container_push = rule(
         ),
     }.items() + _layer_tools.items()),
     executable = True,
-    toolchains=["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
     outputs = {
         "digest": "%{name}.digest",
