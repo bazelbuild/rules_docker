@@ -205,4 +205,5 @@ container_push(
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
+    tags = ["manual"],
 )

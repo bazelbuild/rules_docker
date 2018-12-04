@@ -378,7 +378,7 @@ function test_nodejs_image() {
 function test_container_push() {
   cd "${ROOT}"
   clear_docker
-  run -d -p 5000:5000 --name registry registry:2
+  docker run -d -p 5000:5000 --name registry registry:2
   bazel build tests/docker:push_test
   # run here file_test targets to verify test outputs of push_test
 }
