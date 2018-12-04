@@ -45,7 +45,7 @@ https://docs.bazel.build/versions/master/be/python.html#py_binary))
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
 * [nodejs_image](#nodejs_image) ([usage](
 https://github.com/bazelbuild/rules_nodejs#usage))
-* [java_image](#java_image) ([signature]
+* [java_image](#java_image) ([signature](
 https://docs.bazel.build/versions/master/be/java.html#java_binary))
 * [war_image](#war_image) ([signature](
 https://docs.bazel.build/versions/master/be/java.html#java_library))
