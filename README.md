@@ -306,7 +306,7 @@ to create the desired directory structure and pass that to `container_image` via
 `tars` attribute. Note you might need to set `strip_prefix = "."` or `strip_prefix = "{some directory}"`
 in your rule for the files to not be flattened.
 See <a href="https://github.com/bazelbuild/bazel/issues/2176">Bazel upstream issue 2176</a> and
- <a href="https://github.com/nlopezgi/rules_docker/issues/317">rules_docker issue 317</a>
+ <a href="https://github.com/bazelbuild/rules_docker/issues/317">rules_docker issue 317</a>
 for more details.
 
 
