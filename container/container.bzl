@@ -202,7 +202,7 @@ py_library(
             urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-darwin-amd64"],
         )
 
-    # For skylark_library.
+    # For bzl_library.
     if "bazel_skylib" not in excludes:
         http_archive(
             name = "bazel_skylib",
