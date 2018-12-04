@@ -97,6 +97,7 @@ def _impl(ctx):
         repository = repository,
         tag = tag,
     )]
+
     # If the docker toolchain is configured to use a custom client config
     # directory, use that instead
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info

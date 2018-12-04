@@ -127,6 +127,7 @@ EOF
 
 function clear_docker() {
   docker rmi -f $(docker images -aq) || true
+  stop_containers
 }
 
 function test_bazel_build_then_run_docker_build_clean() {
