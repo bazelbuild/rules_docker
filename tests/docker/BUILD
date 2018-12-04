@@ -207,3 +207,9 @@ container_push(
     tag = "test",
     tags = ["manual"],
 )
+
+file_test(
+    name = "test_push_digest_output",
+    content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
+    file = ":push_test.digest",
+)
