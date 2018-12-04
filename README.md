@@ -45,14 +45,14 @@ https://docs.bazel.build/versions/master/be/python.html#py_binary))
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
 * [nodejs_image](#nodejs_image) ([usage](
 https://github.com/bazelbuild/rules_nodejs#usage))
-* [java_image](#java_image) ([signature](
+* [java_image](#java_image) ([signature](see <a href=#go_image-custom-base>go_image (custom base)</a> example.
 https://docs.bazel.build/versions/master/be/java.html#java_binary))
 * [war_image](#war_image) ([signature](
 https://docs.bazel.build/versions/master/be/java.html#java_library))
 * [scala_image](#scala_image) ([signature](
 https://github.com/bazelbuild/rules_scala#scala_binary))
 * [groovy_image](#groovy_image) ([signature](
-https://github.com/bazelbuok, not sure if you want to publish ild/rules_groovy#groovy_binary))
+https://github.com/bazelbuild/rules_groovy#groovy_binary))
 * [cc_image](#cc_image) ([signature](
 https://docs.bazel.build/versions/master/be/c-cpp.html#cc_binary))
 * [go_image](#go_image) ([signature](
@@ -79,10 +79,9 @@ or `container_image` target).
 
 Note also that these rules do not expose any docker related attributes. If you
 need to add a custom `env` or `symlink` to a `lang_image`, you must use
-`container_image` targets for this purpose. You can either use as base for your
-`lang_image` target the `container_image` that adds e.g., custom `env` or `symlink`
-or create a `container_image` target (with the `env` or `symlink`) and set as
-base the `lang_image` target.
+`container_image` targets for this purpose. Specifically, you can use as base for your
+`lang_image` target a `container_image` target that adds e.g., custom `env` or `symlink`.
+Please see <a href=#go_image-custom-base>go_image (custom base)</a> for an example.
 
 ## Setup
 
