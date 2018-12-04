@@ -15,9 +15,9 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-skylark_library(
+bzl_library(
     name = "docker",
     srcs = ["docker.bzl"],
     deps = [

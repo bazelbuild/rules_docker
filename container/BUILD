@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 exports_files(["push-tag.sh.tpl"])
 
@@ -161,7 +161,7 @@ py_test(
     deps = ["@containerregistry"],
 )
 
-skylark_library(
+bzl_library(
     name = "bundle",
     srcs = ["bundle.bzl"],
     deps = [
@@ -171,7 +171,7 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "container",
     srcs = ["container.bzl"],
     deps = [
@@ -184,7 +184,7 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "flatten",
     srcs = ["flatten.bzl"],
     deps = [
@@ -194,7 +194,7 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "image",
     srcs = ["image.bzl"],
     deps = [
@@ -208,7 +208,7 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "import",
     srcs = ["import.bzl"],
     deps = [
@@ -221,7 +221,7 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "layer",
     srcs = ["layer.bzl"],
     deps = [
@@ -234,29 +234,29 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "layer_tools",
     srcs = ["layer_tools.bzl"],
     deps = ["//skylib:path"],
 )
 
-skylark_library(
+bzl_library(
     name = "load",
     srcs = ["load.bzl"],
     deps = [":pull"],
 )
 
-skylark_library(
+bzl_library(
     name = "providers",
     srcs = ["providers.bzl"],
 )
 
-skylark_library(
+bzl_library(
     name = "pull",
     srcs = ["pull.bzl"],
 )
 
-skylark_library(
+bzl_library(
     name = "push",
     srcs = ["push.bzl"],
     deps = [
