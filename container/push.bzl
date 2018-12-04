@@ -73,11 +73,10 @@ def _impl(ctx):
         digester_args.add("--oci")
 
     # create image digest
-    image_digest = ctx.actions.declare_file(ctx.attr.name + ".digest")
-    digester_args.add("--output-digest", image_digest)
+    digester_args.add("--output-digest", ctx.outputs.digest)
     ctx.actions.run(
         inputs = image_files,
-        outputs = [image_digest],
+        outputs = [ctx.outputs.digest],
         executable = ctx.executable._digester,
         arguments = [digester_args],
         tools = ctx.attr._digester.default_runfiles.files,
@@ -118,7 +117,7 @@ def _impl(ctx):
             tag = tag,
             stamp = ctx.attr.stamp,
             stamp_inputs = stamp_inputs,
-            digest = image_digest,
+            digest = ctx.outputs.digest,
         ),
     ]
 
@@ -160,6 +159,9 @@ container_push = rule(
     }.items() + _layer_tools.items()),
     executable = True,
     implementation = _impl,
+    outputs = {
+        "digest": "%{name}.digest",
+    },
 )
 
 """Pushes a container image.
