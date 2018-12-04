@@ -134,10 +134,10 @@ container_pull(
 )
 ```
 
-Note: Bazel does not deal with diamond dependencies. If the repositories that
+Note: Bazel does not deal well with diamond dependencies. If the repositories that
 are imported by `container_repositories()` have already been imported (at a
-different version) by other rules you called in your `WORKSPACE` which are
-placed above the call to `container_repositories()` arbitrary errors might
+different version) by other rules you called in your `WORKSPACE`, which are
+placed above the call to `container_repositories()`, arbitrary errors might
 ocurr. If you get errors related to external repositories, you will likely
 not be able to use `container_repositories()` and will have to import
 directly in your `WORKSPACE` all the required dependencies (see the most up
@@ -306,7 +306,7 @@ to create the desired directory structure and pass that to `container_image` via
 `tars` attribute. Note you might need to set `strip_prefix = "."` or `strip_prefix = "{some directory}"`
 in your rule for the files to not be flattened.
 See <a href="https://github.com/bazelbuild/bazel/issues/2176">Bazel upstream issue 2176</a> and
- <a href="issues/317">rules_docker issue 317</a>
+ <a href="https://github.com/nlopezgi/rules_docker/issues/317">rules_docker issue 317</a>
 for more details.
 
 
