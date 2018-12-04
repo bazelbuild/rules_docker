@@ -13,7 +13,12 @@
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
 
-load("//container:container.bzl", "container_image", "container_import")
+load(
+    "//container:container.bzl",
+    "container_image",
+    "container_import",
+    "container_push",
+)
 load("//contrib:test.bzl", "container_test")
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
@@ -191,4 +196,14 @@ container_test(
     name = "set_env_csv_test",
     configs = ["//tests/docker/configs:set_env_csv.yaml"],
     image = ":set_env_csv",
+)
+
+container_push(
+    name = "push_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
 )
