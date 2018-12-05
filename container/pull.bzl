@@ -65,6 +65,8 @@ container_import(
   config = "config.json",
   layers = glob(["*.tar.gz"]),
 )
+
+exports_files(["digest"])
 """)
 
     args = [

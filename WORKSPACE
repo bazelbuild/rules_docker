@@ -68,6 +68,22 @@ container_pull(
     tag = "3.8",
 )
 
+container_pull(
+    name = "k8s_pause_amd64",
+    # this is a manifest list, so the resolved digest should not match this digest
+    digest = "sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea",
+    registry = "k8s.gcr.io",
+    repository = "pause",
+)
+
+container_pull(
+    name = "k8s_pause_arm64",
+    architecture = "arm64",
+    registry = "k8s.gcr.io",
+    repository = "pause",
+    tag = "3.1",
+)
+
 # For testing, don't change the sha on these ones
 container_pull(
     name = "distroless_fixed_id",
