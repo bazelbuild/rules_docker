@@ -48,6 +48,7 @@ PushInfo = provider(fields = [
     "tag",
     "stamp",
     "stamp_inputs",
+    "digest",
 ])
 
 # A provider containing information exposed by filter_layer rules

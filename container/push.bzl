@@ -33,88 +33,93 @@ def _get_runfile_path(ctx, f):
 
 def _impl(ctx):
     """Core implementation of container_push."""
-    stamp_inputs = []
-    if ctx.attr.stamp:
-        stamp_inputs = [ctx.info_file, ctx.version_file]
-
-    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-
-    stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
+    pusher_args = []
+    digester_args = ctx.actions.args()
 
     # Leverage our efficient intermediate representation to push.
-    legacy_base_arg = ""
-    if image.get("legacy"):
+    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
+    blobsums = image.get("blobsum", [])
+    blobs = image.get("zipped_layer", [])
+    config = image["config"]
+    manifest = image["manifest"]
+    tarball = image.get("legacy")
+    image_files = blobs + blobsums
+
+    if tarball:
         print("Pushing an image based on a tarball can be very " +
               "expensive.  If the image is the output of a " +
               "docker_build, consider dropping the '.tar' extension. " +
               "If the image is checked in, consider using " +
               "docker_import instead.")
-        legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
+        pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
+        digester_args.add("--tarball", tarball)
+        image_files += [tarball]
+    if config:
+        pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
+        digester_args.add("--config", config)
+        image_files += [config]
+    if manifest:
+        pusher_args += ["--manifest=%s" % _get_runfile_path(ctx, manifest)]
+        digester_args.add("--manifest", manifest)
+        image_files += [manifest]
+    for f in blobsums:
+        pusher_args += ["--digest=%s" % _get_runfile_path(ctx, f)]
+        digester_args.add("--digest", f)
+    for f in blobs:
+        pusher_args += ["--layer=%s" % _get_runfile_path(ctx, f)]
+        digester_args.add("--layer", f)
+    if ctx.attr.format == "OCI":
+        pusher_args += ["--oci"]
+        digester_args.add("--oci")
 
-    blobsums = image.get("blobsum", [])
-    digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
-    blobs = image.get("zipped_layer", [])
-    layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
-    config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
-    manifest_arg = "--manifest=%s" % _get_runfile_path(ctx, image["manifest"])
+    # create image digest
+    digester_args.add("--output-digest", ctx.outputs.digest)
+    ctx.actions.run(
+        inputs = image_files,
+        outputs = [ctx.outputs.digest],
+        executable = ctx.executable._digester,
+        arguments = [digester_args],
+        tools = ctx.attr._digester.default_runfiles.files,
+        mnemonic = "ContainerPushDigest",
+    )
 
+    # create pusher launcher
+    registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
+    repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
+    tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
+    stamp_inputs = [ctx.info_file, ctx.version_file] if ctx.attr.stamp else []
+    pusher_args += [
+        "--stamp-info-file=%s" % _get_runfile_path(ctx, f)
+        for f in stamp_inputs
+    ]
+    pusher_args += ["--name={registry}/{repository}:{tag}".format(
+        registry = registry,
+        repository = repository,
+        tag = tag,
+    )]
     ctx.template_action(
         template = ctx.file._tag_tpl,
         substitutions = {
-            "%{tag}": "{registry}/{repository}:{tag}".format(
-                registry = ctx.expand_make_variables(
-                    "registry",
-                    ctx.attr.registry,
-                    {},
-                ),
-                repository = ctx.expand_make_variables(
-                    "repository",
-                    ctx.attr.repository,
-                    {},
-                ),
-                tag = ctx.expand_make_variables(
-                    "tag",
-                    ctx.attr.tag,
-                    {},
-                ),
-            ),
-            "%{stamp}": stamp_arg,
-            "%{image}": "%s %s %s %s %s" % (
-                legacy_base_arg,
-                config_arg,
-                manifest_arg,
-                digest_arg,
-                layer_arg,
-            ),
-            "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+            "%{args}": " ".join(pusher_args),
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
         },
         output = ctx.outputs.executable,
         executable = True,
     )
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs)
+    runfiles = runfiles.merge(ctx.attr._pusher.default_runfiles)
 
-    runfiles = ctx.runfiles(
-        files = [
-                    ctx.executable._pusher,
-                    image["config"],
-                    image["manifest"],
-                ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-                stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
-                list(ctx.attr._pusher.default_runfiles.files),
-    )
-
-    return struct(
-        providers = [
-            PushInfo(
-                registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
-                repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
-                tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
-                stamp = ctx.attr.stamp,
-                stamp_inputs = stamp_inputs,
-            ),
-            DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
-        ],
-    )
+    return [
+        DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
+        PushInfo(
+            registry = registry,
+            repository = repository,
+            tag = tag,
+            stamp = ctx.attr.stamp,
+            stamp_inputs = stamp_inputs,
+            digest = ctx.outputs.digest,
+        ),
+    ]
 
 container_push = rule(
     attrs = dict({
@@ -142,6 +147,11 @@ container_push = rule(
             executable = True,
             allow_files = True,
         ),
+        "_digester": attr.label(
+            default = "@containerregistry//:digester",
+            cfg = "host",
+            executable = True,
+        ),
         "stamp": attr.bool(
             default = False,
             mandatory = False,
@@ -149,6 +159,9 @@ container_push = rule(
     }.items() + _layer_tools.items()),
     executable = True,
     implementation = _impl,
+    outputs = {
+        "digest": "%{name}.digest",
+    },
 )
 
 """Pushes a container image.
