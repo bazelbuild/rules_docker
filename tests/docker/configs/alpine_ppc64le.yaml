@@ -1,0 +1,6 @@
+schemaVersion: 2.0.0
+
+fileContentTests:
+  - name: "validate apk arch file"
+    path: "/etc/apk/arch"
+    expectedContents: ["ppc64le"]
