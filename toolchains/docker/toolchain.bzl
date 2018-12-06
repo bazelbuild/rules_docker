@@ -19,7 +19,7 @@ DockerToolchainInfo = provider(
     doc = "Docker toolchain rule parameters",
     fields = {
         "tool_path": "Path to the docker executable",
-        "client_config": "A custom directory for the docker client config.json",
+        "client_config": """"A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.""",
     },
 )
 
@@ -42,7 +42,7 @@ docker_toolchain = rule(
         ),
         "client_config": attr.string(
             default = "",
-            doc = "A custom directory for the docker client config.json",
+            doc = """"A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.""",
         ),
     },
 )
@@ -67,7 +67,7 @@ toolchain_configure = repository_rule(
     attrs = {
         "client_config": attr.string(
             mandatory = False,
-            doc = "A custom directory for the docker client config.json",
+            doc = "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
         ),
     },
     implementation = _toolchain_configure_impl,

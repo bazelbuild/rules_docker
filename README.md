@@ -103,9 +103,9 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_docker/archive/{latest commit}.tar.gz"],
 )
 
-# Call this to override the default docker toolchain configuration. This call
-# should be placed BEFORE the call to "container_repositories" below to actually
-# override the default toolchain configuration.
+# OPTIONAL: Call this to override the default docker toolchain configuration.
+# This call should be placed BEFORE the call to "container_repositories" below
+# to actually override the default toolchain configuration.
 # Note this is only required if you actually want to call
 # docker_toolchain_configure with a custom attr; please read the toolchains
 # docs in /toolchains/docker/ before blindly adding this to your WORKSPACE.

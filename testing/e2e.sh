@@ -402,10 +402,10 @@ function test_container_push_with_auth() {
   # run here file_test targets to verify test outputs of push_test
 
   # Run the container_push test in the Bazel workspace that configured
-  # the docker toolchain rule to use authentication
-  # Inject the location of the docker configuration directory into the
-  # which will be used to configure the authentication configuration in the
-  # docker toolchain rule
+  # the docker toolchain rule to use authentication.
+  # Inject the location of the docker configuration directory into the bazel
+  # workspace which will be used to configure the authentication used by the
+  # docker toolchain in container_push.
   cat > ${ROOT}/testing/custom_toolchain_auth/def.bzl <<EOF
 client_config="${config_dir}"
 EOF
@@ -417,7 +417,7 @@ EOF
 
   # Run the container_push test in the Bazel workspace that uses the default
   # configured docker toolchain. The default configuration doesn't setup
-  # authentication and this should fail
+  # authentication and this should fail.
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting unauthenticated container_push..."
@@ -428,7 +428,6 @@ EOF
 }
 
 test_container_push_with_auth
-exit 0
 test_top_level
 test_bazel_build_then_run_docker_build_clean
 test_bazel_run_docker_build_clean
