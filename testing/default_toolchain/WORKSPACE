@@ -1,0 +1,28 @@
+workspace(name="e2e_testing")
+
+# Placeholder repository definition to import rules_docker. To be replaced
+# with real path on bazel invocation using --override_repository
+local_repository(
+    name = "io_bazel_rules_docker",
+    path = "replace/this/path",
+)
+
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+docker_toolchain_configure(name = "docker_config")
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+# For testing
+container_pull(
+    name = "distroless_fixed_id",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)

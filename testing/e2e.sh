@@ -379,11 +379,56 @@ function test_nodejs_image() {
 function test_container_push() {
   cd "${ROOT}"
   clear_docker
-  docker run -d -p 5000:5000 --name registry registry:2
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/docker:push_test
   # run here file_test targets to verify test outputs of push_test
+
+  docker stop -t 0 $cid
 }
 
+# Test container push where the local registry requires htpsswd authentication
+function test_container_push_with_auth() {
+  cd "${ROOT}"
+  clear_docker
+  config_dir="${ROOT}/testing/docker-config"
+  docker_run_opts=" --rm -d -p 5000:5000 --name registry"
+  # Mount the registry configuration
+  docker_run_opts+=" -v $config_dir/config.yml:/etc/docker/registry/config.yml"
+  # Mount the HTTP password file
+  docker_run_opts+=" -v $config_dir/htpasswd:/.htpasswd"
+  # Lauch the local registry that requires authentication
+  cid=$(docker run $docker_run_opts registry:2)
+
+  # run here file_test targets to verify test outputs of push_test
+
+  # Run the container_push test in the Bazel workspace that configured
+  # the docker toolchain rule to use authentication
+  # Inject the location of the docker configuration directory into the
+  # which will be used to configure the authentication configuration in the
+  # docker toolchain rule
+  cat > ${ROOT}/testing/custom_toolchain_auth/def.bzl <<EOF
+client_config="${config_dir}"
+EOF
+  cd "${ROOT}/testing/custom_toolchain_auth"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting authenticated container_push..."
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test)" "localhost:5000/docker/test:test was published"
+  bazel clean
+
+  # Run the container_push test in the Bazel workspace that uses the default
+  # configured docker toolchain. The default configuration doesn't setup
+  # authentication and this should fail
+  cd "${ROOT}/testing/default_toolchain"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting unauthenticated container_push..."
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test  2>&1)" "Error publishing localhost:5000/docker/test:test"
+  bazel clean
+
+  docker stop -t 0 $cid
+}
+
+test_container_push_with_auth
+exit 0
 test_top_level
 test_bazel_build_then_run_docker_build_clean
 test_bazel_run_docker_build_clean
