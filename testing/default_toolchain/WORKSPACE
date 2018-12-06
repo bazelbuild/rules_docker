@@ -1,4 +1,4 @@
-workspace(name="e2e_testing")
+workspace(name = "e2e_testing")
 
 # Placeholder repository definition to import rules_docker. To be replaced
 # with real path on bazel invocation using --override_repository
@@ -7,9 +7,11 @@ local_repository(
     path = "replace/this/path",
 )
 
-load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
-    docker_toolchain_configure="toolchain_configure"
+load(
+    "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure = "toolchain_configure",
 )
+
 docker_toolchain_configure(name = "docker_config")
 
 load(
