@@ -7,6 +7,9 @@ platforms:
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    test_flags:
+    - "--action_env=PATH"
   ubuntu1604:
     test_targets:
     # We are running the skipped targets remotely only.
@@ -14,13 +17,22 @@ platforms:
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    test_flags:
+    - "--action_env=PATH"
   macos:
     build_targets:
     - "..."
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    build_flags:
+    - "--action_env=PATH"
     test_targets:
     - "--"
     - "..."
     - "-//tests/docker/..."
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    test_flags:
+    - "--action_env=PATH"
   # We are selecting to test only the targets that build on RBE
   # because the default image does not support `docker`.
   rbe_ubuntu1604:
