@@ -19,6 +19,7 @@ DockerToolchainInfo = provider(
     doc = "Docker toolchain rule parameters",
     fields = {
         "tool_path": "Path to the docker executable",
+        "client_config": """"A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.""",
     },
 )
 
@@ -26,6 +27,7 @@ def _docker_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         info = DockerToolchainInfo(
             tool_path = ctx.attr.tool_path,
+            client_config = ctx.attr.client_config,
         ),
     )
     return [toolchain_info]
@@ -38,21 +40,36 @@ docker_toolchain = rule(
         "tool_path": attr.string(
             doc = "Path to the docker binary",
         ),
+        "client_config": attr.string(
+            default = "",
+            doc = """"A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.""",
+        ),
     },
 )
 
 def _toolchain_configure_impl(repository_ctx):
     tool_path = repository_ctx.which("docker")
+
+    # If client_config is not set we need to pass an empty string to the
+    # template.
+    client_config = repository_ctx.attr.client_config or ""
     repository_ctx.template(
         "BUILD",
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{DOCKER_TOOL}": "%s" % tool_path,
+            "%{DOCKER_CONFIG}": "%s" % client_config,
         },
         False,
     )
 
 # Repository rule to generate a docker_toolchain target
 toolchain_configure = repository_rule(
+    attrs = {
+        "client_config": attr.string(
+            mandatory = False,
+            doc = "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
+        ),
+    },
     implementation = _toolchain_configure_impl,
 )

@@ -97,6 +97,13 @@ def _impl(ctx):
         repository = repository,
         tag = tag,
     )]
+
+    # If the docker toolchain is configured to use a custom client config
+    # directory, use that instead
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+    if toolchain_info.client_config != "":
+        pusher_args += [" --client-config-dir {}".format(toolchain_info.client_config)]
+
     ctx.template_action(
         template = ctx.file._tag_tpl,
         substitutions = {
@@ -158,6 +165,7 @@ container_push = rule(
         ),
     }.items() + _layer_tools.items()),
     executable = True,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
     outputs = {
         "digest": "%{name}.digest",
