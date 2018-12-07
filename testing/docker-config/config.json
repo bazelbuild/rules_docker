@@ -1,0 +1,7 @@
+{
+	"auths": {
+		"localhost:5000": {
+			"auth": "Zm9vOmZvbw=="
+		}
+	}
+}
