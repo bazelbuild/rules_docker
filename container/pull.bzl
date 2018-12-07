@@ -42,6 +42,10 @@ _container_pull_attrs = {
     "architecture": attr.string(default = "amd64"),
     "cpu_variant": attr.string(),
     "platform_features": attr.string_list(),
+    "docker_client_config": attr.string(
+        doc = "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
+        mandatory = False,
+    ),
     "_puller": attr.label(
         executable = True,
         default = Label("@puller//file:downloaded"),
@@ -87,6 +91,10 @@ exports_files(["digest"])
         "--features",
         " ".join(repository_ctx.attr.platform_features),
     ]
+
+    # Use the custom docker client config directory if specified.
+    if repository_ctx.attr.docker_client_config != "":
+        args += ["--client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
 
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
     if repository_ctx.attr.digest:

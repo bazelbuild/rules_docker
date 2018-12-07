@@ -19,7 +19,7 @@ DockerToolchainInfo = provider(
     doc = "Docker toolchain rule parameters",
     fields = {
         "tool_path": "Path to the docker executable",
-        "client_config": """"A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.""",
+        "client_config": "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
     },
 )
 
@@ -42,7 +42,7 @@ docker_toolchain = rule(
         ),
         "client_config": attr.string(
             default = "",
-            doc = """"A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.""",
+            doc = "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
         ),
     },
 )
@@ -62,6 +62,18 @@ def _toolchain_configure_impl(repository_ctx):
         },
         False,
     )
+
+    # Generate a custom variant authenticated version of the repository rule
+    # container_push is a custom docker client config directory was specified.
+    if client_config != "":
+        repository_ctx.template(
+            "pull.bzl",
+            Label("@io_bazel_rules_docker//toolchains/docker:pull.bzl.tpl"),
+            {
+                "%{docker_client_config}": "%s" % client_config,
+            },
+            False,
+        )
 
 # Repository rule to generate a docker_toolchain target
 toolchain_configure = repository_rule(

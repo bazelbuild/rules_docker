@@ -1027,6 +1027,30 @@ container_pull(
 
 This can then be referenced in `BUILD` files as `@gitlab//image`.
 
+### container_pull (Custom client configuration)
+
+If you specified a docker client directory using the "client_config" attribute
+to the docker toolchain configuration described <a href="#setup">here</a>, you
+can use a container_pull that uses the authentication credentials from the
+specified docker client directory as follows:
+
+In `WORKSPACE`:
+
+```python
+# Load the custom version of container_pull created by the docker toolchain
+# configuration.
+load("@docker_config//:pull.bzl", authenticated_container_pull="container_pull")
+
+authenticated_container_pull(
+    name = "gitlab",
+    registry = "registry.gitlab.com",
+    repository = "username/project/image",
+    tag = "tag",
+)
+```
+
+This can then be referenced in `BUILD` files as `@gitlab//image`.
+
 **NOTE:** This will only work on systems with Python >2.7.6
 
 ## Updating the `distroless` base images.
@@ -1171,6 +1195,17 @@ use with `container_image`'s `base` attribute.
            <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
            manifest list</a>, the desired features. For example, this may
            include CPU features such as <code>["sse4", "aes"]</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>docker_client_config</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>Specifies the directory to look for the docker client configuration. Don't use this directly.
+           Specify the docker configuration directory using a custom docker toolchain configuration. Look
+           for the client_config attribute in docker_toolchain_configure <a href="#setup">here</a> for
+           details. See <a href="#container_pull-custom-client-configuration">here</a> for an example on
+           how to use container_pull after configuring the docker toolchain</p>
       </td>
     </tr>
   </tbody>
