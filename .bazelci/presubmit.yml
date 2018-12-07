@@ -52,6 +52,7 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    - "//tests/contrib:test_compare_ids_test_diff_ids_fails"
     test_flags:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
