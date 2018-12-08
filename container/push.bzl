@@ -87,7 +87,10 @@ def _impl(ctx):
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
     repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
     tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
-    stamp_inputs = [ctx.info_file, ctx.version_file] if ctx.attr.stamp else []
+    if ctx.attr.stamp:
+        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
+    stamp = "{" in tag or "{" in registry or "{" in repository
+    stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
     pusher_args += [
         "--stamp-info-file=%s" % _get_runfile_path(ctx, f)
         for f in stamp_inputs
@@ -122,7 +125,7 @@ def _impl(ctx):
             registry = registry,
             repository = repository,
             tag = tag,
-            stamp = ctx.attr.stamp,
+            stamp = stamp,
             stamp_inputs = stamp_inputs,
             digest = ctx.outputs.digest,
         ),
