@@ -29,6 +29,8 @@ load(
 def groovy_image(
         name,
         base = None,
+        launcher = None,
+        launcher_args = [],
         main_class = None,
         srcs = [],
         deps = [],
@@ -86,6 +88,8 @@ def groovy_image(
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        launcher = launcher,
+        launcher_args = launcher_args,
     )
 
 def repositories():

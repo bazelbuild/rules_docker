@@ -30,7 +30,15 @@ load("@io_bazel_rules_d//d:d.bzl", "d_binary")
 def repositories():
     _repositories()
 
-def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+def d_image(
+        name,
+        base = None,
+        launcher = None,
+        launcher_args = [],
+        deps = [],
+        layers = [],
+        binary = None,
+        **kwargs):
     """Constructs a container image wrapping a d_binary target.
 
   Args:
@@ -63,4 +71,6 @@ def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        launcher = launcher,
+        launcher_args = launcher_args,
     )

@@ -86,6 +86,9 @@ parser.add_argument('--operating_system', action='store', default='linux',
                     choices=['linux', 'windows'],
                     help=('Operating system to create docker image for, e.g. {linux}'))
 
+parser.add_argument('--entrypoint_prefix', action='append', default=[],
+                    help='Prefix the "Entrypoint" with the specified arguments.')
+
 _PROCESSOR_ARCHITECTURE = 'amd64'
 
 def KeyValueToDict(pair):
@@ -194,6 +197,10 @@ def main():
   if ('config' in output and 'Entrypoint' in output['config'] and
       args.null_entrypoint == "True"):
     del (output['config']['Entrypoint'])
+
+  if args.entrypoint_prefix:
+    output['config']['Entrypoint'] = (args.entrypoint_prefix +
+                                      output['config'].get('Entrypoint', []))
 
   with open(args.output, 'w') as fp:
     json.dump(output, fp, sort_keys=True)

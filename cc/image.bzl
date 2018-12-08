@@ -57,7 +57,15 @@ DEFAULT_BASE = select({
     "//conditions:default": "@cc_image_base//image",
 })
 
-def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+def cc_image(
+        name,
+        base = None,
+        launcher = None,
+        launcher_args = [],
+        deps = [],
+        layers = [],
+        binary = None,
+        **kwargs):
     """Constructs a container image wrapping a cc_binary target.
 
   Args:
@@ -90,4 +98,6 @@ def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        launcher = launcher,
+        launcher_args = launcher_args,
     )

@@ -57,7 +57,14 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py3_image_base//image",
 })
 
-def py3_image(name, base = None, deps = [], layers = [], **kwargs):
+def py3_image(
+        name,
+        base = None,
+        launcher = None,
+        launcher_args = [],
+        deps = [],
+        layers = [],
+        **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
@@ -93,4 +100,6 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        launcher = launcher,
+        launcher_args = launcher_args,
     )

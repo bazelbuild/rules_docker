@@ -250,6 +250,8 @@ jar_app_layer = rule(
 def java_image(
         name,
         base = None,
+        launcher = None,
+        launcher_args = [],
         main_class = None,
         deps = [],
         runtime_deps = [],
@@ -311,6 +313,8 @@ def java_image(
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        launcher = launcher,
+        launcher_args = launcher_args,
     )
 
 def _war_dep_layer_impl(ctx):
@@ -388,7 +392,14 @@ _war_app_layer = rule(
     implementation = _war_app_layer_impl,
 )
 
-def war_image(name, base = None, deps = [], layers = [], **kwargs):
+def war_image(
+        name,
+        base = None,
+        launcher = None,
+        launcher_args = [],
+        deps = [],
+        layers = [],
+        **kwargs):
     """Builds a container image overlaying the java_library as an exploded WAR.
 
   TODO(mattmoor): For `bazel run` of this to be useful, we need to be able
@@ -419,4 +430,6 @@ def war_image(name, base = None, deps = [], layers = [], **kwargs):
         jar_layers = layers,
         visibility = visibility,
         tags = tags,
+        launcher = launcher,
+        launcher_args = launcher_args,
     )
