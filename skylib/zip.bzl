@@ -17,9 +17,10 @@ def gzip(ctx, artifact):
   """Create an action to compute the gzipped artifact."""
   out = ctx.new_file(artifact.basename + ".gz")
   ctx.action(
-      command = 'gzip -n < %s > %s' % (artifact.path, out.path),
+      command = '%s -n < %s > %s' % (ctx.executable.gzip.path, artifact.path, out.path),
       inputs = [artifact],
       outputs = [out],
+      tools = [ctx.executable.gzip],
       mnemonic = "GZIP")
   return out
 
@@ -27,9 +28,10 @@ def gunzip(ctx, artifact):
   """Create an action to compute the gunzipped artifact."""
   out = ctx.new_file(artifact.basename + ".nogz")
   ctx.action(
-      command = 'gunzip < %s > %s' % (artifact.path, out.path),
+      command = '%s -d < %s > %s' % (ctx.executable.gzip.path, artifact.path, out.path),
       inputs = [artifact],
       outputs = [out],
+      tools = [ctx.executable.gzip],
       mnemonic = "GUNZIP")
   return out
 
