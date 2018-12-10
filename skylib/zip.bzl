@@ -21,6 +21,7 @@ def gzip(ctx, artifact):
       inputs = [artifact],
       outputs = [out],
       tools = [ctx.executable.gzip],
+      execution_requirements={"no-cache": "1"},
       mnemonic = "GZIP")
   return out
 
@@ -32,6 +33,7 @@ def gunzip(ctx, artifact):
       inputs = [artifact],
       outputs = [out],
       tools = [ctx.executable.gzip],
+      execution_requirements={"no-cache": "1"},
       mnemonic = "GUNZIP")
   return out
 
