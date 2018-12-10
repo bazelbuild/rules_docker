@@ -448,7 +448,7 @@ function test_container_pull_with_auth() {
   echo "Attempting authenticated container pull and push..."
   EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image)" "Loaded image"
 
-  # Run the container_pull test in the Bazel workspace that uses the default
+  # Run the container_pull test in the Bazel WORKSPACE that uses the default
   # configured docker toolchain. The default configuration doesn't setup
   # authentication and this should fail.
   cd "${ROOT}/testing/default_toolchain"

@@ -43,7 +43,10 @@ _container_pull_attrs = {
     "cpu_variant": attr.string(),
     "platform_features": attr.string_list(),
     "docker_client_config": attr.string(
-        doc = "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
+        doc = "A custom directory for the docker client config.json. " +
+              "If DOCKER_CONFIG is not specified, the value of the " +
+              "DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG" +
+              " is not defined, the home directory will be used.",
         mandatory = False,
     ),
     "_puller": attr.label(

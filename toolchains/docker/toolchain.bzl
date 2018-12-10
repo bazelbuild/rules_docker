@@ -19,7 +19,11 @@ DockerToolchainInfo = provider(
     doc = "Docker toolchain rule parameters",
     fields = {
         "tool_path": "Path to the docker executable",
-        "client_config": "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
+        "client_config": "A custom directory for the docker client " +
+                         "config.json. If DOCKER_CONFIG is not specified, " +
+                         "the value of the DOCKER_CONFIG environment variable" +
+                         " will be used. DOCKER_CONFIG is not defined, the" +
+                         " home directory will be used.",
     },
 )
 
@@ -42,7 +46,11 @@ docker_toolchain = rule(
         ),
         "client_config": attr.string(
             default = "",
-            doc = "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
+            doc = "A custom directory for the docker client config.json. If " +
+                  "DOCKER_CONFIG is not specified, the value of the " +
+                  "DOCKER_CONFIG environment variable will be used." +
+                  " DOCKER_CONFIG is not defined, the home directory will be" +
+                  " used.",
         ),
     },
 )
@@ -64,7 +72,7 @@ def _toolchain_configure_impl(repository_ctx):
     )
 
     # Generate a custom variant authenticated version of the repository rule
-    # container_push is a custom docker client config directory was specified.
+    # container_push if a custom docker client config directory was specified.
     if client_config != "":
         repository_ctx.template(
             "pull.bzl",
@@ -80,7 +88,11 @@ toolchain_configure = repository_rule(
     attrs = {
         "client_config": attr.string(
             mandatory = False,
-            doc = "A custom directory for the docker client config.json. If left unspecified, the value of the DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG is not defined, the home directory will be used.",
+            doc = "A custom directory for the docker client " +
+                  "config.json. If DOCKER_CONFIG is not specified, the value" +
+                  " of the DOCKER_CONFIG environment variable will be used." +
+                  " DOCKER_CONFIG is not defined, the home directory will be" +
+                  " used.",
         ),
     },
     implementation = _toolchain_configure_impl,

@@ -1037,6 +1037,18 @@ specified docker client directory as follows:
 In `WORKSPACE`:
 
 ```python
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+
+# Configure the docker toolchain.
+docker_toolchain_configure(
+  name = "docker_config",
+  # Path to the directory which has a custom docker client config.json with
+  # authentication credentials for registry.gitlab.com (used in this example).
+  client_config="/path/to/docker/client/config",
+)
+
 # Load the custom version of container_pull created by the docker toolchain
 # configuration.
 load("@docker_config//:pull.bzl", authenticated_container_pull="container_pull")
@@ -1203,9 +1215,13 @@ use with `container_image`'s `base` attribute.
         <p><code>string; optional</code></p>
         <p>Specifies the directory to look for the docker client configuration. Don't use this directly.
            Specify the docker configuration directory using a custom docker toolchain configuration. Look
-           for the client_config attribute in docker_toolchain_configure <a href="#setup">here</a> for
+           for the `client_config` attribute in `docker_toolchain_configure` <a href="#setup">here</a> for
            details. See <a href="#container_pull-custom-client-configuration">here</a> for an example on
-           how to use container_pull after configuring the docker toolchain</p>
+           how to use `container_pull` after configuring the docker toolchain</p>
+        <p>When left unspecified (ie not set explicitly or set by the docker toolchain), docker will use
+        the directory specified via the DOCKER_CONFIG environment variable. If DOCKER_CONFIG isn't set,
+        docker falls back to $HOME/.docker.
+        </p>
       </td>
     </tr>
   </tbody>
