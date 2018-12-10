@@ -1215,9 +1215,9 @@ use with `container_image`'s `base` attribute.
         <p><code>string; optional</code></p>
         <p>Specifies the directory to look for the docker client configuration. Don't use this directly.
            Specify the docker configuration directory using a custom docker toolchain configuration. Look
-           for the `client_config` attribute in `docker_toolchain_configure` <a href="#setup">here</a> for
+           for the <code>client_config</code> attribute in <code>docker_toolchain_configure</code> <a href="#setup">here</a> for
            details. See <a href="#container_pull-custom-client-configuration">here</a> for an example on
-           how to use `container_pull` after configuring the docker toolchain</p>
+           how to use <code>container_pull</code> after configuring the docker toolchain</p>
         <p>When left unspecified (ie not set explicitly or set by the docker toolchain), docker will use
         the directory specified via the DOCKER_CONFIG environment variable. If DOCKER_CONFIG isn't set,
         docker falls back to $HOME/.docker.
