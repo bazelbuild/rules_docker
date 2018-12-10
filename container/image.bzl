@@ -131,6 +131,7 @@ def _build_layer(ctx, files=None, file_map=None, empty_files=None,
       inputs = files + file_map.values() + tars + debs + [arg_file],
       outputs = [layer],
       use_default_shell_env=True,
+      execution_requirements={"no-cache": "1"},
       mnemonic="ImageLayer"
   )
   return layer, _sha256(ctx, layer)

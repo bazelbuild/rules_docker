@@ -85,6 +85,7 @@ def assemble(ctx, images, output, stamp=False):
       arguments = args,
       inputs = inputs,
       outputs = [output],
+      execution_requirements={"no-cache": "1"},
       mnemonic = "JoinLayers"
   )
 

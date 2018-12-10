@@ -52,6 +52,7 @@ def _impl(ctx):
       inputs = blobsums + blobs + uncompressed_blobs + [image["config"]] +
                legacy_files + diff_ids,
       outputs = [ctx.outputs.filesystem, ctx.outputs.metadata],
+      execution_requirements={"no-cache": "1"},
       use_default_shell_env=True,
       mnemonic="Flatten"
   )
