@@ -42,3 +42,10 @@ container_pull(
     registry = "gcr.io",
     repository = "distroless/base",
 )
+
+container_pull(
+    name = "local_pull",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+)
