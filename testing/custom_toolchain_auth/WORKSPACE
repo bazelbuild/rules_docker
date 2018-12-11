@@ -50,3 +50,15 @@ container_pull(
     registry = "gcr.io",
     repository = "distroless/base",
 )
+
+load(
+    "@docker_config//:pull.bzl",
+    authenticated_local_pull = "container_pull",
+)
+
+authenticated_local_pull(
+    name = "local_pull",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+)

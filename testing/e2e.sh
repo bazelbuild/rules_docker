@@ -386,10 +386,12 @@ function test_container_push() {
   docker stop -t 0 $cid
 }
 
-# Test container push where the local registry requires htpsswd authentication
-function test_container_push_with_auth() {
+# Launch a private docker registry at localhost:5000 that requires a basic
+# htpasswd authentication with credentials at docker-config/htpasswd and needs
+# the docker client to be using the authentication from
+# docker-config/config.json.
+function launch_private_registry_with_auth() {
   cd "${ROOT}"
-  clear_docker
   config_dir="${ROOT}/testing/docker-config"
   docker_run_opts=" --rm -d -p 5000:5000 --name registry"
   # Mount the registry configuration
@@ -397,18 +399,26 @@ function test_container_push_with_auth() {
   # Mount the HTTP password file
   docker_run_opts+=" -v $config_dir/htpasswd:/.htpasswd"
   # Lauch the local registry that requires authentication
-  cid=$(docker run $docker_run_opts registry:2)
+  docker run $docker_run_opts registry:2
+
+  # Inject the location of the docker configuration directory into the bazel
+  # workspace which will be used to configure the authentication used by the
+  # docker toolchain in container_push.
+  config_dir="${ROOT}/testing/docker-config"
+  cat > ${ROOT}/testing/custom_toolchain_auth/def.bzl <<EOF
+client_config="${config_dir}"
+EOF
+}
+
+# Test container push where the local registry requires htpsswd authentication
+function test_container_push_with_auth() {
+  clear_docker
+  launch_private_registry_with_auth
 
   # run here file_test targets to verify test outputs of push_test
 
   # Run the container_push test in the Bazel workspace that configured
   # the docker toolchain rule to use authentication.
-  # Inject the location of the docker configuration directory into the bazel
-  # workspace which will be used to configure the authentication used by the
-  # docker toolchain in container_push.
-  cat > ${ROOT}/testing/custom_toolchain_auth/def.bzl <<EOF
-client_config="${config_dir}"
-EOF
   cd "${ROOT}/testing/custom_toolchain_auth"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting authenticated container_push..."
@@ -423,11 +433,32 @@ EOF
   echo "Attempting unauthenticated container_push..."
   EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test  2>&1)" "Error publishing localhost:5000/docker/test:test"
   bazel clean
+}
 
-  docker stop -t 0 $cid
+function test_container_pull_with_auth() {
+  clear_docker
+  launch_private_registry_with_auth
+
+  cd "${ROOT}/testing/custom_toolchain_auth"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  # Remove the old image if it exists
+  docker rmi bazel/image:image || true
+  # Push the locally built container to the private repo
+  bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test
+  echo "Attempting authenticated container pull and push..."
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image)" "Loaded image"
+
+  # Run the container_pull test in the Bazel WORKSPACE that uses the default
+  # configured docker toolchain. The default configuration doesn't setup
+  # authentication and this should fail.
+  cd "${ROOT}/testing/default_toolchain"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting unauthenticated container_pull..."
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image 2>&1)" "Error pulling and saving image localhost:5000/docker/test:test"
 }
 
 test_container_push_with_auth
+test_container_pull_with_auth
 test_top_level
 test_bazel_build_then_run_docker_build_clean
 test_bazel_run_docker_build_clean

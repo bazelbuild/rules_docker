@@ -1023,6 +1023,42 @@ container_pull(
 
 This can then be referenced in `BUILD` files as `@gitlab//image`.
 
+### container_pull (Custom client configuration)
+
+If you specified a docker client directory using the "client_config" attribute
+to the docker toolchain configuration described <a href="#setup">here</a>, you
+can use a container_pull that uses the authentication credentials from the
+specified docker client directory as follows:
+
+In `WORKSPACE`:
+
+```python
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+
+# Configure the docker toolchain.
+docker_toolchain_configure(
+  name = "docker_config",
+  # Path to the directory which has a custom docker client config.json with
+  # authentication credentials for registry.gitlab.com (used in this example).
+  client_config="/path/to/docker/client/config",
+)
+
+# Load the custom version of container_pull created by the docker toolchain
+# configuration.
+load("@docker_config//:pull.bzl", authenticated_container_pull="container_pull")
+
+authenticated_container_pull(
+    name = "gitlab",
+    registry = "registry.gitlab.com",
+    repository = "username/project/image",
+    tag = "tag",
+)
+```
+
+This can then be referenced in `BUILD` files as `@gitlab//image`.
+
 **NOTE:** This will only work on systems with Python >2.7.6
 
 ## Updating the `distroless` base images.
@@ -1167,6 +1203,21 @@ use with `container_image`'s `base` attribute.
            <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
            manifest list</a>, the desired features. For example, this may
            include CPU features such as <code>["sse4", "aes"]</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>docker_client_config</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>Specifies the directory to look for the docker client configuration. Don't use this directly.
+           Specify the docker configuration directory using a custom docker toolchain configuration. Look
+           for the <code>client_config</code> attribute in <code>docker_toolchain_configure</code> <a href="#setup">here</a> for
+           details. See <a href="#container_pull-custom-client-configuration">here</a> for an example on
+           how to use <code>container_pull</code> after configuring the docker toolchain</p>
+        <p>When left unspecified (ie not set explicitly or set by the docker toolchain), docker will use
+        the directory specified via the DOCKER_CONFIG environment variable. If DOCKER_CONFIG isn't set,
+        docker falls back to $HOME/.docker.
+        </p>
       </td>
     </tr>
   </tbody>
