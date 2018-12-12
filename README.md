@@ -200,7 +200,8 @@ at present for doing this.
 
 ### Stamping
 
-The first option is to use stamping.
+The first option is to use stamping. Stamping is enabled when a supported
+attribute contains a python format placeholder (eg `{BUILD_USER}`).
 
 ```python
 # A common pattern when users want to avoid trampling
