@@ -163,6 +163,11 @@ Args:
                      multi-platform manifest list.
 """
 
+pull = struct(
+    attrs = _container_pull_attrs,
+    implementation = _impl,
+)
+
 container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,
