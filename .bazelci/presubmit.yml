@@ -24,7 +24,6 @@ platforms:
     test_targets:
     - //tests/docker:deb_image_with_dpkgs_test
     - //tests/docker:test_digest_output1
-    test_flags:
   rbe_ubuntu1604:
     build_targets:
     - "--"
