@@ -22,19 +22,11 @@ platforms:
     - "--action_env=PATH"
   macos:
     build_targets:
-    - "..."
-    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
-    build_flags:
-    - "--action_env=PATH"
+    - "//tests/docker:test_digest_output1"
     test_targets:
-    - "--"
-    - "..."
-    - "-//tests/docker/..."
-    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    - "//tests/docker:test_digest_output1"
     test_flags:
-    - "--action_env=PATH"
-  # We are selecting to test only the targets that build on RBE
-  # because the default image does not support `docker`.
+    - "--action_env=PATH"    
   rbe_ubuntu1604:
     build_targets:
     - "--"
