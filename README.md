@@ -1634,7 +1634,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
           Deprecated: A list of debian packages that will be extracted in the Docker image.
           Note that this doesn't actually install the packages. Installation needs apt
           or apt-get which need to be executed within a running container which
-          container_image can't do._
+          <code>container_image</code> can't do.
         </p>
       </td>
     </tr>
