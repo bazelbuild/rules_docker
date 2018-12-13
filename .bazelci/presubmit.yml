@@ -22,8 +22,8 @@ platforms:
     - "--action_env=PATH"
   macos:
     test_targets:
-    - //tests/docker:deb_image_with_dpkgs_test
-    - //tests/docker:test_digest_output1
+    - "//tests/docker:deb_image_with_dpkgs_test"
+    - "//tests/docker:test_digest_output1"
   rbe_ubuntu1604:
     build_targets:
     - "--"
