@@ -1629,9 +1629,12 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       <td><code>debs</code></td>
       <td>
         <code>List of files, optional</code>
-        <p>Debian package to install.</p>
+        <p>Debian packages to extract.</p>
         <p>
-          A list of debian packages that will be installed in the Docker image.
+          Deprecated: A list of debian packages that will be extracted in the Docker image.
+          Note that this doesn't actually install the packages. Installation needs apt
+          or apt-get which need to be executed within a running container which
+          container_image can't do._
         </p>
       </td>
     </tr>
