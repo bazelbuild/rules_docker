@@ -181,7 +181,8 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     # args of the form $(location :some_target) are expanded to the path of the underlying file
     args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
-
+    print(ctx.attr.name+"::image.bzl::args::"+str(args))
+    print(ctx.attr.name+"::image.bzl::entrypoint::"+str(entrypoint))
     return _container.image.implementation(
         ctx,
         # We use all absolute paths.
