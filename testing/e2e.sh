@@ -457,6 +457,15 @@ function test_container_pull_with_auth() {
   EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image 2>&1)" "Error pulling and saving image localhost:5000/docker/test:test"
 }
 
+function test_container_push_with_stamp() {
+  cd "${ROOT}"
+  clear_docker
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  bazel run tests/docker:push_stamped_test
+  docker stop -t 0 $cid
+}
+
+test_container_push_with_stamp
 test_container_push_with_auth
 test_container_pull_with_auth
 test_top_level
