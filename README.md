@@ -1801,6 +1801,21 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         syntax, e.g. <code>foo{BUILD_USER}bar</code>.</p>
       </td>
     </tr>
+    <tr>
+      <td><code>launcher</code></td>
+      <td>
+        <p><code>Label; optional</code></p>
+        <p>If present, prefix the image's ENTRYPOINT with this file.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>launcher_args</code></td>
+      <td>
+        <p><code>String list; optional</code></p>
+        <p>Optional arguments for the <code>launcher</code> attribute.
+        Only valid when <code>launcher</code> is specified.</p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
