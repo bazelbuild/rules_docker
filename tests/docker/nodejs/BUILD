@@ -29,11 +29,11 @@ nodejs_image(
 
 nodejs_image(
     name = "nodejs_image_no_args",
+    # this should work without having to set args to empty list
+    args = [""],
     data = ["//testdata:nodejs_image.js"],
     entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
     node_modules = "@npm_deps//:node_modules",
-    # this should work without having to set args to empty list
-    args = [""],
 )
 
 container_test(
