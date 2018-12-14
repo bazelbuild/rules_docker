@@ -43,6 +43,7 @@ def _container_bundle_impl(ctx):
     for unresolved_tag in ctx.attr.images:
         # Allow users to put make variables into the tag name.
         tag = ctx.expand_make_variables("images", unresolved_tag, {})
+
         # If any tag contains python format syntax (which is how users
         # configure stamping), we enable stamping.
         if "{" in tag:

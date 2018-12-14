@@ -89,6 +89,7 @@ def _impl(ctx):
     tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
     if ctx.attr.stamp:
         print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
+
     # If any stampable attr contains python format syntax (which is how users
     # configure stamping), we enable stamping.
     stamp = "{" in tag or "{" in registry or "{" in repository
