@@ -347,6 +347,10 @@ class ImageTest(unittest.TestCase):
         '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
 
   def test_bundle(self):
+    with TestBundleImage('stamped_bundle_test', "example.com/aaaaa{BUILD_USER}:stamped".format(
+        BUILD_USER=os.environ['USER']
+    )) as img:
+        self.assertDigest(img, '31d7d27f5e63516de98a3f67c382b7f86cfa1000d75c04a9e04c136162daa98b')
     with TestBundleImage('bundle_test', 'docker.io/ubuntu:latest') as img:
       self.assertDigest(img, '813cb4af1c3f73cc2b5f837a61dca6a62335b87e5cd762e780286ca99f71ac83')
       self.assertEqual(1, len(img.fs_layers()))

@@ -37,9 +37,17 @@ def _container_bundle_impl(ctx):
 
     images = {}
     runfiles = []
+    if ctx.attr.stamp:
+        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
+    stamp = False
     for unresolved_tag in ctx.attr.images:
         # Allow users to put make variables into the tag name.
         tag = ctx.expand_make_variables("images", unresolved_tag, {})
+
+        # If any tag contains python format syntax (which is how users
+        # configure stamping), we enable stamping.
+        if "{" in tag:
+            stamp = True
 
         target = ctx.attr.images[unresolved_tag]
 
@@ -54,21 +62,19 @@ def _container_bundle_impl(ctx):
         ctx,
         images,
         ctx.outputs.executable,
-        stamp = ctx.attr.stamp,
+        stamp = stamp,
     )
-    _assemble_image(ctx, images, ctx.outputs.out, stamp = ctx.attr.stamp)
+    _assemble_image(ctx, images, ctx.outputs.out, stamp = stamp)
 
-    stamp_files = []
-    if ctx.attr.stamp:
-        stamp_files = [ctx.info_file, ctx.version_file]
+    stamp_files = [ctx.info_file, ctx.version_file] if stamp else []
 
     return struct(
         container_images = images,
-        stamp = ctx.attr.stamp,
+        stamp = stamp,
         providers = [
             BundleInfo(
                 container_images = images,
-                stamp = ctx.attr.stamp,
+                stamp = stamp,
             ),
             DefaultInfo(
                 files = depset(),

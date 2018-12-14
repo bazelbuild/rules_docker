@@ -200,7 +200,8 @@ at present for doing this.
 
 ### Stamping
 
-The first option is to use `stamp = True`.
+The first option is to use stamping. Stamping is enabled when a supported
+attribute contains a python format placeholder (eg `{BUILD_USER}`).
 
 ```python
 # A common pattern when users want to avoid trampling
@@ -214,10 +215,6 @@ container_push(
   registry = "gcr.io",
   repository = "my-project/my-image",
   tag = "{BUILD_USER}",
-  creation_time = "{BUILD_TIMESTAMP}",
-
-  # Trigger stamping.
-  stamp = True,
 )
 ```
 

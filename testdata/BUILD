@@ -377,7 +377,6 @@ docker_push(
     image = ":link_with_files_base",
     registry = "gcr.io",
     repository = "convoy-adapter/bazel-oci-test",
-    stamp = True,
     tag = "{BUILD_USER}",
 )
 
@@ -388,7 +387,6 @@ oci_push(
     image = ":link_with_files_base",
     registry = "gcr.io",
     repository = "convoy-adapter/bazel-oci-test",
-    stamp = True,
     tag = "{BUILD_USER}",
 )
 
@@ -431,7 +429,6 @@ container_bundle(
         # Pad username so that it is long enough.
         "example.com/aaaaa{BUILD_USER}:stamped": ":with_user",
     },
-    stamp = True,
 )
 
 # Generate a dummy debian package with a test/ directory
@@ -481,7 +478,6 @@ container_bundle(
         "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
         "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
     },
-    stamp = True,
 )
 
 docker_pushall(
