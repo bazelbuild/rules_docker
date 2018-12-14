@@ -105,9 +105,9 @@ def build_layer(
         if ":" in k:
             fail("The source of a symlink cannot container ':', got: %s" % k)
     args += ["--link=%s:%s" % (k, symlinks[k]) for k in symlinks]
-    arg_file = ctx.new_file(name + "-layer.args")
-    ctx.file_action(arg_file, "\n".join(args))
-    ctx.action(
+    arg_file = ctx.actions.declare_file(name + "-layer.args")
+    ctx.actions.write(arg_file, "\n".join(args))
+    ctx.actions.run(
         executable = build_layer_exec,
         arguments = ["--flagfile=" + arg_file.path],
         inputs = files + file_map.values() + tars + debs + [arg_file],

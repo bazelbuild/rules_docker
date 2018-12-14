@@ -111,8 +111,8 @@ def _image_config(
         null_entrypoint = False,
         null_cmd = False):
     """Create the configuration for a new container image."""
-    config = ctx.new_file(name + "." + layer_name + ".config")
-    manifest = ctx.new_file(name + "." + layer_name + ".manifest")
+    config = ctx.actions.declare_file(name + "." + layer_name + ".config")
+    manifest = ctx.actions.declare_file(name + "." + layer_name + ".manifest")
 
     label_file_dict = _string_to_label(
         ctx.files.label_files,
@@ -186,7 +186,7 @@ def _image_config(
         args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
         inputs += stamp_inputs
 
-    ctx.action(
+    ctx.actions.run(
         executable = ctx.executable.create_image_config,
         arguments = args,
         inputs = inputs,

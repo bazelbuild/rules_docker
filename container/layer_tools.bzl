@@ -19,9 +19,9 @@ load(
 )
 
 def _extract_layers(ctx, name, artifact):
-    config_file = ctx.new_file(name + "." + artifact.basename + ".config")
-    manifest_file = ctx.new_file(name + "." + artifact.basename + ".manifest")
-    ctx.action(
+    config_file = ctx.actions.declare_file(name + "." + artifact.basename + ".config")
+    manifest_file = ctx.actions.declare_file(name + "." + artifact.basename + ".manifest")
+    ctx.actions.run(
         executable = ctx.executable.extract_config,
         arguments = [
             "--tarball",
@@ -99,7 +99,7 @@ def assemble(ctx, images, output, stamp = False):
     if stamp:
         args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
-    ctx.action(
+    ctx.actions.run(
         executable = ctx.executable.join_layers,
         arguments = args,
         inputs = inputs,
@@ -178,7 +178,7 @@ def incremental_load(
                 "docker run %s %s" % (run_flags, tag_reference),
             ]
 
-    ctx.template_action(
+    ctx.actions.expand_template(
         template = ctx.file.incremental_load_template,
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
@@ -194,7 +194,7 @@ def incremental_load(
             "%{run_statements}": "\n".join(run_statements),
         },
         output = output,
-        executable = True,
+        is_executable = True,
     )
 
 tools = {

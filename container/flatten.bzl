@@ -42,7 +42,7 @@ def _impl(ctx):
     diff_id_args = ["--diff_id=%s" % f.path for f in diff_ids]
     config_arg = "--config=%s" % image["config"].path
 
-    ctx.action(
+    ctx.actions.run(
         executable = ctx.executable._flattener,
         arguments = legacy_base_arg + digest_args + layer_args + diff_id_args +
                     uncompressed_layer_args + [
