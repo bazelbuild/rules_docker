@@ -23,6 +23,8 @@ platforms:
   macos:
     build_targets:
     - "//tests/docker:test_digest_output1"
+    build_flags:
+    - "--action_env=PATH"
     test_targets:
     - "//tests/docker:test_digest_output1"
     test_flags:
