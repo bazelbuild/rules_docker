@@ -32,6 +32,7 @@ nodejs_image(
     data = ["//testdata:nodejs_image.js"],
     entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
     node_modules = "@npm_deps//:node_modules",
+    # this should work without having to set args to empty list
     args = [""],
 )
 
