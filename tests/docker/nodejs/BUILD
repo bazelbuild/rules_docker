@@ -32,7 +32,7 @@ nodejs_image(
     data = ["//testdata:nodejs_image.js"],
     entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
     node_modules = "@npm_deps//:node_modules",
-    args = [" "],
+    args = [""],
 )
 
 container_test(
