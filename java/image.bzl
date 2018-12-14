@@ -177,7 +177,7 @@ def _jar_app_layer_impl(ctx):
     # Classpaths can grow long and there is a limit on the length of a
     # command line, so mitigate this by always writing the classpath out
     # to a file instead.
-    classpath_file = ctx.new_file(ctx.attr.name + ".classpath")
+    classpath_file = ctx.actions.declare_file(ctx.attr.name + ".classpath")
     ctx.actions.write(classpath_file, classpath)
 
     binary_path = layer_file_path(ctx, ctx.files.binary[0])
