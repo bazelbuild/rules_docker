@@ -67,8 +67,11 @@ load(
     _layer_tools = "tools",
 )
 load(
-    "//container:layer.bzl",
+    "//container:providers.bzl",
     "LayerInfo",
+)
+load(
+    "//container:layer.bzl",
     _layer = "layer",
 )
 load(
