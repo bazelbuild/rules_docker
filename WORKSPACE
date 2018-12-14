@@ -109,9 +109,9 @@ _py_image_repos()
 
 http_archive(
     name = "io_bazel_rules_python",
-    sha256 = "8b32d2dbb0b0dca02e0410da81499eef8ff051dad167d6931a92579e3b2a1d48",
-    strip_prefix = "rules_python-8b5d0683a7d878b28fffe464779c8a53659fc645",
-    urls = ["https://github.com/bazelbuild/rules_python/archive/8b5d0683a7d878b28fffe464779c8a53659fc645.tar.gz"],
+    sha256 = "da960ee6f0e2e08556d0e0c307896b0ea6ebc8d86f50c649ceda361b71df74a1",
+    strip_prefix = "rules_python-f3a6a8d00a51a1f0e6d61bc7065c19fea2b3dd7a",
+    urls = ["https://github.com/bazelbuild/rules_python/archive/f3a6a8d00a51a1f0e6d61bc7065c19fea2b3dd7a.tar.gz"],
 )
 
 load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
@@ -160,9 +160,9 @@ maven_jar(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "50465838809fee66cab66fa20ed3d68c667f663958ede10fbe504a0d18481016",
-    strip_prefix = "rules_scala-5874a2441596fe9a0bf80e167a4d7edd945c221e",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/5874a2441596fe9a0bf80e167a4d7edd945c221e.tar.gz"],
+    sha256 = "83d40e0bc7377e77fa0d32af6c4b276374b4efbcb3120c437e425947cdb3ce38",
+    strip_prefix = "rules_scala-5130b97524684beceba729b9dab1528e2a90cdfb",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/5130b97524684beceba729b9dab1528e2a90cdfb.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -176,9 +176,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "8c28a8f45b6d83cb2e3f3e4851618a429544603ff040a261c48602fabcea7bfc",
-    strip_prefix = "rules_groovy-a95e89c59716c5bc132ebb407f97b173fb2510e7",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/a95e89c59716c5bc132ebb407f97b173fb2510e7.tar.gz"],
+    sha256 = "22669b0379e496555f574612043c6c3f1f6145c18d2697ddd308937d6d96f9ad",
+    strip_prefix = "rules_groovy-cb174f4e7d6b9cbda06d4a0f538214f947747736",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/cb174f4e7d6b9cbda06d4a0f538214f947747736.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -188,8 +188,8 @@ groovy_repositories()
 # For our go_image test.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "ee5fe78fe417c685ecb77a0a725dc9f6040ae5beb44a0ba4ddb55453aad23a8a",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.16.0/rules_go-0.16.0.tar.gz",
+    sha256 = "62ec3496a00445889a843062de9930c228b770218c735eca89c67949cd967c3f",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.16.4/rules_go-0.16.4.tar.gz",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
