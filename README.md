@@ -1802,7 +1802,11 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       <td><code>launcher</code></td>
       <td>
         <p><code>Label; optional</code></p>
-        <p>If present, prefix the image's ENTRYPOINT with this file.</p>
+        <p>If present, prefix the image's ENTRYPOINT with this file.
+        Note that the launcher should be a container-compatible (OS & Arch)
+        single executable file without any runtime dependencies (as none
+        of its runfiles will be included in the image).
+        </p>
       </td>
     </tr>
     <tr>
