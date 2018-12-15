@@ -110,14 +110,14 @@ def _impl(ctx):
     if toolchain_info.client_config != "":
         pusher_args += [" --client-config-dir {}".format(toolchain_info.client_config)]
 
-    ctx.template_action(
+    ctx.actions.expand_template(
         template = ctx.file._tag_tpl,
         substitutions = {
             "%{args}": " ".join(pusher_args),
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
         },
         output = ctx.outputs.executable,
-        executable = True,
+        is_executable = True,
     )
     runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs)
     runfiles = runfiles.merge(ctx.attr._pusher.default_runfiles)

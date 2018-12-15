@@ -27,6 +27,7 @@ load(
     _container = "container",
     _repositories = "repositories",
 )
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
 # Load the resolved digests.
 load(":nodejs.bzl", "DIGESTS")
@@ -92,8 +93,6 @@ _dep_layer = rule(
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _dep_layer_impl,
 )
-
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
 def nodejs_image(
         name,
