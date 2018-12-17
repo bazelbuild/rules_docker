@@ -251,6 +251,12 @@ function test_cc_image_wrapper() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
 }
 
+function test_launcher_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:launcher_image)" "Launched via launcher!"
+}
+
 function test_go_image() {
   cd "${ROOT}"
   clear_docker
@@ -517,3 +523,4 @@ test_rust_image -c dbg
 test_nodejs_image -c opt
 test_nodejs_image -c dbg
 test_container_push
+test_launcher_image
