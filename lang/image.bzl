@@ -196,6 +196,9 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         # we should use the "exec" (list) form of entrypoint.
         entrypoint = entrypoint,
         cmd = args,
+        # If `args` is set to [], None or not set, Docker config will have
+        # a null `Cmd` value.
+        null_cmd = args == [],
     )
 
 _app_layer = rule(

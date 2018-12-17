@@ -16,6 +16,7 @@ package(default_visibility = ["//visibility:public"])
 load("//nodejs:image.bzl", "nodejs_image")
 load("//contrib:test.bzl", "container_test")
 
+# Docker Cmd value should be `["arg0", "arg1"]`.
 nodejs_image(
     name = "nodejs_image",
     args = [
@@ -27,10 +28,36 @@ nodejs_image(
     node_modules = "@npm_deps//:node_modules",
 )
 
+# Docker Cmd value should be `[""]`.
+nodejs_image(
+    name = "nodejs_image_list_with_empty_string_args",
+    args = [""],
+    data = ["//testdata:nodejs_image.js"],
+    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
+    node_modules = "@npm_deps//:node_modules",
+)
+
+# Docker Cmd value should be `null`.
 nodejs_image(
     name = "nodejs_image_no_args",
-    # this should work without having to set args to empty list
-    args = [""],
+    data = ["//testdata:nodejs_image.js"],
+    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
+    node_modules = "@npm_deps//:node_modules",
+)
+
+# Docker Cmd value should be `null`.
+nodejs_image(
+    name = "nodejs_image_empty_list_args",
+    args = [],
+    data = ["//testdata:nodejs_image.js"],
+    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
+    node_modules = "@npm_deps//:node_modules",
+)
+
+# Docker Cmd value should be `null`.
+nodejs_image(
+    name = "nodejs_image_none_args",
+    args = None,
     data = ["//testdata:nodejs_image.js"],
     entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
     node_modules = "@npm_deps//:node_modules",
@@ -43,7 +70,25 @@ container_test(
 )
 
 container_test(
+    name = "nodejs_image_list_with_empty_string_args_test",
+    configs = ["//tests/docker/nodejs/configs:nodejs_image_list_with_empty_string_args.yaml"],
+    image = ":nodejs_image_list_with_empty_string_args",
+)
+
+container_test(
     name = "nodejs_image_no_args_test",
     configs = ["//tests/docker/nodejs/configs:nodejs_image_no_args.yaml"],
     image = ":nodejs_image_no_args",
+)
+
+container_test(
+    name = "nodejs_image_empty_list_args_test",
+    configs = ["//tests/docker/nodejs/configs:nodejs_image_empty_list_args.yaml"],
+    image = ":nodejs_image_empty_list_args",
+)
+
+container_test(
+    name = "nodejs_image_none_args_test",
+    configs = ["//tests/docker/nodejs/configs:nodejs_image_none_args.yaml"],
+    image = ":nodejs_image_none_args",
 )
