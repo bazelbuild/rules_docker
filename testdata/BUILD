@@ -970,6 +970,23 @@ go_image(
     ],
 )
 
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+
+go_binary(
+    name = "launcher",
+    srcs = ["launcher_main.go"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+)
+
+container_image(
+    name = "launcher_image",
+    base = ":go_image",
+    launcher = ":launcher",
+    launcher_args = ["-env=CUSTOM_MESSAGE=Launched via launcher!"],
+)
+
 load("//rust:image.bzl", "rust_image")
 
 rust_image(

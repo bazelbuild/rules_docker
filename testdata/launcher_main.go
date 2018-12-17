@@ -12,18 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package main tells the linter to shut up.
+// This file is used to test the launcher attr of container_image
 package main
 
 import (
-    "fmt"
-    "os"
+	"flag"
+	"fmt"
+	"os"
+	"syscall"
 )
 
 func main() {
-    message := "Hello, world!"
-    if v, ok := os.LookupEnv("CUSTOM_MESSAGE"); ok {
-        message = v
-    }
-    fmt.Println(message)
+	var extraEnv stringSlice
+	flag.Var(&extraEnv, "env", "Append to the environment of the launched binary. May be specified multiple times. (eg --env=VAR_NAME=value)")
+	flag.Parse()
+	envv := append(os.Environ(), extraEnv...)
+	argv := flag.Args()
+	err := syscall.Exec(argv[0], argv, envv)
+	if err != nil {
+		panic(err)
+	}
+}
+
+type stringSlice []string
+
+func (i *stringSlice) String() string {
+	return fmt.Sprintf("%s", *i)
+}
+
+func (i *stringSlice) Set(v string) error {
+	*i = append(*i, v)
+	return nil
 }

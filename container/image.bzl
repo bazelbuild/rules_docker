@@ -186,6 +186,14 @@ def _image_config(
         args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
         inputs += stamp_inputs
 
+    if ctx.attr.launcher_args and not ctx.attr.launcher:
+        fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
+    if ctx.attr.launcher:
+        args += [
+            "--entrypoint_prefix=%s" % x
+            for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
+        ]
+
     ctx.actions.run(
         executable = ctx.executable.create_image_config,
         arguments = args,
@@ -301,6 +309,11 @@ def _impl(
     if ctx.attr.base and ImageInfo in ctx.attr.base:
         legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
         docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
+
+    if ctx.attr.launcher:
+        if not file_map:
+            file_map = {}
+        file_map["/" + ctx.file.launcher.basename] = ctx.file.launcher
 
     # composite a layer from the container_image rule attrs,
     image_layer = _layer.implementation(
@@ -457,6 +470,8 @@ _attrs = dict(_layer.attrs.items() + {
     "layers": attr.label_list(providers = [LayerInfo]),
     "repository": attr.string(default = "bazel"),
     "stamp": attr.bool(default = False),
+    "launcher": attr.label(allow_single_file = True),
+    "launcher_args": attr.string_list(default = []),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
         allow_files = True,
