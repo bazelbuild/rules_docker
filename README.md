@@ -85,22 +85,17 @@ Please see <a href=#go_image-custom-base>go_image (custom base)</a> for an examp
 
 ## Setup
 
-Note: we're improving how `rules_docker` uses toolchains and will have a new release
-soon. Instructions below are for the latest commit, if you want to use the
-latest release (0.5.1) please use the README version at that release.
-See <a href="toolchains/docker/readme.md">Docker Toolchains docs</a>
-for details about ongoing toolchains work.
-
 Add the following to your `WORKSPACE` file to add the external repositories:
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# Download the rules_docker repository at release v0.6.0
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "{sha for latest commit, remove this attr and bazel will print it out as part of the build}",
-    strip_prefix = "rules_docker-{latest commit}",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/{latest commit}.tar.gz"],
+    sha256 = "c0e9d27e6ca307e4ac0122d3dd1df001b9824373fb6fb8627cd2371068e51fef",
+    strip_prefix = "rules_docker-v0.6.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.6.0.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
