@@ -54,7 +54,7 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image", #This image is not present
     "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
     "//conditions:default": "@nodejs_debug_image_base//image",
