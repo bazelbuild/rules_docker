@@ -87,7 +87,7 @@ Please see <a href=#go_image-custom-base>go_image (custom base)</a> for an examp
 
 Note: we're improving how `rules_docker` uses toolchains and will have a new release
 soon. Instructions below are for the latest commit, if you want to use the
-latest release (0.5.1) please use the README version at that release.
+latest release (0.6) please use the README version at that release.
 See <a href="toolchains/docker/readme.md">Docker Toolchains docs</a>
 for details about ongoing toolchains work.
 
@@ -98,7 +98,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_docker",
+    # SHA for v0.6.0 is c0e9d27e6ca307e4ac0122d3dd1df001b9824373fb6fb8627cd2371068e51fef 
     sha256 = "{sha for latest commit, remove this attr and bazel will print it out as part of the build}",
+    # Replace {latest commit} with v0.6.0 for rules_docker release 0.6.0 in the
+    # following two lines.
     strip_prefix = "rules_docker-{latest commit}",
     urls = ["https://github.com/bazelbuild/rules_docker/archive/{latest commit}.tar.gz"],
 )
