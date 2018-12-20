@@ -499,6 +499,51 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata/py_image_library.py',
       ])
 
+  def test_py_image_with_symlinks_in_data(self):
+    with TestImage('py_image_with_symlinks_in_data') as img:
+      # Check the application layer, which is on top.
+      self.assertTopLayerContains(img, [
+        '.',
+        './app',
+        './app/testdata',
+        './app/testdata/py_image_with_symlinks_in_data.binary.runfiles',
+        './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker',
+        './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata',
+        './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py',
+        './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image_with_symlinks_in_data.binary',
+        './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/foo.txt',
+        './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        # TODO(mattmoor): The path normalization for symlinks should match
+        # files to avoid this redundancy.
+        '/app',
+        '/app/testdata',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/foo-symlink.txt',
+        '/app/testdata/py_image_with_symlinks_in_data.binary',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/external',
+      ])
+
+      # Below that, we have a layer that generates symlinks for the library layer.
+      self.assertLayerNContains(img, 1, [
+        '.',
+        '/app',
+        '/app/testdata',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata',
+        '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py',
+      ])
+
+      # Check the library layer, which is two below our application layer.
+      self.assertLayerNContains(img, 2, [
+        '.',
+        './app',
+        './app/io_bazel_rules_docker',
+        './app/io_bazel_rules_docker/testdata',
+        './app/io_bazel_rules_docker/testdata/py_image_library.py',
+      ])
+
   def test_py_image_complex(self):
     with TestImage('py_image_complex') as img:
       # bazel-bin/testdata/py_image_complex-layer.tar
