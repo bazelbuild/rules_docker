@@ -23,6 +23,8 @@ load(
 )
 
 def _impl(ctx):
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+
     config_str = " ".join(["--config $(pwd)/" + c.short_path for c in ctx.files.configs])
 
     if ctx.attr.driver == "tar":
@@ -32,7 +34,9 @@ def _impl(ctx):
 
     else:
         # Since we're always bundling/renaming the image in the macro, this is valid.
-        load_statement = "docker load -i %s" % ctx.file.image_tar.short_path
+        if not toolchain_info.tool_path:
+            fail("docker not found, required when using \"docker\" test driver")
+        load_statement = "%s load -i %s" % (toolchain_info.tool_path, ctx.file.image_tar.short_path)
         image_name = ctx.attr.image_name
 
     quiet_str = "--quiet"
@@ -110,6 +114,7 @@ _container_test = rule(
     },
     executable = True,
     test = True,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
 )
 
