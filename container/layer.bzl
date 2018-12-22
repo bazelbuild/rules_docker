@@ -90,27 +90,30 @@ def build_layer(
     # 'Hives' is unique to Windows Docker images.  It is where per layer registry
     # changes are stored.  rules_docker doesn't support registry deltas, but the
     # directory is required for compatibility on Windows.
+    empty_root_dirs = []
     if (operating_system == "windows"):
         args += ["--root_directory=Files"]
         empty_root_dirs = ["Files", "Hives"]
-        args += ["--empty_root_dir=%s" % f for f in empty_root_dirs or []]
 
-    args += ["--file=%s=%s" % (f.path, _magic_path(ctx, f, layer)) for f in files]
-    args += ["--file=%s=%s" % (f.path, path) for (path, f) in file_map.items()]
-    args += ["--empty_file=%s" % f for f in empty_files or []]
-    args += ["--empty_dir=%s" % f for f in empty_dirs or []]
-    args += ["--tar=" + f.path for f in tars]
-    args += ["--deb=" + f.path for f in debs]
-    for k in symlinks:
-        if ":" in k:
-            fail("The source of a symlink cannot container ':', got: %s" % k)
-    args += ["--link=%s:%s" % (k, symlinks[k]) for k in symlinks]
-    arg_file = ctx.actions.declare_file(name + "-layer.args")
-    ctx.actions.write(arg_file, "\n".join(args))
+    all_files = [struct(src = f.path, dst = _magic_path(ctx, f, layer)) for f in files]
+    all_files += [struct(src = f.path, dst = path) for (path, f) in file_map.items()]
+    manifest = struct(
+        files = all_files,
+        symlinks = [struct(linkname = k, target = symlinks[k]) for k in symlinks],
+        empty_files = empty_files or [],
+        empty_dirs = empty_dirs or [],
+        emprty_root_dirs = empty_root_dirs,
+        tars = [f.path for f in tars],
+        debs = [f.path for f in debs],
+    )
+    manifest_file = ctx.actions.declare_file(name + "-layer.manifest")
+    ctx.actions.write(manifest_file, manifest.to_json())
+    args += ["--manifest=" + manifest_file.path]
+
     ctx.actions.run(
         executable = build_layer_exec,
-        arguments = ["--flagfile=" + arg_file.path],
-        inputs = files + file_map.values() + tars + debs + [arg_file],
+        arguments = args,
+        inputs = files + file_map.values() + tars + debs + [manifest_file],
         outputs = [layer],
         use_default_shell_env = True,
         mnemonic = "ImageLayer",
