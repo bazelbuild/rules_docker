@@ -259,3 +259,21 @@ file_test(
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",
 )
+
+load(":apple.bzl", "create_banana_directory")
+
+create_banana_directory(
+    name = "banana_directory",
+)
+
+container_image(
+    name = "stripped_directory_name",
+    data_path = "banana",
+    files = [":banana_directory"],
+)
+
+container_test(
+    name = "stripped_directory_name_test",
+    configs = ["//tests/docker/configs:stripped_directory_name.yaml"],
+    image = ":stripped_directory_name",
+)
