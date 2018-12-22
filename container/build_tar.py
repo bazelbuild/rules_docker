@@ -16,6 +16,7 @@
 from contextlib import contextmanager
 import gzip
 import io
+import json
 import os
 import os.path
 import subprocess
@@ -31,6 +32,8 @@ gflags.DEFINE_string('output', None, 'The output file, mandatory')
 gflags.MarkFlagAsRequired('output')
 
 gflags.DEFINE_multistring('file', [], 'A file to add to the layer')
+
+gflags.DEFINE_string('manifest', None, 'JSON manifest of contents to add to the layer')
 
 gflags.DEFINE_multistring('empty_file', [], 'An empty file to add to the layer')
 
@@ -400,6 +403,24 @@ def main(unused_argv):
           'ids': ids_map.get(filename, default_ids),
           'names': names_map.get(filename, default_ownername),
       }
+
+    if FLAGS.manifest:
+      with open(FLAGS.manifest, 'r') as f:
+        manifest = json.load(f)
+        for f in manifest.get('files', []):
+          output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
+        for f in manifest.get('empty_files', []):
+          output.add_empty_file(f, **file_attributes(f))
+        for d in manifest.get('empty_dirs', []):
+          output.add_empty_dir(d, **file_attributes(d))
+        for d in manifest.get('empty_root_dirs', []):
+          output.add_empty_root_dir(d, **file_attributes(d))
+        for f in manifest.get('symlinks', []):
+          output.add_link(f['linkname'], f['target'])
+        for tar in manifest.get('tars', []):
+          output.add_tar(tar)
+        for deb in manifest.get('debs', []):
+          output.add_deb(deb)
 
     for f in FLAGS.file:
       (inf, tof) = f.split('=', 1)
