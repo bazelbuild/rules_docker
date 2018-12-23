@@ -56,7 +56,7 @@ docker_toolchain = rule(
 )
 
 def _toolchain_configure_impl(repository_ctx):
-    tool_path = repository_ctx.which("docker")
+    tool_path = repository_ctx.which("docker") or ""
 
     # If client_config is not set we need to pass an empty string to the
     # template.
