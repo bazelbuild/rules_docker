@@ -396,7 +396,7 @@ def main(unused_argv):
   # Add objects to the tar file
   with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory) as output:
     def file_attributes(filename):
-      if filename[0] == '/':
+      if filename.startswith('/'):
         filename = filename[1:]
       return {
           'mode': mode_map.get(filename, default_mode),
