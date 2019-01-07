@@ -35,5 +35,3 @@ fileExistenceTests:
   path: '/app/io_bazel_rules_docker/testdata/foo'
   shouldExist: true
   permissions: '-r-xr-xr-x'
-
-
