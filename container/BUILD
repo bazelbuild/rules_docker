@@ -151,6 +151,7 @@ TEST_DATA = [
     for t in TEST_TARGETS
 ] + [
     "//testdata:stamped_bundle_test",
+    "//testdata:stamp_info_file.txt",
 ]
 
 py_test(
