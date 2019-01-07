@@ -57,6 +57,8 @@ def _container_bundle_impl(ctx):
         runfiles += [l.get("config_digest")]
         runfiles += l.get("unzipped_layer", [])
         runfiles += l.get("diff_id", [])
+        if l.get("legacy"):
+            runfiles += [l.get("legacy")]
 
     _incr_load(
         ctx,
