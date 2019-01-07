@@ -22,6 +22,7 @@ load(
     "container_layer",
 )
 load("//testdata:utils.bzl", "generate_deb")
+load(":stamp_info.bzl", "stamp_info")
 
 exports_files(["pause.tar"])
 
@@ -1042,3 +1043,6 @@ generate_deb(
     name = "pkg_control_xz",
     metadata_compression_type = "xz",
 )
+
+# Make the Bazel stamp file available in tests.
+stamp_info(name = "stamp_info_file")
