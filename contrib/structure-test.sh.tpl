@@ -6,4 +6,4 @@ set -ex
 
 %{test_executable} version
 
-%{test_executable} test --driver %{driver} --image %{image} %{configs} %{quiet}
+%{test_executable} %{args}
