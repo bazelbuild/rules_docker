@@ -34,15 +34,19 @@ docker_toolchain_configure(
     client_config = client_config,
 )
 
+# This is NOT needed when going through the language lang_image
+# "repositories" function(s).
 load(
-    "@io_bazel_rules_docker//container:container.bzl",
-    "container_pull",
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
     container_repositories = "repositories",
 )
 
-# This is NOT needed when going through the language lang_image
-# "repositories" function(s).
 container_repositories()
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
 
 # For testing
 container_pull(

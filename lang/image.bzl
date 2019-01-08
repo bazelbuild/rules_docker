@@ -14,6 +14,7 @@
 """Helpers for synthesizing foo_image targets matching foo_binary.
 """
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//container:container.bzl",
     _container = "container",
@@ -215,7 +216,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     )
 
 _app_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
+    attrs = dicts.add(_container.image.attrs, {
         # The binary target for which we are synthesizing an image.
         # If specified, the layer will not be "image agnostic", meaning
         # that the runfiles required by "dep" will be created (or symlinked,
@@ -240,7 +241,7 @@ _app_layer = rule(
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
-    }.items()),
+    }),
     executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],

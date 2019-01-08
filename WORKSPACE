@@ -13,17 +13,22 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
-load(
-    "//container:container.bzl",
-    "container_load",
-    "container_pull",
-    container_repositories = "repositories",
-)
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
 # instantiated recursively.
+load(
+    "//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
 container_repositories()
+
+load(
+    "//container:container.bzl",
+    "container_load",
+    "container_pull",
+)
 
 # These are for testing.
 container_pull(

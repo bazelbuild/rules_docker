@@ -18,11 +18,15 @@ The signature of java_image is compatible with java_binary.
 The signature of war_image is compatible with java_library.
 """
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load(
+    "//repositories:repositories.bzl",
+    _repositories = "repositories",
+)
 load(
     "//container:container.bzl",
     "container_pull",
     _container = "container",
-    _repositories = "repositories",
 )
 load(
     "//lang:image.bzl",
@@ -126,7 +130,7 @@ def _jar_dep_layer_impl(ctx):
     return app_layer_impl(ctx, runfiles = java_files_with_data)
 
 jar_dep_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
+    attrs = dicts.add(_container.image.attrs, {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -140,7 +144,7 @@ jar_dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
-    }.items()),
+    }),
     executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
@@ -211,7 +215,7 @@ def _jar_app_layer_impl(ctx):
     )
 
 jar_app_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
+    attrs = dicts.add(_container.image.attrs, {
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -240,7 +244,7 @@ jar_app_layer = rule(
             default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
             providers = [java_common.JavaRuntimeInfo],
         ),
-    }.items()),
+    }),
     executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
@@ -325,7 +329,7 @@ def _war_dep_layer_impl(ctx):
     )
 
 _war_dep_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
+    attrs = dicts.add(_container.image.attrs, {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -339,7 +343,7 @@ _war_dep_layer = rule(
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
-    }.items()),
+    }),
     executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
@@ -366,7 +370,7 @@ def _war_app_layer_impl(ctx):
     return _container.image.implementation(ctx, files = files)
 
 _war_app_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
+    attrs = dicts.add(_container.image.attrs, {
         # The library target for which we are synthesizing an image.
         "library": attr.label(mandatory = True),
         # The full list of dependencies that have their own layers
@@ -381,7 +385,7 @@ _war_app_layer = rule(
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
-    }.items()),
+    }),
     executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],

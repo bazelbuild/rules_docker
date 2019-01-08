@@ -16,16 +16,20 @@
 The signature of this rule is compatible with nodejs_binary.
 """
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//lang:image.bzl",
     "app_layer",
     "app_layer_impl",
 )
 load(
+    "//repositories:repositories.bzl",
+    _repositories = "repositories",
+)
+load(
     "//container:container.bzl",
     "container_pull",
     _container = "container",
-    _repositories = "repositories",
 )
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
@@ -70,7 +74,7 @@ def _dep_layer_impl(ctx):
     return app_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
 
 _dep_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
+    attrs = dicts.add(_container.image.attrs, {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The dependency whose runfiles we're appending.
@@ -87,7 +91,7 @@ _dep_layer = rule(
         "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
-    }.items()),
+    }),
     executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],

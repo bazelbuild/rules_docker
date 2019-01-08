@@ -116,15 +116,18 @@ docker_toolchain_configure(
   client_config="/path/to/docker/client/config",
 )
 
+# This is NOT needed when going through the language lang_image
+# "repositories" function(s).
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+container_repositories()
+
 load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
-    container_repositories = "repositories",
 )
-
-# This is NOT needed when going through the language lang_image
-# "repositories" function(s).
-container_repositories()
 
 container_pull(
   name = "java_base",

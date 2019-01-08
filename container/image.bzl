@@ -39,6 +39,7 @@ expectation in such cases is that users will write something like:
 
 """
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
@@ -448,7 +449,7 @@ def _impl(
         ],
     )
 
-_attrs = dict(_layer.attrs.items() + {
+_attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),
     "legacy_repository_naming": attr.bool(default = False),
     # TODO(mattmoor): Default this to False.
@@ -495,7 +496,7 @@ _attrs = dict(_layer.attrs.items() + {
         cfg = "host",
         executable = True,
     ),
-}.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
+}, _hash_tools, _layer_tools, _zip_tools)
 
 _outputs = dict(_layer.outputs)
 

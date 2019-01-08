@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rule for building a Container layer."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
@@ -204,7 +205,7 @@ def _impl(
         env = env or ctx.attr.env,
     )]
 
-_layer_attrs = dict({
+_layer_attrs = dicts.add({
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
     "files": attr.label_list(allow_files = True),
@@ -226,7 +227,7 @@ _layer_attrs = dict({
         executable = True,
         allow_files = True,
     ),
-}.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items())
+}, _hash_tools, _layer_tools, _zip_tools)
 
 _layer_outputs = {
     "layer": "%{name}-layer.tar",
