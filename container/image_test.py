@@ -25,6 +25,8 @@ from containerregistry.client.v2_2 import docker_image as v2_2_image
 TEST_DATA_TARGET_BASE='testdata'
 DIR_PERMISSION=0o700
 PASSWD_FILE_MODE=0o644
+# Dictionary of key to value mappings in the Bazel stamp file
+STAMP_DICT = {}
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
@@ -348,7 +350,7 @@ class ImageTest(unittest.TestCase):
 
   def test_bundle(self):
     with TestBundleImage('stamped_bundle_test', "example.com/aaaaa{BUILD_USER}:stamped".format(
-        BUILD_USER=os.environ['USER']
+        BUILD_USER=STAMP_DICT['BUILD_USER']
     )) as img:
         self.assertDigest(img, '31d7d27f5e63516de98a3f67c382b7f86cfa1000d75c04a9e04c136162daa98b')
     with TestBundleImage('bundle_test', 'docker.io/ubuntu:latest') as img:
@@ -366,7 +368,7 @@ class ImageTest(unittest.TestCase):
   def test_with_stamped_label(self):
     with TestImage('with_stamp_label') as img:
       self.assertEqual(2, len(img.fs_layers()))
-      self.assertConfigEqual(img, 'Labels', {'BUILDER': os.environ['USER']})
+      self.assertConfigEqual(img, 'Labels', {'BUILDER': STAMP_DICT['BUILD_USER']})
 
   def test_pause_based(self):
     with TestImage('pause_based') as img:
@@ -875,6 +877,30 @@ class ImageTest(unittest.TestCase):
         'arg1',
       ])
 
+def load_stamp_info():
+  stamp_file = TestData("stamp_info_file.txt")
+  with open(stamp_file) as stamp_fp:
+    for line in stamp_fp:
+      # The first column in each line in the stamp file is the key
+      # and the second column is the corresponding value.
+      split_line = line.strip().split()
+      if len(split_line) == 0:
+        # Skip blank lines.
+        continue
+      key = ""
+      value = ""
+      if len(split_line) == 1:
+        # Value is blank.
+        key = split_line[0]
+      else:
+        key = split_line[0]
+        value = " ".join(split_line[1:])
+      STAMP_DICT[key] = value
+      print("Stamp variable '{key}'='{value}'".format(
+        key=key,
+        value=value
+      ))
 
 if __name__ == '__main__':
-  unittest.main()
+    load_stamp_info()
+    unittest.main()

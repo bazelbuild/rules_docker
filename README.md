@@ -1067,7 +1067,7 @@ update all of the dependencies, please run (from the root of the repository):
 ./update_deps.sh
 ```
 
-Image references should not be update individually because these images have
+Image references should not be updated individually because these images have
 shared layers and letting them diverge could result in sub-optimal push and pull
  performance.
 
