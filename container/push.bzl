@@ -17,6 +17,7 @@ This wraps the containerregistry.tools.fast_pusher executable in a
 Bazel rule for publishing images.
 """
 
+load("//skylib:dicts.bzl", "dicts")
 load(
     "//skylib:path.bzl",
     "runfile",
@@ -135,7 +136,7 @@ def _impl(ctx):
     ]
 
 container_push = rule(
-    attrs = dict({
+    attrs = dicts.add({
         "image": attr.label(
             allow_single_file = [".tar"],
             mandatory = True,
@@ -169,7 +170,7 @@ container_push = rule(
             default = False,
             mandatory = False,
         ),
-    }.items() + _layer_tools.items()),
+    }, _layer_tools),
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
