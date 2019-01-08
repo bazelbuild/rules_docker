@@ -16,11 +16,6 @@ package(default_visibility = ["//visibility:public"])
 load("//python3:image.bzl", "py3_image")
 load("//contrib:test.bzl", "container_test")
 
-py_library(
-    name = "py_image_library",
-    srcs = ["//testdata:py_image_library.py"],
-)
-
 py3_image(
     name = "py3_image",
     srcs = ["//testdata:py3_image.py"],
@@ -31,7 +26,7 @@ py3_image(
     ],
     data = [":BUILD"],
     layers = [
-        ":py_image_library",
+        "//tests/docker/python:py_image_library",
     ],
 )
 
