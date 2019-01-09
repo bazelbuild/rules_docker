@@ -139,6 +139,7 @@ TEST_TARGETS = [
     ":nodejs_image",
     ":py3_image",
     ":py_image",
+    ":py_image_with_symlinks_in_data",
     ":py_image_complex",
     ":rust_image",
     ":scala_image",
