@@ -660,6 +660,24 @@ py_image(
     main = "py_image.py",
 )
 
+load("//testdata:utils.bzl", "rule_with_symlinks")
+
+rule_with_symlinks(
+    name = "data_with_symlinks",
+)
+
+py_image(
+    name = "py_image_with_symlinks_in_data",
+    srcs = ["py_image.py"],
+    data = [
+        ":data_with_symlinks",
+    ],
+    layers = [
+        ":py_image_library",
+    ],
+    main = "py_image.py",
+)
+
 load("@pip_deps//:requirements.bzl", "requirement")
 
 py_library(

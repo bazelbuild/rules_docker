@@ -134,6 +134,7 @@ TEST_TARGETS = [
     # "d_image",
     ":java_image",
     ":py_image",
+    ":py_image_with_symlinks_in_data",
     ":py_image_complex",
     ":war_image",
     ":flat",
