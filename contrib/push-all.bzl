@@ -96,7 +96,7 @@ def _impl(ctx):
 
     return struct(runfiles = ctx.runfiles(files = [
         ctx.executable._pusher,
-    ] + stamp_inputs + runfiles + list(ctx.attr._pusher.default_runfiles.files)))
+    ] + stamp_inputs + runfiles + ctx.attr._pusher.default_runfiles.files.to_list()))
 
 container_push = rule(
     attrs = {
@@ -110,13 +110,11 @@ container_push = rule(
         ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),
-            single_file = True,
-            allow_files = True,
+            allow_single_file = True,
         ),
         "_tag_tpl": attr.label(
             default = Label("//container:push-tag.sh.tpl"),
-            single_file = True,
-            allow_files = True,
+            allow_single_file = True,
         ),
         "_pusher": attr.label(
             default = Label("@containerregistry//:pusher"),

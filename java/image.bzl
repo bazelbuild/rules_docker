@@ -18,6 +18,7 @@ The signature of java_image is compatible with java_binary.
 The signature of war_image is compatible with java_library.
 """
 
+load("@bazel_tools//tools/build_defs/repo:jvm.bzl", "jvm_maven_import_external")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -75,9 +76,12 @@ def repositories():
             digest = _JETTY_DIGESTS["debug"],
         )
     if "javax_servlet_api" not in excludes:
-        native.maven_jar(
+        jvm_maven_import_external(
             name = "javax_servlet_api",
             artifact = "javax.servlet:javax.servlet-api:3.0.1",
+            artifact_sha256 = "377d8bde87ac6bc7f83f27df8e02456d5870bb78c832dac656ceacc28b016e56",
+            server_urls = ["http://central.maven.org/maven2"],
+            licenses = ["notice"],  # Apache 2.0
         )
 
 DEFAULT_JAVA_BASE = select({
@@ -98,15 +102,15 @@ def java_files(f):
     files = []
     if java_common.provider in f:
         java_provider = f[java_common.provider]
-        files += list(java_provider.transitive_runtime_jars)
+        files += java_provider.transitive_runtime_jars.to_list()
     if hasattr(f, "files"):  # a jar file
-        files += list(f.files)
+        files += f.files.to_list()
     return files
 
 def java_files_with_data(f):
     files = java_files(f)
     if hasattr(f, "data_runfiles"):
-        files += list(f.data_runfiles.files)
+        files += f.data_runfiles.files.to_list()
     return files
 
 def _jar_dep_layer_impl(ctx):
@@ -150,28 +154,24 @@ jar_dep_layer = rule(
 def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
-    available = depset()
-    for jar in ctx.attr.jar_layers:
-        available += java_files(jar)  # layers don't include runfiles
+    # layers don't include runfiles
+    available = depset(transitive = [depset(java_files(jar)) for jar in ctx.attr.jar_layers])
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
     # out what it available.
-    unavailable = depset()
-    for jar in ctx.attr.deps + ctx.attr.runtime_deps:
-        unavailable += java_files_with_data(jar)
-
-    unavailable += java_files_with_data(ctx.attr.binary)
-    unavailable = [x for x in unavailable if x not in available]
+    unavailable = depset(transitive = [depset(java_files_with_data(jar)) for jar in ctx.attr.deps + ctx.attr.runtime_deps])
+    unavailable = depset(transitive = [unavailable, depset(java_files_with_data(ctx.attr.binary))])
+    unavailable = [x for x in unavailable.to_list() if x not in available.to_list()]
 
     # Remove files that are provided by the JDK from the unavailable set,
     # as these will be provided by the Java image.
-    jdk_files = depset(list(ctx.files._jdk))
+    jdk_files = depset(ctx.files._jdk)
     unavailable = [x for x in unavailable if x not in ctx.files._jdk]
 
     classpath = ":".join([
         layer_file_path(ctx, x)
-        for x in available + unavailable
+        for x in depset(transitive = [available, depset(unavailable)]).to_list()
     ])
 
     # Classpaths can grow long and there is a limit on the length of a
@@ -349,19 +349,15 @@ _war_dep_layer = rule(
 def _war_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
-    available = depset()
-    for jar in ctx.attr.jar_layers:
-        available += java_files(jar)
+    available = depset(transitive = [depset(java_files(jar)) for jar in ctx.attr.jar_layers])
 
     # This is based on rules_appengine's WAR rules.
-    transitive_deps = depset()
-    transitive_deps += java_files(ctx.attr.library)
-
+    transitive_deps = depset(java_files(ctx.attr.library))
     # TODO(mattmoor): Handle data files.
 
     # If we start putting libs in servlet-agnostic paths,
     # then consider adding symlinks here.
-    files = [d for d in transitive_deps if d not in available]
+    files = [d for d in transitive_deps.to_list() if d not in available.to_list()]
 
     return _container.image.implementation(ctx, files = files)
 

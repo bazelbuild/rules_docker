@@ -39,7 +39,7 @@ Used for finding differences between image targets.
 Args:
     image1: Image target or image tarball file (from docker save) - first image to compare
     image2: Image target or image tarball file (from docker save) - second image to compare
-    args: (optional) list of strings - arguments to apply to idd.py call 
+    args: (optional) list of strings - arguments to apply to idd.py call
                                         refer to idd.py docs for more info
 
 Ex.
@@ -56,13 +56,11 @@ idd = rule(
     attrs = {
         "image1": attr.label(
             mandatory = True,
-            allow_files = container_filetype,
-            single_file = True,
+            allow_single_file = container_filetype,
         ),
         "image2": attr.label(
             mandatory = True,
-            allow_files = container_filetype,
-            single_file = True,
+            allow_single_file = container_filetype,
         ),
         "_idd_script": attr.label(
             default = ":idd",

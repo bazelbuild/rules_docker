@@ -734,8 +734,7 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/libjava_image_library.jar',
         './app/com_google_guava_guava',
-        './app/com_google_guava_guava/jar',
-        './app/com_google_guava_guava/jar/guava-18.0.jar',
+        './app/com_google_guava_guava/guava-18.0.jar',
       ])
 
   def test_war_image(self):
@@ -832,7 +831,7 @@ class ImageTest(unittest.TestCase):
       self.assertConfigEqual(img, 'Entrypoint', [
         '/usr/bin/java',
         '-cp',
-        '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
+        '/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:'+
         '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_library/scala-library-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
         '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
@@ -853,7 +852,7 @@ class ImageTest(unittest.TestCase):
         '/usr/bin/java',
         '-cp',
         '/app/io_bazel_rules_docker/testdata/libgroovy_image_library-impl.jar:'+
-        '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
+        '/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:'+
         '/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.4.4/lib/groovy-2.4.4.jar:'+
         '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
 

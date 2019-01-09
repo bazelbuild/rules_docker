@@ -16,7 +16,7 @@
 def _compare_ids_test_impl(ctx):
     tar_files = []
     for image in ctx.attr.images:
-        tar_files += list(image.files)
+        tar_files += image.files.to_list()
 
     if (len(tar_files) == 0):
         fail("No images provided for test.")
