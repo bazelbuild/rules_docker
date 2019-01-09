@@ -77,6 +77,7 @@ def build_layer(
         tars = None,
         operating_system = None):
     """Build the current layer for appending it to the base layer"""
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     layer = output_layer
     build_layer_exec = ctx.executable.build_layer
     args = [
@@ -84,6 +85,9 @@ def build_layer(
         "--directory=" + directory,
         "--mode=" + ctx.attr.mode,
     ]
+
+    if toolchain_info.xz_path != "":
+        args += ["--xz_path=%s" % toolchain_info.xz_path]
 
     # Windows layer.tar require two separate root directories instead of just 1
     # 'Files' is the equivalent of '.' in Linux images.
@@ -232,6 +236,7 @@ layer = struct(
     attrs = _layer_attrs,
     outputs = _layer_outputs,
     implementation = _impl,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
 )
 
 container_layer_ = rule(
@@ -239,6 +244,7 @@ container_layer_ = rule(
     executable = False,
     outputs = _layer_outputs,
     implementation = _impl,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
 )
 
 def container_layer(**kwargs):
