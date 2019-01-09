@@ -24,6 +24,8 @@ DockerToolchainInfo = provider(
                          "the value of the DOCKER_CONFIG environment variable" +
                          " will be used. DOCKER_CONFIG is not defined, the" +
                          " home directory will be used.",
+        "xz_path": "Optional path to the xz binary. This is used by " +
+                   "build_tar.py when the Python lzma module is unavailable.",
     },
 )
 
@@ -32,6 +34,7 @@ def _docker_toolchain_impl(ctx):
         info = DockerToolchainInfo(
             tool_path = ctx.attr.tool_path,
             client_config = ctx.attr.client_config,
+            xz_path = ctx.attr.xz_path,
         ),
     )
     return [toolchain_info]
@@ -52,11 +55,16 @@ docker_toolchain = rule(
                   " DOCKER_CONFIG is not defined, the home directory will be" +
                   " used.",
         ),
+        "xz_path": attr.string(
+            doc = "Optional path to the xz binary. This is used by " +
+                  "build_tar.py when the Python lzma module is unavailable.",
+        ),
     },
 )
 
 def _toolchain_configure_impl(repository_ctx):
     tool_path = repository_ctx.which("docker") or ""
+    xz_path = repository_ctx.which("xz") or ""
 
     # If client_config is not set we need to pass an empty string to the
     # template.
@@ -67,6 +75,7 @@ def _toolchain_configure_impl(repository_ctx):
         {
             "%{DOCKER_TOOL}": "%s" % tool_path,
             "%{DOCKER_CONFIG}": "%s" % client_config,
+            "%{XZ_TOOL_PATH}": "%s" % xz_path,
         },
         False,
     )
