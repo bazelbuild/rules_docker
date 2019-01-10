@@ -115,6 +115,12 @@ def _default_emptyfiles(dep):
     else:
         return dep.default_runfiles.empty_filenames
 
+def _default_symlinks(dep):
+    if FilterLayerInfo in dep:
+        return dep[FilterLayerInfo].runfiles.symlinks
+    else:
+        return dep.default_runfiles.symlinks
+
 def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     """Appends a layer for a single dependency's runfiles."""
 
@@ -155,6 +161,13 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     # If the caller provided the binary that will eventually form the
     # app layer, we can already create symlinks to the runfiles path.
     if ctx.attr.binary:
+        # Include any symlinks from the runfiles of the target for which we are synthesizing the layer.
+        symlinks.update({
+            (_reference_dir(ctx) + "/" + s.path): layer_file_path(ctx, s.target_file)
+            for s in _default_symlinks(dep)
+            if hasattr(s, "path")  # "path" and "target_file" are exposed to starlark since bazel 0.21.0.
+        })
+
         symlinks.update({
             _final_file_path(ctx, f): layer_file_path(ctx, f)
             for f in runfiles(dep)

@@ -91,6 +91,10 @@ gflags.DEFINE_string(
     'root_directory', './', 'Default root directory is named "."'
     'Windows docker images require this be named "Files" instead of "."')
 
+gflags.DEFINE_string('xz_path', None,
+                     'Specify the path to xz as a fallback when the Python '
+                     'lzma module is unavailable.')
+
 FLAGS = gflags.FLAGS
 
 
@@ -332,11 +336,11 @@ class TarFile(object):
   @staticmethod
   def _xzcat_decompress(data):
     """Decompresses the xz-encrypted bytes in data by piping to xz."""
-    if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
+    if not FLAGS.xz_path:
       raise RuntimeError('Cannot handle .xz compression: xz not found.')
 
     xz_proc = subprocess.Popen(
-      ['xz', '--decompress', '--stdout'],
+      [FLAGS.xz_path, '--decompress', '--stdout'],
       stdin=subprocess.PIPE,
       stdout=subprocess.PIPE)
     return xz_proc.communicate(data)[0]
