@@ -471,7 +471,7 @@ function test_container_push_with_stamp() {
   echo "Pushing stamped image to local registry"
   bazel run $bazel_opts tests/docker:push_stamped_test
   echo "Pulling stamped image from local registry"
-  EXPECT_CONTAINS "$(docker pull localhost:5000/docker/test/stamp_value:stamp_value)" "Gouda"
+  EXPECT_CONTAINS "$(docker pull localhost:5000/docker/test/stamp_value:stamp_value)" "Downloaded newer image"
   docker stop -t 0 $cid
 }
 
