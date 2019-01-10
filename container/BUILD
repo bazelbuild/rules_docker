@@ -267,3 +267,8 @@ bzl_library(
         "//skylib:path",
     ],
 )
+
+bzl_library(
+    name = "repositories",
+    srcs = ["repositories.bzl"],
+)
