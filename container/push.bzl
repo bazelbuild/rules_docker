@@ -17,7 +17,7 @@ This wraps the containerregistry.tools.fast_pusher executable in a
 Bazel rule for publishing images.
 """
 
-load("//skylib:dicts.bzl", "dicts")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:path.bzl",
     "runfile",

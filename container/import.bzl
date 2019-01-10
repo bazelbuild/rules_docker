@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rule for importing a container image."""
 
-load("//skylib:dicts.bzl", "dicts")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:filetype.bzl",
     tar_filetype = "tar",

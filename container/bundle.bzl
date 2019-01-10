@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rule for bundling Container images into a tarball."""
 
-load("//skylib:dicts.bzl", "dicts")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:label.bzl",
     _string_to_label = "string_to_label",

@@ -13,7 +13,7 @@
 # limitations under the License.
 """A rule to flatten container images."""
 
-load("//skylib:dicts.bzl", "dicts")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//container:layer_tools.bzl",
     _get_layers = "get_from_target",

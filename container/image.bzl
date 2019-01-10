@@ -39,7 +39,7 @@ expectation in such cases is that users will write something like:
 
 """
 
-load("//skylib:dicts.bzl", "dicts")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:filetype.bzl",
     container_filetype = "container",

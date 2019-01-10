@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rule for building a Container layer."""
 
-load("//skylib:dicts.bzl", "dicts")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
