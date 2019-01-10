@@ -252,10 +252,10 @@ container_push(
 container_push(
     name = "push_stamped_test",
     format = "Docker",
-    image = ":set_cmd",
+    image = "@io_bazel_rules_docker//testdata:files_in_layer_with_files_base",
     registry = "localhost:5000",
-    repository = "docker/test/{BUILD_USER}",
-    tag = "{BUILD_USER}",
+    repository = "docker/test/{TEST_STAMP}",
+    tag = "{TEST_STAMP}",
     tags = ["manual"],
 )
 
