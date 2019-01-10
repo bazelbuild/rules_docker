@@ -168,7 +168,6 @@ bzl_library(
     deps = [
         ":layer_tools",
         ":providers",
-        "//skylib:dicts",
         "//skylib:label",
     ],
 )
@@ -192,7 +191,6 @@ bzl_library(
     deps = [
         ":layer_tools",
         ":providers",
-        "//skylib:dicts",
         "//skylib:label",
     ],
 )
@@ -203,7 +201,6 @@ bzl_library(
     deps = [
         ":layer_tools",
         ":providers",
-        "//skylib:dicts",
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
@@ -218,7 +215,6 @@ bzl_library(
     deps = [
         ":layer_tools",
         ":providers",
-        "//skylib:dicts",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
@@ -232,7 +228,6 @@ bzl_library(
     deps = [
         ":layer_tools",
         ":providers",
-        "//skylib:dicts",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
@@ -268,7 +263,6 @@ bzl_library(
     deps = [
         ":layer_tools",
         ":providers",
-        "//skylib:dicts",
         "//skylib:path",
     ],
 )
