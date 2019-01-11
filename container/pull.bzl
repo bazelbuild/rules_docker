@@ -22,7 +22,9 @@ def python(repository_ctx):
     if "BAZEL_PYTHON" in repository_ctx.os.environ:
         return repository_ctx.os.environ.get("BAZEL_PYTHON")
 
-    python_path = repository_ctx.which("python")
+    python_path = repository_ctx.which("python2")
+    if not python_path:
+        python_path = repository_ctx.which("python")
     if not python_path:
         python_path = repository_ctx.which("python.exe")
     if python_path:
