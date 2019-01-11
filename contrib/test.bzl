@@ -74,8 +74,7 @@ _container_test = rule(
         ),
         "image_tar": attr.label(
             doc = "When using the tar driver, label of the container image tarball",
-            allow_files = [".tar"],
-            single_file = True,
+            allow_single_file = [".tar"],
         ),
         "loaded_name": attr.string(
             doc = "When using the docker driver, the name:tag of the image when loaded into the docker daemon",
@@ -105,8 +104,7 @@ _container_test = rule(
         ),
         "_structure_test_tpl": attr.label(
             default = Label("//contrib:structure-test.sh.tpl"),
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
         ),
     },
     executable = True,

@@ -65,10 +65,10 @@ DEFAULT_BASE = select({
 })
 
 def _runfiles(dep):
-    return dep.default_runfiles.files + dep.data_runfiles.files + dep.files
+    return depset(transitive = [dep.default_runfiles.files, dep.data_runfiles.files, dep.files])
 
 def _emptyfiles(dep):
-    return dep.default_runfiles.empty_filenames + dep.data_runfiles.empty_filenames
+    return depset(transitive = [dep.default_runfiles.empty_filenames, dep.data_runfiles.empty_filenames])
 
 def _dep_layer_impl(ctx):
     return app_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)

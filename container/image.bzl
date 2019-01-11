@@ -230,8 +230,8 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
 
     ctx.actions.run(
         outputs = [output_digest],
-        inputs = [image["config"]] + blobsums + blobs +
-                 ([image["legacy"]] if image.get("legacy") else []),
+        tools = [image["config"]] + blobsums + blobs +
+                ([image["legacy"]] if image.get("legacy") else []),
         executable = ctx.executable._digester,
         arguments = arguments,
         mnemonic = "ImageDigest",

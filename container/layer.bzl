@@ -118,7 +118,7 @@ def build_layer(
     ctx.actions.run(
         executable = build_layer_exec,
         arguments = args,
-        inputs = files + file_map.values() + tars + debs + [manifest_file],
+        tools = files + file_map.values() + tars + debs + [manifest_file],
         outputs = [layer],
         use_default_shell_env = True,
         mnemonic = "ImageLayer",

@@ -32,7 +32,7 @@ compare_ids_test(
 
     tar_files = []
     for tar in ctx.attr.images:
-        tar_files += list(tar.files)
+        tar_files += tar.files.to_list()
 
     tars_string = ""
     for tar_file in tar_files:
@@ -111,28 +111,23 @@ compare_ids_fail_test = rule(
             default = [],
         ),
         "_executable_template": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = "compare_ids_fail_test.sh.tpl",
         ),
         "_compare_ids_test_bzl": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = "//contrib:compare_ids_test.bzl",
         ),
         "_compare_ids_test": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = "//contrib:compare_ids_test.py",
         ),
         "_extract_image_id": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = "//contrib:extract_image_id.py",
         ),
         "_BUILD": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = "//contrib:BUILD",
         ),
     },

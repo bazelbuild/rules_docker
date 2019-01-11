@@ -7,5 +7,5 @@ metadataTest:
   entrypoint:
     - "/usr/bin/java"
     - "-cp"
-    - "/app/io_bazel_rules_docker/tests/docker/java/libjava_bin_as_lib.jar:/app/io_bazel_rules_docker/tests/docker/java/libjava_image_library.jar:/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:/app/io_bazel_rules_docker/tests/docker/java/simple_java_image.binary.jar:/app/io_bazel_rules_docker/tests/docker/java/simple_java_image.binary"
+    - "/app/io_bazel_rules_docker/tests/docker/java/libjava_bin_as_lib.jar:/app/io_bazel_rules_docker/tests/docker/java/libjava_image_library.jar:/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:/app/io_bazel_rules_docker/tests/docker/java/simple_java_image.binary.jar:/app/io_bazel_rules_docker/tests/docker/java/simple_java_image.binary"
     - "examples.images.Binary"
