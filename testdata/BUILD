@@ -673,7 +673,7 @@ py_image(
         ":data_with_symlinks",
     ],
     layers = [
-        ":py_image_library",
+        "//tests/docker/python:py_image_library",
     ],
     main = "py_image.py",
 )
