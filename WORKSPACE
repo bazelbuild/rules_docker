@@ -15,6 +15,16 @@ workspace(name = "io_bazel_rules_docker")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+load(
+    "//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure = "toolchain_configure",
+)
+
+docker_toolchain_configure(
+    name = "docker_config",
+    docker_path = "/usr/bin/docker",
+)
+
 # Consumers shouldn't need to do this themselves once WORKSPACE is
 # instantiated recursively.
 load(
