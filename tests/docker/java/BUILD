@@ -22,10 +22,16 @@ java_library(
     deps = ["@com_google_guava_guava//jar"],
 )
 
+java_library(
+    name = "java_bin_as_lib",
+    srcs = ["//testdata:Binary.java"],
+    deps = ["//tests/docker/java:java_image_library"],
+)
+
 java_image(
     name = "simple_java_image",
     main_class = "examples.images.Binary",
-    runtime_deps = ["//testdata:java_bin_as_lib"],
+    runtime_deps = [":java_bin_as_lib"],
 )
 
 java_image(
@@ -76,7 +82,7 @@ java_image(
 
 java_image(
     name = "java_partial_entrypoint_image",
-    runtime_deps = ["//testdata:java_bin_as_lib"],
+    runtime_deps = [":java_bin_as_lib"],
 )
 
 container_test(

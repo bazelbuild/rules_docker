@@ -199,7 +199,7 @@ function test_py_image() {
   cd "${ROOT}"
   clear_docker
   cat > output.txt <<EOF
-$(bazel run "$@" testdata:py_image)
+$(bazel run "$@" tests/docker/python:py_image)
 EOF
   EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
   EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
@@ -236,7 +236,7 @@ EOF
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/cc:cc_image)" "Hello World"
 }
 
 function test_cc_binary_as_image() {
@@ -260,23 +260,23 @@ function test_launcher_image() {
 function test_go_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:go_image)" "Hello, world!"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/go:go_image)" "Hello, world!"
 }
 
 function test_go_image_busybox() {
   cd "${ROOT}"
   clear_docker
-  bazel run -c dbg testdata:go_image -- --norun
+  bazel run -c dbg tests/docker/go:go_image -- --norun
   local number=$RANDOM
-  EXPECT_CONTAINS "$(docker run -ti --rm --entrypoint=sh bazel/testdata:go_image -c \"echo aa${number}bb\")" "aa${number}bb"
+  EXPECT_CONTAINS "$(docker run -ti --rm --entrypoint=sh bazel/tests/docker/go:go_image -c \"echo aa${number}bb\")" "aa${number}bb"
 }
 
 function test_go_image_with_tags() {
   cd "${ROOT}"
-  EXPECT_CONTAINS "$(bazel query //testdata:go_image)" "//testdata:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //testdata:go_image)')" "//testdata:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //testdata:go_image)')" "//testdata:go_image"
-  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //testdata:go_image)')" "//testdata:go_image"
+  EXPECT_CONTAINS "$(bazel query //tests/docker/go:go_image)" "//tests/docker/go:go_image"
+  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
+  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
+  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
   echo yay
 }
 
@@ -305,11 +305,11 @@ function test_java_sandwich_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_sandwich_image)" "Hello World"
 }
 
-function test_java_bin_as_lib_image() {
+function test_java_simple_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run testdata:java_bin_as_lib_image
-  docker run -ti --rm bazel/testdata:java_bin_as_lib_image
+  bazel run tests/docker/java:simple_java_image
+  docker run -ti --rm bazel/tests/docker/java:simple_java_image
 }
 
 function test_java_image_arg_echo() {
@@ -343,7 +343,7 @@ function test_war_image_with_custom_run_flags() {
 function test_scala_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:scala_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/scala:scala_image)" "Hello World"
 }
 
 function test_scala_sandwich_image() {
@@ -355,7 +355,7 @@ function test_scala_sandwich_image() {
 function test_groovy_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:groovy_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/groovy:groovy_image)" "Hello World"
 }
 
 function test_groovy_scala_image() {
@@ -367,7 +367,7 @@ function test_groovy_scala_image() {
 function test_rust_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:rust_image)" "Hello world"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/rust:rust_image)" "Hello world"
 }
 
 function test_d_image() {
@@ -379,7 +379,7 @@ function test_d_image() {
 function test_nodejs_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run testdata:nodejs_image)" "Hello World!"
+  EXPECT_CONTAINS "$(bazel run tests/docker/nodejs:nodejs_image)" "Hello World!"
 }
 
 function test_container_push() {
@@ -518,7 +518,7 @@ test_java_image_with_custom_run_flags -c opt
 test_java_image_with_custom_run_flags -c dbg
 test_java_sandwich_image -c opt
 test_java_sandwich_image -c dbg
-test_java_bin_as_lib_image
+test_java_simple_image
 test_java_image_arg_echo
 test_war_image
 test_war_image_with_custom_run_flags
