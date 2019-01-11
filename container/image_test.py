@@ -687,32 +687,6 @@ class ImageTest(unittest.TestCase):
         './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/top_level.txt',
       ])
 
-  def test_cc_image(self):
-    with TestImage('cc_image') as img:
-      # Check the application layer, which is on top.
-      self.assertTopLayerContains(img, [
-        '.',
-        './app',
-        './app/testdata',
-        './app/testdata/cc_image.binary.runfiles',
-        './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker',
-        './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata',
-        './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/cc_image.binary',
-        './app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
-        # TODO(mattmoor): The path normalization for symlinks should match
-        # files to avoid this redundancy.
-        '/app',
-        '/app/testdata',
-        '/app/testdata/cc_image.binary',
-        '/app/testdata/cc_image.binary.runfiles',
-        '/app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker',
-        '/app/testdata/cc_image.binary.runfiles/io_bazel_rules_docker/external',
-      ])
-
-      # The linker pulls the object files into the final binary,
-      # so in C++ dependencies don't help when specified via `layers`.
-      self.assertLayerNContains(img, 1, [])
-
   def test_java_image(self):
     with TestImage('java_image') as img:
       # Check the application layer, which is on top.
@@ -761,18 +735,6 @@ class ImageTest(unittest.TestCase):
         './jetty/webapps/ROOT/WEB-INF/lib/javax.servlet-api-3.0.1.jar',
       ])
 
-
-  def test_cc_image_args(self):
-    with TestImage('cc_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/cc_image.binary',
-      ])
-      self.assertConfigEqual(img, 'Cmd', [
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
   # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
   # def test_d_image_args(self):
   #  with TestImage('d_image') as img:
@@ -780,102 +742,6 @@ class ImageTest(unittest.TestCase):
   #      '/app/testdata/d_image_binary',
   #      'arg0',
   #      'arg1'])
-
-  def test_py_image_args(self):
-    with TestImage('py_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/python',
-        '/app/testdata/py_image.binary',
-      ])
-      self.assertConfigEqual(img, 'Cmd', [
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
-  def test_py3_image_args(self):
-    with TestImage('py3_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/python',
-        '/app/testdata/py3_image.binary',
-      ])
-      self.assertConfigEqual(img, 'Cmd', [
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
-  def test_go_image_args(self):
-    with TestImage('go_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/go_image.binary',
-      ])
-      self.assertConfigEqual(img, 'Cmd', [
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
-  def test_rust_image_args(self):
-    with TestImage('rust_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/rust_image_binary',
-      ])
-      self.assertConfigEqual(img, 'Cmd', [
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
-  def test_scala_image_args(self):
-    with TestImage('scala_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/java',
-        '-cp',
-        '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
-        '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_library/scala-library-2.11.12.jar:'+
-        '/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image_library.jar:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image.binary:' +
-        '/app/io_bazel_rules_docker/testdata/BUILD:'+
-        '/app/io_bazel_rules_docker/testdata/scala_image.binary_wrapper.sh',
-        '-Dbuild.location=testdata/BUILD',
-        'examples.images.Binary',
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
-  def test_groovy_image_args(self):
-    with TestImage('groovy_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/usr/bin/java',
-        '-cp',
-        '/app/io_bazel_rules_docker/testdata/libgroovy_image_library-impl.jar:'+
-        '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:'+
-        '/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.4.4/lib/groovy-2.4.4.jar:'+
-        '/app/io_bazel_rules_docker/testdata/libgroovy_image.binary-lib-impl.jar:'+
-
-        '/app/io_bazel_rules_docker/testdata/groovy_image.binary.jar:'+
-        '/app/io_bazel_rules_docker/testdata/groovy_image.binary:' +
-        '/app/io_bazel_rules_docker/testdata/BUILD',
-        '-Dbuild.location=testdata/BUILD',
-        'examples.images.Binary',
-        'arg0',
-        'arg1',
-        'testdata/BUILD',
-      ])
-
-  def test_nodejs_image_args(self):
-    with TestImage('nodejs_image') as img:
-      self.assertConfigEqual(img, 'Entrypoint', [
-        '/app/testdata/nodejs_image.binary',
-      ])
-      self.assertConfigEqual(img, 'Cmd', [
-        'arg0',
-        'arg1',
-      ])
 
 def load_stamp_info():
   stamp_file = TestData("stamp_info_file.txt")
@@ -902,5 +768,5 @@ def load_stamp_info():
       ))
 
 if __name__ == '__main__':
-    load_stamp_info()
-    unittest.main()
+  load_stamp_info()
+  unittest.main()
