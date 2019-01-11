@@ -170,7 +170,6 @@ def _jar_app_layer_impl(ctx):
 
     # Remove files that are provided by the JDK from the unavailable set,
     # as these will be provided by the Java image.
-    jdk_files = depset(ctx.files._jdk)
     unavailable = [x for x in unavailable if x not in ctx.files._jdk]
 
     classpath = ":".join([
