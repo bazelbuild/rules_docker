@@ -14,7 +14,6 @@
 workspace(name = "io_bazel_rules_docker")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 load(
     "//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
