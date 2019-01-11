@@ -471,7 +471,22 @@ function test_container_push_with_stamp() {
   docker stop -t 0 $cid
 }
 
+function test_container_push_all() {
+  cd "${ROOT}"
+  clear_docker
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  # Use bundle push to push three images to the local registry.
+  bazel run tests/docker:test_docker_push_three_images_bundle
+  # Pull the three images we just pushed to ensure uploaded manifests
+  # are valid according to docker.
+  EXPECT_CONTAINS "$(docker pull localhost:5000/image0:latest)" "Downloaded newer image"
+  EXPECT_CONTAINS "$(docker pull localhost:5000/image1:latest)" "Downloaded newer image"
+  EXPECT_CONTAINS "$(docker pull localhost:5000/image2:latest)" "Downloaded newer image"
+  docker stop -t 0 $cid
+}
+
 test_container_push_with_stamp
+test_container_push_all
 test_container_push_with_auth
 test_container_pull_with_auth
 test_top_level

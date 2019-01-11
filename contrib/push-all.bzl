@@ -64,15 +64,15 @@ def _impl(ctx):
         ctx.actions.expand_template(
             template = ctx.file._tag_tpl,
             substitutions = {
-                "%{stamp}": stamp_arg,
-                "%{tag}": ctx.expand_make_variables("tag", tag, {}),
-                "%{image}": "%s %s %s %s" % (
+                "%{args}": "%s --name=%s %s %s %s %s %s" % (
+                    "--oci" if ctx.attr.format == "OCI" else "",
+                    ctx.expand_make_variables("tag", tag, {}),
+                    stamp_arg,
                     legacy_base_arg,
                     config_arg,
                     digest_arg,
                     layer_arg,
                 ),
-                "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
                 "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
             },
             output = out,

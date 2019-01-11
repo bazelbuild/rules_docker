@@ -24,6 +24,8 @@ load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
+load("//container:bundle.bzl", "container_bundle")
+load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 
 container_test(
     name = "structure_test",
@@ -299,4 +301,18 @@ container_test(
     name = "stripped_directory_name_test",
     configs = ["//tests/docker/configs:stripped_directory_name.yaml"],
     image = ":stripped_directory_name",
+)
+
+container_bundle(
+    name = "three_images_bundle",
+    images = {
+        "localhost:5000/image0:latest": "//testdata:base_with_entrypoint",
+        "localhost:5000/image1:latest": "//testdata:link_with_files_base",
+        "localhost:5000/image2:latest": "//testdata:with_double_env",
+    },
+)
+
+docker_push_all(
+    name = "test_docker_push_three_images_bundle",
+    bundle = ":three_images_bundle",
 )
