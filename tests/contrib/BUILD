@@ -154,17 +154,3 @@ docker_push(
     name = "test_docker_push_empty_bundle",
     bundle = ":create_empty_bundle",
 )
-
-container_bundle(
-    name = "three_images_bundle",
-    images = {
-        "localhost:5000/image0:latest": "@io_bazel_rules_docker//testdata:base_with_entrypoint",
-        "localhost:5000/image1:latest": "@io_bazel_rules_docker//testdata:link_with_files_base",
-        "localhost:5000/image2:latest": "@io_bazel_rules_docker//testdata:with_double_env",
-    },
-)
-
-docker_push(
-    name = "test_docker_push_three_images_bundle",
-    bundle = ":three_images_bundle",
-)
