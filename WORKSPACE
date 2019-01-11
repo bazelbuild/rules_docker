@@ -13,7 +13,7 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
-load("toolchains/docker:toolchain.bzl",
+load("//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure="toolchain_configure"
 )
 docker_toolchain_configure(
