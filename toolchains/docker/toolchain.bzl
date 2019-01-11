@@ -45,7 +45,7 @@ docker_toolchain = rule(
     implementation = _docker_toolchain_impl,
     attrs = {
         "tool_path": attr.string(
-            doc = "Path to the docker binary",
+            doc = "Path to the docker binary.",
         ),
         "client_config": attr.string(
             default = "",
@@ -63,7 +63,11 @@ docker_toolchain = rule(
 )
 
 def _toolchain_configure_impl(repository_ctx):
-    tool_path = repository_ctx.attr.docker_path if repository_ctx.attr.docker_path else repository_ctx.which("docker") or ""
+    tool_path = ""
+    if repository_ctx.attr.docker_path:
+      tool_path = repository_ctx.attr.docker_path
+    elif repository_ctx.which("docker"):
+      tool_path = repository_ctx.which("docker")
     xz_path = repository_ctx.which("xz") or ""
 
     # If client_config is not set we need to pass an empty string to the
@@ -106,7 +110,7 @@ toolchain_configure = repository_rule(
         "docker_path": attr.string(
             mandatory = False,
             doc = "The full path to the docker binary. If not specified, it will" +
-                  "be searched for the path. If not available, running commands" +
+                  "be searched for in the path. If not available, running commands" +
                   "that require docker (e.g., incremental load) will fail.",
         )
     },
