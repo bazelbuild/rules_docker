@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rule for importing a container image."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:filetype.bzl",
     tar_filetype = "tar",
@@ -158,7 +159,7 @@ def _container_import_impl(ctx):
     )
 
 container_import = rule(
-    attrs = dict({
+    attrs = dicts.add({
         "config": attr.label(allow_files = [".json"]),
         "manifest": attr.label(
             allow_files = [".json"],
@@ -169,7 +170,7 @@ container_import = rule(
             mandatory = True,
         ),
         "repository": attr.string(default = "bazel"),
-    }.items() + _hash_tools.items() + _layer_tools.items() + _zip_tools.items()),
+    }, _hash_tools, _layer_tools, _zip_tools),
     executable = True,
     outputs = {
         "out": "%{name}.tar",

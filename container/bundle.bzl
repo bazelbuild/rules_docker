@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rule for bundling Container images into a tarball."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//skylib:label.bzl",
     _string_to_label = "string_to_label",
@@ -87,7 +88,7 @@ def _container_bundle_impl(ctx):
     )
 
 container_bundle_ = rule(
-    attrs = dict({
+    attrs = dicts.add({
         "images": attr.string_dict(),
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
@@ -96,7 +97,7 @@ container_bundle_ = rule(
             default = False,
             mandatory = False,
         ),
-    }.items() + _layer_tools.items()),
+    }, _layer_tools),
     executable = True,
     outputs = {
         "out": "%{name}.tar",

@@ -108,10 +108,15 @@ local_repository(
 )
 
 load(
-  "@io_bazel_rules_docker//docker:docker.bzl",
-  "docker_repositories", "docker_pull"
+  "@io_bazel_rules_docker//repositories:repositories.bzl",
+  container_repositories = "repositories",
 )
-docker_repositories()
+container_repositories()
+
+load(
+  "@io_bazel_rules_docker//docker:docker.bzl",
+  "docker_pull",
+)
 
 docker_pull(
   name = "pause",

@@ -93,9 +93,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Download the rules_docker repository at release v0.6.0
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "c0e9d27e6ca307e4ac0122d3dd1df001b9824373fb6fb8627cd2371068e51fef",
-    strip_prefix = "rules_docker-0.6.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.6.0.tar.gz"],
+    # Replace with a real SHA256 checksum
+    sha256 = "{SHA256}"
+    strip_prefix = "rules_docker-{HEAD}",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/{HEAD}.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -116,15 +117,18 @@ docker_toolchain_configure(
   client_config="/path/to/docker/client/config",
 )
 
+# This is NOT needed when going through the language lang_image
+# "repositories" function(s).
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+container_repositories()
+
 load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
-    container_repositories = "repositories",
 )
-
-# This is NOT needed when going through the language lang_image
-# "repositories" function(s).
-container_repositories()
 
 container_pull(
   name = "java_base",
