@@ -4,7 +4,7 @@ metadataTest:
   entrypoint: [
     '/usr/bin/java',
     '-cp',
-    '/app/io_bazel_rules_docker/../com_google_guava_guava/jar/guava-18.0.jar:/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_library/scala-library-2.11.12.jar:/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:/app/io_bazel_rules_docker/tests/docker/scala/scala_image_library.jar:/app/io_bazel_rules_docker/tests/docker/scala/scala_image.binary.jar:/app/io_bazel_rules_docker/tests/docker/scala/scala_image.binary:/app/io_bazel_rules_docker/tests/docker/scala/BUILD:/app/io_bazel_rules_docker/tests/docker/scala/scala_image.binary_wrapper.sh',
+    '/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_library/scala-library-2.11.12.jar:/app/io_bazel_rules_docker/../io_bazel_rules_scala_scala_reflect/scala-reflect-2.11.12.jar:/app/io_bazel_rules_docker/tests/docker/scala/scala_image_library.jar:/app/io_bazel_rules_docker/tests/docker/scala/scala_image.binary.jar:/app/io_bazel_rules_docker/tests/docker/scala/scala_image.binary:/app/io_bazel_rules_docker/tests/docker/scala/BUILD:/app/io_bazel_rules_docker/tests/docker/scala/scala_image.binary_wrapper.sh',
     '-Dbuild.location=tests/docker/scala/BUILD',
     'examples.images.Binary',
     'arg0',
