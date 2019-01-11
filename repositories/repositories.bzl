@@ -169,9 +169,9 @@ py_library(
     if "subpar" not in excludes:
         http_archive(
             name = "subpar",
-            sha256 = "ee65e35c1cd9a723fb4d501e8055e10b34a27a0a557d10312af7b83d8e0101f5",
-            strip_prefix = "subpar-7e12cc130eb8f09c8cb02c3585a91a4043753c56",
-            urls = ["https://github.com/google/subpar/archive/7e12cc130eb8f09c8cb02c3585a91a4043753c56.tar.gz"],
+            sha256 = "cf3762b10426a1887d37f127b4c1390785ecb969254096eb714cc1db371f78d6",
+            strip_prefix = "subpar-a4f9b23bf01bcc7a52d458910af65a90ee991aff",
+            urls = ["https://github.com/google/subpar/archive/a4f9b23bf01bcc7a52d458910af65a90ee991aff.tar.gz"],
         )
 
     if "structure_test_linux" not in excludes:
