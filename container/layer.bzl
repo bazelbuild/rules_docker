@@ -106,7 +106,7 @@ def build_layer(
         symlinks = [struct(linkname = k, target = symlinks[k]) for k in symlinks],
         empty_files = empty_files or [],
         empty_dirs = empty_dirs or [],
-        emprty_root_dirs = empty_root_dirs,
+        empty_root_dirs = empty_root_dirs,
         tars = [f.path for f in tars],
         debs = [f.path for f in debs],
     )
