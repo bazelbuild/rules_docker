@@ -104,7 +104,7 @@ class TarFile(object):
   class DebError(Exception):
     pass
 
-  PKG_NAME_RE = re.compile(r'Package:\s*(?P<pkg_name>\w+).*')
+  PKG_NAME_RE = re.compile(r'Package:\s*(?P<pkg_name>[^\s]+).*')
   DPKG_STATUS_DIR = '/var/lib/dpkg/status.d'
   PKG_METADATA_FILE = 'control'
 
