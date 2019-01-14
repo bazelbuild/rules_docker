@@ -18,7 +18,6 @@ platforms:
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"
-    - "--all_incompatible_changes"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
   ubuntu1604:
@@ -39,7 +38,6 @@ platforms:
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"
-    - "--all_incompatible_changes"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
   macos:
@@ -47,14 +45,12 @@ platforms:
     - "//tests/docker:test_digest_output1"
     build_flags:
     - "--action_env=PATH"
-    - "--all_incompatible_changes"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     test_targets:
     - "//tests/docker:test_digest_output1"
     test_flags:
     - "--action_env=PATH"
-    - "--all_incompatible_changes"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
   rbe_ubuntu1604:
@@ -65,7 +61,6 @@ platforms:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--all_incompatible_changes"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     test_targets:
@@ -81,6 +76,5 @@ platforms:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--all_incompatible_changes"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
