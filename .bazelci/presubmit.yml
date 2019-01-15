@@ -7,6 +7,7 @@ platforms:
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    - "-//:structure_test_at_workspace_root"
     # Temporarily disabled tests that do not run in BuildKite CI
     # anymore.
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
@@ -27,6 +28,7 @@ platforms:
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    - "-//:structure_test_at_workspace_root"
     # Temporarily disabled tests that do not run in BuildKite CI
     # anymore.
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
@@ -65,6 +67,7 @@ platforms:
     - "--incompatible_disallow_legacy_javainfo=false"
     test_targets:
     - "--"
+    - "//:structure_test_at_workspace_root"
     - "//tests/..."
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"

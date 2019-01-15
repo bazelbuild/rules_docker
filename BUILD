@@ -17,6 +17,8 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
+load("//contrib:test.bzl", "container_test")
+
 config_setting(
     name = "fastbuild",
     values = {"compilation_mode": "fastbuild"},
@@ -30,4 +32,12 @@ config_setting(
 config_setting(
     name = "optimized",
     values = {"compilation_mode": "opt"},
+)
+
+# This is used to test the case where the test target in located at the root of
+# the workspace, which makes the Bazel package empty.
+container_test(
+    name = "structure_test_at_workspace_root",
+    configs = ["//tests/docker/configs:test.yaml"],
+    image = "//testdata:link_with_files_base",
 )
