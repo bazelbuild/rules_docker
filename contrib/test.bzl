@@ -126,6 +126,7 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     else:
         # Give the image a predictable name when loaded
         image_loader = "%s.image" % name
+
         # Remove commonly encountered characters that Docker will choke on.
         # Include the package name in the new image tag to avoid conflicts on naming
         # when running multiple container_test on images with the same target name
