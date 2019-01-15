@@ -126,7 +126,8 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     else:
         # Give the image a predictable name when loaded
         image_loader = "%s.image" % name
-        loaded_name = "%s:%s" % (native.package_name().replace("@", "external__"), name)
+        sanitized_name = (native.package_name() + image).replace(":", "").replace("@", "").replace("/", "")
+        loaded_name = "%s:intermediate" % sanitized_name
         container_bundle(
             name = image_loader,
             images = {
