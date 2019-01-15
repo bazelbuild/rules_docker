@@ -34,7 +34,7 @@ config_setting(
     values = {"compilation_mode": "opt"},
 )
 
-# This is used to test the case where the test target in located at the root of
+# This is used to test the case where the test target is located at the root of
 # the workspace, which makes the Bazel package empty.
 container_test(
     name = "structure_test_at_workspace_root",
