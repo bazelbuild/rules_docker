@@ -101,4 +101,5 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )
