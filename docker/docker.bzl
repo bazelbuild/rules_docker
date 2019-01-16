@@ -24,10 +24,8 @@ load(
     _docker_layer = "container_layer",
     _docker_load = "container_load",
     _docker_pull = "container_pull",
-    _docker_repositories = "repositories",
 )
 
-docker_repositories = _docker_repositories
 docker_pull = _docker_pull
 docker_load = _docker_load
 docker_layer = _docker_layer

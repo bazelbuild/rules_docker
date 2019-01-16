@@ -22,9 +22,12 @@ load(
     "filter_layer",
 )
 load(
+    "//repositories:repositories.bzl",
+    _repositories = "repositories",
+)
+load(
     "//container:container.bzl",
     "container_pull",
-    _repositories = "repositories",
 )
 
 # Load the resolved digests.

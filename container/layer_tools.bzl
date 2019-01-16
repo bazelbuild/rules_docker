@@ -31,7 +31,7 @@ def _extract_layers(ctx, name, artifact):
             "--manifestoutput",
             manifest_file.path,
         ],
-        inputs = [artifact],
+        tools = [artifact],
         outputs = [config_file, manifest_file],
         mnemonic = "ExtractConfig",
     )
@@ -102,7 +102,7 @@ def assemble(ctx, images, output, stamp = False):
     ctx.actions.run(
         executable = ctx.executable.join_layers,
         arguments = args,
-        inputs = inputs,
+        tools = inputs,
         outputs = [output],
         mnemonic = "JoinLayers",
     )

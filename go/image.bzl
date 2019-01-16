@@ -21,9 +21,12 @@ load(
     "app_layer",
 )
 load(
+    "//repositories:repositories.bzl",
+    _repositories = "repositories",
+)
+load(
     "//container:container.bzl",
     "container_pull",
-    _repositories = "repositories",
 )
 
 # It is expected that the Go rules have been properly

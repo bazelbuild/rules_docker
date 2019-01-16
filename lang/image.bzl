@@ -14,6 +14,7 @@
 """Helpers for synthesizing foo_image targets matching foo_binary.
 """
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//container:container.bzl",
     _container = "container",
@@ -138,7 +139,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     # in our base image, tracking absolute paths.
     available = {
         f: None
-        for f in parent_parts.get("transitive_files", depset())
+        for f in parent_parts.get("transitive_files", depset()).to_list()
     }
 
     # Compute the set of remaining runfiles to include into the
@@ -146,13 +147,15 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     file_map = {
         filepath(ctx, f): f
-        for f in runfiles(dep)
+        # runfiles(dep) can be `depset` or `list`. Covert it to `depset` first
+        # and then call to_list() on it as to_list() cannot be called on type `list`.
+        for f in depset(runfiles(dep)).to_list()
         if filepath(ctx, f) not in available and layer_file_path(ctx, f) not in available
     }
 
     empty_files = [
         emptyfilepath(ctx, f)
-        for f in emptyfiles(dep)
+        for f in depset(emptyfiles(dep)).to_list()
         if emptyfilepath(ctx, f) not in available and _layer_emptyfile_path(ctx, f) not in available
     ]
 
@@ -164,18 +167,18 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         # Include any symlinks from the runfiles of the target for which we are synthesizing the layer.
         symlinks.update({
             (_reference_dir(ctx) + "/" + s.path): layer_file_path(ctx, s.target_file)
-            for s in _default_symlinks(dep)
+            for s in _default_symlinks(dep).to_list()
             if hasattr(s, "path")  # "path" and "target_file" are exposed to starlark since bazel 0.21.0.
         })
 
         symlinks.update({
             _final_file_path(ctx, f): layer_file_path(ctx, f)
-            for f in runfiles(dep)
+            for f in runfiles(dep).to_list()
             if _final_file_path(ctx, f) not in file_map and _final_file_path(ctx, f) not in available
         })
         symlinks.update({
             _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
-            for f in emptyfiles(dep)
+            for f in emptyfiles(dep).to_list()
             if _final_emptyfile_path(ctx, f) not in empty_files and _final_emptyfile_path(ctx, f) not in available
         })
 
@@ -215,7 +218,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     )
 
 _app_layer = rule(
-    attrs = dict(_container.image.attrs.items() + {
+    attrs = dicts.add(_container.image.attrs, {
         # The binary target for which we are synthesizing an image.
         # If specified, the layer will not be "image agnostic", meaning
         # that the runfiles required by "dep" will be created (or symlinked,
@@ -240,7 +243,7 @@ _app_layer = rule(
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
-    }.items()),
+    }),
     executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
@@ -279,7 +282,7 @@ def _filter_layer_rule_impl(ctx):
 
     runfiles = ctx.runfiles()
     filtered_depsets = []
-    for dep in transitive_deps:
+    for dep in transitive_deps.to_list():
         if str(dep.target.label).startswith(ctx.attr.filter) and str(dep.target.label) != str(ctx.attr.dep.label):
             runfiles = runfiles.merge(dep.target.default_runfiles)
             filtered_depsets.append(dep.target_deps)

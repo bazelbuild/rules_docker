@@ -74,8 +74,7 @@ _container_test = rule(
         ),
         "image_tar": attr.label(
             doc = "When using the tar driver, label of the container image tarball",
-            allow_files = [".tar"],
-            single_file = True,
+            allow_single_file = [".tar"],
         ),
         "loaded_name": attr.string(
             doc = "When using the docker driver, the name:tag of the image when loaded into the docker daemon",
@@ -105,8 +104,7 @@ _container_test = rule(
         ),
         "_structure_test_tpl": attr.label(
             default = Label("//contrib:structure-test.sh.tpl"),
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
         ),
     },
     executable = True,
@@ -128,7 +126,13 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     else:
         # Give the image a predictable name when loaded
         image_loader = "%s.image" % name
-        loaded_name = "%s:%s" % (native.package_name().replace("@", "external__"), name)
+
+        # Remove commonly encountered characters that Docker will choke on.
+        # Include the package name in the new image tag to avoid conflicts on naming
+        # when running multiple container_test on images with the same target name
+        # from different packages.
+        sanitized_name = (native.package_name() + image).replace(":", "").replace("@", "").replace("/", "")
+        loaded_name = "%s:intermediate" % sanitized_name
         container_bundle(
             name = image_loader,
             images = {
