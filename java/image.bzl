@@ -314,6 +314,7 @@ def java_image(
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )
 
 def _war_dep_layer_impl(ctx):

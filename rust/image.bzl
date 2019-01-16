@@ -63,4 +63,5 @@ def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwarg
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )

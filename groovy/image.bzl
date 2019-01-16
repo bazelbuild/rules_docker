@@ -86,6 +86,7 @@ def groovy_image(
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )
 
 def repositories():
