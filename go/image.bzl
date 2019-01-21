@@ -89,6 +89,8 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
+    restricted_to = kwargs.get("restricted_to", None)
+    compatible_with = kwargs.get("compatible_with", None)
     app_layer(
         name = name,
         base = base,
@@ -98,4 +100,6 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        restricted_to = restricted_to,
+        compatible_with = compatible_with,
     )
