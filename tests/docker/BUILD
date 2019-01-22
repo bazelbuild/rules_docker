@@ -218,6 +218,22 @@ container_test(
     image = ":set_env_csv",
 )
 
+# Image with Bazel Make variables in the env field.
+container_image(
+    name = "set_env_make_vars",
+    base = "@distroless_fixed_id//image",
+    env = {
+        "$(ENV_KEY)": "$(ENV_VALUE)",
+    },
+)
+
+# This test checks that Bazel Make variables are expanded in the env field.
+container_test(
+    name = "set_env_make_vars_test",
+    configs = ["//tests/docker/configs:set_env_make_vars.yaml"],
+    image = ":set_env_make_vars",
+)
+
 genrule(
     name = "special_characters_file",
     outs = ["gen= foo.out"],

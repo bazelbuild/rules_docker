@@ -1,0 +1,6 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+  - key: my_key
+    value: my_value

@@ -306,7 +306,7 @@ container_image(
     name = "with_double_env",
     base = ":with_env",
     env = {
-        "baz": "${foo} $bar",
+        "baz": "$${foo} $$bar",
     },
 )
 
@@ -314,7 +314,7 @@ container_image(
     name = "layers_with_env",
     base = ":base_with_volume",
     env = {
-        "PATH": "$PATH:/tmp/b:/tmp/c",
+        "PATH": "$$PATH:/tmp/b:/tmp/c",
         "x": "y",
     },
     layers = [":env_layer"],
@@ -323,7 +323,7 @@ container_image(
 container_layer(
     name = "env_layer",
     env = {
-        "PATH": "$PATH:/tmp/a",
+        "PATH": "$$PATH:/tmp/a",
         "a": "b",
     },
 )
