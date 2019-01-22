@@ -133,7 +133,7 @@ def nodejs_image(
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        _dep_layer(name = this_name, base = base, dep = dep, binary = binary_name)
+        _dep_layer(name = this_name, base = base, dep = dep, binary = binary_name, testonly = kwargs.get("testonly"))
         base = this_name
 
     visibility = kwargs.get("visibility", None)
