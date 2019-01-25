@@ -65,6 +65,9 @@ platforms:
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/docker:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
     test_targets:
     - "--"
     - "//:structure_test_at_workspace_root"
@@ -81,3 +84,6 @@ platforms:
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/docker:set_env_make_vars_test
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"

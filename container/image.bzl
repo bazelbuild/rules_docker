@@ -157,7 +157,10 @@ def _image_config(
         args += ["--creation_time={BUILD_TIMESTAMP}"]
 
     args += ["--labels=%s" % "=".join([key, value]) for key, value in labels.items()]
-    args += ["--env=%s" % "=".join([key, value]) for key, value in env.items()]
+    args += ["--env=%s" % "=".join([
+        ctx.expand_make_variables("env", key, {}),
+        ctx.expand_make_variables("env", value, {}),
+    ]) for key, value in env.items()]
 
     if ctx.attr.user:
         args += ["--user=" + ctx.attr.user]
