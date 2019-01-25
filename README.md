@@ -1293,6 +1293,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td><code>stamp</code></td>
       <td>
         <p><code>Bool; optional</code></p>
+        <p>Deprecated: it is now automatically inferred.</p>
         <p>If true, enable use of workspace status variables
         (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
         and custom values set using <code>--workspace_status_command</code>)
