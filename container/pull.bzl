@@ -106,8 +106,6 @@ exports_files(["digest"])
         if cache_dir.startswith('~/') and "HOME" in repository_ctx.os.environ:
             cache_dir = cache_dir.replace('~', repository_ctx.os.environ["HOME"], 1)
 
-        repository_ctx.execute(["mkdir", "-p", cache_dir])
-
         args += [
             "--cache",
             cache_dir
