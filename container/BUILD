@@ -69,6 +69,14 @@ py_binary(
     srcs = ["build_tar.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
+    deps = [":build_tar_lib"],
+)
+
+py_library(
+    name = "build_tar_lib",
+    srcs = ["build_tar.py"],
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
     deps = [
         "@bazel_tools//third_party/py/gflags",
         "@bazel_tools//tools/build_defs/pkg:archive",
