@@ -1451,7 +1451,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
           },
           </code>
         </p>
-	<p>The values of this field support stamp variables.</p>
+	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
       </td>
     </tr>
   </tbody>
@@ -1713,7 +1713,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
           },
           </code>
         </p>
-	<p>The values of this field support stamp variables.</p>
+	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
       </td>
     </tr>
     <tr>
