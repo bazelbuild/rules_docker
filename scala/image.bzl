@@ -17,7 +17,6 @@ The signature of scala_image is compatible with scala_binary.
 """
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_binary")
-load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",

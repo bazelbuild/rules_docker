@@ -112,15 +112,15 @@ container_push = rule(
             default = Label("//contrib:push-all.sh.tpl"),
             allow_single_file = True,
         ),
-        "_tag_tpl": attr.label(
-            default = Label("//container:push-tag.sh.tpl"),
-            allow_single_file = True,
-        ),
         "_pusher": attr.label(
             default = Label("@containerregistry//:pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,
+        ),
+        "_tag_tpl": attr.label(
+            default = Label("//container:push-tag.sh.tpl"),
+            allow_single_file = True,
         ),
     },
     executable = True,

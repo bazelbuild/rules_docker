@@ -45,9 +45,9 @@ py_binary(
 alias(
     name = "structure_test_executable",
     actual = select({
+        "//conditions:default": "@structure_test_linux//file",
         "@bazel_tools//src/conditions:darwin": "@structure_test_darwin//file",
         "@bazel_tools//src/conditions:darwin_x86_64": "@structure_test_darwin//file",
-        "//conditions:default": "@structure_test_linux//file",
     }),
 )
 

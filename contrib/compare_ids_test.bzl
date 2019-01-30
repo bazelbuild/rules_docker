@@ -72,13 +72,13 @@ compare_ids_test(
 
 compare_ids_test = rule(
     attrs = {
-        "images": attr.label_list(
-            mandatory = True,
-            allow_files = True,
-        ),
         "id": attr.string(
             mandatory = False,
             default = "",
+        ),
+        "images": attr.label_list(
+            mandatory = True,
+            allow_files = True,
         ),
         "_compare_ids_test_script": attr.label(
             allow_files = True,

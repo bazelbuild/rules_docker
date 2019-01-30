@@ -15,24 +15,19 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "//skylib:filetype.bzl",
-    container_filetype = "container",
-    deb_filetype = "deb",
-    tar_filetype = "tar",
-)
-load(
     "@bazel_tools//tools/build_defs/hash:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
 load(
-    "//skylib:zip.bzl",
-    _gzip = "gzip",
-    _zip_tools = "tools",
-)
-load(
     "//container:layer_tools.bzl",
     _layer_tools = "tools",
+)
+load("//container:providers.bzl", "LayerInfo")
+load(
+    "//skylib:filetype.bzl",
+    deb_filetype = "deb",
+    tar_filetype = "tar",
 )
 load(
     "//skylib:path.bzl",
@@ -41,7 +36,11 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
-load("//container:providers.bzl", "LayerInfo")
+load(
+    "//skylib:zip.bzl",
+    _gzip = "gzip",
+    _zip_tools = "tools",
+)
 
 def _magic_path(ctx, f, output_layer):
     # Right now the logic this uses is a bit crazy/buggy, so to support
@@ -206,27 +205,27 @@ def _impl(
     )]
 
 _layer_attrs = dicts.add({
-    "data_path": attr.string(),
-    "directory": attr.string(default = "/"),
-    "files": attr.label_list(allow_files = True),
-    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
-    "tars": attr.label_list(allow_files = tar_filetype),
-    "debs": attr.label_list(allow_files = deb_filetype),
-    "symlinks": attr.string_dict(),
-    "env": attr.string_dict(),
-    # Implicit/Undocumented dependencies.
-    "empty_files": attr.string_list(),
-    "empty_dirs": attr.string_list(),
-    "operating_system": attr.string(
-        default = "linux",
-        mandatory = False,
-    ),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
+    "data_path": attr.string(),
+    "debs": attr.label_list(allow_files = deb_filetype),
+    "directory": attr.string(default = "/"),
+    "empty_dirs": attr.string_list(),
+    # Implicit/Undocumented dependencies.
+    "empty_files": attr.string_list(),
+    "env": attr.string_dict(),
+    "files": attr.label_list(allow_files = True),
+    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
+    "operating_system": attr.string(
+        default = "linux",
+        mandatory = False,
+    ),
+    "symlinks": attr.string_dict(),
+    "tars": attr.label_list(allow_files = tar_filetype),
 }, _hash_tools, _layer_tools, _zip_tools)
 
 _layer_outputs = {

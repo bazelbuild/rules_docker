@@ -105,12 +105,12 @@ def _passwd_tar_impl(ctx):
 
 passwd_entry = rule(
     attrs = {
-        "username": attr.string(mandatory = True),
-        "uid": attr.int(default = 1000),
         "gid": attr.int(default = 1000),
-        "info": attr.string(default = "user"),
         "home": attr.string(default = "/home"),
+        "info": attr.string(default = "user"),
         "shell": attr.string(default = "/bin/bash"),
+        "uid": attr.int(default = 1000),
+        "username": attr.string(mandatory = True),
     },
     implementation = _passwd_entry_impl,
 )
@@ -128,18 +128,18 @@ passwd_file = rule(
 
 passwd_tar = rule(
     attrs = {
-        "entries": attr.label_list(
-            allow_empty = False,
-            providers = [PasswdFileContentProvider],
-        ),
-        "passwd_file_pkg_dir": attr.string(mandatory = True),
-        "passwd_file_mode": attr.string(default = "0o644"),
         "build_tar": attr.label(
             default = Label("//container:build_tar"),
             cfg = "host",
             executable = True,
             allow_files = True,
         ),
+        "entries": attr.label_list(
+            allow_empty = False,
+            providers = [PasswdFileContentProvider],
+        ),
+        "passwd_file_mode": attr.string(default = "0o644"),
+        "passwd_file_pkg_dir": attr.string(mandatory = True),
     },
     executable = False,
     outputs = {

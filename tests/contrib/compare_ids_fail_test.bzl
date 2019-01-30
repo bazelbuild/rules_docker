@@ -54,14 +54,14 @@ compare_ids_test(
         template = ctx.file._executable_template,
         output = ctx.outputs.executable,
         substitutions = {
-            "{tars}": tars_string,
-            "{test_code}": test_code,
+            "{BUILD_path}": ctx.file._BUILD.short_path,
             "{bzl_path}": ctx.file._compare_ids_test_bzl.short_path,
-            "{test_bin_path}": ctx.file._compare_ids_test.short_path,
             "{extractor_path}": ctx.file._extract_image_id.short_path,
             "{name}": ctx.attr.name,
             "{reg_exps}": reg_exps,
-            "{BUILD_path}": ctx.file._BUILD.short_path,
+            "{tars}": tars_string,
+            "{test_bin_path}": ctx.file._compare_ids_test.short_path,
+            "{test_code}": test_code,
         },
         is_executable = True,
     )
@@ -98,37 +98,37 @@ compare_ids_fail_test(
 
 compare_ids_fail_test = rule(
     attrs = {
-        "images": attr.label_list(
-            mandatory = True,
-            allow_files = True,
-        ),
         "id": attr.string(
             mandatory = False,
             default = "",
+        ),
+        "images": attr.label_list(
+            mandatory = True,
+            allow_files = True,
         ),
         "reg_exps": attr.string_list(
             mandatory = False,
             default = [],
         ),
-        "_executable_template": attr.label(
+        "_BUILD": attr.label(
             allow_single_file = True,
-            default = "compare_ids_fail_test.sh.tpl",
-        ),
-        "_compare_ids_test_bzl": attr.label(
-            allow_single_file = True,
-            default = "//contrib:compare_ids_test.bzl",
+            default = "//contrib:BUILD",
         ),
         "_compare_ids_test": attr.label(
             allow_single_file = True,
             default = "//contrib:compare_ids_test.py",
         ),
+        "_compare_ids_test_bzl": attr.label(
+            allow_single_file = True,
+            default = "//contrib:compare_ids_test.bzl",
+        ),
+        "_executable_template": attr.label(
+            allow_single_file = True,
+            default = "compare_ids_fail_test.sh.tpl",
+        ),
         "_extract_image_id": attr.label(
             allow_single_file = True,
             default = "//contrib:extract_image_id.py",
-        ),
-        "_BUILD": attr.label(
-            allow_single_file = True,
-            default = "//contrib:BUILD",
         ),
     },
     test = True,

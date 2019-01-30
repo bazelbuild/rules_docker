@@ -17,6 +17,10 @@ The signature of this rule is compatible with py_binary.
 """
 
 load(
+    "//container:container.bzl",
+    "container_pull",
+)
+load(
     "//lang:image.bzl",
     "app_layer",
     "filter_layer",
@@ -24,10 +28,6 @@ load(
 load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
-)
-load(
-    "//container:container.bzl",
-    "container_pull",
 )
 
 # Load the resolved digests.
@@ -55,10 +55,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
-    "@io_bazel_rules_docker//:debug": "@py_debug_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@py_image_base//image",
     "//conditions:default": "@py_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@py_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@py_image_base//image",
 })
 
 def py_layer(name, deps, filter = "", **kwargs):

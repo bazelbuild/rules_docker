@@ -1,3 +1,18 @@
+load(
+    "@bazel_tools//tools/build_rules:test_rules.bzl",
+    "file_test",
+)
+load("//container:bundle.bzl", "container_bundle")
+load(
+    "//container:container.bzl",
+    "container_image",
+    "container_import",
+    "container_push",
+)
+load("//contrib:push-all.bzl", docker_push_all = "docker_push")
+load("//contrib:test.bzl", "container_test")
+load(":apple.bzl", "create_banana_directory")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +27,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
-
-load(
-    "//container:container.bzl",
-    "container_image",
-    "container_import",
-    "container_push",
-)
-load("//contrib:test.bzl", "container_test")
-load(
-    "@bazel_tools//tools/build_rules:test_rules.bzl",
-    "file_test",
-)
-load("//container:bundle.bzl", "container_bundle")
-load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 
 container_test(
     name = "structure_test",
@@ -300,8 +301,6 @@ file_test(
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",
 )
-
-load(":apple.bzl", "create_banana_directory")
 
 create_banana_directory(
     name = "banana_directory",

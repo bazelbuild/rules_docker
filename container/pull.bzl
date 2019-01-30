@@ -34,16 +34,9 @@ def python(repository_ctx):
          "Please set BAZEL_PYTHON, or put it on your path.")
 
 _container_pull_attrs = {
-    "registry": attr.string(mandatory = True),
-    "repository": attr.string(mandatory = True),
-    "digest": attr.string(),
-    "tag": attr.string(default = "latest"),
-    "os": attr.string(default = "linux"),
-    "os_version": attr.string(),
-    "os_features": attr.string_list(),
     "architecture": attr.string(default = "amd64"),
     "cpu_variant": attr.string(),
-    "platform_features": attr.string_list(),
+    "digest": attr.string(),
     "docker_client_config": attr.string(
         doc = "A custom directory for the docker client config.json. " +
               "If DOCKER_CONFIG is not specified, the value of the " +
@@ -51,6 +44,13 @@ _container_pull_attrs = {
               " is not defined, the home directory will be used.",
         mandatory = False,
     ),
+    "os": attr.string(default = "linux"),
+    "os_features": attr.string_list(),
+    "os_version": attr.string(),
+    "platform_features": attr.string_list(),
+    "registry": attr.string(mandatory = True),
+    "repository": attr.string(mandatory = True),
+    "tag": attr.string(default = "latest"),
     "_puller": attr.label(
         executable = True,
         default = Label("@puller//file:downloaded"),

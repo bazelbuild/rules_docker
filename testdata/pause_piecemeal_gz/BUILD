@@ -1,3 +1,6 @@
+load("//container:container.bzl", "container_import")
+load("//testdata/pause_piecemeal:layers.bzl", "PAUSE_LAYERS")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +17,6 @@
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("//container:container.bzl", "container_import")
-load("//testdata/pause_piecemeal:layers.bzl", "PAUSE_LAYERS")
 
 [genrule(
     name = "extract_%s_gz" % id,

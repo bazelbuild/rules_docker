@@ -1,3 +1,6 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load(":toolchain.bzl", "docker_toolchain")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package(default_visibility = ["//visibility:private"])
-
-load(":toolchain.bzl", "docker_toolchain")
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 bzl_library(
     name = "docker",

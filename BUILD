@@ -1,3 +1,5 @@
+load("//contrib:test.bzl", "container_test")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +18,6 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
-
-load("//contrib:test.bzl", "container_test")
 
 config_setting(
     name = "fastbuild",
