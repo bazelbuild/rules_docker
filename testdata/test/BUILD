@@ -1,5 +1,3 @@
-load("@pip_deps//:requirements.bzl", "requirement")
-
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +11,9 @@ load("@pip_deps//:requirements.bzl", "requirement")
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@pip_deps//:requirements.bzl", "requirement")
+
 package(default_visibility = ["//testdata:__subpackages__"])
 
 filegroup(
