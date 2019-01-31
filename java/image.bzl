@@ -103,18 +103,18 @@ DEFAULT_JETTY_BASE = select({
 })
 
 def java_files(f):
-    files = []
+    files = depset()
     if java_common.provider in f:
         java_provider = f[java_common.provider]
-        files += java_provider.transitive_runtime_jars.to_list()
+        files = depset(transitive = [files, java_provider.transitive_runtime_jars])
     if hasattr(f, "files"):  # a jar file
-        files += f.files.to_list()
+        files = depset(transitive = [files, f.files])
     return files
 
 def java_files_with_data(f):
     files = java_files(f)
     if hasattr(f, "data_runfiles"):
-        files += f.data_runfiles.files.to_list()
+        files = depset(transitive = [files, f.data_runfiles.files])
     return files
 
 def _jar_dep_layer_impl(ctx):
@@ -159,23 +159,20 @@ def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
     # layers don't include runfiles
-    available = depset(transitive = [depset(java_files(jar)) for jar in ctx.attr.jar_layers])
+    available = depset(transitive = [java_files(jar) for jar in ctx.attr.jar_layers])
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
     # out what is in available.
-    unavailable = depset(transitive = [depset(java_files_with_data(jar)) for jar in ctx.attr.deps + ctx.attr.runtime_deps])
-    unavailable = depset(transitive = [unavailable, depset(java_files_with_data(ctx.attr.binary))])
-    unavailable = [x for x in unavailable.to_list() if x not in available.to_list()]
+    unavailable = depset(transitive = [java_files_with_data(jar) for jar in ctx.attr.deps + ctx.attr.runtime_deps])
+    unavailable = depset(transitive = [unavailable, java_files_with_data(ctx.attr.binary)])
+    unavailable = depset([x for x in unavailable.to_list() if x not in available.to_list()])
 
     # Remove files that are provided by the JDK from the unavailable set,
     # as these will be provided by the Java image.
-    unavailable = [x for x in unavailable.to_list() if x not in ctx.files._jdk]
+    unavailable = depset([x for x in unavailable.to_list() if x not in ctx.files._jdk])
 
-    classpath = ":".join([
-        layer_file_path(ctx, x)
-        for x in depset(transitive = [available, depset(unavailable.to_list())]).to_list()
-    ])
+    classpath = ":".join([layer_file_path(ctx, x) for x in depset(transitive = [available, unavailable]).to_list()])
 
     # Classpaths can grow long and there is a limit on the length of a
     # command line, so mitigate this by always writing the classpath out
@@ -199,7 +196,7 @@ def _jar_app_layer_impl(ctx):
 
     file_map = {
         layer_file_path(ctx, f): f
-        for f in depset(transitive = [unavailable, [classpath_file]]).to_list()
+        for f in depset([classpath_file], transitive = [unavailable]).to_list()
     }
 
     return _container.image.implementation(
