@@ -135,6 +135,7 @@ def _impl(ctx):
         ),
     ]
 
+# Pushes a container image to a registry.
 container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
@@ -143,18 +144,29 @@ container_push = rule(
                 "OCI",
                 "Docker",
             ],
+            doc = "The form to push: Docker or OCI.",
         ),
         "image": attr.label(
             allow_single_file = [".tar"],
             mandatory = True,
+            doc = "The label of the image to push.",
         ),
-        "registry": attr.string(mandatory = True),
-        "repository": attr.string(mandatory = True),
+        "registry": attr.string(
+            mandatory = True,
+            doc = "The registry to which we are pushing.",
+        ),
+        "repository": attr.string(
+            mandatory = True,
+            doc = "The name of the image.",
+        ),
         "stamp": attr.bool(
             default = False,
             mandatory = False,
         ),
-        "tag": attr.string(default = "latest"),
+        "tag": attr.string(
+            default = "latest",
+            doc = "(optional) The tag of the image, default to 'latest'.",
+        ),
         "_digester": attr.label(
             default = "@containerregistry//:digester",
             cfg = "host",
@@ -178,16 +190,3 @@ container_push = rule(
         "digest": "%{name}.digest",
     },
 )
-
-"""Pushes a container image.
-
-This rule pushes a container image to a registry.
-
-Args:
-  name: name of the rule
-  image: the label of the image to push.
-  format: The form to push: Docker or OCI.
-  registry: the registry to which we are pushing.
-  repository: the name of the image.
-  tag: (optional) the tag of the image, default to 'latest'.
-"""

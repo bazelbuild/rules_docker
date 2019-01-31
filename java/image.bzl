@@ -163,7 +163,7 @@ def _jar_app_layer_impl(ctx):
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
-    # out what it available.
+    # out what is in available.
     unavailable = depset(transitive = [depset(java_files_with_data(jar)) for jar in ctx.attr.deps + ctx.attr.runtime_deps])
     unavailable = depset(transitive = [unavailable, depset(java_files_with_data(ctx.attr.binary))])
     unavailable = [x for x in unavailable.to_list() if x not in available.to_list()]
@@ -199,7 +199,7 @@ def _jar_app_layer_impl(ctx):
 
     file_map = {
         layer_file_path(ctx, f): f
-        for f in (unavailable + [classpath_file]).to_list()
+        for f in depset(transitive = [unavailable, [classpath_file]]).to_list()
     }
 
     return _container.image.implementation(

@@ -100,13 +100,17 @@ def _impl(ctx):
 
 container_push = rule(
     attrs = {
-        "bundle": attr.label(mandatory = True),
+        "bundle": attr.label(
+            mandatory = True,
+            doc = "The bundle of tagged images to publish.",
+        ),
         "format": attr.string(
             mandatory = True,
             values = [
                 "OCI",
                 "Docker",
             ],
+            doc = "The form to push: Docker or OCI.",
         ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),
@@ -127,14 +131,7 @@ container_push = rule(
     implementation = _impl,
 )
 
-"""Pushes a bundle of container images.
-
-Args:
-  name: name of the rule.
-  bundle: the bundle of tagged images to publish.
-  format: the form to push: Docker or OCI.
-"""
-
+# Pushes a bundle of container images.
 def docker_push(*args, **kwargs):
     if "format" in kwargs:
         fail(

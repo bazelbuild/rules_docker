@@ -279,10 +279,10 @@ _nodejs_image_repos()
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "07a81ee03f5feae354c9f98c884e8e886914856fb2b6a63cba4619ef10aaaf0b",
-    strip_prefix = "bazel-toolchains-31b5dc8c4e9c7fd3f5f4d04c6714f2ce87b126c1",
+    sha256 = "767325343fb2e3a8dd77bccff30cfa66056e88049d339a977f77a85ecc3fc580",
+    strip_prefix = "bazel-toolchains-ad7f0157e13d5d3a4b893652a375b03ee9e032b4",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/31b5dc8c4e9c7fd3f5f4d04c6714f2ce87b126c1.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/31b5dc8c4e9c7fd3f5f4d04c6714f2ce87b126c1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/ad7f0157e13d5d3a4b893652a375b03ee9e032b4.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/ad7f0157e13d5d3a4b893652a375b03ee9e032b4.tar.gz",
     ],
 )

@@ -12,8 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Implementation of compare_ids_fail_test rule
+"""Test to test correctness of failure cases of the compare_ids_test.
 
+Args:
+    images: List of Labels which refer to the docker image tarballs (from docker save)
+    id: (optional) the id we want the images in the tarballs to have
+    reg_exps: (optional) a list of regular expressions that must match the output text
+        of the bazel call. (Ex [".*Executed .* fail.*"] makes sure the given test failed
+        as opposed to failing to build)
+
+This test passes only if the compare_ids_test it generates fails
+
+Each tarball must contain exactly one image.
+
+Examples of use:
+
+compare_ids_fail_test(
+    name = "test1",
+    images = ["image.tar", "image_with_diff_id.tar"],
+)
+
+compare_ids_fail_test(
+    name = "test2",
+    images = ["image.tar"],
+    id = "<my_wrong_image_sha256>",
+)
+"""
+
+# Implementation of compare_ids_fail_test rule
 def _impl(ctx):
     test_code = """ '
 load("//:compare_ids_test.bzl", "compare_ids_test")
@@ -67,34 +93,6 @@ compare_ids_test(
     )
 
     return [DefaultInfo(runfiles = runfiles)]
-
-"""
-Test to test correctness of failure cases of the compare_ids_test.
-
-Args:
-    images: List of Labels which refer to the docker image tarballs (from docker save)
-    id: (optional) the id we want the images in the tarballs to have
-    reg_exps: (optional) a list of regular expressions that must match the output text
-        of the bazel call. (Ex [".*Executed .* fail.*"] makes sure the given test failed
-        as opposed to failing to build)
-
-This test passes only if the compare_ids_test it generates fails
-
-Each tarball must contain exactly one image.
-
-Examples of use:
-
-compare_ids_fail_test(
-    name = "test1",
-    images = ["image.tar", "image_with_diff_id.tar"],
-)
-
-compare_ids_fail_test(
-    name = "test2",
-    images = ["image.tar"],
-    id = "<my_wrong_image_sha256>",
-)
-"""
 
 compare_ids_fail_test = rule(
     attrs = {
