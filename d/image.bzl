@@ -16,16 +16,16 @@
 The signature of this rule is compatible with d_binary.
 """
 
-load(
-    "//lang:image.bzl",
-    "app_layer",
-)
+load("@io_bazel_rules_d//d:d.bzl", "d_binary")
 load(
     "//cc:image.bzl",
     "DEFAULT_BASE",
     _repositories = "repositories",
 )
-load("@io_bazel_rules_d//d:d.bzl", "d_binary")
+load(
+    "//lang:image.bzl",
+    "app_layer",
+)
 
 def repositories():
     _repositories()

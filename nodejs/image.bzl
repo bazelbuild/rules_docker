@@ -17,6 +17,12 @@ The signature of this rule is compatible with nodejs_binary.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load(
+    "//container:container.bzl",
+    "container_pull",
+    _container = "container",
+)
 load(
     "//lang:image.bzl",
     "app_layer",
@@ -26,12 +32,6 @@ load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
-load(
-    "//container:container.bzl",
-    "container_pull",
-    _container = "container",
-)
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
 # Load the resolved digests.
 load(":nodejs.bzl", "DIGESTS")
@@ -58,10 +58,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
-    "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
     "//conditions:default": "@nodejs_debug_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
 })
 
 def _runfiles(dep):
@@ -77,11 +77,6 @@ _dep_layer = rule(
     attrs = dicts.add(_container.image.attrs, {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
-        # The dependency whose runfiles we're appending.
-        "dep": attr.label(
-            mandatory = True,
-            allow_files = True,
-        ),
 
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = False),
@@ -89,6 +84,11 @@ _dep_layer = rule(
         # Override the defaults.
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
+        # The dependency whose runfiles we're appending.
+        "dep": attr.label(
+            mandatory = True,
+            allow_files = True,
+        ),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
     }),

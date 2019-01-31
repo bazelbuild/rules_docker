@@ -16,16 +16,16 @@
 The signature of this rule is compatible with rust_binary.
 """
 
-load(
-    "//lang:image.bzl",
-    "app_layer",
-)
+load("@io_bazel_rules_rust//rust:rust.bzl", "rust_binary")
 load(
     "//cc:image.bzl",
     "DEFAULT_BASE",
     _repositories = "repositories",
 )
-load("@io_bazel_rules_rust//rust:rust.bzl", "rust_binary")
+load(
+    "//lang:image.bzl",
+    "app_layer",
+)
 
 def repositories():
     _repositories()

@@ -182,6 +182,8 @@ def incremental_load(
         template = ctx.file.incremental_load_template,
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{load_statements}": "\n".join(load_statements),
+            "%{run_statements}": "\n".join(run_statements),
             # If this rule involves stamp variables than load them as bash
             # variables, and turn references to them into bash variable
             # references.
@@ -189,27 +191,25 @@ def incremental_load(
                 "read_variables %s" % _get_runfile_path(ctx, f)
                 for f in stamp_files
             ]),
-            "%{load_statements}": "\n".join(load_statements),
             "%{tag_statements}": "\n".join(tag_statements),
-            "%{run_statements}": "\n".join(run_statements),
         },
         output = output,
         is_executable = True,
     )
 
 tools = {
+    "extract_config": attr.label(
+        default = Label("//container:extract_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
     "incremental_load_template": attr.label(
         default = Label("//container:incremental_load_template"),
         allow_single_file = True,
     ),
     "join_layers": attr.label(
         default = Label("//container:join_layers"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
-    ),
-    "extract_config": attr.label(
-        default = Label("//container:extract_config"),
         cfg = "host",
         executable = True,
         allow_files = True,

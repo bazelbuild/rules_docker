@@ -1,3 +1,7 @@
+load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
+load("//contrib:test.bzl", "container_test")
+load("//groovy:image.bzl", "groovy_image")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +16,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
-
-load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
-load("//groovy:image.bzl", "groovy_image")
-load("//contrib:test.bzl", "container_test")
 
 groovy_library(
     name = "groovy_image_library",

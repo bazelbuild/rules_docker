@@ -12,8 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Implementation of compare_ids_fail_test rule
+"""Test to test correctness of failure cases of the compare_ids_test.
 
+Args:
+    images: List of Labels which refer to the docker image tarballs (from docker save)
+    id: (optional) the id we want the images in the tarballs to have
+    reg_exps: (optional) a list of regular expressions that must match the output text
+        of the bazel call. (Ex [".*Executed .* fail.*"] makes sure the given test failed
+        as opposed to failing to build)
+
+This test passes only if the compare_ids_test it generates fails
+
+Each tarball must contain exactly one image.
+
+Examples of use:
+
+compare_ids_fail_test(
+    name = "test1",
+    images = ["image.tar", "image_with_diff_id.tar"],
+)
+
+compare_ids_fail_test(
+    name = "test2",
+    images = ["image.tar"],
+    id = "<my_wrong_image_sha256>",
+)
+"""
+
+# Implementation of compare_ids_fail_test rule
 def _impl(ctx):
     test_code = """ '
 load("//:compare_ids_test.bzl", "compare_ids_test")
@@ -54,81 +80,53 @@ compare_ids_test(
         template = ctx.file._executable_template,
         output = ctx.outputs.executable,
         substitutions = {
-            "{tars}": tars_string,
-            "{test_code}": test_code,
+            "{BUILD_path}": ctx.file._BUILD.short_path,
             "{bzl_path}": ctx.file._compare_ids_test_bzl.short_path,
-            "{test_bin_path}": ctx.file._compare_ids_test.short_path,
             "{extractor_path}": ctx.file._extract_image_id.short_path,
             "{name}": ctx.attr.name,
             "{reg_exps}": reg_exps,
-            "{BUILD_path}": ctx.file._BUILD.short_path,
+            "{tars}": tars_string,
+            "{test_bin_path}": ctx.file._compare_ids_test.short_path,
+            "{test_code}": test_code,
         },
         is_executable = True,
     )
 
     return [DefaultInfo(runfiles = runfiles)]
 
-"""
-Test to test correctness of failure cases of the compare_ids_test.
-
-Args:
-    images: List of Labels which refer to the docker image tarballs (from docker save)
-    id: (optional) the id we want the images in the tarballs to have
-    reg_exps: (optional) a list of regular expressions that must match the output text
-        of the bazel call. (Ex [".*Executed .* fail.*"] makes sure the given test failed
-        as opposed to failing to build)
-
-This test passes only if the compare_ids_test it generates fails
-
-Each tarball must contain exactly one image.
-
-Examples of use:
-
-compare_ids_fail_test(
-    name = "test1",
-    images = ["image.tar", "image_with_diff_id.tar"],
-)
-
-compare_ids_fail_test(
-    name = "test2",
-    images = ["image.tar"],
-    id = "<my_wrong_image_sha256>",
-)
-"""
-
 compare_ids_fail_test = rule(
     attrs = {
-        "images": attr.label_list(
-            mandatory = True,
-            allow_files = True,
-        ),
         "id": attr.string(
             mandatory = False,
             default = "",
+        ),
+        "images": attr.label_list(
+            mandatory = True,
+            allow_files = True,
         ),
         "reg_exps": attr.string_list(
             mandatory = False,
             default = [],
         ),
-        "_executable_template": attr.label(
+        "_BUILD": attr.label(
             allow_single_file = True,
-            default = "compare_ids_fail_test.sh.tpl",
-        ),
-        "_compare_ids_test_bzl": attr.label(
-            allow_single_file = True,
-            default = "//contrib:compare_ids_test.bzl",
+            default = "//contrib:BUILD",
         ),
         "_compare_ids_test": attr.label(
             allow_single_file = True,
             default = "//contrib:compare_ids_test.py",
         ),
+        "_compare_ids_test_bzl": attr.label(
+            allow_single_file = True,
+            default = "//contrib:compare_ids_test.bzl",
+        ),
+        "_executable_template": attr.label(
+            allow_single_file = True,
+            default = "compare_ids_fail_test.sh.tpl",
+        ),
         "_extract_image_id": attr.label(
             allow_single_file = True,
             default = "//contrib:extract_image_id.py",
-        ),
-        "_BUILD": attr.label(
-            allow_single_file = True,
-            default = "//contrib:BUILD",
         ),
     },
     test = True,

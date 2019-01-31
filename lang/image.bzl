@@ -219,6 +219,9 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
 _app_layer = rule(
     attrs = dicts.add(_container.image.attrs, {
+
+        # The base image on which to overlay the dependency layers.
+        "base": attr.label(mandatory = True),
         # The binary target for which we are synthesizing an image.
         # If specified, the layer will not be "image agnostic", meaning
         # that the runfiles required by "dep" will be created (or symlinked,
@@ -228,21 +231,18 @@ _app_layer = rule(
             executable = True,
             cfg = "target",
         ),
+        "data": attr.label_list(allow_files = True),
+
+        # Override the defaults.
+        "data_path": attr.string(default = "."),
         # The dependency whose runfiles we're appending.
         # If not specified, then the layer will be treated as the top layer,
         # and all remaining deps of "binary" will be added under runfiles.
         "dep": attr.label(providers = [DefaultInfo]),
-
-        # The base image on which to overlay the dependency layers.
-        "base": attr.label(mandatory = True),
-        "entrypoint": attr.string_list(default = []),
-
-        # Override the defaults.
-        "data_path": attr.string(default = "."),
-        "workdir": attr.string(default = ""),
         "directory": attr.string(default = "/app"),
+        "entrypoint": attr.string_list(default = []),
         "legacy_run_behavior": attr.bool(default = False),
-        "data": attr.label_list(allow_files = True),
+        "workdir": attr.string(default = ""),
     }),
     executable = True,
     outputs = _container.image.outputs,

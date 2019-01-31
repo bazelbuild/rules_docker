@@ -34,22 +34,54 @@ def python(repository_ctx):
          "Please set BAZEL_PYTHON, or put it on your path.")
 
 _container_pull_attrs = {
-    "registry": attr.string(mandatory = True),
-    "repository": attr.string(mandatory = True),
-    "digest": attr.string(),
-    "tag": attr.string(default = "latest"),
-    "os": attr.string(default = "linux"),
-    "os_version": attr.string(),
-    "os_features": attr.string_list(),
-    "architecture": attr.string(default = "amd64"),
-    "cpu_variant": attr.string(),
-    "platform_features": attr.string_list(),
+    "architecture": attr.string(
+        default = "amd64",
+        doc = "(optional) Which CPU architecture to pull if this image " +
+              "refers to a multi-platform manifest list, default 'amd64'.",
+    ),
+    "cpu_variant": attr.string(
+        doc = "Which CPU variant to pull if this image refers to a " +
+              "multi-platform manifest list.",
+    ),
+    "digest": attr.string(
+        doc = "(optional) The digest of the image to pull.",
+    ),
     "docker_client_config": attr.string(
         doc = "A custom directory for the docker client config.json. " +
               "If DOCKER_CONFIG is not specified, the value of the " +
               "DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG" +
               " is not defined, the home directory will be used.",
         mandatory = False,
+    ),
+    "os": attr.string(
+        default = "linux",
+        doc = "(optional) Which os to pull if this image refers to a " +
+              "multi-platform manifest list, default 'linux'.",
+    ),
+    "os_features": attr.string_list(
+        doc = "(optional) Specifies os features when pulling a multi-platform " +
+              "manifest list.",
+    ),
+    "os_version": attr.string(
+        doc = "(optional) Which os version to pull if this image refers to a " +
+              "multi-platform manifest list.",
+    ),
+    "platform_features": attr.string_list(
+        doc = "(optional) Specifies platform features when pulling a " +
+              "multi-platform manifest list.",
+    ),
+    "registry": attr.string(
+        mandatory = True,
+        doc = "The registry from which we are pulling.",
+    ),
+    "repository": attr.string(
+        mandatory = True,
+        doc = "The name of the image.",
+    ),
+    "tag": attr.string(
+        default = "latest",
+        doc = "(optional) The tag of the image, default to 'latest' " +
+              "if this and 'digest' remain unspecified.",
     ),
     "_puller": attr.label(
         executable = True,
@@ -141,37 +173,15 @@ exports_files(["digest"])
     updated_attrs["digest"] = digest_result.stdout
     return updated_attrs
 
-"""Pulls a container image.
-
-This rule pulls a container image into our intermediate format.  The
-output of this rule can be used interchangeably with `docker_build`.
-
-Args:
-  name: name of the rule.
-  registry: the registry from which we are pulling.
-  repository: the name of the image.
-  tag: (optional) the tag of the image, default to 'latest' if this
-       and 'digest' remain unspecified.
-  digest: (optional) the digest of the image to pull.
-  os: (optional) which os to pull if this image refers to a
-      multi-platform manifest list, default 'linux'.
-  os_version: (optional) which os version to pull if this image refers to a
-              multi-platform manifest list.
-  os_features: (optional) specifies os features when pulling a
-               multi-platform manifest list.
-  architecture: (optional) which CPU architecture to pull if this image
-                refers to a multi-platform manifest list, default 'amd64'.
-  cpu_variant: (optional) which CPU variant to pull if this image
-                refers to a multi-platform manifest list.
-  platform_features: (optional) specifies platform features when pulling a
-                     multi-platform manifest list.
-"""
-
 pull = struct(
     attrs = _container_pull_attrs,
     implementation = _impl,
 )
 
+# Pulls a container image.
+
+# This rule pulls a container image into our intermediate format.  The
+# output of this rule can be used interchangeably with `docker_build`.
 container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,

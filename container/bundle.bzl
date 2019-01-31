@@ -15,10 +15,6 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "//skylib:label.bzl",
-    _string_to_label = "string_to_label",
-)
-load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _get_layers = "get_from_target",
@@ -26,6 +22,10 @@ load(
     _layer_tools = "tools",
 )
 load("//container:providers.bzl", "BundleInfo")
+load(
+    "//skylib:label.bzl",
+    _string_to_label = "string_to_label",
+)
 
 def _container_bundle_impl(ctx):
     """Implementation for the container_bundle rule."""
@@ -89,10 +89,10 @@ def _container_bundle_impl(ctx):
 
 container_bundle_ = rule(
     attrs = dicts.add({
-        "images": attr.string_dict(),
+        "image_target_strings": attr.string_list(),
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
-        "image_target_strings": attr.string_list(),
+        "images": attr.string_dict(),
         "stamp": attr.bool(
             default = False,
             mandatory = False,

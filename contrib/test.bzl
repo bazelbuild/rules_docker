@@ -54,9 +54,9 @@ def _impl(ctx):
         template = ctx.file._structure_test_tpl,
         output = ctx.outputs.executable,
         substitutions = {
+            "%{args}": " ".join(args),
             "%{load_statement}": load_statement,
             "%{test_executable}": ctx.executable._structure_test.short_path,
-            "%{args}": " ".join(args),
         },
         is_executable = True,
     )
@@ -67,6 +67,19 @@ def _impl(ctx):
 
 _container_test = rule(
     attrs = {
+        "configs": attr.label_list(
+            mandatory = True,
+            allow_files = True,
+        ),
+        "driver": attr.string(
+            default = "docker",
+            doc = "Driver to use when running structure tests",
+            mandatory = False,
+            values = [
+                "docker",
+                "tar",
+            ],
+        ),
         "image": attr.label(
             doc = "When using the docker driver, label of the incremental loader",
             executable = True,
@@ -79,22 +92,9 @@ _container_test = rule(
         "loaded_name": attr.string(
             doc = "When using the docker driver, the name:tag of the image when loaded into the docker daemon",
         ),
-        "configs": attr.label_list(
-            mandatory = True,
-            allow_files = True,
-        ),
         "verbose": attr.bool(
             default = False,
             mandatory = False,
-        ),
-        "driver": attr.string(
-            default = "docker",
-            doc = "Driver to use when running structure tests",
-            mandatory = False,
-            values = [
-                "docker",
-                "tar",
-            ],
         ),
         "_structure_test": attr.label(
             default = Label("//contrib:structure_test_executable"),

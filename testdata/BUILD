@@ -1,3 +1,39 @@
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@pip_deps//:requirements.bzl", "requirement")
+load("//cc:image.bzl", "cc_image")
+load(
+    "//container:container.bzl",
+    "container_bundle",
+    "container_flatten",
+    "container_image",
+    "container_layer",
+)
+load("//contrib:group.bzl", "group_entry", "group_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
+load(
+    "//contrib:push-all.bzl",
+    docker_pushall = "docker_push",
+    oci_pushall = "oci_push",
+)
+load(
+    "//contrib:with-tag.bzl",
+    container_image_with_tag = "container_image",
+)
+load("//docker:docker.bzl", "docker_push")
+load("//groovy:image.bzl", "groovy_image")
+load(
+    "//java:image.bzl",
+    "java_image",
+    "war_image",
+)
+load("//oci:oci.bzl", "oci_push")
+load("//python3:image.bzl", "py3_image")
+load("//python:image.bzl", "py_image", "py_layer")
+load("//scala:image.bzl", "scala_image")
+load("//testdata:utils.bzl", "generate_deb", "rule_with_symlinks")
+load(":stamp_info.bzl", "stamp_info")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +48,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
-
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load(
-    "//container:container.bzl",
-    "container_bundle",
-    "container_flatten",
-    "container_image",
-    "container_layer",
-)
-load("//testdata:utils.bzl", "generate_deb")
-load(":stamp_info.bzl", "stamp_info")
 
 exports_files(["pause.tar"])
 
@@ -297,8 +322,8 @@ container_image(
     name = "with_env",
     base = ":base_with_volume",
     env = {
-        "foo": "/asdf",
         "bar": "blah blah blah",
+        "foo": "/asdf",
     },
 )
 
@@ -332,9 +357,9 @@ container_image(
     name = "with_label",
     base = ":base_with_volume",
     labels = {
-        "com.example.foo": "@blah.json",
         "com.example.bar": "@blah.json",
         "com.example.baz": "qux",
+        "com.example.foo": "@blah.json",
     },
 )
 
@@ -383,8 +408,6 @@ container_flatten(
     image = ":link_with_files_base",
 )
 
-load("//docker:docker.bzl", "docker_push")
-
 docker_push(
     name = "push_stamp",
     image = ":link_with_files_base",
@@ -392,8 +415,6 @@ docker_push(
     repository = "convoy-adapter/bazel-oci-test",
     tag = "{BUILD_USER}",
 )
-
-load("//oci:oci.bzl", "oci_push")
 
 oci_push(
     name = "push_stamp_oci",
@@ -431,8 +452,8 @@ container_bundle(
     name = "bundle_test",
     images = {
         "docker.io/ubuntu:latest": ":base_with_entrypoint",
-        "us.gcr.io/google-appengine/base:fresh": ":link_with_files_base",
         "gcr.io/google-containers/pause:2.0": ":with_double_env",
+        "us.gcr.io/google-appengine/base:fresh": ":link_with_files_base",
     },
 )
 
@@ -464,11 +485,6 @@ generate_deb(
 #     tars = ["extras.tar"],
 # )
 
-load(
-    "//contrib:with-tag.bzl",
-    container_image_with_tag = "container_image",
-)
-
 container_image_with_tag(
     name = "build_with_tag",
     base = ":with_user",
@@ -476,20 +492,14 @@ container_image_with_tag(
     tag = "gcr.io/build/with:tag",
 )
 
-load(
-    "//contrib:push-all.bzl",
-    docker_pushall = "docker_push",
-    oci_pushall = "oci_push",
-)
-
 # This bundles up a bunch of images into a single tarball,
 # which is pushed as a unit below.
 container_bundle(
     name = "bundle_to_push",
     images = {
-        "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
-        "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
         "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
+        "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
+        "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
     },
 )
 
@@ -502,8 +512,6 @@ oci_pushall(
     name = "push_bundle_oci",
     bundle = ":bundle_to_push",
 )
-
-load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
 
 passwd_entry(
     name = "root_user",
@@ -560,8 +568,6 @@ container_image(
         ":password",
     ],
 )
-
-load("//contrib:group.bzl", "group_entry", "group_file")
 
 group_entry(
     name = "root_group",
@@ -635,8 +641,6 @@ container_image(
     base = "@distroless_cc//image",
 )
 
-load("//python:image.bzl", "py_image", "py_layer")
-
 py_image(
     name = "py_image",
     srcs = ["py_image.py"],
@@ -660,8 +664,6 @@ py_image(
     main = "py_image.py",
 )
 
-load("//testdata:utils.bzl", "rule_with_symlinks")
-
 rule_with_symlinks(
     name = "data_with_symlinks",
 )
@@ -677,8 +679,6 @@ py_image(
     ],
     main = "py_image.py",
 )
-
-load("@pip_deps//:requirements.bzl", "requirement")
 
 py_library(
     name = "py_image_library_using_six",
@@ -725,8 +725,6 @@ py_image(
     main = "py_image_complex.py",
 )
 
-load("//python3:image.bzl", "py3_image")
-
 py3_image(
     name = "py3_image_with_main",
     srcs = ["py3_image.py"],
@@ -756,8 +754,6 @@ py3_image(
     main = "py3_image.py",
 )
 
-load("//cc:image.bzl", "cc_image")
-
 cc_binary(
     name = "cc_binary",
     srcs = ["cc_image.cc"],
@@ -775,12 +771,6 @@ sh_binary(
     srcs = ["cc_image_wrapper.sh"],
     args = ["$(location //tests/docker/cc:cc_image)"],
     data = ["//tests/docker/cc:cc_image"],
-)
-
-load(
-    "//java:image.bzl",
-    "java_image",
-    "war_image",
 )
 
 java_library(
@@ -872,16 +862,12 @@ war_image(
     ],
 )
 
-load("//scala:image.bzl", "scala_image")
-
 scala_image(
     name = "scala_sandwich_image",
     srcs = ["Binary.scala"],
     layers = [":java_image_library"],
     main_class = "examples.images.Binary",
 )
-
-load("//groovy:image.bzl", "groovy_image")
 
 # This calls from Groovy -> Scala -> Java :)
 groovy_image(
@@ -890,8 +876,6 @@ groovy_image(
     layers = ["//tests/docker/scala:scala_image_library"],
     main_class = "examples.images.Binary",
 )
-
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
 go_binary(
     name = "launcher",
@@ -907,8 +891,6 @@ container_image(
     launcher = ":launcher",
     launcher_args = ["-env=CUSTOM_MESSAGE=Launched via launcher!"],
 )
-
-load("//d:image.bzl", "d_image")
 
 # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
 #d_image(

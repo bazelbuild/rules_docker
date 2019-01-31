@@ -40,8 +40,8 @@ def _group_file_impl(ctx):
 
 group_entry = rule(
     attrs = {
-        "groupname": attr.string(mandatory = True),
         "gid": attr.int(default = 1000),
+        "groupname": attr.string(mandatory = True),
         "users": attr.string_list(),
     },
     implementation = _group_entry_impl,

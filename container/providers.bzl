@@ -54,8 +54,8 @@ PushInfo = provider(fields = [
 # A provider containing information exposed by filter_layer rules
 FilterLayerInfo = provider(
     fields = {
-        "runfiles": "filtered runfiles that should be installed from this layer",
         "filtered_depset": "a filtered depset of struct(target=<target>, target_deps=<depset>)",
+        "runfiles": "filtered runfiles that should be installed from this layer",
     },
 )
 

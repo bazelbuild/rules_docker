@@ -15,20 +15,9 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "//skylib:filetype.bzl",
-    tar_filetype = "tar",
-    tgz_filetype = "tgz",
-)
-load(
     "@bazel_tools//tools/build_defs/hash:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
-)
-load(
-    "//skylib:zip.bzl",
-    _gunzip = "gunzip",
-    _gzip = "gzip",
-    _zip_tools = "tools",
 )
 load(
     "//container:layer_tools.bzl",
@@ -36,14 +25,22 @@ load(
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
+load("//container:providers.bzl", "ImportInfo")
+load(
+    "//skylib:filetype.bzl",
+    tar_filetype = "tar",
+    tgz_filetype = "tgz",
+)
 load(
     "//skylib:path.bzl",
-    "dirname",
-    "strip_prefix",
-    _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
-load("//container:providers.bzl", "ImportInfo")
+load(
+    "//skylib:zip.bzl",
+    _gunzip = "gunzip",
+    _gzip = "gzip",
+    _zip_tools = "tools",
+)
 
 def _is_filetype(filename, extensions):
     for filetype in extensions:
@@ -95,23 +92,23 @@ def _container_import_impl(ctx):
     # rule in the chain must preserve.
 
     container_parts = {
+        # A list of paths to the layer digests.
+        "blobsum": blobsums,
         # The path to the v2.2 configuration file.
         "config": ctx.files.config[0],
         "config_digest": _sha256(ctx, ctx.files.config[0]),
+        # A list of paths to the layer diff_ids.
+        "diff_id": diff_ids,
 
         # The path to the optional v2.2 manifest file.
         "manifest": manifest,
         "manifest_digest": manifest_digest,
 
-        # A list of paths to the layer .tar.gz files
-        "zipped_layer": zipped_layers,
-        # A list of paths to the layer digests.
-        "blobsum": blobsums,
-
         # A list of paths to the layer .tar files
         "unzipped_layer": unzipped_layers,
-        # A list of paths to the layer diff_ids.
-        "diff_id": diff_ids,
+
+        # A list of paths to the layer .tar.gz files
+        "zipped_layer": zipped_layers,
 
         # We do not have a "legacy" field, because we are importing a
         # more efficient form.
@@ -161,13 +158,13 @@ def _container_import_impl(ctx):
 container_import = rule(
     attrs = dicts.add({
         "config": attr.label(allow_files = [".json"]),
-        "manifest": attr.label(
-            allow_files = [".json"],
-            mandatory = False,
-        ),
         "layers": attr.label_list(
             allow_files = tar_filetype + tgz_filetype,
             mandatory = True,
+        ),
+        "manifest": attr.label(
+            allow_files = [".json"],
+            mandatory = False,
         ),
         "repository": attr.string(default = "bazel"),
     }, _hash_tools, _layer_tools, _zip_tools),

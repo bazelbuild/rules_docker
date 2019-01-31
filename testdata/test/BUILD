@@ -1,3 +1,5 @@
+load("@pip_deps//:requirements.bzl", "requirement")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +24,6 @@ filegroup(
     name = "test-data",
     srcs = ["test"],
 )
-
-load("@pip_deps//:requirements.bzl", "requirement")
 
 py_library(
     name = "py_image_library_using_addict",

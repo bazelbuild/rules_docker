@@ -11,6 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Test to compare ids of images in tarballs.
+
+Useful for testing reproducibility.
+
+Args:
+    images: List of Labels which refer to the docker image tarballs (from docker save)
+    id: (optional) the id we want the images in the tarballs to have
+
+The test passes if all images in the tarballs have the given id.
+The test also passes if no id is provided and all tarballs have the same id.
+
+Each tarball must contain exactly one image.
+
+Examples of use:
+
+compare_ids_test(
+    name = "test1",
+    images = ["image1.tar", "image2.tar", "image3.tar"],
+)
+
+compare_ids_test(
+    name = "test2",
+    images = ["image.tar"],
+    id = "<my_image_sha256>",
+)
+"""
 
 # Implementation of compare_ids_test
 def _compare_ids_test_impl(ctx):
@@ -43,42 +69,15 @@ def _compare_ids_test_impl(ctx):
 
     return [DefaultInfo(runfiles = runfiles)]
 
-"""
-Test to compare ids of images in tarballs.
-Useful for testing reproducibility.
-
-Args:
-    images: List of Labels which refer to the docker image tarballs (from docker save)
-    id: (optional) the id we want the images in the tarballs to have
-
-The test passes if all images in the tarballs have the given id.
-The test also passes if no id is provided and all tarballs have the same id.
-
-Each tarball must contain exactly one image.
-
-Examples of use:
-
-compare_ids_test(
-    name = "test1",
-    images = ["image1.tar", "image2.tar", "image3.tar"],
-)
-
-compare_ids_test(
-    name = "test2",
-    images = ["image.tar"],
-    id = "<my_image_sha256>",
-)
-"""
-
 compare_ids_test = rule(
     attrs = {
-        "images": attr.label_list(
-            mandatory = True,
-            allow_files = True,
-        ),
         "id": attr.string(
             mandatory = False,
             default = "",
+        ),
+        "images": attr.label_list(
+            mandatory = True,
+            allow_files = True,
         ),
         "_compare_ids_test_script": attr.label(
             allow_files = True,

@@ -19,15 +19,15 @@ Bazel rule for publishing images.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "//skylib:path.bzl",
-    "runfile",
-)
-load(
     "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
 load("//container:providers.bzl", "PushInfo")
+load(
+    "//skylib:path.bzl",
+    "runfile",
+)
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
@@ -135,25 +135,42 @@ def _impl(ctx):
         ),
     ]
 
+# Pushes a container image to a registry.
 container_push = rule(
     attrs = dicts.add({
-        "image": attr.label(
-            allow_single_file = [".tar"],
-            mandatory = True,
-        ),
-        "registry": attr.string(mandatory = True),
-        "repository": attr.string(mandatory = True),
-        "tag": attr.string(default = "latest"),
         "format": attr.string(
             mandatory = True,
             values = [
                 "OCI",
                 "Docker",
             ],
+            doc = "The form to push: Docker or OCI.",
         ),
-        "_tag_tpl": attr.label(
-            default = Label("//container:push-tag.sh.tpl"),
-            allow_single_file = True,
+        "image": attr.label(
+            allow_single_file = [".tar"],
+            mandatory = True,
+            doc = "The label of the image to push.",
+        ),
+        "registry": attr.string(
+            mandatory = True,
+            doc = "The registry to which we are pushing.",
+        ),
+        "repository": attr.string(
+            mandatory = True,
+            doc = "The name of the image.",
+        ),
+        "stamp": attr.bool(
+            default = False,
+            mandatory = False,
+        ),
+        "tag": attr.string(
+            default = "latest",
+            doc = "(optional) The tag of the image, default to 'latest'.",
+        ),
+        "_digester": attr.label(
+            default = "@containerregistry//:digester",
+            cfg = "host",
+            executable = True,
         ),
         "_pusher": attr.label(
             default = Label("@containerregistry//:pusher"),
@@ -161,14 +178,9 @@ container_push = rule(
             executable = True,
             allow_files = True,
         ),
-        "_digester": attr.label(
-            default = "@containerregistry//:digester",
-            cfg = "host",
-            executable = True,
-        ),
-        "stamp": attr.bool(
-            default = False,
-            mandatory = False,
+        "_tag_tpl": attr.label(
+            default = Label("//container:push-tag.sh.tpl"),
+            allow_single_file = True,
         ),
     }, _layer_tools),
     executable = True,
@@ -178,16 +190,3 @@ container_push = rule(
         "digest": "%{name}.digest",
     },
 )
-
-"""Pushes a container image.
-
-This rule pushes a container image to a registry.
-
-Args:
-  name: name of the rule
-  image: the label of the image to push.
-  format: The form to push: Docker or OCI.
-  registry: the registry to which we are pushing.
-  repository: the name of the image.
-  tag: (optional) the tag of the image, default to 'latest'.
-"""

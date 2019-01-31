@@ -16,6 +16,14 @@
 The signature of this rule is compatible with go_binary.
 """
 
+# It is expected that the Go rules have been properly
+# initialized before loading this file to initialize
+# go_image.
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(
+    "//container:container.bzl",
+    "container_pull",
+)
 load(
     "//lang:image.bzl",
     "app_layer",
@@ -24,15 +32,6 @@ load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
-load(
-    "//container:container.bzl",
-    "container_pull",
-)
-
-# It is expected that the Go rules have been properly
-# initialized before loading this file to initialize
-# go_image.
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
 # Load the resolved digests.
 load(":go.bzl", "DIGESTS")
@@ -59,10 +58,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
-    "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
     "//conditions:default": "@go_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
 })
 
 def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):

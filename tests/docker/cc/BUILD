@@ -1,3 +1,6 @@
+load("//cc:image.bzl", "cc_image")
+load("//contrib:test.bzl", "container_test")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package(default_visibility = ["//visibility:public"])
-
-load("//cc:image.bzl", "cc_image")
-load("//contrib:test.bzl", "container_test")
 
 cc_library(
     name = "cc_image_library",
