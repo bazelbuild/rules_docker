@@ -1,7 +1,3 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
-load("//contrib:test.bzl", "container_test")
-load("//scala:image.bzl", "scala_image")
-
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +11,11 @@ load("//scala:image.bzl", "scala_image")
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
+load("//contrib:test.bzl", "container_test")
+load("//scala:image.bzl", "scala_image")
+
 package(default_visibility = ["//visibility:public"])
 
 scala_library(

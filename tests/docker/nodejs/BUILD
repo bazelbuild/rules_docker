@@ -1,6 +1,3 @@
-load("//contrib:test.bzl", "container_test")
-load("//nodejs:image.bzl", "nodejs_image")
-
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +11,10 @@ load("//nodejs:image.bzl", "nodejs_image")
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("//contrib:test.bzl", "container_test")
+load("//nodejs:image.bzl", "nodejs_image")
+
 package(default_visibility = ["//visibility:public"])
 
 # Docker Cmd value should be `["arg0", "arg1"]`.
