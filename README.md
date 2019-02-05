@@ -1980,7 +1980,7 @@ creates a `container_import` target. The created target can be referenced as
       <td><code>file</code></td>
       <td>
         <p><code>The `docker save` tarball file; required</code></p>
-        <p>A label targetting a single file which is a compressed or
+        <p>A label targeting a single file which is a compressed or
            uncompressed tar, as obtained through `docker save IMAGE`.</p>
       </td>
     </tr>
