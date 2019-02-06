@@ -178,16 +178,16 @@ py_library(
         http_file(
             name = "structure_test_linux",
             executable = True,
-            sha256 = "543577685b33f0483bd4df72534ac9f84c17c9315d8afdcc536cce3591bb8f7c",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-linux-amd64"],
+            sha256 = "bc18c7587176b728c3ab2dad702598950d0d5961d2e13589a0ddbd53afe3baed",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.7.0/container-structure-test-linux-amd64"],
         )
 
     if "structure_test_darwin" not in excludes:
         http_file(
             name = "structure_test_darwin",
             executable = True,
-            sha256 = "c1bc8664d411c6df23c002b41ab1b9a3d72ae930f194a997468bfae2f54ca751",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-darwin-amd64"],
+            sha256 = "b4a9b2f1d40f443457a073b13e6395b5d5b92faf6aa95a039d67408d0d321fc1",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.7.0/container-structure-test-darwin-amd64"],
         )
 
     # For bzl_library.
