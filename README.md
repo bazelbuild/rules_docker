@@ -945,6 +945,49 @@ container_pull(
 
 This can then be referenced in `BUILD` files as `@base//image`.
 
+If you wish to use container_pull using custom docker authentication credentials:
+In `WORKSPACE`:
+```python
+# Download the rules_docker repository
+http_archive(
+    name = "io_bazel_rules_docker",
+    ...
+)
+
+# Load the macro that allows you to customize the docker toolchain configuration.
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+
+docker_toolchain_configure(
+  name = "docker_config",
+  # Replace this with a path to a directory which has a custom docker client
+  # config.json. Docker allows you to specify custom authentication credentials
+  # in the client configuration JSON file.
+  # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
+  # for more details.
+  client_config="/path/to/docker/client/config",
+)
+
+# Load the container_pull that will use the authentication credentials specified
+# in the docker client configuration specified to the docker toolchain
+# configuration above.
+load(
+    "@docker_config//:pull.bzl",
+    container_pull = "container_pull",
+)
+
+container_pull(
+    name = "base",
+    registry = "gcr.io",
+    repository = "my-project/my-base",
+    # 'tag' is also supported, but digest is encouraged for reproducibility.
+    digest = "sha256:deadbeef",
+)
+```
+
+This can then be referenced in `BUILD` files as `@base//image`.
+
 ### container_push
 
 This target pushes on `bazel run :push_foo`:
@@ -962,6 +1005,44 @@ container_push(
 
 We also support the `docker_push` (from `docker/docker.bzl`) and `oci_push`
 (from `oci/oci.bzl`) aliases, which bake in the `format = "..."` attribute.
+
+If you wish to use container_push using custom docker authentication credentials:
+In `WORKSPACE`:
+```python
+# Download the rules_docker repository
+http_archive(
+    name = "io_bazel_rules_docker",
+    ...
+)
+
+# Load the macro that allows you to customize the docker toolchain configuration.
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+
+docker_toolchain_configure(
+  name = "docker_config",
+  # Replace this with a path to a directory which has a custom docker client
+  # config.json. Docker allows you to specify custom authentication credentials
+  # in the client configuration JSON file.
+  # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
+  # for more details.
+  client_config="/path/to/docker/client/config",
+)
+```
+In `BUILD` file:
+```python
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
+
+container_push(
+   name = "push_foo",
+   image = ":foo",
+   format = "Docker",
+   registry = "gcr.io",
+   repository = "my-project/my-image",
+   tag = "dev",
+)
+```
 
 ### container_pull (DockerHub)
 
