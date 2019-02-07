@@ -945,8 +945,8 @@ container_pull(
 
 This can then be referenced in `BUILD` files as `@base//image`.
 
-If you wish to use container_pull using custom docker authentication credentials:
-In `WORKSPACE`:
+If you wish to use container_pull using custom docker authentication credentials,
+in `WORKSPACE`:
 ```python
 # Download the rules_docker repository
 http_archive(
@@ -1006,8 +1006,8 @@ container_push(
 We also support the `docker_push` (from `docker/docker.bzl`) and `oci_push`
 (from `oci/oci.bzl`) aliases, which bake in the `format = "..."` attribute.
 
-If you wish to use container_push using custom docker authentication credentials:
-In `WORKSPACE`:
+If you wish to use container_push using custom docker authentication credentials,
+in `WORKSPACE`:
 ```python
 # Download the rules_docker repository
 http_archive(
