@@ -2045,5 +2045,6 @@ creates a `container_import` target. The created target can be referenced as
 
 ## Adopters
 Here's a (non-exhaustive) list of companies that use `rules_docker` in production. Don't see yours? [You can add it in a PR!](https://github.com/bazelbuild/rules_docker/edit/master/README.md)
+  * [Etsy](https://www.etsy.com)
   * [Wix](https://www.wix.com)
 
