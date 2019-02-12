@@ -190,6 +190,11 @@ See also:
  * [Azure Docker Credential Helper](
  https://github.com/Azure/acr-docker-credential-helper)
 
+Once you've setup your docker client configuration, see [here](#container_pull-custom-client-configuration)
+for an example of how to use container_pull with custom docker authentication credentials
+and [here](#container_push-custom-client-configuration) for an example of how
+to use container_push with custom docker authentication credentials.
+
 ## Varying image names
 
 A common request from folks using `container_push` or `container_bundle` is to
@@ -945,6 +950,9 @@ container_pull(
 
 This can then be referenced in `BUILD` files as `@base//image`.
 
+See [here](#container_pull-custom-client-configuration) for an example of how
+to use container_pull with custom docker authentication credentials.
+
 ### container_push
 
 This target pushes on `bazel run :push_foo`:
@@ -962,6 +970,48 @@ container_push(
 
 We also support the `docker_push` (from `docker/docker.bzl`) and `oci_push`
 (from `oci/oci.bzl`) aliases, which bake in the `format = "..."` attribute.
+
+See [here](#container_push-custom-client-configuration) for an example of how
+to use container_push with custom docker authentication credentials.
+
+### container_push (Custom client configuration)
+If you wish to use container_push using custom docker authentication credentials,
+in `WORKSPACE`:
+```python
+# Download the rules_docker repository
+http_archive(
+    name = "io_bazel_rules_docker",
+    ...
+)
+
+# Load the macro that allows you to customize the docker toolchain configuration.
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+
+docker_toolchain_configure(
+  name = "docker_config",
+  # Replace this with a path to a directory which has a custom docker client
+  # config.json. Docker allows you to specify custom authentication credentials
+  # in the client configuration JSON file.
+  # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
+  # for more details.
+  client_config="/path/to/docker/client/config",
+)
+```
+In `BUILD` file:
+```python
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
+
+container_push(
+   name = "push_foo",
+   image = ":foo",
+   format = "Docker",
+   registry = "gcr.io",
+   repository = "my-project/my-image",
+   tag = "dev",
+)
+```
 
 ### container_pull (DockerHub)
 
@@ -1083,6 +1133,9 @@ container_pull(name, registry, repository, digest, tag)
 
 A repository rule that pulls down a Docker base image in a manner suitable for
 use with `container_image`'s `base` attribute.
+
+**NOTE:** container_pull now supports authentication using custom docker client
+configuration. See [here](#container_pull-custom-client-configuration) for details.
 
 **NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
 
@@ -1230,6 +1283,9 @@ container_push(name, image, registry, repository, tag)
 ```
 
 An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
+
+**NOTE:** container_push now supports authentication using custom docker client
+configuration. See [here](#container_push-custom-client-configuration) for details.
 
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
@@ -1986,3 +2042,9 @@ creates a `container_import` target. The created target can be referenced as
     </tr>
   </tbody>
 </table>
+
+## Adopters
+Here's a (non-exhaustive) list of companies that use `rules_docker` in production. Don't see yours? [You can add it in a PR!](https://github.com/bazelbuild/rules_docker/edit/master/README.md)
+  * [Etsy](https://www.etsy.com)
+  * [Wix](https://www.wix.com)
+
