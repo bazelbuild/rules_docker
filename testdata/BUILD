@@ -41,6 +41,7 @@ load(
     "java_image",
     "war_image",
 )
+load("//nodejs:image.bzl", "nodejs_image")
 load("//oci:oci.bzl", "oci_push")
 load("//python3:image.bzl", "py3_image")
 load("//python:image.bzl", "py_image", "py_layer")
@@ -902,6 +903,19 @@ container_image(
 #        "arg1",
 #    ],
 #)
+
+nodejs_image(
+    name = "nodejs_image",
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    data = [
+        ":nodejs_image.js",
+        "@npm_deps//jsesc",
+    ],
+    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
+)
 
 generate_deb(
     name = "pkg1",

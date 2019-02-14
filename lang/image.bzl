@@ -160,9 +160,9 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None, emptydirs = []):
     ]
 
     # TODO: Perform emptydir check!
-    emptydirs = [
+    # emptydirs = [
 
-    ]
+    # ]
 
     symlinks = {}
 

@@ -142,6 +142,7 @@ TEST_TARGETS = [
     # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
     # "d_image",
     ":java_image",
+    ":nodejs_image",
     ":py_image",
     ":py_image_with_symlinks_in_data",
     ":py_image_complex",

@@ -111,8 +111,8 @@ _dep_layer = rule(
 
 def _app_layer_impl(ctx):
     # TODO: Why is this needed?
-    empty_dirs = ["/".join(["/app", ctx.workspace_name])]
-    return app_layer_impl(ctx, runfiles = _app_runfiles, emptyfiles = _emptyfiles, emptydirs = empty_dirs) 
+    # empty_dirs = ["/".join(["/app", ctx.workspace_name])]
+    return app_layer_impl(ctx, runfiles = _app_runfiles, emptyfiles = _emptyfiles)
 
 _app_layer = rule(
     attrs = app_layer_attrs,
