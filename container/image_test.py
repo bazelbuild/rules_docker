@@ -41,12 +41,6 @@ def TestBundleImage(name, image_name):
 
 class ImageTest(unittest.TestCase):
 
-  def assertTarballNumSymlinksTopLayer(self, img, nr):
-    buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
-    with tarfile.open(fileobj=buf, mode='r') as layer:
-      nr_tar_symlinks = len([ti for ti in layer.getmembers() if ti.type == tarfile.SYMTYPE])
-      self.assertEqual(nr, nr_tar_symlinks)
-
   def assertTarballContains(self, tar, paths):
     self.maxDiff = None
     self.assertEqual(paths, tar.getnames())
@@ -771,19 +765,25 @@ class ImageTest(unittest.TestCase):
       layerOneFiles = [
         '.',
         './app',
-        './app/npm_deps',
-        './app/npm_deps/node_modules',
-        './app/npm_deps/node_modules/jsesc',
-        './app/npm_deps/node_modules/jsesc/LICENSE-MIT.txt',
-        './app/npm_deps/node_modules/jsesc/README.md',
-        './app/npm_deps/node_modules/jsesc/bin',
-        './app/npm_deps/node_modules/jsesc/bin/jsesc',
-        './app/npm_deps/node_modules/jsesc/jsesc.js',
-        './app/npm_deps/node_modules/jsesc/man',
-        './app/npm_deps/node_modules/jsesc/man/jsesc.1',
-        './app/npm_deps/node_modules/jsesc/package.json',
-        './app/npm_deps/node_modules/.bin',
-        './app/npm_deps/node_modules/.bin/jsesc',
+        './app/testdata',
+        './app/testdata/nodejs_image.binary_bin.runfiles',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/LICENSE-MIT.txt',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/README.md',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/bin',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/bin/jsesc',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/jsesc.js',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/man',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/man/jsesc.1',
+        './app/testdata/nodejs_image.binary_bin.runfiles/npm_deps/node_modules/jsesc/package.json',
+        '/app',
+        '/app/testdata',
+        '/app/testdata/nodejs_image.binary_bin',
+        '/app/testdata/nodejs_image.binary_bin.runfiles',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker',
+        '/app/testdata/nodejs_image.binary_bin.runfiles/io_bazel_rules_docker/external',
       ]
       self.assertLayerNContains(img, 1, layerOneFiles)
 
@@ -791,9 +791,11 @@ class ImageTest(unittest.TestCase):
       layerTwoFiles = [
         '.',
         './app',
-        './app/nodejs',
-        './app/nodejs/bin',
-        './app/nodejs/bin/node_args.sh'
+        './app/testdata',
+        './app/testdata/nodejs_image.binary_bin.runfiles',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/node_args.sh'
       ]
       self.assertLayerNContains(img, 2, layerTwoFiles)
 
@@ -801,12 +803,13 @@ class ImageTest(unittest.TestCase):
       layerThreeFiles = [
         '.',
         './app',
-        './app/nodejs',
-        './app/nodejs/bin',
-        './app/nodejs/bin/node.js',
-        './app/nodejs/bin/nodejs',
-        './app/nodejs/bin/nodejs/bin',
-        './app/nodejs/bin/nodejs/bin/node'
+        './app/testdata',
+        './app/testdata/nodejs_image.binary_bin.runfiles',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/nodejs',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/nodejs/bin',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/nodejs/bin/node'
       ]
       self.assertLayerNContains(img, 3, layerThreeFiles)
 
@@ -814,14 +817,14 @@ class ImageTest(unittest.TestCase):
       layerFourFiles = [
         '.',
         './app',
-        './app/nodejs',
-        './app/nodejs/bin',
-        './app/nodejs/bin/node',
+        './app/testdata',
+        './app/testdata/nodejs_image.binary_bin.runfiles',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin',
+        './app/testdata/nodejs_image.binary_bin.runfiles/nodejs/bin/node'
       ]
       self.assertLayerNContains(img, 4, layerFourFiles)
 
-      # Check that top layer contains symlinks that map to the bottom layers
-      self.assertTarballNumSymlinksTopLayer(img, 13)
 
   # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
   # def test_d_image_args(self):

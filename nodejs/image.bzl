@@ -159,6 +159,7 @@ def nodejs_image(
         **kwargs
     )
 
+    # Move layers after nodejs_binary as it already gets these dependencies per default
     layers = [
         # Put the Node binary into its own layer.
         "@nodejs//:node",
