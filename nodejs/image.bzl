@@ -17,7 +17,7 @@ The signature of this rule is compatible with nodejs_binary.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load("@build_bazel_rules_nodejs//:defs.bzl", "NodeJSSourcesInfo", "nodejs_binary")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -58,13 +58,11 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "//conditions:default": "@nodejs_debug_image_base//image",
     "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
+    "//conditions:default": "@nodejs_debug_image_base//image",
 })
-
-load("@build_bazel_rules_nodejs//:defs.bzl", "NodeJSSourcesInfo")
 
 def _app_runfiles(dep):
     if NodeJSSourcesInfo in dep:
@@ -122,9 +120,8 @@ _app_layer = rule(
     implementation = _app_layer_impl,
 )
 
-
 def _node_module_layer_impl(ctx):
-    return app_layer_impl(ctx, runfiles = _node_module_runfiles, emptyfiles = _emptyfiles) 
+    return app_layer_impl(ctx, runfiles = _node_module_runfiles, emptyfiles = _emptyfiles)
 
 _node_module_layer = rule(
     attrs = app_layer_attrs,
@@ -149,6 +146,7 @@ def nodejs_image(
     **kwargs: See nodejs_binary.
   """
     binary_name = name + ".binary"
+
     # Note: We need to get the underlying node binary to be able to access the NodeJSSourcesInfo provider
     node_binary_name = binary_name + "_bin"
 
