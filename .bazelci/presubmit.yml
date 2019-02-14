@@ -1,153 +1,77 @@
 ---
+buildifier: true
 platforms:
   ubuntu1404:
-    build_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//docker/..."
-    - "-//skylib/..."
-    - "-//tools/..."
     test_targets:
     # We are running the skipped targets remotely only.
     - "--"
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    - "-//:structure_test_at_workspace_root"
+    # Temporarily disabled tests that do not run in BuildKite CI
+    # anymore.
+    - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
+    - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    test_flags:
+    - "--action_env=PATH"
+    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
+    - "--incompatible_disallow_legacy_javainfo=false"
   ubuntu1604:
-    build_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//docker/..."
-    - "-//skylib/..."
-    - "-//tools/..."
     test_targets:
     # We are running the skipped targets remotely only.
     - "--"
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
+    - "-//:structure_test_at_workspace_root"
+    # Temporarily disabled tests that do not run in BuildKite CI
+    # anymore.
+    - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
+    - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    test_flags:
+    - "--action_env=PATH"
+    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
+    - "--incompatible_disallow_legacy_javainfo=false"
   macos:
     build_targets:
-    - "..."
+    - "//tests/docker:test_digest_output1"
+    build_flags:
+    - "--action_env=PATH"
+    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
+    - "--incompatible_disallow_legacy_javainfo=false"
     test_targets:
-    - "--"
-    - "..."
-    - "-//tests/docker/..."
-  # We are selecting to test only the targets that build on RBE
-  # because the default image does not support `docker`.
+    - "//tests/docker:test_digest_output1"
+    test_flags:
+    - "--action_env=PATH"
+    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
+    - "--incompatible_disallow_legacy_javainfo=false"
   rbe_ubuntu1604:
     build_targets:
     - "--"
-    - "//docker/..."
-    - "//skylib/..."
-    - "//container/..."
-    - "//testdata/test:srcs"
-    - "//testdata:workdir_with_tar_base"
-    - "//testdata:with_unix_epoch_creation_time"
-    - "//testdata:with_stamped_creation_time"
-    - "//testdata:with_stamp_label"
-    - "//testdata:with_rfc_3339_creation_time"
-    - "//testdata:with_passwd_tar"
-    - "//testdata:with_passwd"
-    - "//testdata:with_millisecond_unix_epoch_creation_time"
-    - "//testdata:with_group"
-    - "//testdata:with_empty_files"
-    - "//testdata:with_empty_dirs"
-    - "//testdata:with_double_label"
-    - "//testdata:with_label"
-    - "//testdata:with_default_stamped_creation_time"
-    - "//testdata:war_image"
-    - "//testdata:tars_in_layer_with_tar_base"
-    - "//testdata:tar_with_tar_base"
-    - "//testdata:tar_with_files_base"
-    - "//testdata:stamped_bundle_test"
-    - "//testdata:rust_image"
-    - "//testdata:rust_image_binary"
-    - "//testdata:root_data_path_image"
-    - "//testdata:py_image_with_main"
-    - "//testdata:py_image"
-    - "//testdata:py3_image_with_main"
-    - "//testdata:py3_image"
-    - "//testdata:py_image_library"
-    - "//testdata:push_stamp_oci"
-    - "//testdata:push_stamp"
-    - "//testdata:push_legacy_base"
-    - "//testdata:push_inadvertent_legacy_base"
-    - "//testdata:push_bundle_oci"
-    - "//testdata:push_bundle"
-    - "//testdata:pkg_control_gz"
-    - "//testdata:pkg2"
-    - "//testdata:pkg1"
-    - "//testdata:pause_based"
-    - "//testdata:password"
-    - "//testdata:passwd_tar"
-    - "//testdata:passwd"
-    - "//testdata:root_user"
-    - "//testdata:nodejs_image"
-    - "//testdata:no_data_path_image"
-    - "//testdata:layers_with_env"
-    - "//testdata:layers_with_docker_tarball_base"
-    - "//testdata:tars_in_layer"
-    - "//testdata:label-blah-blah"
-    - "//testdata:label-blah"
-    - "//testdata:java_sandwich_image"
-    - "//testdata:java_image"
-    - "//testdata:java_bin_as_lib_image"
-    - "//testdata:java_bin_as_lib_image.binary"
-    - "//testdata:java_bin_as_lib"
-    - "//testdata:java_image_library"
-    - "//testdata:group_tar"
-    - "//testdata:group"
-    - "//testdata:root_group"
-    - "//testdata:go_image"
-    - "//testdata:go_image.binary"
-    - "//testdata:gen_image"
-    - "//testdata:gen"
-    - "//testdata:foobar_user"
-    - "//testdata:foobar_group"
-    - "//testdata:flat"
-    - "//testdata:files_with_tar_base"
-    - "//testdata:files_with_files_base"
-    - "//testdata:files_in_layer_with_files_base"
-    - "//testdata:files_in_layer"
-    - "//testdata:extras_deb"
-    - "//testdata:gen_deb"
-    - "//testdata:env_layer"
-    - "//testdata:dummy_repository"
-    - "//testdata:docker_tarball_base"
-    - "//testdata:directory_with_tar_base"
-    - "//testdata:tar_base"
-    - "//testdata:derivative_with_volume"
-    - "//testdata:derivative_with_cmd"
-    - "//testdata:derivative_with_shadowed_cmd"
-    - "//testdata:data_path_image"
-    - "//testdata:dashdash_entrypoint"
-    - "//testdata:cc_image"
-    - "//testdata:cc_binary_as_image"
-    - "//testdata:cc_binary"
-    - "//testdata:cc_image_library"
-    - "//testdata:cc_based_warning"
-    - "//testdata:cc_based"
-    - "//testdata:bundle_to_push"
-    - "//testdata:bundle_test"
-    - "//testdata:with_double_env"
-    - "//testdata:with_env"
-    - "//testdata:link_with_files_base"
-    - "//testdata:files_base"
-    - "//testdata:build_with_tag"
-    - "//testdata:build_with_tag-internal"
-    - "//testdata:with_user"
-    - "//testdata:base_with_volume"
-    - "//testdata:base_with_entrypoint"
-    - "//testdata:base_based_warning"
-    - "//testdata:absolute_data_path_image"
-    - "//testdata/test:test-data"
-    - "//tools/..."
-    - "-//container:image_test"
+    - "..."
+    build_flags:
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
+    - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/docker:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
     test_targets:
     - "--"
+    - "//:structure_test_at_workspace_root"
     - "//tests/..."
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
@@ -156,6 +80,11 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     test_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
+    - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/docker:set_env_make_vars_test
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"

@@ -17,7 +17,6 @@ The signature of groovy_image is compatible with groovy_binary.
 """
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
-load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
@@ -86,6 +85,7 @@ def groovy_image(
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )
 
 def repositories():

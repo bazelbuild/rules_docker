@@ -19,14 +19,19 @@ set -eu
 # This is a generated file that loads all docker layers built by "docker_build".
 
 function guess_runfiles() {
-    pushd ${BASH_SOURCE[0]}.runfiles > /dev/null 2>&1
-    pwd
-    popd > /dev/null 2>&1
+    if [ -d ${BASH_SOURCE[0]}.runfiles ]; then
+        # Runfiles are adjacent to the current script.
+        echo "$( cd ${BASH_SOURCE[0]}.runfiles && pwd )"
+    else
+        # The current script is within some other script's runfiles.
+        mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        echo $mydir | sed -e 's|\(.*\.runfiles\)/.*|\1|'
+    fi
 }
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
-DOCKER="${DOCKER:-docker}"
+DOCKER="%{docker_tool_path}"
 
 # Create temporary files in which to record things to clean up.
 TEMP_FILES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_files')"
@@ -232,7 +237,5 @@ function read_variables() {
 # This is not executed if the single argument --norun is passed.
 if [ "a$*" != "a--norun" ]; then
   # This generated and injected by docker_*.
-  %{run_statements}
-  # Empty if blocks can be problematic.
-  echo > /dev/null
+  exec %{run_statements}
 fi

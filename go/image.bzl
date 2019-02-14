@@ -16,21 +16,22 @@
 The signature of this rule is compatible with go_binary.
 """
 
-load(
-    "//lang:image.bzl",
-    "app_layer",
-    "dep_layer",
-)
-load(
-    "//container:container.bzl",
-    "container_pull",
-    _repositories = "repositories",
-)
-
 # It is expected that the Go rules have been properly
 # initialized before loading this file to initialize
 # go_image.
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(
+    "//container:container.bzl",
+    "container_pull",
+)
+load(
+    "//lang:image.bzl",
+    "app_layer",
+)
+load(
+    "//repositories:repositories.bzl",
+    _repositories = "repositories",
+)
 
 # Load the resolved digests.
 load(":go.bzl", "DIGESTS")
@@ -57,10 +58,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
-    "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
     "//conditions:default": "@go_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
 })
 
 def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
@@ -82,19 +83,22 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
 
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
-        this_name = "%s.%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
-        base = this_name
+        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
+        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
+    restricted_to = kwargs.get("restricted_to", None)
+    compatible_with = kwargs.get("compatible_with", None)
     app_layer(
         name = name,
         base = base,
         binary = binary,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
+        restricted_to = restricted_to,
+        compatible_with = compatible_with,
     )

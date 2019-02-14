@@ -19,17 +19,20 @@ load(
 )
 
 def _extract_layers(ctx, name, artifact):
-    config_file = ctx.new_file(name + "." + artifact.basename + ".config")
-    ctx.action(
+    config_file = ctx.actions.declare_file(name + "." + artifact.basename + ".config")
+    manifest_file = ctx.actions.declare_file(name + "." + artifact.basename + ".manifest")
+    ctx.actions.run(
         executable = ctx.executable.extract_config,
         arguments = [
             "--tarball",
             artifact.path,
             "--output",
             config_file.path,
+            "--manifestoutput",
+            manifest_file.path,
         ],
-        inputs = [artifact],
-        outputs = [config_file],
+        tools = [artifact],
+        outputs = [config_file, manifest_file],
         mnemonic = "ExtractConfig",
     )
     return {
@@ -38,6 +41,7 @@ def _extract_layers(ctx, name, artifact):
         # I believe we would for a checked in tarball to be usable
         # with docker_bundle + bazel run.
         "legacy": artifact,
+        "manifest": manifest_file,
     }
 
 def get_from_target(ctx, name, attr_target, file_target = None):
@@ -63,7 +67,16 @@ def assemble(ctx, images, output, stamp = False):
         args += [
             "--tags=" + tag + "=@" + image["config"].path,
         ]
+
+        if image.get("manifest"):
+            args += [
+                "--manifests=" + tag + "=@" + image["manifest"].path,
+            ]
+
         inputs += [image["config"]]
+
+        if image.get("manifest"):
+            inputs += [image["manifest"]]
 
         for i in range(0, len(image["diff_id"])):
             args += [
@@ -86,10 +99,10 @@ def assemble(ctx, images, output, stamp = False):
     if stamp:
         args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
-    ctx.action(
+    ctx.actions.run(
         executable = ctx.executable.join_layers,
         arguments = args,
-        inputs = inputs,
+        tools = inputs,
         outputs = [output],
         mnemonic = "JoinLayers",
     )
@@ -105,6 +118,8 @@ def incremental_load(
     stamp_files = []
     if stamp:
         stamp_files = [ctx.info_file, ctx.version_file]
+
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
     # Default to interactively launching the container,
     # and cleaning up when it exits.
@@ -158,15 +173,17 @@ def incremental_load(
             ),
         ]
         if run:
-            # bazel automatically passes ctx.attr.args to the binary on run, so args get passed in
-            # twice. See https://github.com/bazelbuild/rules_docker/issues/374
+            # Args are embedded into the image, so omitted here.
             run_statements += [
-                "docker run %s %s \"$@\"" % (run_flags, tag_reference),
+                "\"${DOCKER}\" run %s %s" % (run_flags, tag_reference),
             ]
 
-    ctx.template_action(
+    ctx.actions.expand_template(
         template = ctx.file.incremental_load_template,
         substitutions = {
+            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{load_statements}": "\n".join(load_statements),
+            "%{run_statements}": "\n".join(run_statements),
             # If this rule involves stamp variables than load them as bash
             # variables, and turn references to them into bash variable
             # references.
@@ -174,28 +191,25 @@ def incremental_load(
                 "read_variables %s" % _get_runfile_path(ctx, f)
                 for f in stamp_files
             ]),
-            "%{load_statements}": "\n".join(load_statements),
             "%{tag_statements}": "\n".join(tag_statements),
-            "%{run_statements}": "\n".join(run_statements),
         },
         output = output,
-        executable = True,
+        is_executable = True,
     )
 
 tools = {
-    "incremental_load_template": attr.label(
-        default = Label("//container:incremental_load_template"),
-        single_file = True,
-        allow_files = True,
-    ),
-    "join_layers": attr.label(
-        default = Label("//container:join_layers"),
+    "extract_config": attr.label(
+        default = Label("//container:extract_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
-    "extract_config": attr.label(
-        default = Label("//container:extract_config"),
+    "incremental_load_template": attr.label(
+        default = Label("//container:incremental_load_template"),
+        allow_single_file = True,
+    ),
+    "join_layers": attr.label(
+        default = Label("//container:join_layers"),
         cfg = "host",
         executable = True,
         allow_files = True,

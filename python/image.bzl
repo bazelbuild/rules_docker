@@ -17,13 +17,16 @@ The signature of this rule is compatible with py_binary.
 """
 
 load(
-    "//lang:image.bzl",
-    "app_layer",
-    "dep_layer",
-)
-load(
     "//container:container.bzl",
     "container_pull",
+)
+load(
+    "//lang:image.bzl",
+    "app_layer",
+    "filter_layer",
+)
+load(
+    "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
 
@@ -52,20 +55,25 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
-    "@io_bazel_rules_docker//:debug": "@py_debug_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@py_image_base//image",
     "//conditions:default": "@py_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@py_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@py_image_base//image",
 })
+
+def py_layer(name, deps, filter = "", **kwargs):
+    binary_name = name + ".layer-binary"
+    native.py_library(name = binary_name, deps = deps, **kwargs)
+    filter_layer(name = name, dep = binary_name, filter = filter)
 
 def py_image(name, base = None, deps = [], layers = [], **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
-  Args:
-    layers: Augments "deps" with dependencies that should be put into
-           their own layers.
-    **kwargs: See py_binary.
-  """
+    Args:
+        layers: Augments "deps" with dependencies that should be put into
+            their own layers.
+        **kwargs: See py_binary.
+    """
     binary_name = name + ".binary"
 
     if "main" not in kwargs:
@@ -79,9 +87,8 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     # is placed configurable.
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
-        this_name = "%s.%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
-        base = this_name
+        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
+        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary_name)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
@@ -90,9 +97,9 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         base = base,
         entrypoint = ["/usr/bin/python"],
         binary = binary_name,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )

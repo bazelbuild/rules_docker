@@ -21,18 +21,10 @@ addons:
   apt:
     sources:
       - sourceline: 'deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8'
-        key_url: 'https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg'
+        key_url: 'https://bazel.build/bazel-release.pub.gpg'
     packages:
       - bazel
 
-install:
-  - go get -u github.com/bazelbuild/buildifier/buildifier
-
 script:
-  # Check for issues with the format of our bazel config files.
-  - buildifier -mode=check $(find . -name BUILD -type f)
-  - buildifier -mode=check $(find . -name WORKSPACE -type f)
-  - buildifier -mode=check $(find . -name '*.bzl' -type f)
-
   # Test things by executing the various build configurations under testing/
   - ./testing/e2e.sh

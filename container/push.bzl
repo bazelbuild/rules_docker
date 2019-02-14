@@ -17,123 +17,160 @@ This wraps the containerregistry.tools.fast_pusher executable in a
 Bazel rule for publishing images.
 """
 
-load(
-    "//skylib:path.bzl",
-    "runfile",
-)
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
 load("//container:providers.bzl", "PushInfo")
+load(
+    "//skylib:path.bzl",
+    "runfile",
+)
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
     """Core implementation of container_push."""
-    stamp_inputs = []
-    if ctx.attr.stamp:
-        stamp_inputs = [ctx.info_file, ctx.version_file]
-
-    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-
-    stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
+    pusher_args = []
+    digester_args = ctx.actions.args()
 
     # Leverage our efficient intermediate representation to push.
-    legacy_base_arg = ""
-    if image.get("legacy"):
+    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
+    blobsums = image.get("blobsum", [])
+    blobs = image.get("zipped_layer", [])
+    config = image["config"]
+    manifest = image["manifest"]
+    tarball = image.get("legacy")
+    image_files = blobs + blobsums
+
+    if tarball:
         print("Pushing an image based on a tarball can be very " +
               "expensive.  If the image is the output of a " +
               "docker_build, consider dropping the '.tar' extension. " +
               "If the image is checked in, consider using " +
               "docker_import instead.")
-        legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
+        pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
+        digester_args.add("--tarball", tarball)
+        image_files += [tarball]
+    if config:
+        pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
+        digester_args.add("--config", config)
+        image_files += [config]
+    if manifest:
+        pusher_args += ["--manifest=%s" % _get_runfile_path(ctx, manifest)]
+        digester_args.add("--manifest", manifest)
+        image_files += [manifest]
+    for f in blobsums:
+        pusher_args += ["--digest=%s" % _get_runfile_path(ctx, f)]
+        digester_args.add("--digest", f)
+    for f in blobs:
+        pusher_args += ["--layer=%s" % _get_runfile_path(ctx, f)]
+        digester_args.add("--layer", f)
+    if ctx.attr.format == "OCI":
+        pusher_args += ["--oci"]
+        digester_args.add("--oci")
 
-    blobsums = image.get("blobsum", [])
-    digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
-    blobs = image.get("zipped_layer", [])
-    layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
-    config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
+    # create image digest
+    digester_args.add("--output-digest", ctx.outputs.digest)
+    ctx.actions.run(
+        inputs = image_files,
+        outputs = [ctx.outputs.digest],
+        executable = ctx.executable._digester,
+        arguments = [digester_args],
+        tools = ctx.attr._digester.default_runfiles.files,
+        mnemonic = "ContainerPushDigest",
+    )
 
-    ctx.template_action(
+    # create pusher launcher
+    registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
+    repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
+    tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
+    if ctx.attr.stamp:
+        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
+
+    # If any stampable attr contains python format syntax (which is how users
+    # configure stamping), we enable stamping.
+    stamp = "{" in tag or "{" in registry or "{" in repository
+    stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
+    pusher_args += [
+        "--stamp-info-file=%s" % _get_runfile_path(ctx, f)
+        for f in stamp_inputs
+    ]
+    pusher_args += ["--name={registry}/{repository}:{tag}".format(
+        registry = registry,
+        repository = repository,
+        tag = tag,
+    )]
+
+    # If the docker toolchain is configured to use a custom client config
+    # directory, use that instead
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+    if toolchain_info.client_config != "":
+        pusher_args += [" --client-config-dir {}".format(toolchain_info.client_config)]
+
+    ctx.actions.expand_template(
         template = ctx.file._tag_tpl,
         substitutions = {
-            "%{tag}": "{registry}/{repository}:{tag}".format(
-                registry = ctx.expand_make_variables(
-                    "registry",
-                    ctx.attr.registry,
-                    {},
-                ),
-                repository = ctx.expand_make_variables(
-                    "repository",
-                    ctx.attr.repository,
-                    {},
-                ),
-                tag = ctx.expand_make_variables(
-                    "tag",
-                    ctx.attr.tag,
-                    {},
-                ),
-            ),
-            "%{stamp}": stamp_arg,
-            "%{image}": "%s %s %s %s" % (
-                legacy_base_arg,
-                config_arg,
-                digest_arg,
-                layer_arg,
-            ),
-            "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+            "%{args}": " ".join(pusher_args),
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
         },
         output = ctx.outputs.executable,
-        executable = True,
+        is_executable = True,
     )
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs)
+    runfiles = runfiles.merge(ctx.attr._pusher.default_runfiles)
 
-    runfiles = ctx.runfiles(
-        files = [
-                    ctx.executable._pusher,
-                    image["config"],
-                ] + image.get("blobsum", []) + image.get("zipped_layer", []) +
-                stamp_inputs + ([image["legacy"]] if image.get("legacy") else []) +
-                list(ctx.attr._pusher.default_runfiles.files),
-    )
-
-    return struct(
-        providers = [
-            PushInfo(
-                registry = ctx.expand_make_variables("registry", ctx.attr.registry, {}),
-                repository = ctx.expand_make_variables("repository", ctx.attr.repository, {}),
-                tag = ctx.expand_make_variables("tag", ctx.attr.tag, {}),
-                stamp = ctx.attr.stamp,
-                stamp_inputs = stamp_inputs,
-            ),
-            DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
-        ],
-    )
-
-container_push = rule(
-    attrs = dict({
-        "image": attr.label(
-            allow_files = [".tar"],
-            single_file = True,
-            mandatory = True,
+    return [
+        DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
+        PushInfo(
+            registry = registry,
+            repository = repository,
+            tag = tag,
+            stamp = stamp,
+            stamp_inputs = stamp_inputs,
+            digest = ctx.outputs.digest,
         ),
-        "registry": attr.string(mandatory = True),
-        "repository": attr.string(mandatory = True),
-        "tag": attr.string(default = "latest"),
+    ]
+
+# Pushes a container image to a registry.
+container_push = rule(
+    attrs = dicts.add({
         "format": attr.string(
             mandatory = True,
             values = [
                 "OCI",
                 "Docker",
             ],
+            doc = "The form to push: Docker or OCI.",
         ),
-        "_tag_tpl": attr.label(
-            default = Label("//container:push-tag.sh.tpl"),
-            single_file = True,
-            allow_files = True,
+        "image": attr.label(
+            allow_single_file = [".tar"],
+            mandatory = True,
+            doc = "The label of the image to push.",
+        ),
+        "registry": attr.string(
+            mandatory = True,
+            doc = "The registry to which we are pushing.",
+        ),
+        "repository": attr.string(
+            mandatory = True,
+            doc = "The name of the image.",
+        ),
+        "stamp": attr.bool(
+            default = False,
+            mandatory = False,
+        ),
+        "tag": attr.string(
+            default = "latest",
+            doc = "(optional) The tag of the image, default to 'latest'.",
+        ),
+        "_digester": attr.label(
+            default = "@containerregistry//:digester",
+            cfg = "host",
+            executable = True,
         ),
         "_pusher": attr.label(
             default = Label("@containerregistry//:pusher"),
@@ -141,24 +178,15 @@ container_push = rule(
             executable = True,
             allow_files = True,
         ),
-        "stamp": attr.bool(
-            default = False,
-            mandatory = False,
+        "_tag_tpl": attr.label(
+            default = Label("//container:push-tag.sh.tpl"),
+            allow_single_file = True,
         ),
-    }.items() + _layer_tools.items()),
+    }, _layer_tools),
     executable = True,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
+    outputs = {
+        "digest": "%{name}.digest",
+    },
 )
-
-"""Pushes a container image.
-
-This rule pushes a container image to a registry.
-
-Args:
-  name: name of the rule
-  image: the label of the image to push.
-  format: The form to push: Docker or OCI.
-  registry: the registry to which we are pushing.
-  repository: the name of the image.
-  tag: (optional) the tag of the image, default to 'latest'.
-"""

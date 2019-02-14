@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@pip_deps//:requirements.bzl", "requirement")
+
 package(default_visibility = ["//testdata:__subpackages__"])
 
 filegroup(
@@ -21,4 +24,10 @@ filegroup(
 filegroup(
     name = "test-data",
     srcs = ["test"],
+)
+
+py_library(
+    name = "py_image_library_using_addict",
+    srcs = ["py_image_library_using_addict.py"],
+    deps = [requirement("addict")],
 )

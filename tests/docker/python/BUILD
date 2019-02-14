@@ -11,8 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Methods for serializing objects."""
 
-def dict_to_associative_list(dict_value):
-    """Serializes a dict to an associative list."""
-    return ",".join(["%s=%s" % (k, dict_value[k]) for k in dict_value])
+load("//contrib:test.bzl", "container_test")
+load("//python:image.bzl", "py_image")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "py_image_library",
+    srcs = ["//testdata:py_image_library.py"],
+)
+
+py_image(
+    name = "py_image",
+    srcs = ["//testdata:py_image.py"],
+    args = [
+        "arg0",
+        "arg1",
+        "$(location :BUILD)",
+    ],
+    data = [":BUILD"],
+    layers = [
+        ":py_image_library",
+    ],
+)
+
+container_test(
+    name = "py_image_test",
+    configs = ["//tests/docker/python/configs:py_image.yaml"],
+    image = ":py_image",
+)

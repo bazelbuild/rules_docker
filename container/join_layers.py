@@ -43,7 +43,12 @@ parser.add_argument('--tags', action='append', required=True,
                           'and the layer they tag. '
                           'e.g. ubuntu=deadbeef,gcr.io/blah/debian=baadf00d'))
 
-parser.add_argument('--layer', action='append', required=True,
+parser.add_argument('--manifests', action='append', required=False,
+                    help=('An associative list of fully qualified tag names '
+                          'and the manifest associated'
+                          'e.g. ubuntu=deadbeef,gcr.io/blah/debian=baadf00d'))
+
+parser.add_argument('--layer', action='append', required=False,
                     help=('Each entry is an equivalence class with 4 parts: '
                           'diff_id, blob_sum, unzipped layer, zipped layer.'))
 
@@ -54,7 +59,6 @@ parser.add_argument('--stamp-info-file', action='append', required=False,
                     help=('If stamping these layers, the list of files from '
                           'which to obtain workspace information'))
 
-
 class FromParts(v2_2_image.DockerImage):
   """This accesses a more efficient on-disk format than FromTarball.
 
@@ -62,14 +66,18 @@ class FromParts(v2_2_image.DockerImage):
   compressed and uncompressed forms available.
   """
 
-  def __init__(self, config_file, diffid_to_blobsum,
+  def __init__(self, config_file, manifest_file, diffid_to_blobsum,
                blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy):
     self._config = config_file
+    self._manifest = manifest_file
     self._blobsum_to_unzipped = blobsum_to_unzipped
     self._blobsum_to_zipped = blobsum_to_zipped
     self._blobsum_to_legacy = blobsum_to_legacy
+    self._diffid_to_blobsum = diffid_to_blobsum
     config = json.loads(self._config)
+
     content = self.config_file().encode('utf-8')
+
     self._manifest = json.dumps({
         'schemaVersion': 2,
         'mediaType': docker_http.MANIFEST_SCHEMA2_MIME,
@@ -79,11 +87,7 @@ class FromParts(v2_2_image.DockerImage):
             'digest': 'sha256:' + hashlib.sha256(content).hexdigest()
         },
         'layers': [
-            {
-                'mediaType': docker_http.LAYER_MIME,
-                'size': self.blob_size(diffid_to_blobsum[diff_id]),
-                'digest': diffid_to_blobsum[diff_id]
-            }
+            self.diff_id_to_layer_manifest_json(diff_id)
             for diff_id in config['rootfs']['diff_ids']
         ]
     }, sort_keys=True)
@@ -99,9 +103,13 @@ class FromParts(v2_2_image.DockerImage):
   # Could be large, do not memoize
   def uncompressed_blob(self, digest):
     """Override."""
-    if digest not in self._blobsum_to_unzipped:
+
+    if self.blobsum_to_media_type(digest) == docker_http.FOREIGN_LAYER_MIME:
+      return bytearray()
+    elif digest not in self._blobsum_to_unzipped:
       return self._blobsum_to_legacy[digest].uncompressed_blob(digest)
-    with open(self._blobsum_to_unzipped[digest], 'r') as reader:
+
+    with open(self._blobsum_to_unzipped[digest], 'rb') as reader:
       return reader.read()
 
   # Could be large, do not memoize
@@ -109,15 +117,47 @@ class FromParts(v2_2_image.DockerImage):
     """Override."""
     if digest not in self._blobsum_to_zipped:
       return self._blobsum_to_legacy[digest].blob(digest)
-    with open(self._blobsum_to_zipped[digest], 'r') as reader:
+    with open(self._blobsum_to_zipped[digest], 'rb') as reader:
       return reader.read()
 
   def blob_size(self, digest):
     """Override."""
-    if digest not in self._blobsum_to_zipped:
+    if self.blobsum_to_media_type(digest) == docker_http.FOREIGN_LAYER_MIME:
+      return self.blobsum_to_manifest_layer(digest)['size']
+    elif digest not in self._blobsum_to_zipped:
       return self._blobsum_to_legacy[digest].blob_size(digest)
     info = os.stat(self._blobsum_to_zipped[digest])
     return info.st_size
+
+  def diff_id_to_manifest_layer(self, diff_id):
+    return self.blobsum_to_manifest_layer(self._diffid_to_blobsum[diff_id])
+
+  def blobsum_to_manifest_layer(self, digest):
+    if self._manifest:
+      manifest = json.loads(self._manifest)
+      if 'layers' in manifest:
+        for layer in manifest['layers']:
+          if layer['digest'] == digest:
+            return layer
+    return None
+
+  def blobsum_to_media_type(self, digest):
+    manifest_layer = self.blobsum_to_manifest_layer(digest)
+    if manifest_layer:
+      return manifest_layer['mediaType']
+    return docker_http.LAYER_MIME
+
+  def diff_id_to_layer_manifest_json(self, diff_id):
+    manifest_layer = self.diff_id_to_manifest_layer(diff_id)
+
+    if manifest_layer:
+      return manifest_layer
+    else:
+      return {
+          'mediaType': docker_http.LAYER_MIME,
+          'size': self.blob_size(self._diffid_to_blobsum[diff_id]),
+          'digest': self._diffid_to_blobsum[diff_id]
+      }
 
   # __enter__ and __exit__ allow use as a context manager.
   def __enter__(self):
@@ -127,7 +167,7 @@ class FromParts(v2_2_image.DockerImage):
     pass
 
 
-def create_bundle(output, tag_to_config, diffid_to_blobsum,
+def create_bundle(output, tag_to_config, tag_to_manifest, diffid_to_blobsum,
                   blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy):
   """Creates a Docker image from a list of layers.
 
@@ -147,17 +187,47 @@ def create_bundle(output, tag_to_config, diffid_to_blobsum,
 
     tag_to_image = {}
     for (tag, config) in six.iteritems(tag_to_config):
+      manifest = None
+      if tag in tag_to_manifest:
+        manifest = tag_to_manifest[tag]
       tag_to_image[tag] = FromParts(
-          config, diffid_to_blobsum,
+          config, manifest, diffid_to_blobsum,
           blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy)
 
     v2_2_save.multi_image_tarball(tag_to_image, tar)
 
+def create_tag_to_file_content_map(stamp_info, tag_file_pairs):
+  """
+    Creates a Docker image tag to file content map.
+
+    Args:
+      stamp_info - Tag substitutions to make in the input tags, e.g. {BUILD_USER}
+      tag_file_pairs - List of input tags and file names
+          (e.g. ...:image=@bazel-out/...image.0.config)
+  """
+  tag_to_file_content = {}
+
+  if tag_file_pairs:
+    for entry in tag_file_pairs:
+      elts = entry.split('=')
+      if len(elts) != 2:
+        raise Exception('Expected associative list key=value, got: %s' % entry)
+      (fq_tag, filename) = elts
+
+      formatted_tag = fq_tag.format(**stamp_info)
+      tag = docker_name.Tag(formatted_tag, strict=False)
+      file_contents = utils.ExtractValue(filename)
+
+      # Add the mapping in one direction.
+      tag_to_file_content[tag] = file_contents
+
+  return tag_to_file_content
 
 def main():
   args = parser.parse_args()
 
   tag_to_config = {}
+  tag_to_manifest = {}
   stamp_info = {}
   diffid_to_blobsum = {}
   blobsum_to_unzipped = {}
@@ -174,18 +244,8 @@ def main():
                    "using '%s'" % (key, value))
           stamp_info[key] = value
 
-  for entry in args.tags:
-    elts = entry.split('=')
-    if len(elts) != 2:
-      raise Exception('Expected associative list key=value, got: %s' % entry)
-    (fq_tag, config_filename) = elts
-
-    formatted_tag = fq_tag.format(**stamp_info)
-    tag = docker_name.Tag(formatted_tag, strict=False)
-    config_file = utils.ExtractValue(config_filename)
-
-    # Add the mapping in one direction.
-    tag_to_config[tag] = config_file
+  tag_to_config = create_tag_to_file_content_map(stamp_info, args.tags)
+  tag_to_manifest = create_tag_to_file_content_map(stamp_info, args.manifests)
 
   # Do this first so that if there is overlap with the loop below it wins.
   blobsum_to_legacy = {}
@@ -199,22 +259,44 @@ def main():
         diffid_to_blobsum[diff_id] = blob_sum
         blobsum_to_legacy[blob_sum] = legacy_image
 
-  for entry in args.layer:
-    elts = entry.split('=')
-    if len(elts) != 4:
-      raise Exception('Expected associative list key=value, got: %s' % entry)
-    (diffid_filename, blobsum_filename,
-     unzipped_filename, zipped_filename) = elts
+  if args.layer:
+    for entry in args.layer:
+      elts = entry.split('=')
+      if len(elts) != 4:
+        raise Exception('Expected associative list key=value, got: %s' % entry)
+      (diffid_filename, blobsum_filename,
+      unzipped_filename, zipped_filename) = elts
 
-    diff_id = 'sha256:' + utils.ExtractValue(diffid_filename)
-    blob_sum = 'sha256:' + utils.ExtractValue(diffid_filename)
+      diff_id = 'sha256:' + utils.ExtractValue(diffid_filename)
+      blob_sum = 'sha256:' + utils.ExtractValue(blobsum_filename)
 
-    diffid_to_blobsum[diff_id] = blob_sum
-    blobsum_to_unzipped[blob_sum] = unzipped_filename
-    blobsum_to_zipped[blob_sum] = zipped_filename
+      diffid_to_blobsum[diff_id] = blob_sum
+      blobsum_to_unzipped[blob_sum] = unzipped_filename
+      blobsum_to_zipped[blob_sum] = zipped_filename
+
+  # add foreign layers
+  #
+  # Windows base images distributed by Microsoft are using foreign layers.
+  # Foreign layers are not stored in the Docker repository like normal layers.
+  # Instead they include a list of URLs where the layer can be downloaded.
+  # This is done because Windows base images are large (2+GB).  When someone
+  # pulls a Windows image, it downloads the foreign layers from those URLs
+  # instead of requesting the blob from the registry.
+  # When adding foreign layers through bazel, the actual layer blob is not
+  # present on the system.  Instead the base image manifest is used to
+  # describe the parent image layers.
+  for tag, manifest_file in tag_to_manifest.items():
+    manifest = json.loads(manifest_file)
+    if 'layers' in manifest:
+      config = json.loads(tag_to_config[tag])
+      for i, layer in enumerate(manifest['layers']):
+        diff_id = config['rootfs']['diff_ids'][i]
+        if layer['mediaType'] == docker_http.FOREIGN_LAYER_MIME:
+          blob_sum = layer['digest']
+          diffid_to_blobsum[diff_id] = blob_sum
 
   create_bundle(
-      args.output, tag_to_config, diffid_to_blobsum,
+      args.output, tag_to_config, tag_to_manifest, diffid_to_blobsum,
       blobsum_to_unzipped, blobsum_to_zipped, blobsum_to_legacy)
 
 

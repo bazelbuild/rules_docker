@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//contrib:rename_image.bzl", "rename_image")
-load("//contrib:idd.bzl", "idd")
-load("//contrib:compare_ids_test.bzl", "compare_ids_test")
-load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
+load("//container:bundle.bzl", "container_bundle")
+load("//contrib:compare_ids_test.bzl", "compare_ids_test")
+load("//contrib:idd.bzl", "idd")
+load("//contrib:push-all.bzl", "docker_push")
+load("//contrib:rename_image.bzl", "rename_image")
+load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 
 sh_test(
     name = "rename_image_test",
@@ -141,4 +143,14 @@ file_test(
     name = "test_idd_rule_output",
     file = ":test_idd_rule",
     regexp = "^set -x && python .*idd .*image.tar .*image.tar -v -d$",
+)
+
+container_bundle(
+    name = "create_empty_bundle",
+    images = {},
+)
+
+docker_push(
+    name = "test_docker_push_empty_bundle",
+    bundle = ":create_empty_bundle",
 )

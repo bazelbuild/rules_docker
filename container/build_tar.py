@@ -16,6 +16,7 @@
 from contextlib import contextmanager
 import gzip
 import io
+import json
 import os
 import os.path
 import subprocess
@@ -32,12 +33,21 @@ gflags.MarkFlagAsRequired('output')
 
 gflags.DEFINE_multistring('file', [], 'A file to add to the layer')
 
+gflags.DEFINE_string('manifest', None, 'JSON manifest of contents to add to the layer')
+
 gflags.DEFINE_multistring('empty_file', [], 'An empty file to add to the layer')
 
 gflags.DEFINE_multistring('empty_dir', [], 'An empty dir to add to the layer')
 
 gflags.DEFINE_string(
     'mode', None, 'Force the mode on the added files (in octal).')
+
+gflags.DEFINE_multistring(
+    'empty_root_dir',
+    [],
+    'An empty root directory to add to the layer.  This will create a directory that'
+    'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
+    '"root_directory"')
 
 gflags.DEFINE_multistring('tar', [], 'A tar file to add to the layer')
 
@@ -60,7 +70,7 @@ gflags.DEFINE_string(
 gflags.DEFINE_multistring(
     'modes', None,
     'Specific mode to apply to specific file (from the file argument),'
-    ' e.g., path/to/file=0455.')
+    ' e.g., path/to/file=0o455.')
 
 gflags.DEFINE_multistring('owners', None,
                           'Specify the numeric owners of individual files, '
@@ -76,6 +86,14 @@ gflags.DEFINE_string('owner_name', None,
 gflags.DEFINE_multistring('owner_names', None,
                           'Specify the owner names of individual files, e.g. '
                           'path/to/file=root.root.')
+
+gflags.DEFINE_string(
+    'root_directory', './', 'Default root directory is named "."'
+    'Windows docker images require this be named "Files" instead of "."')
+
+gflags.DEFINE_string('xz_path', None,
+                     'Specify the path to xz as a fallback when the Python '
+                     'lzma module is unavailable.')
 
 FLAGS = gflags.FLAGS
 
@@ -98,13 +116,18 @@ class TarFile(object):
     else:
       return os.path.basename(os.path.splitext(filename)[0])
 
-  def __init__(self, output, directory, compression):
+  def __init__(self, output, directory, compression, root_directory):
     self.directory = directory
     self.output = output
     self.compression = compression
+    self.root_directory = root_directory
 
   def __enter__(self):
-    self.tarfile = archive.TarFileWriter(self.output, self.compression)
+    self.tarfile = archive.TarFileWriter(
+        self.output,
+        self.compression,
+        self.root_directory
+    )
     return self
 
   def __exit__(self, t, v, traceback):
@@ -187,6 +210,23 @@ class TarFile(object):
     """
     self.add_empty_file(destpath, mode=mode, ids=ids, names=names,
                         kind=tarfile.DIRTYPE)
+
+  def add_empty_root_dir(self, destpath, mode=None, ids=None, names=None):
+    """Add a directory to the root of the tar file.
+
+    Args:
+       destpath: the name of the directory in the layer
+       mode: force to set the specified mode, defaults to 644
+       ids: (uid, gid) for the file to set ownership
+       names: (username, groupname) for the file to set ownership.
+
+    An empty directory will be created as `destfile` in the root layer.
+    """
+    original_root_directory = self.tarfile.root_directory
+    self.tarfile.root_directory = destpath
+    self.add_empty_dir(
+        destpath, mode=mode, ids=ids, names=names)
+    self.tarfile.root_directory = original_root_directory
 
   def add_tar(self, tar):
     """Merge a tar file into the destination tar file.
@@ -296,11 +336,11 @@ class TarFile(object):
   @staticmethod
   def _xzcat_decompress(data):
     """Decompresses the xz-encrypted bytes in data by piping to xz."""
-    if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
+    if not FLAGS.xz_path:
       raise RuntimeError('Cannot handle .xz compression: xz not found.')
 
     xz_proc = subprocess.Popen(
-      ['xz', '--decompress', '--stdout'],
+      [FLAGS.xz_path, '--decompress', '--stdout'],
       stdin=subprocess.PIPE,
       stdout=subprocess.PIPE)
     return xz_proc.communicate(data)[0]
@@ -358,15 +398,33 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression) as output:
+  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory) as output:
     def file_attributes(filename):
-      if filename[0] == '/':
+      if filename.startswith('/'):
         filename = filename[1:]
       return {
           'mode': mode_map.get(filename, default_mode),
           'ids': ids_map.get(filename, default_ids),
           'names': names_map.get(filename, default_ownername),
       }
+
+    if FLAGS.manifest:
+      with open(FLAGS.manifest, 'r') as f:
+        manifest = json.load(f)
+        for f in manifest.get('files', []):
+          output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
+        for f in manifest.get('empty_files', []):
+          output.add_empty_file(f, **file_attributes(f))
+        for d in manifest.get('empty_dirs', []):
+          output.add_empty_dir(d, **file_attributes(d))
+        for d in manifest.get('empty_root_dirs', []):
+          output.add_empty_root_dir(d, **file_attributes(d))
+        for f in manifest.get('symlinks', []):
+          output.add_link(f['linkname'], f['target'])
+        for tar in manifest.get('tars', []):
+          output.add_tar(tar)
+        for deb in manifest.get('debs', []):
+          output.add_deb(deb)
 
     for f in FLAGS.file:
       (inf, tof) = f.split('=', 1)
@@ -375,6 +433,8 @@ def main(unused_argv):
       output.add_empty_file(f, **file_attributes(f))
     for f in FLAGS.empty_dir:
       output.add_empty_dir(f, **file_attributes(f))
+    for f in FLAGS.empty_root_dir:
+      output.add_empty_root_dir(f, **file_attributes(f))
     for tar in FLAGS.tar:
       output.add_tar(tar)
     for deb in FLAGS.deb:

@@ -1,0 +1,16 @@
+schemaVersion: 2.0.0
+
+fileExistenceTests:
+- name: 'Files'
+  path: '/'
+  shouldExist: true
+  permissions: 'drwx------'
+
+- name: 'Hives'
+  path: '/'
+  shouldExist: true
+  permissions: 'drwx------'
+
+metadataTest:
+  cmd: ["echo bar"]
+

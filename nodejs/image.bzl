@@ -16,17 +16,20 @@
 The signature of this rule is compatible with nodejs_binary.
 """
 
-load(
-    "//lang:image.bzl",
-    "app_layer_attrs",
-    "app_layer_impl",
-    "dep_layer_attrs",
-    "dep_layer_impl",
-)
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 load(
     "//container:container.bzl",
     "container_pull",
     _container = "container",
+)
+load(
+    "//lang:image.bzl",
+    "app_layer_attrs",
+    "app_layer_impl",
+)
+load(
+    "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
 
@@ -55,55 +58,88 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
-    "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
     "//conditions:default": "@nodejs_debug_image_base//image",
+    "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
+    "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
 })
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "SourcesInfo")
+load("@build_bazel_rules_nodejs//:defs.bzl", "NodeJSSourcesInfo")
 
 def _app_runfiles(dep):
-    if SourcesInfo in dep:
-        return dep[SourcesInfo].data
+    if NodeJSSourcesInfo in dep:
+        return dep[NodeJSSourcesInfo].data
     else:
         return _runfiles(dep)
 
+def _node_module_runfiles(dep):
+    return dep[NodeJSSourcesInfo].node_modules
+
 def _runfiles(dep):
-    return dep.default_runfiles.files + dep.data_runfiles.files + dep.files
+    return depset(transitive = [dep.default_runfiles.files, dep.data_runfiles.files, dep.files])
 
 def _emptyfiles(dep):
-    return dep.default_runfiles.empty_filenames + dep.data_runfiles.empty_filenames
+    return depset(transitive = [dep.default_runfiles.empty_filenames, dep.data_runfiles.empty_filenames])
 
 def _dep_layer_impl(ctx):
-    return dep_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
+    return app_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
 
 _dep_layer = rule(
-    attrs = dep_layer_attrs,
+    attrs = dicts.add(_container.image.attrs, {
+        # The base image on which to overlay the dependency layers.
+        "base": attr.label(mandatory = True),
+
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = False),
+
+        # Override the defaults.
+        # https://github.com/bazelbuild/bazel/issues/2176
+        "data_path": attr.string(default = "."),
+        # The dependency whose runfiles we're appending.
+        "dep": attr.label(
+            mandatory = True,
+            allow_files = True,
+        ),
+        "directory": attr.string(default = "/app"),
+        "legacy_run_behavior": attr.bool(default = False),
+    }),
     executable = True,
     outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _dep_layer_impl,
 )
 
 def _app_layer_impl(ctx):
+    # TODO: Why is this needed?
     empty_dirs = ["/".join(["/app", ctx.workspace_name])]
-    return app_layer_impl(ctx, runfiles = _app_runfiles, emptyfiles = _emptyfiles, emptydirs = empty_dirs)
+    return app_layer_impl(ctx, runfiles = _app_runfiles, emptyfiles = _emptyfiles, emptydirs = empty_dirs) 
 
 _app_layer = rule(
     attrs = app_layer_attrs,
     executable = True,
     outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _app_layer_impl,
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+
+def _node_module_layer_impl(ctx):
+    return app_layer_impl(ctx, runfiles = _node_module_runfiles, emptyfiles = _emptyfiles) 
+
+_node_module_layer = rule(
+    attrs = app_layer_attrs,
+    executable = True,
+    outputs = _container.image.outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
+    implementation = _node_module_layer_impl,
+)
 
 def nodejs_image(
         name,
         base = None,
         data = [],
         layers = [],
-        node_modules = "//:node_modules",
+        node_modules = None,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
 
@@ -113,6 +149,7 @@ def nodejs_image(
     **kwargs: See nodejs_binary.
   """
     binary_name = name + ".binary"
+    # Note: We need to get the underlying node binary to be able to access the NodeJSSourcesInfo provider
     node_binary_name = binary_name + "_bin"
 
     nodejs_binary(
@@ -125,18 +162,39 @@ def nodejs_image(
     layers = [
         # Put the Node binary into its own layer.
         "@nodejs//:node",
-        "@nodejs//:minimal_node_runfiles",
+        "@nodejs//:node_runfiles",
         "@nodejs//:bin/node_args.sh",
-        # node_modules can get large, it should be in its own layer.
-        node_modules,
+        # Note: The empty string is a placeholder layer for the node modules so we can special case it below
+        "",
     ] + layers
+
+    # the node_modules attribute is deprecated so should be treated as optional
+    # if node_modules:
+    #     _layers.append(node_modules)
+    # else:
+    #     _layers.append(_node_module_runfiles)
+
+    # layers = _layers + layers
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        _dep_layer(name = this_name, base = base, dep = dep, binary = node_binary_name, agnostic_dep_layout = True)
+        if dep == "":
+            # node_modules are deprecated but still support it:
+            if node_modules:
+                _dep_layer(name = this_name, base = base, dep = node_modules, binary = node_binary_name, testonly = kwargs.get("testonly"))
+            else:
+                # We need to get the node_modules from the NodeJSSourcesInfo provider from the node binary
+                _node_module_layer(
+                    name = this_name,
+                    base = base,
+                    binary = node_binary_name,
+                    testonly = kwargs.get("testonly"),
+                )
+        else:
+            _dep_layer(name = this_name, base = base, dep = dep, binary = node_binary_name, testonly = kwargs.get("testonly"))
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -144,11 +202,10 @@ def nodejs_image(
     _app_layer(
         name = name,
         base = base,
-        agnostic_dep_layout = True,
         binary = node_binary_name,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )

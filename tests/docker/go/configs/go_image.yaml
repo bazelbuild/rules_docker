@@ -1,0 +1,9 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: ['/app/tests/docker/go/go_image.binary']
+  cmd: [
+    'arg0',
+    'arg1',
+    'tests/docker/go/BUILD',
+  ]

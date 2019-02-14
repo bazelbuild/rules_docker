@@ -14,13 +14,20 @@
 """Provider definitions"""
 
 # A provider containing information exposed by container_bundle rules
-BundleInfo = provider(fields = ["container_images", "stamp"])
+BundleInfo = provider(fields = [
+    "container_images",
+    "stamp",
+])
 
 # A provider containing information exposed by container_flatten rules
 FlattenInfo = provider()
 
 # A provider containing information exposed by container_image rules
-ImageInfo = provider(fields = ["container_parts"])
+ImageInfo = provider(fields = [
+    "container_parts",
+    "legacy_run_behavior",
+    "docker_run_flags",
+])
 
 # A provider containing information exposed by container_import rules
 ImportInfo = provider(fields = ["container_parts"])
@@ -34,11 +41,27 @@ LayerInfo = provider(fields = [
     "env",
 ])
 
-# A provier containing information exposed by container_push rules
+# A provider containing information exposed by container_push rules
 PushInfo = provider(fields = [
     "registry",
     "repository",
     "tag",
     "stamp",
     "stamp_inputs",
+    "digest",
 ])
+
+# A provider containing information exposed by filter_layer rules
+FilterLayerInfo = provider(
+    fields = {
+        "filtered_depset": "a filtered depset of struct(target=<target>, target_deps=<depset>)",
+        "runfiles": "filtered runfiles that should be installed from this layer",
+    },
+)
+
+# A provider containing information exposed by filter_aspect
+FilterAspectInfo = provider(
+    fields = {
+        "depset": "a depset of struct(target=<target>, target_deps=<depset>)",
+    },
+)

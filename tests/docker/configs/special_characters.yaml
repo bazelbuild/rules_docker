@@ -1,0 +1,17 @@
+schemaVersion: 2.0.0
+
+fileContentTests:
+  - name: "special characters can be used in files"
+    path: "/root= dir/gen= foo.out"
+    expectedContents: ["generated"]
+  - name: "special characters can be used in symlinks"
+    path: "/foo= symlink"
+    expectedContents: ["generated"]
+
+fileExistenceTests:
+  - name: "special characters can be used in emptyfiles"
+    path: '/empty= file'
+    shouldExist: true
+  - name: "special characters can be used in emptydirs"
+    path: '/empty= dir'
+    shouldExist: true
