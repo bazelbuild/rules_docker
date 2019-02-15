@@ -122,7 +122,7 @@ def _default_symlinks(dep):
     else:
         return dep.default_runfiles.symlinks
 
-def app_layer_impl(ctx, runfiles = None, emptyfiles = None, emptydirs = []):
+def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     """Appends a layer for a single dependency's runfiles."""
 
     runfiles = runfiles or _default_runfiles
@@ -158,11 +158,6 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None, emptydirs = []):
         for f in depset(emptyfiles(dep)).to_list()
         if emptyfilepath(ctx, f) not in available and _layer_emptyfile_path(ctx, f) not in available
     ]
-
-    # TODO: Perform emptydir check!
-    # emptydirs = [
-
-    # ]
 
     symlinks = {}
 
@@ -209,7 +204,6 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None, emptydirs = []):
         directory = "/",
         file_map = file_map,
         empty_files = empty_files,
-        empty_dirs = emptydirs,
         symlinks = symlinks,
         workdir = workdir,
         # Use entrypoint so we can easily add arguments when the resulting

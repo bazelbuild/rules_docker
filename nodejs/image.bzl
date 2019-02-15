@@ -108,8 +108,6 @@ _dep_layer = rule(
 )
 
 def _app_layer_impl(ctx):
-    # TODO: Why is this needed?
-    # empty_dirs = ["/".join(["/app", ctx.workspace_name])]
     return app_layer_impl(ctx, runfiles = _app_runfiles, emptyfiles = _emptyfiles)
 
 _app_layer = rule(
@@ -166,14 +164,6 @@ def nodejs_image(
         # Note: The empty string is a placeholder layer for the node modules so we can special case it below
         "",
     ] + layers
-
-    # the node_modules attribute is deprecated so should be treated as optional
-    # if node_modules:
-    #     _layers.append(node_modules)
-    # else:
-    #     _layers.append(_node_module_runfiles)
-
-    # layers = _layers + layers
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
