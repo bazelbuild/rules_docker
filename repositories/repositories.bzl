@@ -56,8 +56,8 @@ def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
 
-    # TODO(ngiraldo): Remove after 45e68f2f4344afa32f91b835888123cda3a77dc6 is in a Bazel release
-    # https://github.com/bazelbuild/bazel/commit/45e68f2f4344afa32f91b835888123cda3a77dc6
+    # TODO(ngiraldo): Remove after 1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf is in a Bazel release
+    # https://github.com/bazelbuild/bazel/commit/1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf
     if "bazel_source" not in excludes:
         http_archive(
             name = "bazel_source",
