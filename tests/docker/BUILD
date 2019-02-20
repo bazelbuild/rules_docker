@@ -195,7 +195,7 @@ container_test(
 
 file_test(
     name = "test_digest_output1",
-    content = "sha256:683df4781a99de9f52a213dd84133d2b10d769f0077ff99f8128e48c2b361572",
+    content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
     file = ":deb_image_with_dpkgs.digest",
 )
 
