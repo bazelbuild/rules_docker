@@ -96,7 +96,7 @@ gflags.DEFINE_string('xz_path', None,
                      'lzma module is unavailable.')
 
 FLAGS = gflags.FLAGS
-
+DEFAULT_MTIME = 0
 
 class TarFile(object):
   """A class to generates a Docker layer."""
@@ -127,7 +127,6 @@ class TarFile(object):
         self.output,
         self.compression,
         self.root_directory,
-        default_mtime=0
     )
     return self
 
@@ -164,7 +163,8 @@ class TarFile(object):
         uid=ids[0],
         gid=ids[1],
         uname=names[0],
-        gname=names[1])
+        gname=names[1],
+        mtime=DEFAULT_MTIME)
 
   def add_empty_file(self, destfile, mode=None, ids=None, names=None,
                      kind=tarfile.REGTYPE):
@@ -196,7 +196,8 @@ class TarFile(object):
         uid=ids[0],
         gid=ids[1],
         uname=names[0],
-        gname=names[1])
+        gname=names[1],
+        mtime=DEFAULT_MTIME)
 
   def add_empty_dir(self, destpath, mode=None, ids=None, names=None):
     """Add a directory to the tar file.
@@ -252,7 +253,7 @@ class TarFile(object):
       destination: where the symbolic link point to.
     """
     symlink = os.path.normpath(symlink)
-    self.tarfile.add_file(symlink, tarfile.SYMTYPE, link=destination)
+    self.tarfile.add_file(symlink, tarfile.SYMTYPE, link=destination, mtime=DEFAULT_MTIME)
 
   @contextmanager
   def write_temp_file(self, data, suffix='tar', mode='wb'):
