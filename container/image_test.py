@@ -213,6 +213,7 @@ class ImageTest(unittest.TestCase):
       cfg = json.loads(img.config_file())
       self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
 
+  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again
   def test_with_stamped_creation_time(self):
     with TestImage('with_stamped_creation_time') as img:
       self.assertEqual(2, len(img.fs_layers()))
@@ -232,6 +233,7 @@ class ImageTest(unittest.TestCase):
       # Assume that any value for 'created' within a reasonable bound is fine.
       self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
+  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again 
   def test_with_default_stamped_creation_time(self):
     # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
     # `creation_time` isn't explicitly defined.
