@@ -213,9 +213,8 @@ class ImageTest(unittest.TestCase):
       cfg = json.loads(img.config_file())
       self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
 
-  # TODO(ngiraldo): re-enable this test once I fix issue related to
-  # https://github.com/bazelbuild/bazel/commit/1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf
-  def no_test_with_stamped_creation_time(self):
+  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again
+  def test_with_stamped_creation_time(self):
     with TestImage('with_stamped_creation_time') as img:
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
@@ -234,9 +233,8 @@ class ImageTest(unittest.TestCase):
       # Assume that any value for 'created' within a reasonable bound is fine.
       self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
-  # TODO(ngiraldo): re-enable this test once I fix issue related to
-  # https://github.com/bazelbuild/bazel/commit/1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf
-  def no_test_with_default_stamped_creation_time(self):
+  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again 
+  def test_with_default_stamped_creation_time(self):
     # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
     # `creation_time` isn't explicitly defined.
     with TestImage('with_default_stamped_creation_time') as img:
