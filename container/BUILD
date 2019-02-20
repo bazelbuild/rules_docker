@@ -79,8 +79,8 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        "@bazel_source//tools/build_defs/pkg:archive",
         "@bazel_tools//third_party/py/gflags",
-        "@bazel_tools//tools/build_defs/pkg:archive",
     ],
 )
 

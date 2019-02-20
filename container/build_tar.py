@@ -25,7 +25,7 @@ import re
 import tarfile
 import tempfile
 
-from tools.build_defs.pkg import archive
+from bazel_source.tools.build_defs.pkg import archive
 from third_party.py import gflags
 
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
@@ -126,7 +126,8 @@ class TarFile(object):
     self.tarfile = archive.TarFileWriter(
         self.output,
         self.compression,
-        self.root_directory
+        self.root_directory,
+        default_mtime=0
     )
     return self
 
