@@ -126,7 +126,8 @@ class TarFile(object):
     self.tarfile = archive.TarFileWriter(
         self.output,
         self.compression,
-        self.root_directory
+        self.root_directory,
+        default_mtime=0
     )
     return self
 
