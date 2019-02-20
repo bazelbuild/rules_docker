@@ -61,8 +61,9 @@ def repositories():
     if "bazel_source" not in excludes:
         http_archive(
             name = "bazel_source",
-            urls = [("https://github.com/bazelbuild/bazel/archive/45e68f2f4344afa32f91b835888123cda3a77dc6.tar.gz")],
             sha256 = "90d93b3ead9841bbdf482e8b9cfc6f235b8159d330ae73c06f8036a667b0b8d4",
+            strip_prefix = "bazel-45e68f2f4344afa32f91b835888123cda3a77dc6",
+            urls = [("https://github.com/bazelbuild/bazel/archive/45e68f2f4344afa32f91b835888123cda3a77dc6.tar.gz")],
         )
 
     if "puller" not in excludes:
