@@ -56,6 +56,16 @@ def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
 
+    # TODO(ngiraldo): Remove after 1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf is in a Bazel release
+    # https://github.com/bazelbuild/bazel/commit/1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf
+    if "bazel_source" not in excludes:
+        http_archive(
+            name = "bazel_source",
+            sha256 = "3f5441ab5bf403bc44e31bf018ed994d02a1bd2dbf350eface5bf343bc7dff4c",
+            strip_prefix = "bazel-1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf",
+            urls = [("https://github.com/bazelbuild/bazel/archive/1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf.tar.gz")],
+        )
+
     if "puller" not in excludes:
         http_file(
             name = "puller",
@@ -178,16 +188,16 @@ py_library(
         http_file(
             name = "structure_test_linux",
             executable = True,
-            sha256 = "543577685b33f0483bd4df72534ac9f84c17c9315d8afdcc536cce3591bb8f7c",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-linux-amd64"],
+            sha256 = "cfdfedd77c04becff0ea16a4b8ebc3b57bf404c56e5408b30d4fbb35853db67c",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-linux-amd64"],
         )
 
     if "structure_test_darwin" not in excludes:
         http_file(
             name = "structure_test_darwin",
             executable = True,
-            sha256 = "c1bc8664d411c6df23c002b41ab1b9a3d72ae930f194a997468bfae2f54ca751",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-darwin-amd64"],
+            sha256 = "14e94f75112a8e1b08a2d10f2467d27db0b94232a276ddd1e1512593a7b7cf5a",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-darwin-amd64"],
         )
 
     # For bzl_library.
