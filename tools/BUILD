@@ -19,4 +19,5 @@ py_binary(
     deps = [
         "@containerregistry",
     ],
+    legacy_create_init = False,
 )

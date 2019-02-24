@@ -33,6 +33,7 @@ py_binary(
     deps = [
         "@containerregistry",
     ],
+    legacy_create_init = False,
 )
 
 py_library(
@@ -52,6 +53,7 @@ py_binary(
         "@six",
         "@containerregistry",
     ],
+    legacy_create_init = False,
 )
 
 py_binary(
@@ -63,6 +65,7 @@ py_binary(
         "@six",
         "@containerregistry",
     ],
+    legacy_create_init = False,
 )
 
 py_binary(
@@ -71,6 +74,7 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [":build_tar_lib"],
+    legacy_create_init = True,
 )
 
 py_library(
