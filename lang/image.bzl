@@ -287,21 +287,21 @@ def _filter_layer_rule_impl(ctx):
             runfiles = runfiles.merge(dep.target.default_runfiles)
             filtered_depsets.append(dep.target_deps)
 
-    # Forward correct provider, depending on Bazel version, so that the filter_layer() can be
+    # Forward correct provider, depending on availability, so that the filter_layer() can be
     # used as a normal dependency to native targets (e.g. py_library(deps = [<filter_layer>])).
     if hasattr(ctx.attr.dep, "py"):
-        # Forward legacy builtin provider
+        # Forward legacy builtin provider and PyInfo provider
         return struct(
             providers = [
                 FilterLayerInfo(
                     runfiles = runfiles,
                     filtered_depset = depset(transitive = filtered_depsets),
                 ),
-            ],
+            ] + ([ctx.attr.dep[PyInfo]] if PyInfo in ctx.attr.dep else []),
             py = ctx.attr.dep.py if hasattr(ctx.attr.dep, "py") else None,
         )
     else:
-        # Forward the PyInfo provider in Bazel >= 0.23.0
+        # Forward the PyInfo provider only
         return struct(
             providers = [
                 FilterLayerInfo(
