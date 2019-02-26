@@ -50,7 +50,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@six",
+        "@six//:six",
         "@containerregistry",
     ],
     legacy_create_init = False,
@@ -62,12 +62,13 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@six",
+        "@six//:six",
         "@containerregistry",
     ],
     legacy_create_init = False,
 )
 
+# TODO(xingao): Flip legacy_create_init once dependency on @bazel_source removed
 py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
