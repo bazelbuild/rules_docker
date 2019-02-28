@@ -104,7 +104,7 @@ def nodejs_image(
         data = [],
         layers = [],
         node_modules = "//:node_modules",
-        binary = None
+        binary = None,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
 
