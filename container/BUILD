@@ -33,6 +33,7 @@ py_binary(
     deps = [
         "@containerregistry",
     ],
+    legacy_create_init = False,
 )
 
 py_library(
@@ -49,9 +50,10 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@bazel_tools//third_party/py/six",
+        "@six//:six",
         "@containerregistry",
     ],
+    legacy_create_init = False,
 )
 
 py_binary(
@@ -60,17 +62,20 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@bazel_tools//third_party/py/six",
+        "@six//:six",
         "@containerregistry",
     ],
+    legacy_create_init = False,
 )
 
+# TODO(xingao): Flip legacy_create_init once dependency on @bazel_source removed
 py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [":build_tar_lib"],
+    legacy_create_init = True,
 )
 
 py_library(

@@ -397,6 +397,16 @@ function test_container_push() {
   docker stop -t 0 $cid
 }
 
+function test_container_push_tag_file() {
+  cd "${ROOT}"
+  clear_docker
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  bazel build tests/docker:push_tag_file_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/docker/push_tag_file_test)" '--name=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/docker/test.tag)'
+
+  docker stop -t 0 $cid
+}
+
 # Launch a private docker registry at localhost:5000 that requires a basic
 # htpasswd authentication with credentials at docker-config/htpasswd and needs
 # the docker client to be using the authentication from
@@ -543,4 +553,5 @@ test_rust_image -c dbg
 test_nodejs_image -c opt
 test_nodejs_image -c dbg
 test_container_push
+test_container_push_tag_file
 test_launcher_image

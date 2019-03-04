@@ -269,6 +269,24 @@ container_push(
     tags = ["manual"],
 )
 
+genrule(
+    name = "push_tag_file",
+    output_to_bindir = 1,
+    srcs = [],
+    outs = ["test.tag"],
+    cmd = """echo test > $@""",
+)
+
+container_push(
+    name = "push_tag_file_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+
 container_push(
     name = "push_stamped_test",
     format = "Docker",
