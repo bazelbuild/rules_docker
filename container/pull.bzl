@@ -133,14 +133,14 @@ exports_files(["digest"])
     if repository_ctx.attr.docker_client_config != "":
         args += ["--client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
 
-    cache_dir = repository_ctx.os.environ.get("docker_repository_cache")
+    cache_dir = repository_ctx.os.environ.get("DOCKER_REPO_CACHE")
     if cache_dir:
-        if cache_dir.startswith('~/') and "HOME" in repository_ctx.os.environ:
-            cache_dir = cache_dir.replace('~', repository_ctx.os.environ["HOME"], 1)
+        if cache_dir.startswith("~/") and "HOME" in repository_ctx.os.environ:
+            cache_dir = cache_dir.replace("~", repository_ctx.os.environ["HOME"], 1)
 
         args += [
             "--cache",
-            cache_dir
+            cache_dir,
         ]
 
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
@@ -195,4 +195,5 @@ pull = struct(
 container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,
+    environ = ["DOCKER_REPO_CACHE", "PULLER_TIMEOUT", "HOME"],
 )

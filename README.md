@@ -1139,6 +1139,18 @@ configuration. See [here](#container_pull-custom-client-configuration) for detai
 
 **NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
 
+**NOTE:** Set `DOCKER_REPO_CACHE` env variable to make the container puller
+cache downloaded layers at the directory specified as a value to this env
+variable. The caching feature hasn't been thoroughly tested and may be thread
+unsafe. If you notice flakiness after enabling it, see the warning below on how
+to workaround it.
+
+<aside class="warning">
+`container_pull` is suspected to have thread safety issues. To ensure multiple
+container_pull(s) don't execute concurrently, please use the bazel startup
+flat `--loading_phase_threads=1` in your bazel invocation.
+</aside>
+
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
     <col class="col-param" />
