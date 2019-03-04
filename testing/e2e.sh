@@ -291,6 +291,12 @@ function test_java_image() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image)" "Hello World"
 }
 
+function test_java_image_norun() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_NOT_CONTAINS "$(bazel run "$@" testdata:java_image -- --norun)" "Hello World"
+}
+
 function test_java_partial_entrypoint_image() {
   cd "${ROOT}"
   clear_docker
@@ -519,6 +525,7 @@ test_go_image_busybox
 test_go_image_with_tags
 test_java_image -c opt
 test_java_image -c dbg
+test_java_image_norun
 test_java_image_with_custom_run_flags -c opt
 test_java_image_with_custom_run_flags -c dbg
 test_java_sandwich_image -c opt
