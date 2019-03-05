@@ -18,7 +18,6 @@
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 
-
 DIGESTS = {
     # "gcr.io/distroless/java/jetty:debug" circa 2019-03-05 10:43 -0500
     "debug": "sha256:c18a6112ea3a9e0f1e5a5a495b47ba1d5c3f28473c71d8f0fac32d9b24f8aa82",

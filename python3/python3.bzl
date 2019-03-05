@@ -18,7 +18,6 @@
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 
-
 DIGESTS = {
     # "gcr.io/distroless/python3:debug" circa 2019-03-05 10:43 -0500
     "debug": "sha256:0f1a00c4201984089b0dc6e517151d81f2528d09e56f83e8bdf4c29be9500f92",

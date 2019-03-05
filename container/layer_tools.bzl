@@ -134,7 +134,7 @@ def incremental_load(
         run_flags = None):
     """Generate the incremental load statement.
 
-    
+
     Args:
        ctx: The context
        images: List of images/layers to load

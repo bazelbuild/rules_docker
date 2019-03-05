@@ -81,14 +81,14 @@ def build_layer(
     Args:
        ctx: The context
        name: The name of the layer
-       output_layer: 
+       output_layer:
        files: Files to include in the layer
        file_map: Map of files to include in layer (source to dest inside layer)
        empty_files: List of empty files in the layer
        empty_dirs: List of empty dirs in the layer
        directory: Directory in which to store the file inside the layer
        symlinks: List of symlinks to include in the layer
-       debs: List of debian package tar files 
+       debs: List of debian package tar files
        debs: List of tar files
        operating_system: The OS (e.g., 'linux', 'windows')
 
