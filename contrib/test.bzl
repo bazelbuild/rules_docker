@@ -117,6 +117,7 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     """Renames the image under test before threading it to the container test rule.
 
     See also https://github.com/GoogleContainerTools/container-structure-test
+
     Args:
       name: The name of this container_test rule
       image: The image to use for testing
