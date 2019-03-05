@@ -81,14 +81,16 @@ load(
 def _get_base_config(ctx, name, base):
     if ctx.files.base or base:
         # The base is the first layer in container_parts if provided.
-        l = _get_layers(ctx, name, ctx.attr.base, base)
-        return l.get("config")
+        layer = _get_layers(ctx, name, ctx.attr.base, base)
+        return layer.get("config")
+    return None
 
 def _get_base_manifest(ctx, name, base):
     if ctx.files.base or base:
         # The base is the first layer in container_parts if provided.
         layer = _get_layers(ctx, name, ctx.attr.base, base)
         return layer.get("manifest")
+    return None
 
 def _image_config(
         ctx,
@@ -115,12 +117,12 @@ def _image_config(
     )
 
     labels = dict()
-    for l in ctx.attr.labels:
-        fname = ctx.attr.labels[l]
+    for label in ctx.attr.labels:
+        fname = ctx.attr.labels[label]
         if fname[0] == "@":
-            labels[l] = "@" + label_file_dict[fname[1:]].path
+            labels[label] = "@" + label_file_dict[fname[1:]].path
         else:
-            labels[l] = fname
+            labels[label] = fname
 
     args = [
         "--output=%s" % config.path,
@@ -350,6 +352,7 @@ def _impl(
 
     # Get the config for the base layer
     config_file = _get_base_config(ctx, name, base)
+    config_digest = None
 
     # Get the manifest for the base layer
     manifest_file = _get_base_manifest(ctx, name, base)
@@ -430,21 +433,18 @@ def _impl(
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
-    return struct(
-        container_parts = container_parts,
-        providers = [
-            ImageInfo(
-                container_parts = container_parts,
-                legacy_run_behavior = legacy_run_behavior,
-                docker_run_flags = docker_run_flags,
-            ),
-            DefaultInfo(
-                executable = output_executable,
-                files = depset([output_layer]),
-                runfiles = runfiles,
-            ),
-        ],
-    )
+    return [
+        ImageInfo(
+            container_parts = container_parts,
+            legacy_run_behavior = legacy_run_behavior,
+            docker_run_flags = docker_run_flags,
+        ),
+        DefaultInfo(
+            executable = output_executable,
+            files = depset([output_layer]),
+            runfiles = runfiles,
+        ),
+    ]
 
 _attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),

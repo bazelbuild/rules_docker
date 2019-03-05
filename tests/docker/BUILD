@@ -271,10 +271,10 @@ container_push(
 
 genrule(
     name = "push_tag_file",
-    output_to_bindir = 1,
     srcs = [],
     outs = ["test.tag"],
     cmd = """echo test > $@""",
+    output_to_bindir = 1,
 )
 
 container_push(
