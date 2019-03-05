@@ -32,6 +32,7 @@ def join(directory, path):
     Args:
       directory: the relative directory to compute path from
       path: the path to append to the directory
+
     Returns:
       The relative data path prefix from the data_path attribute
     """
@@ -48,6 +49,7 @@ def canonicalize(path):
 
     Args:
       path: the path to canonicalize
+
     Returns:
       The canonicalized path
     """

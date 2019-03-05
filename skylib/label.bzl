@@ -19,6 +19,7 @@ def string_to_label(label_list, string_list):
     Args:
       label_list: The list of labels
       string_list: The list of strings
+
     Returns:
       A mapping from label strings to the resolved label.
     """
