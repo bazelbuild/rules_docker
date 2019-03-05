@@ -433,18 +433,21 @@ def _impl(
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
-    return [
-        ImageInfo(
-            container_parts = container_parts,
-            legacy_run_behavior = legacy_run_behavior,
-            docker_run_flags = docker_run_flags,
-        ),
-        DefaultInfo(
-            executable = output_executable,
-            files = depset([output_layer]),
-            runfiles = runfiles,
-        ),
-    ]
+    return struct(
+        container_parts = container_parts,
+        providers = [
+            ImageInfo(
+                container_parts = container_parts,
+                legacy_run_behavior = legacy_run_behavior,
+                docker_run_flags = docker_run_flags,
+            ),
+            DefaultInfo(
+                executable = output_executable,
+                files = depset([output_layer]),
+                runfiles = runfiles,
+            ),
+        ],
+    )
 
 _attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),
