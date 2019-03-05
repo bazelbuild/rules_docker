@@ -31,8 +31,7 @@ install:
 
 script:
   # Check for issues with the format of our bazel config files.	
-  - ./buildifier -mode=check $(find . -name BUILD -type f)	
-  - ./buildifier -mode=check $(find . -name WORKSPACE -type f)	
-  - ./buildifier -mode=check $(find . -name '*.bzl' -type f)
+  - ./buildifier --mode=check  $(find . -name BUILD -o -name WORKSPACE -o -name "*.bzl" -type f)
+  - ./buildifier --lint=warn $(find . -name BUILD -o -name WORKSPACE -o -name "*.bzl" -type f)
   # Test things by executing the various build configurations under testing/
   - ./testing/e2e.sh
