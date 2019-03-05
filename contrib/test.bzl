@@ -114,8 +114,16 @@ _container_test = rule(
 )
 
 def container_test(name, image, configs, driver = None, verbose = None, **kwargs):
-    """A macro to predictably rename the image under test before threading
-    it to the container test rule."""
+    """Renames the image under test before threading it to the container test rule.
+
+    See also https://github.com/GoogleContainerTools/container-structure-test
+    Args:
+      name: The name of this container_test rule
+      image: The image to use for testing
+      configs: List of YAML or JSON config files with tests
+      driver: Driver to use when running structure tests
+      verbose: Turns on/off verbose logging. Default False.
+    """
 
     image_loader = None
     image_tar = None
