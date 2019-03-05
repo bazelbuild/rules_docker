@@ -22,7 +22,7 @@ def python(repository_ctx):
     """Resolves the python path.
 
     Args:
-      repository_ctx: the repository context
+      repository_ctx: The repository context
 
     Returns:
       The path to the python interpreter

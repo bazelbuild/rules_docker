@@ -51,7 +51,7 @@ def get_from_target(ctx, name, attr_target, file_target = None):
        ctx: The context
        name: The name of the target
        attr_target: The attribute to get layers from
-       file_target: I not None, layers are extracted from this target
+       file_target: If not None, layers are extracted from this target
 
     Returns:
        The extracted layers

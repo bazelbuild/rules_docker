@@ -81,7 +81,7 @@ def build_layer(
     Args:
        ctx: The context
        name: The name of the layer
-       output_layer:
+       output_layer: The output location for this layer
        files: Files to include in the layer
        file_map: Map of files to include in layer (source to dest inside layer)
        empty_files: List of empty files in the layer

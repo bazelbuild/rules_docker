@@ -73,7 +73,6 @@ def main():
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 
-
 DIGESTS = {{
     # "{debug_tag}" circa {date}
     "debug": "{debug}",
