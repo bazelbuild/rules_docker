@@ -66,6 +66,7 @@ platforms:
     - "-//testdata:pkg_control_xz"
     - "-//tests/docker:deb_image_with_dpkgs"
     - "-//tests/docker:deb_image_with_dpkgs_test"
+    - "-//tests/docker:test_digest_output1"
     build_flags:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
@@ -89,6 +90,7 @@ platforms:
     - "-//testdata:pkg_control_xz"
     - "-//tests/docker:deb_image_with_dpkgs"
     - "-//tests/docker:deb_image_with_dpkgs_test"
+    - "-//tests/docker:test_digest_output1"
     test_flags:
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
