@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Macro to rename an image"""
-
 """A rule to rename the image from a <lang>_image or container_image target.
 
 Migrated from https://github.com/GoogleContainerTools/base-images-docker/blob/4f2fc8da248a61c3f8e13bbb43e9db6c0ed44ba3/util/run.bzl#L264
