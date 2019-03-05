@@ -61,10 +61,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "//conditions:default": "@go_image_base//image",
     "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
+    "//conditions:default": "@go_image_base//image",
 })
 
 def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):

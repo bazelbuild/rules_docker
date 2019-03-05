@@ -57,10 +57,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "//conditions:default": "@py3_image_base//image",
     "@io_bazel_rules_docker//:debug": "@py3_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@py3_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@py3_image_base//image",
+    "//conditions:default": "@py3_image_base//image",
 })
 
 def py3_image(name, base = None, deps = [], layers = [], **kwargs):

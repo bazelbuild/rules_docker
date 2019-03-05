@@ -57,10 +57,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "//conditions:default": "@cc_image_base//image",
     "@io_bazel_rules_docker//:debug": "@cc_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@cc_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@cc_image_base//image",
+    "//conditions:default": "@cc_image_base//image",
 })
 
 def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
