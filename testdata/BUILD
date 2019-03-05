@@ -42,8 +42,8 @@ load(
     "war_image",
 )
 load("//oci:oci.bzl", "oci_push")
-load("//python3:image.bzl", "py3_image")
 load("//python:image.bzl", "py_image", "py_layer")
+load("//python3:image.bzl", "py3_image")
 load("//scala:image.bzl", "scala_image")
 load("//testdata:utils.bzl", "generate_deb", "rule_with_symlinks")
 load(":stamp_info.bzl", "stamp_info")

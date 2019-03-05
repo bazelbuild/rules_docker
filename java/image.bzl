@@ -92,17 +92,17 @@ def repositories():
         )
 
 DEFAULT_JAVA_BASE = select({
-    "//conditions:default": "@java_image_base//image",
     "@io_bazel_rules_docker//:debug": "@java_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@java_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@java_image_base//image",
+    "//conditions:default": "@java_image_base//image",
 })
 
 DEFAULT_JETTY_BASE = select({
-    "//conditions:default": "@jetty_image_base//image",
     "@io_bazel_rules_docker//:debug": "@jetty_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@jetty_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@jetty_image_base//image",
+    "//conditions:default": "@jetty_image_base//image",
 })
 
 def java_files(f):
