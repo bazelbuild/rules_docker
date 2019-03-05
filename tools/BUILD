@@ -16,8 +16,8 @@ package(default_visibility = ["//visibility:private"])
 py_binary(
     name = "update_deps",
     srcs = ["update_deps.py"],
+    legacy_create_init = False,
     deps = [
         "@containerregistry",
     ],
-    legacy_create_init = False,
 )
