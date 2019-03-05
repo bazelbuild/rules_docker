@@ -89,7 +89,7 @@ def build_layer(
        directory: Directory in which to store the file inside the layer
        symlinks: List of symlinks to include in the layer
        debs: List of debian package tar files
-       debs: List of tar files
+       tars: List of tar files
        operating_system: The OS (e.g., 'linux', 'windows')
 
     Returns:

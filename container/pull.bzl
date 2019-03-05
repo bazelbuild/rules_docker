@@ -19,6 +19,8 @@ construct new images.
 """
 
 def python(repository_ctx):
+    """Resolves the python path."""
+
     if "BAZEL_PYTHON" in repository_ctx.os.environ:
         return repository_ctx.os.environ.get("BAZEL_PYTHON")
 
