@@ -37,6 +37,13 @@ def groovy_image(
     """Builds a container image overlaying the groovy_binary.
 
   Args:
+    name: Name of the groovy_image target.
+    base: Base image to use for the groovy_image.
+    main_class: The main entrypoint class in the groovy image.
+    srcs: List of groovy source files that will be used to build the binary
+          to be included in the groovy_image.
+    deps: The dependencies of the groovy_image target.
+    jvm_flags: The flags to pass to the JVM when running the groovy image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See groovy_binary.

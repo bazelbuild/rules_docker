@@ -123,7 +123,18 @@ def _default_symlinks(dep):
         return dep.default_runfiles.symlinks
 
 def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
-    """Appends a layer for a single dependency's runfiles."""
+    """Appends a layer for a single dependency's runfiles.
+
+    Args:
+        ctx: The Bazel runtime context object.
+        runfiles: (Optional) depset of runfiles to include in this language
+                  image layer.
+        emptyfiles: (Optional) depset of empty files to include in this
+                    language image layer.
+
+    Returns:
+        A container image provider for the application layer.
+    """
 
     runfiles = runfiles or _default_runfiles
     emptyfiles = emptyfiles or _default_emptyfiles

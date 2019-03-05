@@ -37,8 +37,11 @@ load(
 load(":go.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the go_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -68,6 +71,9 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     """Constructs a container image wrapping a go_binary target.
 
   Args:
+    name: Name of the go_image target.
+    base: Base image to use to build the go_image.
+    deps: Dependencies of the go image target.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into their own layers.
     **kwargs: See go_binary.
