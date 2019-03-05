@@ -1145,7 +1145,7 @@ variable. The caching feature hasn't been thoroughly tested and may be thread
 unsafe. If you notice flakiness after enabling it, see the warning below on how
 to workaround it.
 
-**WARNING:** `container_pull` is suspected to have thread safety issues. To
+**NOTE:** `container_pull` is suspected to have thread safety issues. To
 ensure multiple container_pull(s) don't execute concurrently, please use the
 bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
 
