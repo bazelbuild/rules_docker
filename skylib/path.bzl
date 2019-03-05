@@ -69,7 +69,8 @@ def strip_prefix(path, prefix):
     """Returns the path with the specified prefix removed.
 
     Args:
-      path: the path to append to the directory
+      path: the path to strip prefix from
+      prefix: the prefix to strip
     """
     if path.startswith(prefix):
         return path[len(prefix):]
