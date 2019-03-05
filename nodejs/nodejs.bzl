@@ -11,15 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+""" Generated file with dependencies for language rule."""
 
 # !!!! THIS IS A GENERATED FILE TO NOT EDIT IT BY HAND !!!!
 #
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 
+
 DIGESTS = {
-    # "gcr.io/google-appengine/debian9:debug" circa 2019-02-28 21:29 -0300
+    # "gcr.io/google-appengine/debian9:debug" circa 2019-03-05 10:43 -0500
     "debug": "sha256:fd26dfa474b76ef931e439537daba90bbd90d6c5bbdd0252616e6d87251cd9cd",
-    # "gcr.io/google-appengine/debian9:latest" circa 2019-02-28 21:29 -0300
+    # "gcr.io/google-appengine/debian9:latest" circa 2019-03-05 10:43 -0500
     "latest": "sha256:fd26dfa474b76ef931e439537daba90bbd90d6c5bbdd0252616e6d87251cd9cd",
 }
