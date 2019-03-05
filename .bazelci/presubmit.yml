@@ -64,9 +64,9 @@ platforms:
     - "--"
     - "..."
     build_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/docker:set_env_make_vars
@@ -83,9 +83,9 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     test_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:nosla_xenial_docker"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/docker:set_env_make_vars_test
