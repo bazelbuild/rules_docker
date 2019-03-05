@@ -45,6 +45,13 @@ def _extract_layers(ctx, name, artifact):
     }
 
 def get_from_target(ctx, name, attr_target, file_target = None):
+    """Gets all layers from the given target.
+
+    Args:
+       name: The name of the target
+       attr_target: The attribute to get layers from
+       file_target: I not None, layers are extracted from this target
+    """
     if file_target:
         return _extract_layers(ctx, name, file_target)
     elif hasattr(attr_target, "container_parts"):

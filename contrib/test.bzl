@@ -124,6 +124,7 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
       configs: List of YAML or JSON config files with tests
       driver: Driver to use when running structure tests
       verbose: Turns on/off verbose logging. Default False.
+      **kwargs: Attrs to pass through
     """
 
     image_loader = None
