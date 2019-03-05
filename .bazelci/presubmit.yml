@@ -52,10 +52,6 @@ platforms:
     # Tests temporarily added to local builds as these need XZ for remote builds
     # TODO(nlopezgi): remove these tests from this config and leave only on RBE
     - "//tests/docker:test_digest_output1"
-    - "//tests/docker:deb_image_with_dpkgs_test"
-    - "//tests/docker:deb_image_with_dpkgs_test.image"
-    - "//tests/docker:deb_image_with_dpkgs.digest"
-    - "//tests/docker:deb_image_with_dpkgs"
     test_flags:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
