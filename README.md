@@ -1148,7 +1148,7 @@ to workaround it.
 <aside class="warning">
 `container_pull` is suspected to have thread safety issues. To ensure multiple
 container_pull(s) don't execute concurrently, please use the bazel startup
-flat `--loading_phase_threads=1` in your bazel invocation.
+flag `--loading_phase_threads=1` in your bazel invocation.
 </aside>
 
 <table class="table table-condensed table-bordered table-params">

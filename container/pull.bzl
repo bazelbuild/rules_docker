@@ -195,5 +195,9 @@ pull = struct(
 container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,
-    environ = ["DOCKER_REPO_CACHE", "PULLER_TIMEOUT", "HOME"],
+    environ = [
+        "DOCKER_REPO_CACHE",
+        "HOME",
+        "PULLER_TIMEOUT",
+    ],
 )
