@@ -14,7 +14,7 @@
 """Rules for manipulating paths."""
 
 def dirname(path):
-    """Returns the directory's name.
+    """Return the directory's name.
 
     Args:
       path: the path to return the directory for
@@ -25,7 +25,7 @@ def dirname(path):
     return path[:last_sep]
 
 def join(directory, path):
-    """Compute the relative data path prefix from the data_path attribute.
+    """Return the relative data path prefix from the data_path attribute.
 
     Args:
       directory: the relative directory to compute path from
@@ -40,7 +40,7 @@ def join(directory, path):
     return directory + "/" + path
 
 def canonicalize(path):
-    """Canonicalize the input path.
+    """Return a canonicalized path.
 
     Args:
       path: the path to canonicalize
