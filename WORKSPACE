@@ -287,6 +287,8 @@ http_archive(
   ],
 )
 
+load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+
 # TODO(nlopezgi): use pinned versions for digests once the container is made public
 rbe_autoconfig(
     name = "buildkite_config",
