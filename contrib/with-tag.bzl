@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Derivative of container_image that tags as well"".
+"""Derivative of container_image that tags as well""".
 
 load(
     "//container:container.bzl",
