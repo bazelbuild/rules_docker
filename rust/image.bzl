@@ -28,12 +28,17 @@ load(
 )
 
 def repositories():
+    """Import the dependencies for the rule_image rule.
+    """
     _repositories()
 
 def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     """Constructs a container image wrapping a rust_binary target.
 
   Args:
+    name: Name of the rust_image target.
+    base: Base image to use for the rust_image.
+    deps: Dependencies of the rust_image target.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
