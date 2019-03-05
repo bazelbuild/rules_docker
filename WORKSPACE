@@ -288,6 +288,7 @@ http_archive(
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+load("@bazel_toolchains//rules:environments.bzl", "clang_env")
 
 # TODO(nlopezgi): use versions from a pin file once the container is made public
 rbe_autoconfig(
