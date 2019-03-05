@@ -17,10 +17,6 @@ load(
     "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
-load(
-    "//container:providers.bzl",
-    "ImageInfo",
-)
 
 def _extract_layers(ctx, name, artifact):
     config_file = ctx.actions.declare_file(name + "." + artifact.basename + ".config")

@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Migrated from https://github.com/GoogleContainerTools/base-images-docker/blob/4f2fc8da248a61c3f8e13bbb43e9db6c0ed44ba3/util/run.bzl#L264
 """A rule to rename the image from a <lang>_image or container_image target.
+
+Migrated from https://github.com/GoogleContainerTools/base-images-docker/blob/4f2fc8da248a61c3f8e13bbb43e9db6c0ed44ba3/util/run.bzl#L264
 """
 
 load("//container:bundle.bzl", "container_bundle")
