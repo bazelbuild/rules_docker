@@ -338,7 +338,7 @@ def _war_dep_layer_impl(ctx):
     # we should use a file_map based scheme.
     return _container.image.implementation(
         ctx,
-        files = java_files(ctx.attr.dep),
+        files = java_files(ctx.attr.dep).to_list(),
     )
 
 _war_dep_layer = rule(
