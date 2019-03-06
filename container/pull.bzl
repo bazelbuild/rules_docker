@@ -116,7 +116,7 @@ container_import(
   layers = glob(["*.tar.gz"]),
 )
 
-exports_files(["digest"])
+exports_files(["image.digest", "digest"])
 """)
 
     args = [
@@ -190,6 +190,8 @@ exports_files(["digest"])
     if digest_result.return_code:
         fail("Failed to read digest: %s" % digest_result.stderr)
     updated_attrs["digest"] = digest_result.stdout
+
+    repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
     return updated_attrs
 
 pull = struct(
