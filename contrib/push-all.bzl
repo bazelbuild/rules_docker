@@ -98,7 +98,7 @@ def _impl(ctx):
         DefaultInfo(
             runfiles = ctx.runfiles(
                 files = [ctx.executable._pusher] + stamp_inputs + runfiles,
-                transitive_files = ctx.attr._pusher.default_runfiles.files,
+                transitive_files = ctx.attr._pusher[DefaultInfo].default_runfiles.files,
             ),
         ),
     ]

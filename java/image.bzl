@@ -114,18 +114,31 @@ def java_files(f):
     Returns:
         Depset of java source files.
     """
-    files = depset()
+    files = []
+
     if java_common.provider in f:
         java_provider = f[java_common.provider]
-        files = depset(transitive = [files, java_provider.transitive_runtime_jars])
-    if hasattr(f, "files"):  # a jar file
-        files = depset(transitive = [files, f.files])
-    return files
+        files.append(java_provider.transitive_runtime_jars)
+
+    f_files = f[DefaultInfo].files
+    if f_files != None:
+        files.append(f_files)
+
+    return depset(transitive = files)
 
 def java_files_with_data(f):
+    """Filter out the list of java source and data files from the given list of runfiles.
+
+    Args:
+       f: Runfiles for a java_image rule.
+
+    Returns:
+       Depset of java source and data files.
+    """
     files = java_files(f)
-    if hasattr(f, "data_runfiles"):
-        files = depset(transitive = [files, f.data_runfiles.files])
+    data_runfiles = f[DefaultInfo].data_runfiles
+    if data_runfiles != None:
+        files = depset(transitive = [files, data_runfiles.files])
     return files
 
 def _jar_dep_layer_impl(ctx):
