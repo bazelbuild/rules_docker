@@ -310,6 +310,12 @@ file_test(
 )
 
 file_test(
+    name = "distroless_fixed_id_image_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@distroless_fixed_id//image:image.digest",
+)
+
+file_test(
     name = "k8s_pause_amd64_digest_test",
     content = "sha256:59eec8837a4d942cc19a52b8c09ea75121acc38114a2c68b98983ce9356b8610",
     file = "@k8s_pause_amd64//image:digest",
