@@ -191,7 +191,10 @@ exports_files(["image.digest", "digest"])
         fail("Failed to read digest: %s" % digest_result.stderr)
     updated_attrs["digest"] = digest_result.stdout
 
+    # Add image.digest for compatibility with container_digest, which generates
+    # foo.digest for an image named foo.
     repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
+
     return updated_attrs
 
 pull = struct(
