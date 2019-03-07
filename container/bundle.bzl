@@ -52,14 +52,14 @@ def _container_bundle_impl(ctx):
 
         target = ctx.attr.images[unresolved_tag]
 
-        l = _get_layers(ctx, ctx.label.name, image_target_dict[target])
-        images[tag] = l
-        runfiles += [l.get("config")]
-        runfiles += [l.get("config_digest")]
-        runfiles += l.get("unzipped_layer", [])
-        runfiles += l.get("diff_id", [])
-        if l.get("legacy"):
-            runfiles += [l.get("legacy")]
+        layer = _get_layers(ctx, ctx.label.name, image_target_dict[target])
+        images[tag] = layer
+        runfiles += [layer.get("config")]
+        runfiles += [layer.get("config_digest")]
+        runfiles += layer.get("unzipped_layer", [])
+        runfiles += layer.get("diff_id", [])
+        if layer.get("legacy"):
+            runfiles += [layer.get("legacy")]
 
     _incr_load(
         ctx,

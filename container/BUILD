@@ -29,6 +29,7 @@ filegroup(
 py_binary(
     name = "extract_config",
     srcs = ["extract_config.py"],
+    legacy_create_init = False,
     visibility = ["//visibility:public"],
     deps = [
         "@containerregistry",
@@ -46,28 +47,32 @@ py_library(
 py_binary(
     name = "join_layers",
     srcs = ["join_layers.py"],
+    legacy_create_init = False,
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@bazel_tools//third_party/py/six",
         "@containerregistry",
+        "@six",
     ],
 )
 
 py_binary(
     name = "create_image_config",
     srcs = ["create_image_config.py"],
+    legacy_create_init = False,
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@bazel_tools//third_party/py/six",
         "@containerregistry",
+        "@six",
     ],
 )
 
+# TODO(xingao): Flip legacy_create_init once dependency on @bazel_source removed
 py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
+    legacy_create_init = True,
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [":build_tar_lib"],

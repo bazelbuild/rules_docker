@@ -206,11 +206,11 @@ groovy_repositories()
 # For our go_image test.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "62ec3496a00445889a843062de9930c228b770218c735eca89c67949cd967c3f",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.16.4/rules_go-0.16.4.tar.gz",
+    sha256 = "301c8b39b0808c49f98895faa6aa8c92cbd605ab5ad4b6a3a652da33a1a2ba2e",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.0/rules_go-0.18.0.tar.gz",
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
 
@@ -279,10 +279,23 @@ _nodejs_image_repos()
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "767325343fb2e3a8dd77bccff30cfa66056e88049d339a977f77a85ecc3fc580",
-    strip_prefix = "bazel-toolchains-ad7f0157e13d5d3a4b893652a375b03ee9e032b4",
+    sha256 = "4b1468b254a572dbe134cc1fd7c6eab1618a72acd339749ea343bd8f55c3b7eb",
+    strip_prefix = "bazel-toolchains-d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/ad7f0157e13d5d3a4b893652a375b03ee9e032b4.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/ad7f0157e13d5d3a4b893652a375b03ee9e032b4.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4.tar.gz",
     ],
+)
+
+load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+load("@bazel_toolchains//rules:environments.bzl", "clang_env")
+
+# TODO(nlopezgi): use versions from a pin file once the container is made public
+rbe_autoconfig(
+    name = "buildkite_config",
+    base_container_digest = "sha256:da0f21c71abce3bbb92c3a0c44c3737f007a82b60f8bd2930abc55fe64fc2729",
+    digest = "sha256:176d4c94865d46a5d4896121aeb7ab8a3216bd56cc784c8485051e9cdead72d4",
+    env = clang_env(),
+    registry = "gcr.io",
+    repository = "asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud",
 )

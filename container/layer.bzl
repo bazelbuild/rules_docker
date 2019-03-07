@@ -76,7 +76,26 @@ def build_layer(
         debs = None,
         tars = None,
         operating_system = None):
-    """Build the current layer for appending it to the base layer"""
+    """Build the current layer for appending it to the base layer
+
+    Args:
+       ctx: The context
+       name: The name of the layer
+       output_layer: The output location for this layer
+       files: Files to include in the layer
+       file_map: Map of files to include in layer (source to dest inside layer)
+       empty_files: List of empty files in the layer
+       empty_dirs: List of empty dirs in the layer
+       directory: Directory in which to store the file inside the layer
+       symlinks: List of symlinks to include in the layer
+       debs: List of debian package tar files
+       tars: List of tar files
+       operating_system: The OS (e.g., 'linux', 'windows')
+
+    Returns:
+       the layer tar and its sha256 digest
+
+    """
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     layer = output_layer
     build_layer_exec = ctx.executable.build_layer

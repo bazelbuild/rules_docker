@@ -28,12 +28,17 @@ load(
 )
 
 def repositories():
+    """Import the dependencies of the d_image rule.
+    """
     _repositories()
 
 def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     """Constructs a container image wrapping a d_binary target.
 
   Args:
+    name: Name of the d_image target.
+    base: Base image to use for the d_image.
+    deps: Dependencies of the d_image target.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.

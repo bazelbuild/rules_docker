@@ -37,8 +37,11 @@ load(
 load(":nodejs.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the nodejs_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -58,10 +61,10 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "//conditions:default": "@nodejs_debug_image_base//image",
     "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
+    "//conditions:default": "@nodejs_debug_image_base//image",
 })
 
 def _runfiles(dep):
@@ -108,8 +111,12 @@ def nodejs_image(
     """Constructs a container image wrapping a nodejs_binary target.
 
   Args:
+    name: Name of the nodejs_image target.
+    base: Base image to use for the nodejs_image.
+    data: Runtime dependencies of the nodejs_image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    node_modules: The list of Node modules to include in the nodejs image.
     **kwargs: See nodejs_binary.
   """
     binary_name = name + ".binary"

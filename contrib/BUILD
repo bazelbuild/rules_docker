@@ -28,6 +28,7 @@ exports_files(["extract_image_id.py"])
 py_binary(
     name = "extract_image_id",
     srcs = [":extract_image_id.py"],
+    legacy_create_init = False,
     deps = [":extract_image_id_lib"],
 )
 
@@ -39,19 +40,21 @@ py_library(
 py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
+    legacy_create_init = False,
     deps = [":extract_image_id_lib"],
 )
 
 alias(
     name = "structure_test_executable",
     actual = select({
-        "//conditions:default": "@structure_test_linux//file",
         "@bazel_tools//src/conditions:darwin": "@structure_test_darwin//file",
         "@bazel_tools//src/conditions:darwin_x86_64": "@structure_test_darwin//file",
+        "//conditions:default": "@structure_test_linux//file",
     }),
 )
 
 py_binary(
     name = "idd",
     srcs = ["idd.py"],
+    legacy_create_init = False,
 )
