@@ -68,6 +68,7 @@ platforms:
     - "--extra_execution_platforms=//toolchains:platform_docker"
     - "--host_platform=//toolchains:platform_docker"
     - "--platforms=//toolchains:platform_docker"
+    - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/docker:set_env_make_vars
@@ -87,6 +88,7 @@ platforms:
     - "--extra_execution_platforms=//toolchains:platform_docker"
     - "--host_platform=//toolchains:platform_docker"
     - "--platforms=//toolchains:platform_docker"
+    - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/docker:set_env_make_vars_test
