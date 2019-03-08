@@ -167,7 +167,7 @@ jar_dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         # The dependency whose runfiles we're appending.
-        "dep": attr.label(providers = [DefaultInfo]),
+        "dep": attr.label(),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),

@@ -249,7 +249,7 @@ _app_layer = rule(
         # The dependency whose runfiles we're appending.
         # If not specified, then the layer will be treated as the top layer,
         # and all remaining deps of "binary" will be added under runfiles.
-        "dep": attr.label(providers = [DefaultInfo]),
+        "dep": attr.label(),
         "directory": attr.string(default = "/app"),
         "entrypoint": attr.string_list(default = []),
         "legacy_run_behavior": attr.bool(default = False),
@@ -327,7 +327,6 @@ def _filter_layer_rule_impl(ctx):
 filter_layer = rule(
     attrs = {
         "dep": attr.label(
-            providers = [DefaultInfo],
             aspects = [_filter_aspect],
             mandatory = True,
         ),
