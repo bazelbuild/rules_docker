@@ -116,8 +116,8 @@ def java_files(f):
     """
     files = []
 
-    if java_common.provider in f:
-        java_provider = f[java_common.provider]
+    if JavaInfo in f:
+        java_provider = f[JavaInfo]
         files.append(java_provider.transitive_runtime_jars)
 
     f_files = f[DefaultInfo].files
