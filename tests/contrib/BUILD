@@ -49,7 +49,7 @@ alias(
 
 alias(
     name = "duplicate2",
-    actual = "duplicate1",
+    actual = "@distroless_fixed_id_copy//image",
 )
 
 compare_ids_test(
