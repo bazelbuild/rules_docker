@@ -227,9 +227,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "ed0c81084bcc2bdcc98cfe56f384b20856840825f5e413e2b71809b61809fc87",
-    strip_prefix = "rules_rust-f32695dcd02d9a19e42b9eb7f29a24a8ceb2b858",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/f32695dcd02d9a19e42b9eb7f29a24a8ceb2b858.tar.gz"],
+    sha256 = "2d16f6da563e4d926d3ef0753c8eef14d90e7dd43d28f956d587872a39af244c",
+    strip_prefix = "rules_rust-5fa9b101a68ddd4a628462b8d2aae06c6cbbda15",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/5fa9b101a68ddd4a628462b8d2aae06c6cbbda15.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
