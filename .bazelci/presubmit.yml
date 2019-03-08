@@ -65,9 +65,9 @@ platforms:
     - "--"
     - "..."
     build_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang:platform_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang:platform_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang:platform_docker"
+    - "--extra_execution_platforms=//toolchains:platform_docker"
+    - "--host_platform=//toolchains:platform_docker"
+    - "--platforms=//toolchains:platform_docker"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/docker:set_env_make_vars
@@ -84,9 +84,9 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     test_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang:platform_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang:platform_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang:platform_docker"
+    - "--extra_execution_platforms=//toolchains:platform_docker"
+    - "--host_platform=//toolchains:platform_docker"
+    - "--platforms=//toolchains:platform_docker"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/docker:set_env_make_vars_test
