@@ -61,9 +61,7 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    return struct(
-        runfiles = runfiles,
-    )
+    return [DefaultInfo(runfiles = runfiles)]
 
 _container_test = rule(
     attrs = {
