@@ -123,9 +123,9 @@ _py_image_repos()
 
 http_archive(
     name = "io_bazel_rules_python",
-    sha256 = "da960ee6f0e2e08556d0e0c307896b0ea6ebc8d86f50c649ceda361b71df74a1",
-    strip_prefix = "rules_python-f3a6a8d00a51a1f0e6d61bc7065c19fea2b3dd7a",
-    urls = ["https://github.com/bazelbuild/rules_python/archive/f3a6a8d00a51a1f0e6d61bc7065c19fea2b3dd7a.tar.gz"],
+    sha256 = "3e55ec4f7e151b048e950965f956c1e0633fc76449905f40dba671574eac574c",
+    strip_prefix = "rules_python-965d4b4a63e6462204ae671d7c3f02b25da37941",
+    urls = ["https://github.com/bazelbuild/rules_python/archive/965d4b4a63e6462204ae671d7c3f02b25da37941.tar.gz"],
 )
 
 load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
@@ -227,9 +227,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "ed0c81084bcc2bdcc98cfe56f384b20856840825f5e413e2b71809b61809fc87",
-    strip_prefix = "rules_rust-f32695dcd02d9a19e42b9eb7f29a24a8ceb2b858",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/f32695dcd02d9a19e42b9eb7f29a24a8ceb2b858.tar.gz"],
+    sha256 = "2d16f6da563e4d926d3ef0753c8eef14d90e7dd43d28f956d587872a39af244c",
+    strip_prefix = "rules_rust-5fa9b101a68ddd4a628462b8d2aae06c6cbbda15",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/5fa9b101a68ddd4a628462b8d2aae06c6cbbda15.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
