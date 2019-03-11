@@ -294,7 +294,7 @@ load("@bazel_toolchains//rules:environments.bzl", "clang_env")
 rbe_autoconfig(
     name = "buildkite_config",
     base_container_digest = "sha256:da0f21c71abce3bbb92c3a0c44c3737f007a82b60f8bd2930abc55fe64fc2729",
-    digest = "sha256:1c3bc7e701f4dda025c5747c5694363865820b29e2558ba6d2d4f936fcb94e27",
+    digest = "sha256:176d4c94865d46a5d4896121aeb7ab8a3216bd56cc784c8485051e9cdead72d4",
     env = clang_env(),
     registry = "gcr.io",
     repository = "asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud",
