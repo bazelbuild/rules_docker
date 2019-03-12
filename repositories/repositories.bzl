@@ -180,6 +180,7 @@ py_library(
         http_archive(
             name = "subpar",
             sha256 = "7ab6ab37ede82255e00c0456846a1428b20e8813f77d83bcf54ddd59ba34377a",
+            # Commit from 2019-03-07.
             strip_prefix = "subpar-0356bef3fbbabec5f0e196ecfacdeb6db62d48c0",
             urls = ["https://github.com/google/subpar/archive/0356bef3fbbabec5f0e196ecfacdeb6db62d48c0.tar.gz"],
         )
