@@ -106,6 +106,14 @@ container_pull(
     repository = "distroless/base",
 )
 
+# Same as above, different name
+container_pull(
+    name = "distroless_fixed_id_copy",
+    digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)
+
 container_pull(
     name = "distroless_fixed_id_2",
     digest = "sha256:0268d76902d552257aa68b5f5d55ba8a37db92b3fed9c1cb222158732231b513",
