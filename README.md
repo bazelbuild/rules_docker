@@ -580,7 +580,7 @@ go_image(
 )
 ```
 Notice that it is important to explicitly build this target with the
-`--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 ` flag
+`--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64` flag
 as the binary should be built for Linux since it will run in a Linux container.
 Only in situations when the `--platforms` flag does not work, try specifying
 the `goarch`, `goos` and `pure` flags as follows:
