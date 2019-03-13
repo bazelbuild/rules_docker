@@ -577,14 +577,25 @@ go_image(
     name = "go_image",
     srcs = ["main.go"],
     importpath = "github.com/your/path/here",
+)
+```
+Notice that it is important to explicitly build this target with the
+`--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 ` flag
+as the binary should be built for Linux since it will run in a Linux container.
+Only in situations when the `--platforms` flag does not work, try specifying
+the `goarch`, `goos` and `pure` flags as follows:
+```python
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+go_image(
+    name = "go_image",
+    srcs = ["main.go"],
+    importpath = "github.com/your/path/here",
     goarch = "amd64",
     goos = "linux",
     pure = "on",
 )
 ```
-
-Notice that it is important to explicitly specify `goarch`, `goos`, and `pure`
-as the binary should be built for Linux since it will run on a Linux container.
 
 If you need to modify somehow the container produced by
 `go_image` (e.g., `env`, `symlink`), see note above in
