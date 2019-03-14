@@ -194,7 +194,9 @@ exports_files(["image.digest", "digest"])
     if repository_ctx.attr.digest and repository_ctx.attr.digest != updated_attrs["digest"]:
         fail(("SHA256 of the image specified does not match SHA256 of the pulled image. " +
               "Expected {}, but pulled image with {}. " +
-              "It is possible that you pin to a manifest list which points to another image").format(
+              "It is possible that you have a pin to a manifest list " +
+              "which points to another image, if so, " +
+              "change the pin to point at the actual Docker image").format(
             repository_ctx.attr.digest,
             updated_attrs["digest"],
         ))
