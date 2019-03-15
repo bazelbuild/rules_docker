@@ -98,15 +98,15 @@ exports_files(["{}"])
 
 dockerfile_image = repository_rule(
     attrs = {
-        "dockerfile": attr.label(
-            allow_single_file = True,
-            mandatory = True,
-            doc = "The label for the Dockerfile to build the image from.",
-        ),
         "docker_path": attr.string(
             doc = "The full path to the docker binary. If not specified, it " +
                   "will be searched for in the path. If not available, " +
                   "the rule build will fail.",
+        ),
+        "dockerfile": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "The label for the Dockerfile to build the image from.",
         ),
     },
     implementation = _impl,
