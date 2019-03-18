@@ -19,10 +19,12 @@ This rule uses the docker tool installed in the system to build the image and
 then save it as a tar file. The saved tar file is available for other rules to
 use (e.g. container_image, container_load, container_test)
 
+The built docker image is always called after the dockerfile_image target used
+to build the image and tagged with `dockerfile_image` (i.e. <target_name>:dockerfile_image).
 The produced tar file is available at @<repo_name>//image:dockerfile_image.tar
 """
 
-def docker(repository_ctx):
+def _docker(repository_ctx):
     """Resolves the docker path.
 
     Args:
@@ -42,7 +44,13 @@ def docker(repository_ctx):
 def _impl(repository_ctx):
     """Core implementation of dockerfile_image."""
 
-    docker_path = docker(repository_ctx)
+    docker_path = _docker(repository_ctx)
+
+    # TODO(alex1545): once the read() function is available, enable copying
+    # file with repository_ctx.read() and repository_ctx.file() instead of
+    # executing the `cp` command
+    # dockerfile_content = repository_ctx.read(repository_ctx.attr.dockerfile)
+    # repository_ctx.file("Dockerfile", dockerfile_content)
 
     dockerfile_src = repository_ctx.path(repository_ctx.attr.dockerfile)
     dockerfile_dest = repository_ctx.path("Dockerfile")
@@ -65,6 +73,7 @@ def _impl(repository_ctx):
     build_args = [
         docker_path,
         "build",
+        "--no-cache",
         "-t",
         img_name,
         repository_ctx.path(""),
