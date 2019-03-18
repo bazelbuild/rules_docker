@@ -191,6 +191,16 @@ exports_files(["image.digest", "digest"])
         fail("Failed to read digest: %s" % digest_result.stderr)
     updated_attrs["digest"] = digest_result.stdout
 
+    if repository_ctx.attr.digest and repository_ctx.attr.digest != updated_attrs["digest"]:
+        fail(("SHA256 of the image specified does not match SHA256 of the pulled image. " +
+              "Expected {}, but pulled image with {}. " +
+              "It is possible that you have a pin to a manifest list " +
+              "which points to another image, if so, " +
+              "change the pin to point at the actual Docker image").format(
+            repository_ctx.attr.digest,
+            updated_attrs["digest"],
+        ))
+
     # Add image.digest for compatibility with container_digest, which generates
     # foo.digest for an image named foo.
     repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
