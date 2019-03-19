@@ -522,6 +522,8 @@ function test_container_pull_cache() {
   rm -rf $scratch_dir
 }
 
+# TODO(alex1545): remove this test from here and enable running on buildkite
+# once docker is supported.
 function test_dockerfile_image_basic() {
   cd "${ROOT}"
   clear_docker
