@@ -356,3 +356,10 @@ docker_push_all(
     name = "test_docker_push_three_images_bundle",
     bundle = ":three_images_bundle",
 )
+
+container_test(
+    name = "basic_dockerfile_image",
+    configs = ["//tests/docker/configs:basic_dockerfile.yaml"],
+    image = "@basic_dockerfile//image:dockerfile_image",
+    driver = "tar",
+)
