@@ -316,12 +316,6 @@ file_test(
 )
 
 file_test(
-    name = "k8s_pause_amd64_digest_test",
-    content = "sha256:59eec8837a4d942cc19a52b8c09ea75121acc38114a2c68b98983ce9356b8610",
-    file = "@k8s_pause_amd64//image:digest",
-)
-
-file_test(
     name = "k8s_pause_arm64_digest_test",
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",

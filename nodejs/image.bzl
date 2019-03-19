@@ -107,6 +107,7 @@ def nodejs_image(
         data = [],
         layers = [],
         node_modules = "//:node_modules",
+        binary = None,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
 
@@ -117,10 +118,9 @@ def nodejs_image(
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     node_modules: The list of Node modules to include in the nodejs image.
+    binary: An alternative binary target to use instead of generating one.
     **kwargs: See nodejs_binary.
   """
-    binary_name = name + ".binary"
-
     layers = [
         # Put the Node binary into its own layer.
         "@nodejs//:node",
@@ -128,19 +128,21 @@ def nodejs_image(
         node_modules,
     ] + layers
 
-    nodejs_binary(
-        name = binary_name,
-        node_modules = node_modules,
-        data = data + layers,
-        **kwargs
-    )
+    if not binary:
+        binary = name + ".binary"
+        nodejs_binary(
+            name = binary,
+            node_modules = node_modules,
+            data = data + layers,
+            **kwargs
+        )
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        _dep_layer(name = this_name, base = base, dep = dep, binary = binary_name, testonly = kwargs.get("testonly"))
+        _dep_layer(name = this_name, base = base, dep = dep, binary = binary, testonly = kwargs.get("testonly"))
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -148,7 +150,7 @@ def nodejs_image(
     app_layer(
         name = name,
         base = base,
-        binary = binary_name,
+        binary = binary,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
