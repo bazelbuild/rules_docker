@@ -53,7 +53,7 @@ def _impl(repository_ctx):
 
     # TODO(alex1545): once the read() function is available, enable copying
     # file with repository_ctx.read() and repository_ctx.file() instead of
-    # executing the `cp` command
+    # executing the `cat` command
     # dockerfile_content = repository_ctx.read(repository_ctx.attr.dockerfile)
 
     # Copy the provided Dockerfile into the root of this workspace since using
