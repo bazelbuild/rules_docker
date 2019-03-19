@@ -279,9 +279,9 @@ _nodejs_image_repos()
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "b4e0fd3bd9a644dd865e221af507eea5640181fbee0c52a29ce764efef5a8567",
-    strip_prefix = "bazel-toolchains-5a29136449f96d2830044c0b3a426fe5d37e6753",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/5a29136449f96d2830044c0b3a426fe5d37e6753.tar.gz"],
+    sha256 = "56a6705ad96b8aaa3c4ac427ce29c5a83408a04e31ee4956c92362e11cfdf497",
+    strip_prefix = "bazel-toolchains-5b435b8bb8723feb836fbbe9b553cc40dbc9ce4f",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/5b435b8bb8723feb836fbbe9b553cc40dbc9ce4f.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
