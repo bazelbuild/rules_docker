@@ -94,9 +94,14 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    return struct(runfiles = ctx.runfiles(files = [
-        ctx.executable._pusher,
-    ] + stamp_inputs + runfiles + ctx.attr._pusher.default_runfiles.files.to_list()))
+    return [
+        DefaultInfo(
+            runfiles = ctx.runfiles(
+                files = [ctx.executable._pusher] + stamp_inputs + runfiles,
+                transitive_files = ctx.attr._pusher[DefaultInfo].default_runfiles.files,
+            ),
+        ),
+    ]
 
 container_push = rule(
     attrs = {

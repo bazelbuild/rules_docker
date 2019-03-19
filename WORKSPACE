@@ -83,14 +83,6 @@ container_pull(
 )
 
 container_pull(
-    name = "k8s_pause_amd64",
-    # this is a manifest list, so the resolved digest should not match this digest
-    digest = "sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea",
-    registry = "k8s.gcr.io",
-    repository = "pause",
-)
-
-container_pull(
     name = "k8s_pause_arm64",
     architecture = "arm64",
     registry = "k8s.gcr.io",
@@ -101,6 +93,14 @@ container_pull(
 # For testing, don't change the sha on these ones
 container_pull(
     name = "distroless_fixed_id",
+    digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)
+
+# Same as above, different name
+container_pull(
+    name = "distroless_fixed_id_copy",
     digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
     registry = "gcr.io",
     repository = "distroless/base",
@@ -178,9 +178,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "684f5b251670d3e6fe179f16aa8c363e9b7f30a0b0b8f2927128a02a341a4653",
-    strip_prefix = "rules_scala-7bc18d07001cbfd425c6761c8384c4e982d25a2b",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/7bc18d07001cbfd425c6761c8384c4e982d25a2b.tar.gz"],
+    sha256 = "d051ea1351853003adaa34bcb14f0151a7fd0726851d07d88301e41a0907023a",
+    strip_prefix = "rules_scala-ebc32f0e45a3fdd94b425fd7fcd10be05226795a",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/ebc32f0e45a3fdd94b425fd7fcd10be05226795a.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -206,8 +206,8 @@ groovy_repositories()
 # For our go_image test.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "301c8b39b0808c49f98895faa6aa8c92cbd605ab5ad4b6a3a652da33a1a2ba2e",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.0/rules_go-0.18.0.tar.gz",
+    sha256 = "77dfd303492f2634de7a660445ee2d3de2960cbd52f97d8c0dffa9362d3ddef9",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.1/rules_go-0.18.1.tar.gz",
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
@@ -245,9 +245,9 @@ bazel_version(name = "bazel_version")
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "174df34edf1928567f5a40348789ab1ad43dfe06ad02b3cb0d49d8e071147c0d",
-    strip_prefix = "rules_d-7d2aa1a8cb11fe1f41c42df949fefb3d0432a91d",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/7d2aa1a8cb11fe1f41c42df949fefb3d0432a91d.tar.gz"],
+    sha256 = "c5ce0a1f6b034f6f46ae6b0dab92bb036a698ea0c9150fe21bf92a0fa4b9056c",
+    strip_prefix = "rules_d-30d991496f2ac82356d837dff08b1f485fbff042",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/30d991496f2ac82356d837dff08b1f485fbff042.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
@@ -279,12 +279,9 @@ _nodejs_image_repos()
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "4b1468b254a572dbe134cc1fd7c6eab1618a72acd339749ea343bd8f55c3b7eb",
-    strip_prefix = "bazel-toolchains-d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4.tar.gz",
-    ],
+    sha256 = "b4e0fd3bd9a644dd865e221af507eea5640181fbee0c52a29ce764efef5a8567",
+    strip_prefix = "bazel-toolchains-5a29136449f96d2830044c0b3a426fe5d37e6753",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/5a29136449f96d2830044c0b3a426fe5d37e6753.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")

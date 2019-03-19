@@ -56,13 +56,8 @@ compare_ids_test(
         tars = repr([str(i) + ".tar" for i in range(len(ctx.attr.images))]),
     )
 
-    tar_files = []
-    for tar in ctx.attr.images:
-        tar_files += tar.files.to_list()
-
-    tars_string = ""
-    for tar_file in tar_files:
-        tars_string += tar_file.short_path + " "
+    tar_files = ctx.files.images
+    tars_string = " ".join([tar_file.short_path for tar_file in tar_files])
 
     runfiles = ctx.runfiles(files = tar_files + [
         ctx.file._compare_ids_test_bzl,

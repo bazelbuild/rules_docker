@@ -40,8 +40,8 @@ def _impl(ctx):
         args += ["--image", ctx.attr.loaded_name]
         runfiles = ctx.runfiles(
             files = [ctx.executable._structure_test, ctx.executable.image] + ctx.files.configs,
-            transitive_files = ctx.attr.image.files,
-        ).merge(ctx.attr.image.data_runfiles)
+            transitive_files = ctx.attr.image[DefaultInfo].files,
+        ).merge(ctx.attr.image[DefaultInfo].data_runfiles)
 
     if not ctx.attr.verbose:
         args += ["--quiet"]
@@ -61,9 +61,7 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    return struct(
-        runfiles = runfiles,
-    )
+    return [DefaultInfo(runfiles = runfiles)]
 
 _container_test = rule(
     attrs = {
