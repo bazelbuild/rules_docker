@@ -21,6 +21,11 @@ use (e.g. container_image, container_load, container_test)
 
 The built docker image is always called after the dockerfile_image target used
 to build the image and tagged with `dockerfile_image` (i.e. <target_name>:dockerfile_image).
+This means that if an image with name <target_name>:dockerfile_image already
+exists and a dockerfile_image target called <target_name> is built, then the
+existing image will change its name to <none>:<none> and the newly built image
+will get the <target_name>:dockerfile_image name.
+
 The produced tar file is available at @<repo_name>//image:dockerfile_image.tar
 """
 
@@ -50,24 +55,17 @@ def _impl(repository_ctx):
     # file with repository_ctx.read() and repository_ctx.file() instead of
     # executing the `cp` command
     # dockerfile_content = repository_ctx.read(repository_ctx.attr.dockerfile)
-    # repository_ctx.file("Dockerfile", dockerfile_content)
-
-    dockerfile_src = repository_ctx.path(repository_ctx.attr.dockerfile)
-    dockerfile_dest = repository_ctx.path("Dockerfile")
 
     # Copy the provided Dockerfile into the root of this workspace since using
     # the -f flag with the docker build command is problematic.
-    cp_result = repository_ctx.execute([
-        "cp",
-        dockerfile_src,
-        dockerfile_dest,
+    cat_result = repository_ctx.execute([
+        "cat",
+        repository_ctx.path(repository_ctx.attr.dockerfile),
     ])
-    if cp_result.return_code:
-        fail("Failed to copy Dockerfile from {} to {}: {}".format(
-            dockerfile_src,
-            dockerfile_dest,
-            cp_result.stderr,
-        ))
+    if cat_result.return_code:
+        fail("Failed to read Dockerfile content: {}".format(cat_result.stderr))
+    dockerfile_content = cat_result.stdout
+    repository_ctx.file("Dockerfile", dockerfile_content)
 
     img_name = repository_ctx.name + ":dockerfile_image"
     build_args = [
