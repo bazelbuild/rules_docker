@@ -14,6 +14,7 @@
 
 load("//contrib:test.bzl", "container_test")
 load("//nodejs:image.bzl", "nodejs_image")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -62,6 +63,30 @@ nodejs_image(
     data = ["//testdata:nodejs_image.js"],
     entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
     node_modules = "@npm_deps//:node_modules",
+
+nodejs_binary(
+    name = "my_custom_binary",
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    data = ["//testdata:nodejs_image.js"],
+    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
+    node_modules = "@npm_deps//:node_modules",
+)
+
+nodejs_image(
+    name = "nodejs_image_custom_binary",
+    binary = ":my_custom_binary",
+)
+
+nodejs_image(
+    name = "nodejs_image_custom_binary_with_args",
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    binary = ":my_custom_binary",
 )
 
 container_test(
@@ -92,4 +117,16 @@ container_test(
     name = "nodejs_image_none_args_test",
     configs = ["//tests/docker/nodejs/configs:nodejs_image_none_args.yaml"],
     image = ":nodejs_image_none_args",
+)
+
+container_test(
+    name = "nodejs_image_custom_binary_test",
+    configs = ["//tests/docker/nodejs/configs:nodejs_image_custom_binary.yaml"],
+    image = ":nodejs_image_custom_binary",
+)
+
+container_test(
+    name = "nodejs_image_custom_binary_with_args_test",
+    configs = ["//tests/docker/nodejs/configs:nodejs_image_custom_binary_with_args.yaml"],
+    image = ":nodejs_image_custom_binary",
 )
