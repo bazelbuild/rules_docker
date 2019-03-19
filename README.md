@@ -577,14 +577,11 @@ go_image(
     name = "go_image",
     srcs = ["main.go"],
     importpath = "github.com/your/path/here",
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
 )
 ```
-
-Notice that it is important to explicitly specify `goarch`, `goos`, and `pure`
-as the binary should be built for Linux since it will run on a Linux container.
+Notice that it is important to explicitly build this target with the
+`--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64` flag
+as the binary should be built for Linux since it will run in a Linux container.
 
 If you need to modify somehow the container produced by
 `go_image` (e.g., `env`, `symlink`), see note above in
@@ -1138,6 +1135,16 @@ use with `container_image`'s `base` attribute.
 configuration. See [here](#container_pull-custom-client-configuration) for details.
 
 **NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
+
+**NOTE:** Set `DOCKER_REPO_CACHE` env variable to make the container puller
+cache downloaded layers at the directory specified as a value to this env
+variable. The caching feature hasn't been thoroughly tested and may be thread
+unsafe. If you notice flakiness after enabling it, see the warning below on how
+to workaround it.
+
+**NOTE:** `container_pull` is suspected to have thread safety issues. To
+ensure multiple container_pull(s) don't execute concurrently, please use the
+bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
 
 <table class="table table-condensed table-bordered table-params">
   <colgroup>

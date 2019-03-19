@@ -269,6 +269,24 @@ container_push(
     tags = ["manual"],
 )
 
+genrule(
+    name = "push_tag_file",
+    srcs = [],
+    outs = ["test.tag"],
+    cmd = """echo test > $@""",
+    output_to_bindir = 1,
+)
+
+container_push(
+    name = "push_tag_file_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+
 container_push(
     name = "push_stamped_test",
     format = "Docker",
@@ -292,9 +310,9 @@ file_test(
 )
 
 file_test(
-    name = "k8s_pause_amd64_digest_test",
-    content = "sha256:59eec8837a4d942cc19a52b8c09ea75121acc38114a2c68b98983ce9356b8610",
-    file = "@k8s_pause_amd64//image:digest",
+    name = "distroless_fixed_id_image_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@distroless_fixed_id//image:image.digest",
 )
 
 file_test(

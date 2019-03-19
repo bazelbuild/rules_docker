@@ -40,8 +40,8 @@ def _impl(ctx):
         args += ["--image", ctx.attr.loaded_name]
         runfiles = ctx.runfiles(
             files = [ctx.executable._structure_test, ctx.executable.image] + ctx.files.configs,
-            transitive_files = ctx.attr.image.files,
-        ).merge(ctx.attr.image.data_runfiles)
+            transitive_files = ctx.attr.image[DefaultInfo].files,
+        ).merge(ctx.attr.image[DefaultInfo].data_runfiles)
 
     if not ctx.attr.verbose:
         args += ["--quiet"]
@@ -61,9 +61,7 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    return struct(
-        runfiles = runfiles,
-    )
+    return [DefaultInfo(runfiles = runfiles)]
 
 _container_test = rule(
     attrs = {
@@ -114,8 +112,18 @@ _container_test = rule(
 )
 
 def container_test(name, image, configs, driver = None, verbose = None, **kwargs):
-    """A macro to predictably rename the image under test before threading
-    it to the container test rule."""
+    """Renames the image under test before threading it to the container test rule.
+
+    See also https://github.com/GoogleContainerTools/container-structure-test
+
+    Args:
+      name: The name of this container_test rule
+      image: The image to use for testing
+      configs: List of YAML or JSON config files with tests
+      driver: Driver to use when running structure tests
+      verbose: Turns on/off verbose logging. Default False.
+      **kwargs: Attrs to pass through
+    """
 
     image_loader = None
     image_tar = None

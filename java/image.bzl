@@ -46,8 +46,11 @@ load(
 )
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the java_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -89,32 +92,53 @@ def repositories():
         )
 
 DEFAULT_JAVA_BASE = select({
-    "//conditions:default": "@java_image_base//image",
     "@io_bazel_rules_docker//:debug": "@java_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@java_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@java_image_base//image",
+    "//conditions:default": "@java_image_base//image",
 })
 
 DEFAULT_JETTY_BASE = select({
-    "//conditions:default": "@jetty_image_base//image",
     "@io_bazel_rules_docker//:debug": "@jetty_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@jetty_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@jetty_image_base//image",
+    "//conditions:default": "@jetty_image_base//image",
 })
 
 def java_files(f):
-    files = depset()
-    if java_common.provider in f:
-        java_provider = f[java_common.provider]
-        files = depset(transitive = [files, java_provider.transitive_runtime_jars])
-    if hasattr(f, "files"):  # a jar file
-        files = depset(transitive = [files, f.files])
-    return files
+    """Filter out the list of java source files from the given list of runfiles.
+
+    Args:
+        f: Runfiles for a java_image rule.
+
+    Returns:
+        Depset of java source files.
+    """
+    files = []
+
+    if JavaInfo in f:
+        java_provider = f[JavaInfo]
+        files.append(java_provider.transitive_runtime_jars)
+
+    f_files = f[DefaultInfo].files
+    if f_files != None:
+        files.append(f_files)
+
+    return depset(transitive = files)
 
 def java_files_with_data(f):
+    """Filter out the list of java source and data files from the given list of runfiles.
+
+    Args:
+       f: Runfiles for a java_image rule.
+
+    Returns:
+       Depset of java source and data files.
+    """
     files = java_files(f)
-    if hasattr(f, "data_runfiles"):
-        files = depset(transitive = [files, f.data_runfiles.files])
+    data_runfiles = f[DefaultInfo].data_runfiles
+    if data_runfiles != None:
+        files = depset(transitive = [files, data_runfiles.files])
     return files
 
 def _jar_dep_layer_impl(ctx):
@@ -143,7 +167,7 @@ jar_dep_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         # The dependency whose runfiles we're appending.
-        "dep": attr.label(providers = [DefaultInfo]),
+        "dep": attr.label(),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
@@ -259,6 +283,11 @@ def java_image(
     """Builds a container image overlaying the java_binary.
 
   Args:
+    name: Name of the image target.
+    base: Base image to use for the java image.
+    deps: Dependencies of the java image rule.
+    runtime_deps: Runtime dependencies of the java image.
+    jvm_flags: Flags to pass to the JVM when running the java image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     main_class: This parameter is optional. If provided it will be used in the
@@ -322,7 +351,7 @@ def _war_dep_layer_impl(ctx):
     # we should use a file_map based scheme.
     return _container.image.implementation(
         ctx,
-        files = java_files(ctx.attr.dep),
+        files = java_files(ctx.attr.dep).to_list(),
     )
 
 _war_dep_layer = rule(
@@ -393,6 +422,9 @@ def war_image(name, base = None, deps = [], layers = [], **kwargs):
   https://github.com/bazelbuild/bazel/issues/3519
 
   Args:
+    name: Name of the war_image target.
+    base: Base image to use for the war image.
+    deps: Dependencies of the way image target.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See java_library.

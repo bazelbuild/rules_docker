@@ -25,6 +25,10 @@ addons:
     packages:
       - bazel
 
+install:
+  - wget -q https://github.com/bazelbuild/buildtools/releases/download/0.22.0/buildifier
+  - chmod +x ./buildifier
+
 script:
   # Test things by executing the various build configurations under testing/
   - ./testing/e2e.sh

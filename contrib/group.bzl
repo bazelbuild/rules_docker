@@ -11,8 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Rules for creating group files and entries.
 
-GroupFileContentProvider = provider(fields = [
+Rules modeled after passwd_entry and passwd_file in passwd.bzl
+"""
+
+GroupFileContentProviderInfo = provider(fields = [
     "groupname",
     "gid",
     "users",
@@ -20,7 +24,7 @@ GroupFileContentProvider = provider(fields = [
 
 def _group_entry_impl(ctx):
     """Creates a passwd_file_content_provider containing a single entry."""
-    return [GroupFileContentProvider(
+    return [GroupFileContentProviderInfo(
         groupname = ctx.attr.groupname,
         gid = ctx.attr.gid,
         users = ctx.attr.users,
@@ -29,9 +33,9 @@ def _group_entry_impl(ctx):
 def _group_file_impl(ctx):
     f = "".join(
         ["%s:x:%s:%s\n" % (
-            entry[GroupFileContentProvider].groupname,
-            entry[GroupFileContentProvider].gid,
-            ",".join(entry[GroupFileContentProvider].users),
+            entry[GroupFileContentProviderInfo].groupname,
+            entry[GroupFileContentProviderInfo].gid,
+            ",".join(entry[GroupFileContentProviderInfo].users),
         ) for entry in ctx.attr.entries],
     )
     group_file = ctx.actions.declare_file(ctx.label.name)
@@ -51,7 +55,7 @@ group_file = rule(
     attrs = {
         "entries": attr.label_list(
             allow_empty = False,
-            providers = [GroupFileContentProvider],
+            providers = [GroupFileContentProviderInfo],
         ),
     },
     executable = False,

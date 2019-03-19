@@ -40,9 +40,7 @@ compare_ids_test(
 
 # Implementation of compare_ids_test
 def _compare_ids_test_impl(ctx):
-    tar_files = []
-    for image in ctx.attr.images:
-        tar_files += image.files.to_list()
+    tar_files = ctx.files.images
 
     if (len(tar_files) == 0):
         fail("No images provided for test.")
@@ -51,8 +49,8 @@ def _compare_ids_test_impl(ctx):
         fail("One tar provided. Need either second tar or an id to compare it to.")
 
     runfiles = ctx.runfiles(
-        files = tar_files +
-                ctx.attr._compare_ids_test_script[DefaultInfo].data_runfiles.files.to_list(),
+        files = tar_files,
+        transitive_files = ctx.attr._compare_ids_test_script[DefaultInfo].data_runfiles.files,
     )
 
     id_args = []

@@ -14,14 +14,29 @@
 """Rules for manipulating paths."""
 
 def dirname(path):
-    """Returns the directory's name."""
+    """Returns the directory's name.
+
+    Args:
+      path: The path to return the directory for
+
+    Returns:
+      The directory's name.
+    """
     last_sep = path.rfind("/")
     if last_sep == -1:
         return ""
     return path[:last_sep]
 
 def join(directory, path):
-    """Compute the relative data path prefix from the data_path attribute."""
+    """Compute the relative data path prefix from the data_path attribute.
+
+    Args:
+      directory: The relative directory to compute path from
+      path: The path to append to the directory
+
+    Returns:
+      The relative data path prefix from the data_path attribute
+    """
     if not path:
         return directory
     if path[0] == "/":
@@ -31,7 +46,14 @@ def join(directory, path):
     return directory + "/" + path
 
 def canonicalize(path):
-    """Canonicalize the input path."""
+    """Canonicalize the input path.
+
+    Args:
+      path: The path to canonicalize
+
+    Returns:
+      The canonicalized path
+    """
     if not path:
         return path
 
@@ -53,7 +75,12 @@ def canonicalize(path):
         return path
 
 def strip_prefix(path, prefix):
-    """Returns the path with the specified prefix removed."""
+    """Returns the path with the specified prefix removed.
+
+    Args:
+      path: The path to strip prefix from
+      prefix: The prefix to strip
+    """
     if path.startswith(prefix):
         return path[len(prefix):]
     return path

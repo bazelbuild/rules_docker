@@ -45,6 +45,17 @@ def _extract_layers(ctx, name, artifact):
     }
 
 def get_from_target(ctx, name, attr_target, file_target = None):
+    """Gets all layers from the given target.
+
+    Args:
+       ctx: The context
+       name: The name of the target
+       attr_target: The attribute to get layers from
+       file_target: If not None, layers are extracted from this target
+
+    Returns:
+       The extracted layers
+    """
     if file_target:
         return _extract_layers(ctx, name, file_target)
     elif hasattr(attr_target, "container_parts"):
@@ -56,7 +67,14 @@ def get_from_target(ctx, name, attr_target, file_target = None):
         return _extract_layers(ctx, name, target)
 
 def assemble(ctx, images, output, stamp = False):
-    """Create the full image from the list of layers."""
+    """Create the full image from the list of layers.
+
+    Args:
+       ctx: The context
+       images: List of images/layers to assemple
+       output: The output path for the image tar
+       stamp: Whether to stamp the produced image
+    """
     args = [
         "--output=" + output.path,
     ]
@@ -114,7 +132,17 @@ def incremental_load(
         stamp = False,
         run = False,
         run_flags = None):
-    """Generate the incremental load statement."""
+    """Generate the incremental load statement.
+
+
+    Args:
+       ctx: The context
+       images: List of images/layers to load
+       output: The output path for the load script
+       stamp: Whether to stamp the produced image
+       run: Whether to run the script or not
+       run_flags: Additional run flags
+    """
     stamp_files = []
     if stamp:
         stamp_files = [ctx.info_file, ctx.version_file]

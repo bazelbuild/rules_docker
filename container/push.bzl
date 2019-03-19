@@ -80,7 +80,7 @@ def _impl(ctx):
         outputs = [ctx.outputs.digest],
         executable = ctx.executable._digester,
         arguments = [digester_args],
-        tools = ctx.attr._digester.default_runfiles.files,
+        tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
         mnemonic = "ContainerPushDigest",
     )
 
@@ -88,6 +88,10 @@ def _impl(ctx):
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
     repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
     tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
+    runfiles_tag_file = []
+    if ctx.file.tag_file:
+        tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
+        runfiles_tag_file = [ctx.file.tag_file]
     if ctx.attr.stamp:
         print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
 
@@ -120,8 +124,8 @@ def _impl(ctx):
         output = ctx.outputs.executable,
         is_executable = True,
     )
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs)
-    runfiles = runfiles.merge(ctx.attr._pusher.default_runfiles)
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs + runfiles_tag_file)
+    runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
         DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
@@ -166,6 +170,10 @@ container_push = rule(
         "tag": attr.string(
             default = "latest",
             doc = "(optional) The tag of the image, default to 'latest'.",
+        ),
+        "tag_file": attr.label(
+            allow_single_file = True,
+            doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
         ),
         "_digester": attr.label(
             default = "@containerregistry//:digester",

@@ -19,6 +19,15 @@ construct new images.
 """
 
 def python(repository_ctx):
+    """Resolves the python path.
+
+    Args:
+      repository_ctx: The repository context
+
+    Returns:
+      The path to the python interpreter
+    """
+
     if "BAZEL_PYTHON" in repository_ctx.os.environ:
         return repository_ctx.os.environ.get("BAZEL_PYTHON")
 
@@ -107,7 +116,7 @@ container_import(
   layers = glob(["*.tar.gz"]),
 )
 
-exports_files(["digest"])
+exports_files(["image.digest", "digest"])
 """)
 
     args = [
@@ -132,6 +141,16 @@ exports_files(["digest"])
     # Use the custom docker client config directory if specified.
     if repository_ctx.attr.docker_client_config != "":
         args += ["--client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
+
+    cache_dir = repository_ctx.os.environ.get("DOCKER_REPO_CACHE")
+    if cache_dir:
+        if cache_dir.startswith("~/") and "HOME" in repository_ctx.os.environ:
+            cache_dir = cache_dir.replace("~", repository_ctx.os.environ["HOME"], 1)
+
+        args += [
+            "--cache",
+            cache_dir,
+        ]
 
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
     if repository_ctx.attr.digest:
@@ -171,6 +190,21 @@ exports_files(["digest"])
     if digest_result.return_code:
         fail("Failed to read digest: %s" % digest_result.stderr)
     updated_attrs["digest"] = digest_result.stdout
+
+    if repository_ctx.attr.digest and repository_ctx.attr.digest != updated_attrs["digest"]:
+        fail(("SHA256 of the image specified does not match SHA256 of the pulled image. " +
+              "Expected {}, but pulled image with {}. " +
+              "It is possible that you have a pin to a manifest list " +
+              "which points to another image, if so, " +
+              "change the pin to point at the actual Docker image").format(
+            repository_ctx.attr.digest,
+            updated_attrs["digest"],
+        ))
+
+    # Add image.digest for compatibility with container_digest, which generates
+    # foo.digest for an image named foo.
+    repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
+
     return updated_attrs
 
 pull = struct(
@@ -185,4 +219,9 @@ pull = struct(
 container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,
+    environ = [
+        "DOCKER_REPO_CACHE",
+        "HOME",
+        "PULLER_TIMEOUT",
+    ],
 )

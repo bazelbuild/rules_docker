@@ -37,8 +37,11 @@ load(
 load(":nodejs.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the nodejs_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -58,17 +61,17 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "//conditions:default": "@nodejs_debug_image_base//image",
     "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
+    "//conditions:default": "@nodejs_debug_image_base//image",
 })
 
 def _runfiles(dep):
-    return depset(transitive = [dep.default_runfiles.files, dep.data_runfiles.files, dep.files])
+    return depset(transitive = [dep[DefaultInfo].default_runfiles.files, dep[DefaultInfo].data_runfiles.files, dep.files])
 
 def _emptyfiles(dep):
-    return depset(transitive = [dep.default_runfiles.empty_filenames, dep.data_runfiles.empty_filenames])
+    return depset(transitive = [dep[DefaultInfo].default_runfiles.empty_filenames, dep[DefaultInfo].data_runfiles.empty_filenames])
 
 def _dep_layer_impl(ctx):
     return app_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
@@ -109,9 +112,13 @@ def nodejs_image(
     """Constructs a container image wrapping a nodejs_binary target.
 
   Args:
-    binary: An alternative binary target to use instead of generating one.
+    name: Name of the nodejs_image target.
+    base: Base image to use for the nodejs_image.
+    data: Runtime dependencies of the nodejs_image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    node_modules: The list of Node modules to include in the nodejs image.
+    binary: An alternative binary target to use instead of generating one.
     **kwargs: See nodejs_binary.
   """
 

@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Rules for creating password files and entries."""
 
 load(
     "//skylib:path.bzl",
     _join_path = "join",
 )
 
-PasswdFileContentProvider = provider(
+PasswdFileContentProviderInfo = provider(
     fields = [
         "username",
         "uid",
@@ -31,7 +32,7 @@ PasswdFileContentProvider = provider(
 
 def _passwd_entry_impl(ctx):
     """Creates a passwd_file_content_provider containing a single entry."""
-    return [PasswdFileContentProvider(
+    return [PasswdFileContentProviderInfo(
         username = ctx.attr.username,
         uid = ctx.attr.uid,
         gid = ctx.attr.gid,
@@ -44,12 +45,12 @@ def _passwd_entry_impl(ctx):
 def _passwd_file_impl(ctx):
     """Core implementation of passwd_file."""
     f = "".join(["%s:x:%s:%s:%s:%s:%s\n" % (
-        entry[PasswdFileContentProvider].username,
-        entry[PasswdFileContentProvider].uid,
-        entry[PasswdFileContentProvider].gid,
-        entry[PasswdFileContentProvider].info,
-        entry[PasswdFileContentProvider].home,
-        entry[PasswdFileContentProvider].shell,
+        entry[PasswdFileContentProviderInfo].username,
+        entry[PasswdFileContentProviderInfo].uid,
+        entry[PasswdFileContentProviderInfo].gid,
+        entry[PasswdFileContentProviderInfo].info,
+        entry[PasswdFileContentProviderInfo].home,
+        entry[PasswdFileContentProviderInfo].shell,
     ) for entry in ctx.attr.entries])
     passwd_file = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.write(output = passwd_file, content = f)
@@ -59,10 +60,10 @@ def _build_homedirs_tar(ctx, passwd_file):
     homedirs = []
     owners_map = {}
     for entry in ctx.attr.entries:
-        homedir = entry[PasswdFileContentProvider].home
+        homedir = entry[PasswdFileContentProviderInfo].home
         owners_map[homedir] = "{uid}.{gid}".format(
-            uid = entry[PasswdFileContentProvider].uid,
-            gid = entry[PasswdFileContentProvider].gid,
+            uid = entry[PasswdFileContentProviderInfo].uid,
+            gid = entry[PasswdFileContentProviderInfo].gid,
         )
         homedirs.append(homedir)
     dest_file = _join_path(
@@ -88,12 +89,12 @@ def _build_homedirs_tar(ctx, passwd_file):
 def _passwd_tar_impl(ctx):
     """Core implementation of passwd_tar."""
     f = "".join(["%s:x:%s:%s:%s:%s:%s\n" % (
-        entry[PasswdFileContentProvider].username,
-        entry[PasswdFileContentProvider].uid,
-        entry[PasswdFileContentProvider].gid,
-        entry[PasswdFileContentProvider].info,
-        entry[PasswdFileContentProvider].home,
-        entry[PasswdFileContentProvider].shell,
+        entry[PasswdFileContentProviderInfo].username,
+        entry[PasswdFileContentProviderInfo].uid,
+        entry[PasswdFileContentProviderInfo].gid,
+        entry[PasswdFileContentProviderInfo].info,
+        entry[PasswdFileContentProviderInfo].home,
+        entry[PasswdFileContentProviderInfo].shell,
     ) for entry in ctx.attr.entries])
 
     passwd_file = ctx.actions.declare_file(ctx.label.name)
@@ -119,7 +120,7 @@ passwd_file = rule(
     attrs = {
         "entries": attr.label_list(
             allow_empty = False,
-            providers = [PasswdFileContentProvider],
+            providers = [PasswdFileContentProviderInfo],
         ),
     },
     executable = False,
@@ -136,7 +137,7 @@ passwd_tar = rule(
         ),
         "entries": attr.label_list(
             allow_empty = False,
-            providers = [PasswdFileContentProvider],
+            providers = [PasswdFileContentProviderInfo],
         ),
         "passwd_file_mode": attr.string(default = "0o644"),
         "passwd_file_pkg_dir": attr.string(mandatory = True),

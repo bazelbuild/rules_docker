@@ -33,8 +33,11 @@ load(
 load(":cc.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies for the cc_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -54,16 +57,19 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "//conditions:default": "@cc_image_base//image",
     "@io_bazel_rules_docker//:debug": "@cc_debug_image_base//image",
     "@io_bazel_rules_docker//:fastbuild": "@cc_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@cc_image_base//image",
+    "//conditions:default": "@cc_image_base//image",
 })
 
 def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     """Constructs a container image wrapping a cc_binary target.
 
   Args:
+    name: Name of the cc_image target.
+    base: Base image to use for the cc_image.
+    deps: Dependencies of the cc_image.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.

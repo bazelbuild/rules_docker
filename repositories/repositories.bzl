@@ -24,7 +24,7 @@ load(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.34"
+CONTAINERREGISTRY_RELEASE = "v0.0.35"
 
 _local_tool_build_template = """
 sh_binary(
@@ -70,7 +70,7 @@ def repositories():
         http_file(
             name = "puller",
             executable = True,
-            sha256 = "2a3ccb6ef8f99ec0053b56380824a7c100ba00eb0e147d1bda748884113542f1",
+            sha256 = "480baba71500f837672093799de9c5492990a04d327a0b9bb3e1f75eecbbdfde",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
         )
@@ -79,7 +79,7 @@ def repositories():
         http_file(
             name = "importer",
             executable = True,
-            sha256 = "0eec1a4ffb26623dbb4075e5459fa0ede36548edf872d2691ebbcb3c4ccb8cf3",
+            sha256 = "dad924671e4fee84b7ddfb1cd06b988d7f4e18836b81f0c6ae8e144ae046a18f",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
         )
@@ -87,7 +87,7 @@ def repositories():
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
-            sha256 = "8182728578f7d7178e7efcef8ce9074988a1a2667f20ecff5cf6234fba284dd3",
+            sha256 = "98a7d40b7b45dc76f031c9e17728dddb963f8ec28a1ee4d18693e57155d198f8",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
@@ -179,9 +179,10 @@ py_library(
     if "subpar" not in excludes:
         http_archive(
             name = "subpar",
-            sha256 = "cf3762b10426a1887d37f127b4c1390785ecb969254096eb714cc1db371f78d6",
-            strip_prefix = "subpar-a4f9b23bf01bcc7a52d458910af65a90ee991aff",
-            urls = ["https://github.com/google/subpar/archive/a4f9b23bf01bcc7a52d458910af65a90ee991aff.tar.gz"],
+            sha256 = "7ab6ab37ede82255e00c0456846a1428b20e8813f77d83bcf54ddd59ba34377a",
+            # Commit from 2019-03-07.
+            strip_prefix = "subpar-0356bef3fbbabec5f0e196ecfacdeb6db62d48c0",
+            urls = ["https://github.com/google/subpar/archive/0356bef3fbbabec5f0e196ecfacdeb6db62d48c0.tar.gz"],
         )
 
     if "structure_test_linux" not in excludes:
