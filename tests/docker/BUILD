@@ -360,6 +360,6 @@ docker_push_all(
 container_test(
     name = "basic_dockerfile_image",
     configs = ["//tests/docker/configs:basic_dockerfile.yaml"],
-    image = "@basic_dockerfile//image:dockerfile_image",
     driver = "tar",
+    image = "@basic_dockerfile//image:dockerfile_image",
 )

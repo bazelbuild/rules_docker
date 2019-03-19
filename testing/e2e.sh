@@ -522,6 +522,12 @@ function test_container_pull_cache() {
   rm -rf $scratch_dir
 }
 
+function test_dockerfile_image_basic() {
+  cd "${ROOT}"
+  clear_docker
+  bazel test tests/docker:basic_dockerfile_image
+}
+
 test_container_push_with_stamp
 test_container_push_all
 test_container_push_with_auth
@@ -578,3 +584,4 @@ test_container_push
 test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
+test_dockerfile_image_basic
