@@ -83,6 +83,7 @@ platforms:
     - "-//testdata:pkg_control_xz.deb"
     - "-//testdata:pkg_control_xz"
     # Disabled as docker is not available
+    # TODO(alex1545): enable once docker is supported on buildkite
     - "-//tests/docker:basic_dockerfile_image"
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
@@ -115,6 +116,7 @@ platforms:
     - "-//testdata:pkg_control_xz.deb"
     - "-//testdata:pkg_control_xz"
     # Disabled as docker is not available
+    # TODO(alex1545): enable once docker is supported on buildkite
     - "-//tests/docker:basic_dockerfile_image"
     test_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
