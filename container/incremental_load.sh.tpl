@@ -33,6 +33,11 @@ RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
 DOCKER="%{docker_tool_path}"
 
+if [[ -z "${DOCKER}" ]]; then
+    echo >&2 "error: docker not found; do you need to manually configure the docker toolchain?"
+    exit 1
+fi
+
 # Create temporary files in which to record things to clean up.
 TEMP_FILES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_files')"
 TEMP_IMAGES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_images')"
