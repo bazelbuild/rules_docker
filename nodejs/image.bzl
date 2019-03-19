@@ -121,7 +121,6 @@ def nodejs_image(
     binary: An alternative binary target to use instead of generating one.
     **kwargs: See nodejs_binary.
   """
-
     layers = [
         # Put the Node binary into its own layer.
         "@nodejs//:node",

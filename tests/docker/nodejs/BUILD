@@ -79,6 +79,7 @@ nodejs_binary(
 nodejs_image(
     name = "nodejs_image_custom_binary",
     binary = ":my_custom_binary",
+    node_modules = "@npm_deps//:node_modules",
 )
 
 nodejs_image(
@@ -88,6 +89,7 @@ nodejs_image(
         "arg1",
     ],
     binary = ":my_custom_binary",
+    node_modules = "@npm_deps//:node_modules",
 )
 
 container_test(
@@ -129,5 +131,5 @@ container_test(
 container_test(
     name = "nodejs_image_custom_binary_with_args_test",
     configs = ["//tests/docker/nodejs/configs:nodejs_image_custom_binary_with_args.yaml"],
-    image = ":nodejs_image_custom_binary",
+    image = ":nodejs_image_custom_binary_with_args",
 )

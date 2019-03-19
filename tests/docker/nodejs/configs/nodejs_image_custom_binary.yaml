@@ -1,7 +1,7 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  cmd: ["arg0", "arg1"]
+  cmd: Null
   env:
     - key: PORT
       value: "8080"
