@@ -83,14 +83,6 @@ container_pull(
 )
 
 container_pull(
-    name = "k8s_pause_amd64",
-    # this is a manifest list, so the resolved digest should not match this digest
-    digest = "sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea",
-    registry = "k8s.gcr.io",
-    repository = "pause",
-)
-
-container_pull(
     name = "k8s_pause_arm64",
     architecture = "arm64",
     registry = "k8s.gcr.io",
@@ -186,9 +178,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "684f5b251670d3e6fe179f16aa8c363e9b7f30a0b0b8f2927128a02a341a4653",
-    strip_prefix = "rules_scala-7bc18d07001cbfd425c6761c8384c4e982d25a2b",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/7bc18d07001cbfd425c6761c8384c4e982d25a2b.tar.gz"],
+    sha256 = "d051ea1351853003adaa34bcb14f0151a7fd0726851d07d88301e41a0907023a",
+    strip_prefix = "rules_scala-ebc32f0e45a3fdd94b425fd7fcd10be05226795a",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/ebc32f0e45a3fdd94b425fd7fcd10be05226795a.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -287,9 +279,9 @@ _nodejs_image_repos()
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "4b1468b254a572dbe134cc1fd7c6eab1618a72acd339749ea343bd8f55c3b7eb",
-    strip_prefix = "bazel-toolchains-d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/d665ccfa3e9c90fa789671bf4ef5f7c19c5715c4.tar.gz"],
+    sha256 = "b4e0fd3bd9a644dd865e221af507eea5640181fbee0c52a29ce764efef5a8567",
+    strip_prefix = "bazel-toolchains-5a29136449f96d2830044c0b3a426fe5d37e6753",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/5a29136449f96d2830044c0b3a426fe5d37e6753.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
