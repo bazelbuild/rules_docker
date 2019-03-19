@@ -277,6 +277,14 @@ load(
 
 _nodejs_image_repos()
 
+# For dockerfile_image rule tests
+load("//contrib:dockerfile_build.bzl", "dockerfile_image")
+
+dockerfile_image(
+    name = "basic_dockerfile",
+    dockerfile = "//contrib:Dockerfile",
+)
+
 http_archive(
     name = "bazel_toolchains",
     sha256 = "56a6705ad96b8aaa3c4ac427ce29c5a83408a04e31ee4956c92362e11cfdf497",
