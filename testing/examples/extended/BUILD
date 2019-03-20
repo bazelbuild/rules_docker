@@ -19,8 +19,8 @@ container_image(
         "//extended/image_data:file_to_copy.txt",
     ],
     labels = {
-        "version": "7.7",
         "desc": "Description for version 7.7",
+        "version": "7.7",
     },
     ports = [
         "8080/tcp",
