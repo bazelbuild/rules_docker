@@ -93,6 +93,10 @@ platforms:
     # Disabled as docker is not available
     # TODO(alex1545): enable once docker is supported on buildkite
     - "-//tests/docker:basic_dockerfile_image"
+    # Disable targets that are part of an embedded bazel project as buildkite
+    # only recognizes a single top level WORKSPACE file.
+    - "-//testing/examples/basic:basic_alpine_bazel_test"
+    - "-//testing/examples/basic:basic_alpine_dockerfile_test"
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
