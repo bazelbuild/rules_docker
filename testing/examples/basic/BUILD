@@ -20,5 +20,6 @@ container_test(
 container_test(
     name = "basic_alpine_dockerfile_test",
     configs = ["//basic/test_configs:basic_alpine.yaml"],
-    image = "@basic_alpine_workspace//image",
+    driver = "tar",
+    image = "@basic_alpine_dockerfile//image:dockerfile_image",
 )

@@ -26,11 +26,7 @@ load(
 
 container_repositories()
 
-load(
-    "@io_bazel_rules_docker//container:container.bzl",
-    "container_load",
-    "container_pull",
-)
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
 container_pull(
     name = "alpine_linux_amd64",
@@ -39,7 +35,9 @@ container_pull(
     tag = "3.8",
 )
 
-container_load(
-    name = "basic_alpine_workspace",
-    file = "//basic:basic_alpine_img.tar",
+load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
+
+dockerfile_image(
+    name = "basic_alpine_dockerfile",
+    dockerfile = "//basic:Dockerfile",
 )
