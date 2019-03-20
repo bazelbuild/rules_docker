@@ -248,6 +248,9 @@ _app_layer = rule(
             executable = True,
             cfg = "target",
         ),
+        # Set this to true to create an empty workspace directory under the
+        # app directory specified as the 'directory' attribute.
+        "create_empty_workspace_dir": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
 
         # Override the defaults.
@@ -260,9 +263,6 @@ _app_layer = rule(
         "entrypoint": attr.string_list(default = []),
         "legacy_run_behavior": attr.bool(default = False),
         "workdir": attr.string(default = ""),
-        # Set this to true to create an empty workspace directory under the
-        # app directory specified as the 'directory' attribute.
-        "create_empty_workspace_dir": attr.bool(default = False),
     }),
     executable = True,
     outputs = _container.image.outputs,
