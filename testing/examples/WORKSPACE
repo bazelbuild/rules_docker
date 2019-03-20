@@ -40,3 +40,8 @@ dockerfile_image(
     name = "basic_alpine_dockerfile",
     dockerfile = "//basic:Dockerfile",
 )
+
+dockerfile_image(
+    name = "extended_alpine_dockerfile",
+    dockerfile = "//extended:Dockerfile",
+)
