@@ -42,7 +42,7 @@ def _docker(repository_ctx):
     if repository_ctx.attr.docker_path:
         return repository_ctx.attr.docker_path
     if repository_ctx.which("docker"):
-        return repository_ctx.which("docker")
+        return str(repository_ctx.which("docker"))
 
     fail("Path to the docker tool was not provided and it could not be resolved automatically.")
 
@@ -51,30 +51,21 @@ def _impl(repository_ctx):
 
     docker_path = _docker(repository_ctx)
 
-    # TODO(alex1545): once the read() function is available, enable copying
-    # file with repository_ctx.read() and repository_ctx.file() instead of
-    # executing the `cat` command
-    # dockerfile_content = repository_ctx.read(repository_ctx.attr.dockerfile)
-
-    # Copy the provided Dockerfile into the root of this workspace since using
-    # the -f flag with the docker build command is problematic.
-    cat_result = repository_ctx.execute([
-        "cat",
-        repository_ctx.path(repository_ctx.attr.dockerfile),
-    ])
-    if cat_result.return_code:
-        fail("Failed to read Dockerfile content: {}".format(cat_result.stderr))
-    dockerfile_content = cat_result.stdout
-    repository_ctx.file("Dockerfile", dockerfile_content)
-
+    dockerfile_path = repository_ctx.path(repository_ctx.attr.dockerfile)
     img_name = repository_ctx.name + ":dockerfile_image"
+
+    # The docker bulid command needs to run using the supplied Dockerfile
+    # because it may refer to relative paths in its ADD, COPY and WORKDIR
+    # instructions.
     build_args = [
         docker_path,
         "build",
         "--no-cache",
+        "-f",
+        dockerfile_path,
         "-t",
         img_name,
-        repository_ctx.path(""),
+        dockerfile_path.dirname,
     ]
     build_result = repository_ctx.execute(build_args)
     if build_result.return_code:
