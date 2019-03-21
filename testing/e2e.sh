@@ -73,7 +73,7 @@ function EXPECT_NOT_CONTAINS() {
 
 function stop_containers() {
   # Get the IDs of images except the local registry image "registry:2". We only
-  # want to delete images that created in the tests.
+  # want to delete images that were created in the tests.
   images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
   docker rm -f $images > /dev/null 2>&1 || builtin true
 }
@@ -536,7 +536,8 @@ function test_dockerfile_image_basic() {
 function test_py_image_deps_as_layers() {
   cd "${ROOT}"
   clear_docker
-  # Build and run the python image where
+  # Build and run the python image where the "six" module pip dependency was
+  # specified via "layers". https://github.com/bazelbuild/rules_docker/issues/161
   EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
 }
 
