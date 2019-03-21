@@ -72,10 +72,7 @@ function EXPECT_NOT_CONTAINS() {
 }
 
 function stop_containers() {
-  # Get the IDs of images except the local registry image "registry:2". We only
-  # want to delete images that were created in the tests.
-  images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
-  docker rm -f $images > /dev/null 2>&1 || builtin true
+  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
 }
 
 # Clean up any containers [before] we start.
@@ -134,7 +131,10 @@ EOF
 
 
 function clear_docker() {
-  docker rmi -f $(docker images -aq) || true
+  # Get the IDs of images except the local registry image "registry:2". We only
+  # want to delete images that were created in the tests.
+  images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
+  docker rmi -f $images || builtin true
   stop_containers
 }
 
