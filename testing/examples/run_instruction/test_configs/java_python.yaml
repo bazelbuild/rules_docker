@@ -21,7 +21,7 @@ commandTests:
     command: "pip"
     args: ["-V"]
     expectedOutput: ["pip \\d+\\..*"]
-  - name: "virtualenv_test"
-    command: "virtualenv"
-    args: ["--version"]
-    expectedOutput: ["\\d+\\..*"]
+  - name: "pip3_test"
+    command: "pip3"
+    args: ["-V"]
+    expectedOutput: ["pip \\d+\\..*"]

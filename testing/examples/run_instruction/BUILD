@@ -1,15 +1,27 @@
-load("@base_images_docker//util:run.bzl", "container_run_and_commit")
+load("@base_images_docker//package_managers:download_pkgs.bzl", "download_pkgs")
+load("@base_images_docker//package_managers:install_pkgs.bzl", "install_pkgs")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
-container_run_and_commit(
-    name = "java_python_install",
-    commands = [
-        "apt-get update",
-        "apt-get install -y openjdk-8-jdk python python-dev python-pip python-virtualenv",
-        "rm -rf /var/lib/apt/lists/*",
+download_pkgs(
+    name = "java_and_python_pkgs",
+    image_tar = "@ubuntu1604//image",
+    packages = [
+        "openjdk-8-jdk",
+        "python",
+        "python-dev",
+        "python-pip",
+        "python3",
+        "python3-pip",
     ],
-    image = "@ubuntu1604//image",
+)
+
+install_pkgs(
+    name = "java_python_pkgs_image",
+    image_tar = "@ubuntu1604//image",
+    installables_tar = ":java_and_python_pkgs.tar",
+    installation_cleanup_commands = "rm -rf /var/lib/apt/lists/*",
+    output_image_name = "java_python_pkgs_image",
 )
 
 # Wrapper targets for the tarred images are required in order to be able to run
@@ -17,7 +29,7 @@ container_run_and_commit(
 
 container_image(
     name = "java_python_bazel_wrapper",
-    base = ":java_python_install_commit.tar",
+    base = ":java_python_pkgs_image.tar",
 )
 
 container_image(
