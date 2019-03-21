@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@pip_deps//:requirements.bzl", "all_requirements", "requirement")
 load("@io_bazel_rules_docker//container:container.bzl", "container_push")
 load("@io_bazel_rules_docker//python:image.bzl", "py_image")
+load("@pip_deps//:requirements.bzl", "all_requirements", "requirement")
 
 package(default_visibility = ["//testdata:__subpackages__"])
 
