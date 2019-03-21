@@ -131,8 +131,9 @@ EOF
 
 
 function clear_docker() {
-  # Get the IDs of images except the local registry image "registry:2". We only
-  # want to delete images that were created in the tests.
+  # Get the IDs of images except the local registry image "registry:2" which is
+  # used in a few of the tests. This avoids having to pull the registry image
+  # multiple times in the end to end tests.
   images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
   docker rmi -f $images || builtin true
   stop_containers
