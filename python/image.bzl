@@ -95,7 +95,6 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     for index, dep in enumerate(layers):
         base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
         base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary_name)
-
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
     app_layer(
@@ -108,4 +107,9 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        # The targets of the symlinks in the symlink layers are relative to the
+        # workspace directory under the app directory. Thus, create an empty
+        # workspace directory to ensure the symlinks are valid. See
+        # https://github.com/bazelbuild/rules_docker/issues/161 for details.
+        create_empty_workspace_dir = True,
     )
