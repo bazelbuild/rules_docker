@@ -72,7 +72,10 @@ function EXPECT_NOT_CONTAINS() {
 }
 
 function stop_containers() {
-  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
+  # Get the IDs of images except the local registry image "registry:2". We only
+  # want to delete images that created in the tests.
+  images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
+  docker rm -f $images > /dev/null 2>&1 || builtin true
 }
 
 # Clean up any containers [before] we start.
@@ -530,6 +533,15 @@ function test_dockerfile_image_basic() {
   bazel test tests/docker:basic_dockerfile_image
 }
 
+function test_py_image_deps_as_layers() {
+  cd "${ROOT}"
+  clear_docker
+  # Build and run the python image where
+  EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
+}
+
+test_py_image_deps_as_layers
+exit 0
 test_container_push_with_stamp
 test_container_push_all
 test_container_push_with_auth

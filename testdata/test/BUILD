@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@pip_deps//:requirements.bzl", "requirement")
+load("@pip_deps//:requirements.bzl", "all_requirements", "requirement")
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
+load("@io_bazel_rules_docker//python:image.bzl", "py_image")
 
 package(default_visibility = ["//testdata:__subpackages__"])
 
@@ -30,4 +32,21 @@ py_library(
     name = "py_image_library_using_addict",
     srcs = ["py_image_library_using_addict.py"],
     deps = [requirement("addict")],
+)
+
+# For end to end testing of py_image dependencies specified as "layers"
+py_image(
+    name = "py_image_using_layers",
+    srcs = ["py_image_using_layers.py"],
+    layers = all_requirements,
+    main = "py_image_using_layers.py",
+)
+
+container_push(
+    name = "push_py_image_using_layers",
+    format = "Docker",
+    image = ":py_image_using_layers",
+    registry = "localhost:5000",
+    repository = "testdata/py_image_using_layers",
+    visibility = ["//visibility:public"],
 )

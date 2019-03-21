@@ -233,7 +233,7 @@ class ImageTest(unittest.TestCase):
       # Assume that any value for 'created' within a reasonable bound is fine.
       self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
-  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again 
+  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again
   def test_with_default_stamped_creation_time(self):
     # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
     # `creation_time` isn't explicitly defined.
@@ -473,6 +473,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        './app/io_bazel_rules_docker',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -517,6 +518,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image_with_symlinks_in_data.binary',
         './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/foo.txt',
         './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        './app/io_bazel_rules_docker',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -568,6 +570,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2',
         './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/__init__.py',
         './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        './app/io_bazel_rules_docker',
         '/app',
         '/app/testdata',
         '/app/testdata/py_image_complex.binary',
