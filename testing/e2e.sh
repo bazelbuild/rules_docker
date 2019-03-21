@@ -541,7 +541,6 @@ function test_py_image_deps_as_layers() {
 }
 
 test_py_image_deps_as_layers
-exit 0
 test_container_push_with_stamp
 test_container_push_all
 test_container_push_with_auth

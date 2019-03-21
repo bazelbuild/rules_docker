@@ -41,12 +41,3 @@ py_image(
     layers = all_requirements,
     main = "py_image_using_layers.py",
 )
-
-container_push(
-    name = "push_py_image_using_layers",
-    format = "Docker",
-    image = ":py_image_using_layers",
-    registry = "localhost:5000",
-    repository = "testdata/py_image_using_layers",
-    visibility = ["//visibility:public"],
-)
