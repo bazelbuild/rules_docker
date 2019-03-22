@@ -46,6 +46,11 @@ load(
     _sha256 = "sha256",
 )
 load(
+    "@io_bazel_rules_docker//container:providers.bzl",
+    "ImageInfo",
+    "LayerInfo",
+)
+load(
     "//container:layer.bzl",
     _layer = "layer",
 )
@@ -55,11 +60,6 @@ load(
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
-)
-load(
-    "//container:providers.bzl",
-    "ImageInfo",
-    "LayerInfo",
 )
 load(
     "//skylib:filetype.bzl",
@@ -433,21 +433,18 @@ def _impl(
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
-    return struct(
-        container_parts = container_parts,
-        providers = [
-            ImageInfo(
-                container_parts = container_parts,
-                legacy_run_behavior = legacy_run_behavior,
-                docker_run_flags = docker_run_flags,
-            ),
-            DefaultInfo(
-                executable = output_executable,
-                files = depset([output_layer]),
-                runfiles = runfiles,
-            ),
-        ],
-    )
+    return [
+        ImageInfo(
+            container_parts = container_parts,
+            legacy_run_behavior = legacy_run_behavior,
+            docker_run_flags = docker_run_flags,
+        ),
+        DefaultInfo(
+            executable = output_executable,
+            files = depset([output_layer]),
+            runfiles = runfiles,
+        ),
+    ]
 
 _attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),

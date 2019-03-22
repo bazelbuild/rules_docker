@@ -14,6 +14,11 @@
 """Tools for dealing with Docker Image layers."""
 
 load(
+    "@io_bazel_rules_docker//container:providers.bzl",
+    "ImageInfo",
+    "ImportInfo",
+)
+load(
     "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
@@ -58,8 +63,10 @@ def get_from_target(ctx, name, attr_target, file_target = None):
     """
     if file_target:
         return _extract_layers(ctx, name, file_target)
-    elif hasattr(attr_target, "container_parts"):
-        return attr_target.container_parts
+    elif attr_target and ImageInfo in attr_target:
+        return attr_target[ImageInfo].container_parts
+    elif attr_target and ImportInfo in attr_target:
+        return attr_target[ImportInfo].container_parts
     else:
         if not hasattr(attr_target, "files"):
             return {}

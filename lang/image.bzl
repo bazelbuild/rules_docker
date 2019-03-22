@@ -16,6 +16,11 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
+    "@io_bazel_rules_docker//container:providers.bzl",
+    "FilterAspectInfo",
+    "FilterLayerInfo",
+)
+load(
     "//container:container.bzl",
     _container = "container",
 )
@@ -23,7 +28,6 @@ load(
     "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
 )
-load("//container:providers.bzl", "FilterAspectInfo", "FilterLayerInfo")
 
 def _binary_name(ctx):
     # For //foo/bar/baz:blah this would translate to
@@ -307,29 +311,13 @@ def _filter_layer_rule_impl(ctx):
             runfiles = runfiles.merge(dep.target[DefaultInfo].default_runfiles)
             filtered_depsets.append(dep.target_deps)
 
-    # Forward correct provider, depending on availability, so that the filter_layer() can be
-    # used as a normal dependency to native targets (e.g. py_library(deps = [<filter_layer>])).
-    if hasattr(ctx.attr.dep, "py"):
-        # Forward legacy builtin provider and PyInfo provider
-        return struct(
-            providers = [
-                FilterLayerInfo(
-                    runfiles = runfiles,
-                    filtered_depset = depset(transitive = filtered_depsets),
-                ),
-            ] + ([ctx.attr.dep[PyInfo]] if PyInfo in ctx.attr.dep else []),
-            py = ctx.attr.dep.py if hasattr(ctx.attr.dep, "py") else None,
-        )
-    else:
-        # Forward the PyInfo provider only
-        return struct(
-            providers = [
-                FilterLayerInfo(
-                    runfiles = runfiles,
-                    filtered_depset = depset(transitive = filtered_depsets),
-                ),
-            ] + ([ctx.attr.dep[PyInfo]] if PyInfo in ctx.attr.dep else []),
-        )
+    # Forward legacy builtin provider and PyInfo provider
+    return [
+        FilterLayerInfo(
+            runfiles = runfiles,
+            filtered_depset = depset(transitive = filtered_depsets),
+        ),
+    ] + ([ctx.attr.dep[PyInfo]] if PyInfo in ctx.attr.dep else [])
 
 # A rule that allows selecting a subset of transitive dependencies, and using
 # them as a layer in an image.

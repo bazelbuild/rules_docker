@@ -19,13 +19,13 @@ load(
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
+load("@io_bazel_rules_docker//container:providers.bzl", "ImportInfo")
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
-load("//container:providers.bzl", "ImportInfo")
 load(
     "//skylib:filetype.bzl",
     tar_filetype = "tar",
@@ -141,19 +141,16 @@ def _container_import_impl(ctx):
             ),
         )
 
-    return struct(
-        container_parts = container_parts,
-        providers = [
-            ImportInfo(
-                container_parts = container_parts,
-            ),
-            DefaultInfo(
-                executable = ctx.outputs.executable,
-                files = depset([ctx.outputs.out]),
-                runfiles = runfiles,
-            ),
-        ],
-    )
+    return [
+        ImportInfo(
+            container_parts = container_parts,
+        ),
+        DefaultInfo(
+            executable = ctx.outputs.executable,
+            files = depset([ctx.outputs.out]),
+            runfiles = runfiles,
+        ),
+    ]
 
 container_import = rule(
     attrs = dicts.add({
