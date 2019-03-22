@@ -227,9 +227,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "2d16f6da563e4d926d3ef0753c8eef14d90e7dd43d28f956d587872a39af244c",
-    strip_prefix = "rules_rust-5fa9b101a68ddd4a628462b8d2aae06c6cbbda15",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/5fa9b101a68ddd4a628462b8d2aae06c6cbbda15.tar.gz"],
+    sha256 = "8b1f214e8181c1929ef7e95117a1bb512456adc74effb07a91a99028a370eaea",
+    strip_prefix = "rules_rust-424376945ce86d9c24c5b2fce209ef611016a883",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/424376945ce86d9c24c5b2fce209ef611016a883.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -287,9 +287,9 @@ dockerfile_image(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "56a6705ad96b8aaa3c4ac427ce29c5a83408a04e31ee4956c92362e11cfdf497",
-    strip_prefix = "bazel-toolchains-5b435b8bb8723feb836fbbe9b553cc40dbc9ce4f",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/5b435b8bb8723feb836fbbe9b553cc40dbc9ce4f.tar.gz"],
+    sha256 = "9aa113ad4e0843ea9155fc77d9ebe10fb8a6e2b26bb881dafe4aeec215aa7d6a",
+    strip_prefix = "bazel-toolchains-a6edc1ee16daeb37e4b005db951622df8f882a06",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/a6edc1ee16daeb37e4b005db951622df8f882a06.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")

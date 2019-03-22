@@ -164,6 +164,9 @@ jar_dep_layer = rule(
 
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = False),
+        # Set this to true to create an empty workspace directory under the
+        # app directory specified as the 'directory' attribute.
+        "create_empty_workspace_dir": attr.bool(default = False),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         # The dependency whose runfiles we're appending.
