@@ -131,7 +131,11 @@ EOF
 
 
 function clear_docker() {
-  docker rmi -f $(docker images -aq) || true
+  # Get the IDs of images except the local registry image "registry:2" which is
+  # used in a few of the tests. This avoids having to pull the registry image
+  # multiple times in the end to end tests.
+  images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
+  docker rmi -f $images || builtin true
   stop_containers
 }
 
@@ -530,6 +534,15 @@ function test_dockerfile_image_basic() {
   bazel test tests/docker:basic_dockerfile_image
 }
 
+function test_py_image_deps_as_layers() {
+  cd "${ROOT}"
+  clear_docker
+  # Build and run the python image where the "six" module pip dependency was
+  # specified via "layers". https://github.com/bazelbuild/rules_docker/issues/161
+  EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
+}
+
+test_py_image_deps_as_layers
 test_container_push_with_stamp
 test_container_push_all
 test_container_push_with_auth

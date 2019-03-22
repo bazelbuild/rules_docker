@@ -138,6 +138,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     runfiles = runfiles or _default_runfiles
     emptyfiles = emptyfiles or _default_emptyfiles
+    empty_dirs = []
     workdir = None
 
     parent_parts = _get_layers(ctx, ctx.attr.name, ctx.attr.base)
@@ -145,6 +146,10 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     emptyfilepath = _final_emptyfile_path if ctx.attr.binary else _layer_emptyfile_path
     dep = ctx.attr.dep or ctx.attr.binary
     top_layer = ctx.attr.binary and not ctx.attr.dep
+
+    if ctx.attr.create_empty_workspace_dir:
+        # Create an empty directory for the workspace in the app directory.
+        empty_dirs.append("/".join([ctx.attr.directory, ctx.workspace_name]))
 
     # Compute the set of runfiles that have been made available
     # in our base image, tracking absolute paths.
@@ -215,6 +220,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         directory = "/",
         file_map = file_map,
         empty_files = empty_files,
+        empty_dirs = empty_dirs,
         symlinks = symlinks,
         workdir = workdir,
         # Use entrypoint so we can easily add arguments when the resulting
@@ -242,6 +248,9 @@ _app_layer = rule(
             executable = True,
             cfg = "target",
         ),
+        # Set this to true to create an empty workspace directory under the
+        # app directory specified as the 'directory' attribute.
+        "create_empty_workspace_dir": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
 
         # Override the defaults.
