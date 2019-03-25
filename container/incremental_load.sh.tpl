@@ -39,8 +39,8 @@ if [[ -z "${DOCKER}" ]]; then
 fi
 
 # Create temporary files in which to record things to clean up.
-TEMP_FILES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_files')"
-TEMP_IMAGES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_images')"
+TEMP_FILES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_files.XXXXXXXXXX')"
+TEMP_IMAGES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_images.XXXXXXXXXX')"
 function cleanup() {
   cat "${TEMP_FILES}" | xargs rm -rf> /dev/null 2>&1 || true
   cat "${TEMP_IMAGES}" | xargs "${DOCKER}" rmi > /dev/null 2>&1 || true
@@ -217,7 +217,7 @@ function tag_layer() {
 
 function read_variables() {
   local file="${RUNFILES}/$1"
-  local new_file="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_new')"
+  local new_file="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_new.XXXXXXXXXX')"
   echo "${new_file}" >> "${TEMP_FILES}"
 
   # Rewrite the file from Bazel for the form FOO=...
