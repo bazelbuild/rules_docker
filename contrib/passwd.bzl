@@ -25,6 +25,7 @@ PasswdFileContentProviderInfo = provider(
         "gid",
         "info",
         "home",
+        "create_home",
         "shell",
         "name",
     ],
@@ -38,6 +39,7 @@ def _passwd_entry_impl(ctx):
         gid = ctx.attr.gid,
         info = ctx.attr.info,
         home = ctx.attr.home,
+        create_home = ctx.attr.create_home,
         shell = ctx.attr.shell,
         name = ctx.attr.name,
     )]
@@ -60,12 +62,13 @@ def _build_homedirs_tar(ctx, passwd_file):
     homedirs = []
     owners_map = {}
     for entry in ctx.attr.entries:
-        homedir = entry[PasswdFileContentProviderInfo].home
-        owners_map[homedir] = "{uid}.{gid}".format(
-            uid = entry[PasswdFileContentProviderInfo].uid,
-            gid = entry[PasswdFileContentProviderInfo].gid,
-        )
-        homedirs.append(homedir)
+        if entry[PasswdFileContentProviderInfo].create_home:
+            homedir = entry[PasswdFileContentProviderInfo].home
+            owners_map[homedir] = "{uid}.{gid}".format(
+                uid = entry[PasswdFileContentProviderInfo].uid,
+                gid = entry[PasswdFileContentProviderInfo].gid,
+            )
+            homedirs.append(homedir)
     dest_file = _join_path(
         ctx.attr.passwd_file_pkg_dir,
         ctx.label.name,
@@ -108,6 +111,7 @@ passwd_entry = rule(
     attrs = {
         "gid": attr.int(default = 1000),
         "home": attr.string(default = "/home"),
+        "create_home": attr.bool(default = True),
         "info": attr.string(default = "user"),
         "shell": attr.string(default = "/bin/bash"),
         "uid": attr.int(default = 1000),
