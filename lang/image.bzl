@@ -108,19 +108,19 @@ def _default_runfiles(dep):
     if FilterLayerInfo in dep:
         return dep[FilterLayerInfo].runfiles.files
     else:
-        return dep.default_runfiles.files
+        return dep[DefaultInfo].default_runfiles.files
 
 def _default_emptyfiles(dep):
     if FilterLayerInfo in dep:
         return dep[FilterLayerInfo].runfiles.empty_filenames
     else:
-        return dep.default_runfiles.empty_filenames
+        return dep[DefaultInfo].default_runfiles.empty_filenames
 
 def _default_symlinks(dep):
     if FilterLayerInfo in dep:
         return dep[FilterLayerInfo].runfiles.symlinks
     else:
-        return dep.default_runfiles.symlinks
+        return dep[DefaultInfo].default_runfiles.symlinks
 
 def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     """Appends a layer for a single dependency's runfiles.
@@ -138,6 +138,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     runfiles = runfiles or _default_runfiles
     emptyfiles = emptyfiles or _default_emptyfiles
+    empty_dirs = []
     workdir = None
 
     parent_parts = _get_layers(ctx, ctx.attr.name, ctx.attr.base)
@@ -145,6 +146,10 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     emptyfilepath = _final_emptyfile_path if ctx.attr.binary else _layer_emptyfile_path
     dep = ctx.attr.dep or ctx.attr.binary
     top_layer = ctx.attr.binary and not ctx.attr.dep
+
+    if ctx.attr.create_empty_workspace_dir:
+        # Create an empty directory for the workspace in the app directory.
+        empty_dirs.append("/".join([ctx.attr.directory, ctx.workspace_name]))
 
     # Compute the set of runfiles that have been made available
     # in our base image, tracking absolute paths.
@@ -215,6 +220,7 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         directory = "/",
         file_map = file_map,
         empty_files = empty_files,
+        empty_dirs = empty_dirs,
         symlinks = symlinks,
         workdir = workdir,
         # Use entrypoint so we can easily add arguments when the resulting
@@ -242,6 +248,9 @@ _app_layer = rule(
             executable = True,
             cfg = "target",
         ),
+        # Set this to true to create an empty workspace directory under the
+        # app directory specified as the 'directory' attribute.
+        "create_empty_workspace_dir": attr.bool(default = False),
         "data": attr.label_list(allow_files = True),
 
         # Override the defaults.
@@ -249,7 +258,7 @@ _app_layer = rule(
         # The dependency whose runfiles we're appending.
         # If not specified, then the layer will be treated as the top layer,
         # and all remaining deps of "binary" will be added under runfiles.
-        "dep": attr.label(providers = [DefaultInfo]),
+        "dep": attr.label(),
         "directory": attr.string(default = "/app"),
         "entrypoint": attr.string_list(default = []),
         "legacy_run_behavior": attr.bool(default = False),
@@ -295,7 +304,7 @@ def _filter_layer_rule_impl(ctx):
     filtered_depsets = []
     for dep in transitive_deps.to_list():
         if str(dep.target.label).startswith(ctx.attr.filter) and str(dep.target.label) != str(ctx.attr.dep.label):
-            runfiles = runfiles.merge(dep.target.default_runfiles)
+            runfiles = runfiles.merge(dep.target[DefaultInfo].default_runfiles)
             filtered_depsets.append(dep.target_deps)
 
     # Forward correct provider, depending on availability, so that the filter_layer() can be
@@ -327,7 +336,6 @@ def _filter_layer_rule_impl(ctx):
 filter_layer = rule(
     attrs = {
         "dep": attr.label(
-            providers = [DefaultInfo],
             aspects = [_filter_aspect],
             mandatory = True,
         ),

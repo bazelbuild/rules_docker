@@ -577,14 +577,11 @@ go_image(
     name = "go_image",
     srcs = ["main.go"],
     importpath = "github.com/your/path/here",
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
 )
 ```
-
-Notice that it is important to explicitly specify `goarch`, `goos`, and `pure`
-as the binary should be built for Linux since it will run on a Linux container.
+Notice that it is important to explicitly build this target with the
+`--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64` flag
+as the binary should be built for Linux since it will run in a Linux container.
 
 If you need to modify somehow the container produced by
 `go_image` (e.g., `env`, `symlink`), see note above in
@@ -949,6 +946,8 @@ container_pull(
 ```
 
 This can then be referenced in `BUILD` files as `@base//image`.
+
+To get the correct digest one can run `docker manifest inspect gcr.io/my-project/my-base:tag` once [experimental docker cli featuers are enabled](https://docs.docker.com/engine/reference/commandline/manifest_inspect).
 
 See [here](#container_pull-custom-client-configuration) for an example of how
 to use container_pull with custom docker authentication credentials.

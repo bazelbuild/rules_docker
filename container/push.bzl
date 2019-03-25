@@ -80,7 +80,7 @@ def _impl(ctx):
         outputs = [ctx.outputs.digest],
         executable = ctx.executable._digester,
         arguments = [digester_args],
-        tools = ctx.attr._digester.default_runfiles.files,
+        tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
         mnemonic = "ContainerPushDigest",
     )
 
@@ -125,7 +125,7 @@ def _impl(ctx):
         is_executable = True,
     )
     runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs + runfiles_tag_file)
-    runfiles = runfiles.merge(ctx.attr._pusher.default_runfiles)
+    runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
         DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),

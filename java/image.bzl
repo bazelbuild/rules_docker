@@ -114,18 +114,31 @@ def java_files(f):
     Returns:
         Depset of java source files.
     """
-    files = depset()
-    if java_common.provider in f:
-        java_provider = f[java_common.provider]
-        files = depset(transitive = [files, java_provider.transitive_runtime_jars])
-    if hasattr(f, "files"):  # a jar file
-        files = depset(transitive = [files, f.files])
-    return files
+    files = []
+
+    if JavaInfo in f:
+        java_provider = f[JavaInfo]
+        files.append(java_provider.transitive_runtime_jars)
+
+    f_files = f[DefaultInfo].files
+    if f_files != None:
+        files.append(f_files)
+
+    return depset(transitive = files)
 
 def java_files_with_data(f):
+    """Filter out the list of java source and data files from the given list of runfiles.
+
+    Args:
+       f: Runfiles for a java_image rule.
+
+    Returns:
+       Depset of java source and data files.
+    """
     files = java_files(f)
-    if hasattr(f, "data_runfiles"):
-        files = depset(transitive = [files, f.data_runfiles.files])
+    data_runfiles = f[DefaultInfo].data_runfiles
+    if data_runfiles != None:
+        files = depset(transitive = [files, data_runfiles.files])
     return files
 
 def _jar_dep_layer_impl(ctx):
@@ -151,10 +164,13 @@ jar_dep_layer = rule(
 
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = False),
+        # Set this to true to create an empty workspace directory under the
+        # app directory specified as the 'directory' attribute.
+        "create_empty_workspace_dir": attr.bool(default = False),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         # The dependency whose runfiles we're appending.
-        "dep": attr.label(providers = [DefaultInfo]),
+        "dep": attr.label(),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),

@@ -1,8 +1,12 @@
 ---
-# TODO (smukherj): Renable this once all lint warnings have been fixed.
-# See https://buildkite.com/bazel/rules-docker-docker/builds/1085#322f83d5-7cca-425a-b838-ff32ba055808
-# for the list of issues. Temporarily buildifier is enabled in travis.
-# buildifier: true
+buildifier:
+  version: 0.22.0
+  # Check for issues with the format of our bazel config files.
+  # All warnings from https://github.com/bazelbuild/buildtools/blob/master/WARNINGS.md
+  # are enabled except:
+  # rule-impl-return, uninitialized, return-value, rule-impl-return
+  # TODO (suvanjan): Re-enable once issues are fixed.
+  warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,positional-args,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
 platforms:
   ubuntu1404:
     test_targets:
@@ -21,6 +25,12 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    # Tests temporarily added to local builds as these need XZ for remote builds
+    # TODO(nlopezgi): remove these tests from this config and leave only on RBE
+    - "//tests/docker:test_digest_output1"
+    # Disable targets that are part of an embedded bazel project as buildkite
+    # only recognizes a single top level WORKSPACE file.
+    - "-//testing/examples/..."
     test_flags:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
@@ -43,6 +53,11 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     # Tests temporarily added to local builds as these need XZ for remote builds
+    # TODO(nlopezgi): remove these tests from this config and leave only on RBE
+    - "//tests/docker:test_digest_output1"
+    # Disable targets that are part of an embedded bazel project as buildkite
+    # only recognizes a single top level WORKSPACE file.
+    - "-//testing/examples/..."
     test_flags:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
@@ -64,10 +79,26 @@ platforms:
     build_targets:
     - "--"
     - "..."
+    # Disabled temporarily as container does not have XZ
+    # TODO(nlopezgi): enable these tests once container has XZ
+    - "-//tests/docker:test_digest_output1"
+    - "-//tests/docker:deb_image_with_dpkgs_test"
+    - "-//tests/docker:deb_image_with_dpkgs_test.image"
+    - "-//tests/docker:deb_image_with_dpkgs.digest"
+    - "-//tests/docker:deb_image_with_dpkgs"
+    - "-//testdata:pkg_control_xz.deb"
+    - "-//testdata:pkg_control_xz"
+    # Disabled as docker is not available
+    # TODO(alex1545): enable once docker is supported on buildkite
+    - "-//tests/docker:basic_dockerfile_image"
+    # Disable targets that are part of an embedded bazel project as buildkite
+    # only recognizes a single top level WORKSPACE file.
+    - "-//testing/examples/..."
     build_flags:
-    - "--extra_execution_platforms=//toolchains:platform_docker"
-    - "--host_platform=//toolchains:platform_docker"
-    - "--platforms=//toolchains:platform_docker"
+    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
     - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
@@ -84,10 +115,26 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    # Disabled temporarily as container does not have XZ
+    # TODO(nlopezgi): enable these tests once container has XZ
+    - "-//tests/docker:test_digest_output1"
+    - "-//tests/docker:deb_image_with_dpkgs_test"
+    - "-//tests/docker:deb_image_with_dpkgs_test.image"
+    - "-//tests/docker:deb_image_with_dpkgs.digest"
+    - "-//tests/docker:deb_image_with_dpkgs"
+    - "-//testdata:pkg_control_xz.deb"
+    - "-//testdata:pkg_control_xz"
+    # Disabled as docker is not available
+    # TODO(alex1545): enable once docker is supported on buildkite
+    - "-//tests/docker:basic_dockerfile_image"
+    # Disable targets that are part of an embedded bazel project as buildkite
+    # only recognizes a single top level WORKSPACE file.
+    - "-//testing/examples/..."
     test_flags:
-    - "--extra_execution_platforms=//toolchains:platform_docker"
-    - "--host_platform=//toolchains:platform_docker"
-    - "--platforms=//toolchains:platform_docker"
+    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
     - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
