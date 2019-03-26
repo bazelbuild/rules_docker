@@ -14,6 +14,8 @@
 
 workspace(name = "dockerfile_examples")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 local_repository(
     name = "io_bazel_rules_docker",
     path = "../..",
@@ -29,11 +31,25 @@ container_repositories()
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
 
+http_archive(
+    name = "base_images_docker",
+    sha256 = "ce6043d38aa7fad421910311aecec865beb060eb56d8c3eb5af62b2805e9379c",
+    strip_prefix = "base-images-docker-7657d04ad9e30b9b8d981b96ae57634cd45ba18a",
+    urls = ["https://github.com/GoogleCloudPlatform/base-images-docker/archive/7657d04ad9e30b9b8d981b96ae57634cd45ba18a.tar.gz"],
+)
+
 container_pull(
     name = "alpine_linux_amd64",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
+)
+
+container_pull(
+    name = "ubuntu1604",
+    registry = "gcr.io",
+    repository = "cloud-marketplace/google/ubuntu1604",
+    tag = "latest",
 )
 
 dockerfile_image(
@@ -44,4 +60,9 @@ dockerfile_image(
 dockerfile_image(
     name = "extended_alpine_dockerfile",
     dockerfile = "//extended:Dockerfile",
+)
+
+dockerfile_image(
+    name = "java_python_dockerfile",
+    dockerfile = "//run_instruction:Dockerfile",
 )
