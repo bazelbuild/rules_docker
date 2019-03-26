@@ -109,9 +109,9 @@ def _passwd_tar_impl(ctx):
 
 passwd_entry = rule(
     attrs = {
+        "create_home": attr.bool(default = True),
         "gid": attr.int(default = 1000),
         "home": attr.string(default = "/home"),
-        "create_home": attr.bool(default = True),
         "info": attr.string(default = "user"),
         "shell": attr.string(default = "/bin/bash"),
         "uid": attr.int(default = 1000),
