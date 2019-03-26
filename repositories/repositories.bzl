@@ -107,10 +107,10 @@ py_library(
    data = ["cacerts.txt"],
    visibility = ["//visibility:public"]
 )""",
-            sha256 = "d9f568c183d1230f271e9c60bd99f3f2b67637c3478c9068fea29f7cca3d911f",
-            strip_prefix = "httplib2-0.11.3/python2/httplib2/",
+            sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
+            strip_prefix = "httplib2-0.12.1/python2/httplib2/",
             type = "tar.gz",
-            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3"],
+            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
         )
 
     # Used by oauth2client
