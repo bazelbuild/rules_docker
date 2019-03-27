@@ -534,11 +534,23 @@ passwd_entry(
     username = "foobar",
 )
 
+passwd_entry(
+    name = "nobody_user",
+    create_home = False,
+    gid = 65534,
+    home = "/nonexistent",
+    info = "nobody with no home",
+    shell = "/sbin/nologin",
+    uid = 65534,
+    username = "nobody",
+)
+
 passwd_file(
     name = "passwd",
     entries = [
         ":root_user",
         ":foobar_user",
+        ":nobody_user",
     ],
 )
 
@@ -554,6 +566,7 @@ passwd_tar(
     entries = [
         ":root_user",
         ":foobar_user",
+        ":nobody_user",
     ],
     passwd_file_pkg_dir = "etc",
 )
