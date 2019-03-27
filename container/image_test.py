@@ -401,7 +401,7 @@ class ImageTest(unittest.TestCase):
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/passwd').read()
         self.assertEqual(
-          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
           content)
         self.assertEqual(layer.getmember("./etc/passwd").mode, PASSWD_FILE_MODE)
 
@@ -415,7 +415,7 @@ class ImageTest(unittest.TestCase):
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/password').read()
         self.assertEqual(
-          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
           content)
         self.assertEqual(layer.getmember("./etc/password").mode, PASSWD_FILE_MODE)
         self.assertTarInfo(layer.getmember("./root"), 0, 0, DIR_PERMISSION, True)
