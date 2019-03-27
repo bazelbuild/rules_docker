@@ -566,6 +566,7 @@ passwd_tar(
     entries = [
         ":root_user",
         ":foobar_user",
+        ":nobody_user",
     ],
     passwd_file_pkg_dir = "etc",
 )
