@@ -245,9 +245,9 @@ bazel_version(name = "bazel_version")
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "c5ce0a1f6b034f6f46ae6b0dab92bb036a698ea0c9150fe21bf92a0fa4b9056c",
-    strip_prefix = "rules_d-30d991496f2ac82356d837dff08b1f485fbff042",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/30d991496f2ac82356d837dff08b1f485fbff042.tar.gz"],
+    sha256 = "a63df9449d3a4ea1eb0c38e9a2054c15bec4a70227bf21e98201bc51d174f4d9",
+    strip_prefix = "rules_d-3d71e9d09ff315941cd2b3ff85f3d53e14753417",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/3d71e9d09ff315941cd2b3ff85f3d53e14753417.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
@@ -287,9 +287,9 @@ dockerfile_image(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "9aa113ad4e0843ea9155fc77d9ebe10fb8a6e2b26bb881dafe4aeec215aa7d6a",
-    strip_prefix = "bazel-toolchains-a6edc1ee16daeb37e4b005db951622df8f882a06",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/a6edc1ee16daeb37e4b005db951622df8f882a06.tar.gz"],
+    sha256 = "67335b3563d9b67dc2550b8f27cc689b64fadac491e69ce78763d9ba894cc5cc",
+    strip_prefix = "bazel-toolchains-cddc376d428ada2927ad359211c3e356bd9c9fbb",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/cddc376d428ada2927ad359211c3e356bd9c9fbb.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
