@@ -302,12 +302,9 @@ def _impl(
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
 
-    # legacy_run_behavior and docker_run_flags from base override those from
-    # ctx.
-    legacy_run_behavior = ctx.attr.legacy_run_behavior
+    # docker_run_flags from base override those from ctx.
     docker_run_flags = ctx.attr.docker_run_flags
     if ctx.attr.base and ImageInfo in ctx.attr.base:
-        legacy_run_behavior = ctx.attr.base[ImageInfo].legacy_run_behavior
         docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
 
     if ctx.attr.launcher:
@@ -422,7 +419,7 @@ def _impl(
         ctx,
         images,
         output_executable,
-        run = not legacy_run_behavior,
+        run = not ctx.attr.legacy_run_behavior,
         run_flags = docker_run_flags,
     )
     _assemble_image(ctx, images, output_tarball)
@@ -436,7 +433,7 @@ def _impl(
     return [
         ImageInfo(
             container_parts = container_parts,
-            legacy_run_behavior = legacy_run_behavior,
+            legacy_run_behavior = ctx.attr.legacy_run_behavior,
             docker_run_flags = docker_run_flags,
         ),
         DefaultInfo(
@@ -473,8 +470,12 @@ _attrs = dicts.add(_layer.attrs, {
     "launcher_args": attr.string_list(default = []),
     "layers": attr.label_list(providers = [LayerInfo]),
     "legacy_repository_naming": attr.bool(default = False),
-    # TODO(mattmoor): Default this to False.
-    "legacy_run_behavior": attr.bool(default = True),
+    "legacy_run_behavior": attr.bool(
+        # TODO(mattmoor): Default this to False.
+        default = True,
+        doc = ("If set to False, `bazel run` will directly invoke `docker run`" +
+               " with flags specified in the `docker_run_flags` attribute."),
+    ),
     # null_cmd and null_entrypoint are hidden attributes from users.
     # They are needed because specifying cmd or entrypoint as {None, [] or ""}
     # and not specifying them at all in the container_image rule would both make
