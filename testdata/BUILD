@@ -898,6 +898,7 @@ container_image(
     base = "//tests/docker/go:go_image",
     launcher = ":launcher",
     launcher_args = ["-env=CUSTOM_MESSAGE=Launched via launcher!"],
+    legacy_run_behavior = False,
 )
 
 # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
