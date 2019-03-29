@@ -14,12 +14,12 @@
 """A rule to flatten container images."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@io_bazel_rules_docker//container:providers.bzl", "FlattenInfo")
 load(
     "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
-load("//container:providers.bzl", "FlattenInfo")
 
 def _impl(ctx):
     """Core implementation of container_flatten."""

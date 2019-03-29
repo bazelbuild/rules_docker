@@ -18,12 +18,12 @@ Bazel rule for publishing images.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo")
 load(
     "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
-load("//container:providers.bzl", "PushInfo")
 load(
     "//skylib:path.bzl",
     "runfile",
@@ -128,7 +128,10 @@ def _impl(ctx):
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
-        DefaultInfo(executable = ctx.outputs.executable, runfiles = runfiles),
+        DefaultInfo(
+            executable = ctx.outputs.executable,
+            runfiles = runfiles,
+        ),
         PushInfo(
             registry = registry,
             repository = repository,

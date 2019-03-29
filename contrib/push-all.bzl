@@ -17,6 +17,7 @@ This variant of container_push accepts a container_bundle target and publishes
 the embedded image references.
 """
 
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
     "//skylib:path.bzl",
     "runfile",
@@ -27,8 +28,8 @@ def _get_runfile_path(ctx, f):
 
 def _impl(ctx):
     """Core implementation of container_push."""
-    stamp = ctx.attr.bundle.stamp
-    images = ctx.attr.bundle.container_images
+    stamp = ctx.attr.bundle[BundleInfo].stamp
+    images = ctx.attr.bundle[BundleInfo].container_images
 
     stamp_inputs = []
     if stamp:
