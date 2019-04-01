@@ -600,3 +600,5 @@ test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
 test_dockerfile_image_basic
+echo "End to end tests completed successfully!"
+
