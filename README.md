@@ -1888,6 +1888,8 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <p>If set to False, <code>bazel run</code> on the
         <code>container_image</code> target will directly invoke
         <code>docker run</code>.</p>
+        <p>Note that it defaults to <code>False</code> when using
+        <code>&lt;lang&gt;_image</code> rules.</p>
       </td>
     </tr>
     <tr>

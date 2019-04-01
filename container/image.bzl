@@ -473,8 +473,9 @@ _attrs = dicts.add(_layer.attrs, {
     "legacy_run_behavior": attr.bool(
         # TODO(mattmoor): Default this to False.
         default = True,
-        doc = ("If set to False, `bazel run` will directly invoke `docker run`" +
-               " with flags specified in the `docker_run_flags` attribute."),
+        doc = ("If set to False, `bazel run` will directly invoke `docker run` " +
+               "with flags specified in the `docker_run_flags` attribute. " +
+               "Note that it defaults to False when using <lang>_image rules."),
     ),
     # null_cmd and null_entrypoint are hidden attributes from users.
     # They are needed because specifying cmd or entrypoint as {None, [] or ""}
