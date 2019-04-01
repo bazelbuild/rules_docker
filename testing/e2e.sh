@@ -600,5 +600,6 @@ test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
 test_dockerfile_image_basic
+# TODO (suvanjan): Remove in future change.
 echo "End to end tests completed successfully!"
 
