@@ -287,9 +287,9 @@ dockerfile_image(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "82f2f7d158b0f67579c5649a73adb1b9bea3e385df6b4c4368a1b53eed11dbfe",
-    strip_prefix = "bazel-toolchains-f2c9219be2dcbe4d766fdbe6aa470eced168ed03",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/f2c9219be2dcbe4d766fdbe6aa470eced168ed03.tar.gz"],
+    sha256 = "b9ec98d9804704b933f803d3bab3a8273cca1836a0617ee1266e10f23337056c",
+    strip_prefix = "bazel-toolchains-89cf3b0d084b40244b38ccb9ddb4b4960dc68bee",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/89cf3b0d084b40244b38ccb9ddb4b4960dc68bee.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
@@ -298,8 +298,12 @@ load("@bazel_toolchains//rules:environments.bzl", "clang_env")
 # TODO(nlopezgi): use versions from a pin file once the container is made public
 rbe_autoconfig(
     name = "buildkite_config",
-    base_container_digest = "sha256:da0f21c71abce3bbb92c3a0c44c3737f007a82b60f8bd2930abc55fe64fc2729",
-    digest = "sha256:176d4c94865d46a5d4896121aeb7ab8a3216bd56cc784c8485051e9cdead72d4",
+    base_container_digest = "sha256:bc6a2ad47b24d01a73da315dd288a560037c51a95cc77abb837b26fef1408798",
+    # Note that if you change the `digest`, you might also need to update the
+    # `base_container_digest` to make sure asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud:<digest>
+    # and marketplace.gcr.io/google/rbe-ubuntu16-04:<base_container_digest> have the
+    # same Clang and JDK installed.
+    digest = "sha256:ab88c40463d782acc4289948fe0b1577de0b143a753cea35cac34535203f8ca7",
     env = clang_env(),
     registry = "gcr.io",
     repository = "asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud",
