@@ -72,12 +72,6 @@ platforms:
     build_targets:
     - "--"
     - "..."
-    - "-//tests/docker:deb_image_with_dpkgs_test"
-    - "-//tests/docker:deb_image_with_dpkgs_test.image"
-    - "-//tests/docker:deb_image_with_dpkgs.digest"
-    - "-//tests/docker:deb_image_with_dpkgs"
-    - "-//testdata:pkg_control_xz.deb"
-    - "-//testdata:pkg_control_xz"
     # Disabled as docker is not available
     # TODO(alex1545): enable once docker is supported on buildkite
     - "-//tests/docker:basic_dockerfile_image"
