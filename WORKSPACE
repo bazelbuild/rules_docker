@@ -287,9 +287,9 @@ dockerfile_image(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "b9ec98d9804704b933f803d3bab3a8273cca1836a0617ee1266e10f23337056c",
-    strip_prefix = "bazel-toolchains-89cf3b0d084b40244b38ccb9ddb4b4960dc68bee",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/89cf3b0d084b40244b38ccb9ddb4b4960dc68bee.tar.gz"],
+    sha256 = "bcc5644ad4b38ada1afab13a85ea184abcdbf005ede811b8918ecf3ed64fbd3f",
+    strip_prefix = "bazel-toolchains-87dff00588d6fb94c5bf9d64066811b2f314cae1",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/87dff00588d6fb94c5bf9d64066811b2f314cae1.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
