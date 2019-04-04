@@ -24,7 +24,7 @@ load(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.35"
+CONTAINERREGISTRY_RELEASE = "v0.0.36"
 
 _local_tool_build_template = """
 sh_binary(
@@ -60,7 +60,7 @@ def repositories():
         http_file(
             name = "puller",
             executable = True,
-            sha256 = "480baba71500f837672093799de9c5492990a04d327a0b9bb3e1f75eecbbdfde",
+            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
         )
@@ -69,7 +69,7 @@ def repositories():
         http_file(
             name = "importer",
             executable = True,
-            sha256 = "dad924671e4fee84b7ddfb1cd06b988d7f4e18836b81f0c6ae8e144ae046a18f",
+            sha256 = "4516a7bf62b052693001fd2b649080c4bb5228dcf698f31e77481fcb37b82ab4",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
         )
@@ -77,7 +77,7 @@ def repositories():
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
-            sha256 = "98a7d40b7b45dc76f031c9e17728dddb963f8ec28a1ee4d18693e57155d198f8",
+            sha256 = "a8cdf2452323e0fefa4edb01c08b2ec438c9fa3192bc9f408b89287598c12abc",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
