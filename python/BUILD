@@ -28,14 +28,3 @@ py_runtime(
     interpreter_path = "/usr/bin/python2",
 )
 
-# Starting with Bazel 0.25.0 we must pass a py_runtime that points
-# to valid python2 and python3 tools.
-py_runtime(
-    name = "default_py_runtime",
-    files = [],
-    interpreter_path = select({
-        # Update paths as appropriate for your system.
-        "@bazel_tools//tools/python:PY2": "/usr/bin/python2",
-        "@bazel_tools//tools/python:PY3": "/usr/bin/python3",
-    }),
-)
