@@ -30,6 +30,7 @@ py_binary(
     name = "extract_config",
     srcs = ["extract_config.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         "@containerregistry",
@@ -48,6 +49,7 @@ py_binary(
     name = "join_layers",
     srcs = ["join_layers.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
@@ -60,6 +62,7 @@ py_binary(
     name = "create_image_config",
     srcs = ["create_image_config.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         ":utils",

@@ -1,0 +1,6 @@
+build --python_top=//python:default_py_runtime
+build --host_force_python=PY2
+test --python_top=//python:default_py_runtime
+test --host_force_python=PY2
+run --python_top=//python:default_py_runtime
+run --host_force_python=PY2
