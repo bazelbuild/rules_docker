@@ -194,9 +194,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "8243bec4a863b3a02884aa583774fad43a6d715008805db4890587c6a1b74be5",
-    strip_prefix = "rules_groovy-c21780c4b8d61c48ff20b6edf8f13ee7fb299d75",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/c21780c4b8d61c48ff20b6edf8f13ee7fb299d75.tar.gz"],
+    sha256 = "d1176f2e0c2cf6e2447e12c9f091cf80d63e66e3da6ee7e4f018baa14ea5e64b",
+    strip_prefix = "rules_groovy-01d16989d96ab3c4ca0efdb067c7420319fd717b",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/01d16989d96ab3c4ca0efdb067c7420319fd717b.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -206,8 +206,8 @@ groovy_repositories()
 # For our go_image test.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "77dfd303492f2634de7a660445ee2d3de2960cbd52f97d8c0dffa9362d3ddef9",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.1/rules_go-0.18.1.tar.gz",
+    sha256 = "31f959ecf3687f6e0bb9d01e1e7a7153367ecd82816c9c0ae149cd0e5a92bf8c",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.2/rules_go-0.18.2.tar.gz",
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
@@ -227,9 +227,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "0c0affcab16f353bd6e081c0c5b3adf6962e76040e65675e338bfe577ccfc9a1",
-    strip_prefix = "rules_rust-b3cc7e4d5d0ba64064ec2311aab00c1bffb49526",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/b3cc7e4d5d0ba64064ec2311aab00c1bffb49526.tar.gz"],
+    sha256 = "55d2ff891c25ebf589aff604c8f1b41afa3fe88dbc3b6f912cd44974111b413e",
+    strip_prefix = "rules_rust-2215277a2be52263ca5cd4e547cc4a50e320b828",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/2215277a2be52263ca5cd4e547cc4a50e320b828.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
