@@ -14,7 +14,7 @@
 
 workspace(name = "dockerfile_examples")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 local_repository(
     name = "io_bazel_rules_docker",
@@ -52,6 +52,12 @@ container_pull(
     tag = "latest",
 )
 
+container_pull(
+    name = "bazel_image",
+    registry = "launcher.gcr.io",
+    repository = "google/bazel",
+)
+
 dockerfile_image(
     name = "basic_alpine_dockerfile",
     dockerfile = "//basic:Dockerfile",
@@ -64,5 +70,19 @@ dockerfile_image(
 
 dockerfile_image(
     name = "java_python_dockerfile",
-    dockerfile = "//run_instruction:Dockerfile",
+    dockerfile = "//run_instruction_apt_pkgs:Dockerfile",
+)
+
+dockerfile_image(
+    name = "bazel_gcloud_dockerfile",
+    dockerfile = "//run_instruction_arbitrary:Dockerfile",
+)
+
+http_file(
+    name = "gcloud_archive",
+    downloaded_file_path = "google-cloud-sdk.tar.gz",
+    sha256 = "a2205e35b11136004d52d47774762fbec9145bf0bda74ca506f52b71452c570e",
+    urls = [
+        "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-220.0.0-linux-x86_64.tar.gz",
+    ],
 )
