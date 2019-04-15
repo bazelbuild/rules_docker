@@ -29,12 +29,12 @@ container_run_and_commit(
         "/google-cloud-sdk/install.sh -q",
         # Add the gcloud binaries to PATH
         "echo 'source /google-cloud-sdk/path.bash.inc' >> ~/.bashrc",
+        # Install kubernetes as a component of gcloud
+        "/google-cloud-sdk/bin/gcloud components install --quiet kubectl",
         "apt-get update",
         "apt-get install -y --no-install-recommends python-pip",
         "apt-get clean",
         "python -m pip install --upgrade pip setuptools wheel",
-        # Install kubernetes as a component of gcloud
-        "/google-cloud-sdk/bin/gcloud components install --quiet kubectl",
     ],
     image = ":gcloud_installer.tar",
 )

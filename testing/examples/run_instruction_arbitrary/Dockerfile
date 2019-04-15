@@ -2,22 +2,19 @@
 
 FROM launcher.gcr.io/google/bazel:latest
 
-# Ensure new repos aren't compromised.
-COPY image_data/gcloud.pub.gpg /
-RUN apt-key add /gcloud.pub.gpg \
-    && rm /gcloud.pub.gpg
+# Install gcloud and kubectl
+RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-220.0.0-linux-x86_64.tar.gz \
+    && tar -xzf google-cloud-sdk-220.0.0-linux-x86_64.tar.gz \
+    # Add the gcloud binaries to PATH
+    && echo 'source /google-cloud-sdk/path.bash.inc' >> ~/.bashrc \
+    && ./google-cloud-sdk/install.sh -q \
+    # Install kubernetes as a component of gcloud
+    && ./google-cloud-sdk/bin/gcloud components install --quiet kubectl
 
-# Add new repos to install bazel and google-cloud-sdk (including kubectl)
-COPY image_data/sources.list /etc/apt/sources.list.d/gcloud.list
+ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/google-cloud-sdk/bin
 
-# Install necessary dependencies:
-# * gcloud: needed by rules_go and test-e2e.sh
-# * kubectl: needed by rules_k8s
-# * pip setuptools wheel: needed by python rules
-# * python-pip: needed by python rules
+# Install python tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    google-cloud-sdk \
-    kubectl \
     python-pip \
     && apt-get clean \
     && python -m pip install --upgrade pip setuptools wheel

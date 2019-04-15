@@ -10,3 +10,15 @@ commandTests:
     command: "gcloud"
     args: ["version"]
     expectedOutput: ["Google Cloud SDK \\d+\\..*"]
+  - name: "kubectl_test"
+    command: "kubectl"
+    args: ["--help"]
+    expectedOutput: ["kubectl controls the Kubernetes cluster manager.*"]
+  - name: "pip_test"
+    command: "pip"
+    args: ["-V"]
+    expectedOutput: ["pip \\d+.*"]
+  - name: "wheel_test"
+    command: "wheel"
+    args: ["version"]
+    expectedOutput: ["wheel \\d+.*"]
