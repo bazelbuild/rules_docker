@@ -15,16 +15,15 @@ container_layer(
 container_image(
     name = "gcloud_installer",
     base = "@bazel_image//image",
-    layers=[":gcloud-layer"],
-    entrypoint = "",
     cmd = "",
+    entrypoint = "",
+    layers = [":gcloud-layer"],
 )
 
 # Bootstrap the container image by installing some additional
 # packages and running some post install steps
 container_run_and_commit(
     name = "gcloud_install",
-    image=":gcloud_installer.tar",
     commands = [
         # Finalize the gcloud installation
         "/google-cloud-sdk/install.sh -q",
@@ -37,6 +36,7 @@ container_run_and_commit(
         # Install kubernetes as a component of gcloud
         "/google-cloud-sdk/bin/gcloud components install --quiet kubectl",
     ],
+    image = ":gcloud_installer.tar",
 )
 
 # Wrapper targets for the tarred images are required in order to be able to run
