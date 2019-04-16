@@ -17,11 +17,11 @@ load("@io_bazel_rules_docker//java:image.bzl", "java_image")
 
 java_image(
     name = "java_app_bazel",
-    main_class = "ProjectRunner",
     srcs = [
         "image_data/Greeting.java",
         "image_data/ProjectRunner.java",
     ],
+    main_class = "ProjectRunner",
 )
 
 # Tests
