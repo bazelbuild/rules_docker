@@ -41,12 +41,12 @@ container_image(
 
 container_test(
     name = "java_python_bazel_test",
-    configs = ["//run_instruction/test_configs:java_python.yaml"],
+    configs = ["//run_instruction_apt_pkgs/test_configs:java_python.yaml"],
     image = ":java_python_bazel_wrapper",
 )
 
 container_test(
     name = "java_python_dockerfile_test",
-    configs = ["//run_instruction/test_configs:java_python.yaml"],
+    configs = ["//run_instruction_apt_pkgs/test_configs:java_python.yaml"],
     image = ":java_python_dockerfile_wrapper",
 )
