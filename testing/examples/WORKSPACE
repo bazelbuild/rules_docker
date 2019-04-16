@@ -30,6 +30,9 @@ container_repositories()
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
+load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
+
+_java_image_repos()
 
 http_archive(
     name = "base_images_docker",
@@ -76,6 +79,11 @@ dockerfile_image(
 dockerfile_image(
     name = "bazel_gcloud_dockerfile",
     dockerfile = "//run_instruction_arbitrary:Dockerfile",
+)
+
+dockerfile_image(
+    name = "java_app_dockerfile",
+    dockerfile = "//java_app:Dockerfile",
 )
 
 http_file(

@@ -12,27 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
+load("@io_bazel_rules_docker//java:image.bzl", "java_image")
 
-container_image(
-    name = "basic_alpine",
-    base = "@alpine_linux_amd64//image",
-    cmd = ["Hello World!"],
-    entrypoint = ["echo"],
+java_image(
+    name = "java_app_bazel",
+    main_class = "ProjectRunner",
+    srcs = [
+        "image_data/Greeting.java",
+        "image_data/ProjectRunner.java",
+    ],
 )
 
 # Tests
 
 container_test(
-    name = "basic_alpine_bazel_test",
-    configs = ["//basic/test_configs:basic_alpine.yaml"],
-    image = ":basic_alpine",
+    name = "java_app_bazel_test",
+    configs = ["//java_app/test_configs:java_app_bazel.yaml"],
+    image = ":java_app_bazel",
 )
 
 container_test(
-    name = "basic_alpine_dockerfile_test",
-    configs = ["//basic/test_configs:basic_alpine.yaml"],
+    name = "java_app_dockerfile_test",
+    configs = ["//java_app/test_configs:java_app_dockerfile.yaml"],
     driver = "tar",
-    image = "@basic_alpine_dockerfile//image:dockerfile_image",
+    image = "@java_app_dockerfile//image:dockerfile_image",
 )
