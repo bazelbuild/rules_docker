@@ -123,9 +123,9 @@ _py_image_repos()
 
 http_archive(
     name = "io_bazel_rules_python",
-    sha256 = "78443aafc9b4fe1445009d46c7fd731ff0ba7ef5984057d5230de8ff1532a04f",
-    strip_prefix = "rules_python-fa6ab781188972aa2710310b29a9bccaae7fd7fe",
-    urls = ["https://github.com/bazelbuild/rules_python/archive/fa6ab781188972aa2710310b29a9bccaae7fd7fe.tar.gz"],
+    sha256 = "a441b977895b2ab80cc7ebf3615f42e57b34a8445471ec7cbe1a6c9b5149c8ee",
+    strip_prefix = "rules_python-f7a96a4756aeda1cd0ece89f9813fc2c393c20a8",
+    urls = ["https://github.com/bazelbuild/rules_python/archive/f7a96a4756aeda1cd0ece89f9813fc2c393c20a8.tar.gz"],
 )
 
 load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
