@@ -24,7 +24,7 @@ load(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.35"
+CONTAINERREGISTRY_RELEASE = "v0.0.36"
 
 _local_tool_build_template = """
 sh_binary(
@@ -56,21 +56,11 @@ def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
 
-    # TODO(ngiraldo): Remove after 1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf is in a Bazel release
-    # https://github.com/bazelbuild/bazel/commit/1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf
-    if "bazel_source" not in excludes:
-        http_archive(
-            name = "bazel_source",
-            sha256 = "3f5441ab5bf403bc44e31bf018ed994d02a1bd2dbf350eface5bf343bc7dff4c",
-            strip_prefix = "bazel-1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf",
-            urls = [("https://github.com/bazelbuild/bazel/archive/1cf75b9dab3e0bb2ffa3014d6e657aa486b1c7bf.tar.gz")],
-        )
-
     if "puller" not in excludes:
         http_file(
             name = "puller",
             executable = True,
-            sha256 = "480baba71500f837672093799de9c5492990a04d327a0b9bb3e1f75eecbbdfde",
+            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
         )
@@ -79,7 +69,7 @@ def repositories():
         http_file(
             name = "importer",
             executable = True,
-            sha256 = "dad924671e4fee84b7ddfb1cd06b988d7f4e18836b81f0c6ae8e144ae046a18f",
+            sha256 = "4516a7bf62b052693001fd2b649080c4bb5228dcf698f31e77481fcb37b82ab4",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
         )
@@ -87,7 +77,7 @@ def repositories():
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
-            sha256 = "98a7d40b7b45dc76f031c9e17728dddb963f8ec28a1ee4d18693e57155d198f8",
+            sha256 = "a8cdf2452323e0fefa4edb01c08b2ec438c9fa3192bc9f408b89287598c12abc",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
@@ -107,10 +97,10 @@ py_library(
    data = ["cacerts.txt"],
    visibility = ["//visibility:public"]
 )""",
-            sha256 = "d9f568c183d1230f271e9c60bd99f3f2b67637c3478c9068fea29f7cca3d911f",
-            strip_prefix = "httplib2-0.11.3/python2/httplib2/",
+            sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
+            strip_prefix = "httplib2-0.12.1/python2/httplib2/",
             type = "tar.gz",
-            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3"],
+            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
         )
 
     # Used by oauth2client
@@ -205,9 +195,9 @@ py_library(
     if "bazel_skylib" not in excludes:
         http_archive(
             name = "bazel_skylib",
-            sha256 = "eb5c57e4c12e68c0c20bc774bfbc60a568e800d025557bc4ea022c6479acc867",
-            strip_prefix = "bazel-skylib-0.6.0",
-            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.6.0.tar.gz"],
+            sha256 = "2ea8a5ed2b448baf4a6855d3ce049c4c452a6470b1efd1504fdb7c1c134d220a",
+            strip_prefix = "bazel-skylib-0.8.0",
+            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.8.0.tar.gz"],
         )
 
     if "gzip" not in excludes:

@@ -1881,6 +1881,26 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         Only valid when <code>launcher</code> is specified.</p>
       </td>
     </tr>
+    <tr>
+      <td><code>legacy_run_behavior</code></td>
+      <td>
+        <p><code>Bool; optional, default to True</code></p>
+        <p>If set to False, <code>bazel run</code> on the
+        <code>container_image</code> target will directly invoke
+        <code>docker run</code>.</p>
+        <p>Note that it defaults to <code>False</code> when using
+        <code>&lt;lang&gt;_image</code> rules.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>docker_run_flags</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>Optional flags to use with <code>docker run</code> command.</p>
+        <p>Only used when <code>legacy_run_behavior</code> is set to
+        <code>False</code>.</p>
+      </td>
+    </tr>
   </tbody>
 </table>
 

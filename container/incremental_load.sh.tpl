@@ -241,6 +241,10 @@ function read_variables() {
 # An optional "docker run" statement for invoking a loaded container.
 # This is not executed if the single argument --norun is passed.
 if [ "a$*" != "a--norun" ]; then
+  # Once we've loaded the images for all layers, we no longer need the temporary files on disk.
+  # We can clean up before we exec docker, since the exit handler will no longer run.
+  cleanup
+
   # This generated and injected by docker_*.
   exec %{run_statements}
 fi

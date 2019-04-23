@@ -534,11 +534,23 @@ passwd_entry(
     username = "foobar",
 )
 
+passwd_entry(
+    name = "nobody_user",
+    create_home = False,
+    gid = 65534,
+    home = "/nonexistent",
+    info = "nobody with no home",
+    shell = "/sbin/nologin",
+    uid = 65534,
+    username = "nobody",
+)
+
 passwd_file(
     name = "passwd",
     entries = [
         ":root_user",
         ":foobar_user",
+        ":nobody_user",
     ],
 )
 
@@ -554,6 +566,7 @@ passwd_tar(
     entries = [
         ":root_user",
         ":foobar_user",
+        ":nobody_user",
     ],
     passwd_file_pkg_dir = "etc",
 )
@@ -737,12 +750,10 @@ py3_image(
 
 # The following `container_image` and `py3_image` combination shows how to set
 # custom `docker_run_flags` in `py3_image`.
-# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
 container_image(
     name = "py3_image_base_with_custom_run_flags",
     base = "@py3_image_base//image",
     docker_run_flags = "-i --rm --network=host -e ABC=ABC",
-    legacy_run_behavior = False,
 )
 
 py3_image(
@@ -812,12 +823,10 @@ java_image(
 
 # The following `container_image` and `java_image` combination shows how to set
 # custom `docker_run_flags` in `java_image`.
-# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
 container_image(
     name = "java_image_base_with_custom_run_flags",
     base = "@java_image_base//image",
     docker_run_flags = "-i --rm --network=host -e ABC=ABC",
-    legacy_run_behavior = False,
 )
 
 java_image(
@@ -845,12 +854,10 @@ war_image(
 
 # The following `container_image` and `war_image` combination shows how to set
 # custom `docker_run_flags` in `war_image`.
-# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
 container_image(
     name = "war_image_base_with_custom_run_flags",
     base = "@jetty_image_base//image",
     docker_run_flags = "-i --rm --network=host -e ABC=ABC",
-    legacy_run_behavior = False,
 )
 
 war_image(
@@ -891,6 +898,7 @@ container_image(
     base = "//tests/docker/go:go_image",
     launcher = ":launcher",
     launcher_args = ["-env=CUSTOM_MESSAGE=Launched via launcher!"],
+    legacy_run_behavior = False,
 )
 
 # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.

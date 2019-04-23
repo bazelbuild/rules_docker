@@ -14,6 +14,7 @@
 """Rule for bundling Container images into a tarball."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
@@ -21,7 +22,6 @@ load(
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
-load("//container:providers.bzl", "BundleInfo")
 load(
     "//skylib:label.bzl",
     _string_to_label = "string_to_label",
@@ -71,21 +71,17 @@ def _container_bundle_impl(ctx):
 
     stamp_files = [ctx.info_file, ctx.version_file] if stamp else []
 
-    return struct(
-        container_images = images,
-        stamp = stamp,
-        providers = [
-            BundleInfo(
-                container_images = images,
-                stamp = stamp,
-            ),
-            DefaultInfo(
-                files = depset(),
-                executable = ctx.outputs.executable,
-                runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
-            ),
-        ],
-    )
+    return [
+        BundleInfo(
+            container_images = images,
+            stamp = stamp,
+        ),
+        DefaultInfo(
+            executable = ctx.outputs.executable,
+            files = depset(),
+            runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
+        ),
+    ]
 
 container_bundle_ = rule(
     attrs = dicts.add({

@@ -14,6 +14,8 @@
 
 workspace(name = "dockerfile_examples")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+
 local_repository(
     name = "io_bazel_rules_docker",
     path = "../..",
@@ -28,12 +30,35 @@ container_repositories()
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
+load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
+
+_java_image_repos()
+
+http_archive(
+    name = "base_images_docker",
+    sha256 = "ce6043d38aa7fad421910311aecec865beb060eb56d8c3eb5af62b2805e9379c",
+    strip_prefix = "base-images-docker-7657d04ad9e30b9b8d981b96ae57634cd45ba18a",
+    urls = ["https://github.com/GoogleCloudPlatform/base-images-docker/archive/7657d04ad9e30b9b8d981b96ae57634cd45ba18a.tar.gz"],
+)
 
 container_pull(
     name = "alpine_linux_amd64",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
+)
+
+container_pull(
+    name = "ubuntu1604",
+    registry = "gcr.io",
+    repository = "cloud-marketplace/google/ubuntu1604",
+    tag = "latest",
+)
+
+container_pull(
+    name = "bazel_image",
+    registry = "launcher.gcr.io",
+    repository = "google/bazel",
 )
 
 dockerfile_image(
@@ -44,4 +69,28 @@ dockerfile_image(
 dockerfile_image(
     name = "extended_alpine_dockerfile",
     dockerfile = "//extended:Dockerfile",
+)
+
+dockerfile_image(
+    name = "java_python_dockerfile",
+    dockerfile = "//run_instruction_apt_pkgs:Dockerfile",
+)
+
+dockerfile_image(
+    name = "bazel_gcloud_dockerfile",
+    dockerfile = "//run_instruction_arbitrary:Dockerfile",
+)
+
+dockerfile_image(
+    name = "java_app_dockerfile",
+    dockerfile = "//java_app:Dockerfile",
+)
+
+http_file(
+    name = "gcloud_archive",
+    downloaded_file_path = "google-cloud-sdk.tar.gz",
+    sha256 = "a2205e35b11136004d52d47774762fbec9145bf0bda74ca506f52b71452c570e",
+    urls = [
+        "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-220.0.0-linux-x86_64.tar.gz",
+    ],
 )
