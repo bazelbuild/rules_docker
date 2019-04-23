@@ -8,28 +8,6 @@ buildifier:
   # TODO (suvanjan): Re-enable once issues are fixed.
   warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,positional-args,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
 platforms:
-  ubuntu1404:
-    test_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//tests/container/..."
-    - "-//tests/docker/..."
-    - "-//:structure_test_at_workspace_root"
-    # Disabled tests that do not run in BuildKite CI.
-    - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
-    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
-    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
-    - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
-    - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
-    - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
-    # Disable targets that are part of an embedded bazel project as buildkite
-    # only recognizes a single top level WORKSPACE file.
-    - "-//testing/examples/..."
-    test_flags:
-    - "--action_env=PATH"
-    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
-    - "--incompatible_disallow_legacy_javainfo=false"
   ubuntu1604:
     test_targets:
     # We are running the skipped targets remotely only.
