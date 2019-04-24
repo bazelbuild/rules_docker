@@ -2,5 +2,5 @@
   "extends": [
     "config:base"
   ],
-  "schedule": "before 7am"
+  "schedule": "at 7am on Monday"
 }
