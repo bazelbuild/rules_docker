@@ -97,6 +97,8 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary_name)
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
+    restricted_to = kwargs.get("restricted_to", None)
+    compatible_with = kwargs.get("compatible_with", None)
     app_layer(
         name = name,
         base = base,
@@ -112,4 +114,6 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         # workspace directory to ensure the symlinks are valid. See
         # https://github.com/bazelbuild/rules_docker/issues/161 for details.
         create_empty_workspace_dir = True,
+        restricted_to = restricted_to,
+        compatible_with = compatible_with,
     )
