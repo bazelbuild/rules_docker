@@ -2074,6 +2074,7 @@ creates a `container_import` target. The created target can be referenced as
 
 ## Adopters
 Here's a (non-exhaustive) list of companies that use `rules_docker` in production. Don't see yours? [You can add it in a PR!](https://github.com/bazelbuild/rules_docker/edit/master/README.md)
+  * [Aura Devices](https://auradevices.io/)
   * [Etsy](https://www.etsy.com)
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
