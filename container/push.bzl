@@ -99,10 +99,7 @@ def _impl(ctx):
     # configure stamping), we enable stamping.
     stamp = "{" in tag or "{" in registry or "{" in repository
     stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
-    pusher_args += [
-        "--stamp-info-file=%s" % _get_runfile_path(ctx, f)
-        for f in stamp_inputs
-    ]
+    pusher_args += [" ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])]
     pusher_args += ["--name={registry}/{repository}:{tag}".format(
         registry = registry,
         repository = repository,
