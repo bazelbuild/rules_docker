@@ -23,8 +23,8 @@ load(
 )
 
 def _impl(ctx):
-    if len([x for x in [ctx.attr.image, ctx.file.image_tar] if x]) != 1:
-        fail("Exactly one of 'image', 'image_tar' must be specified")
+    if len([x for x in [ctx.attr.image, ctx.file.image_tar, ctx.file.image_config] if x]) != 1:
+        fail("Exactly one of 'image', 'image_tar', 'image_config' must be specified")
 
     args = ["test", "--driver", ctx.attr.driver]
 
@@ -34,6 +34,12 @@ def _impl(ctx):
         args += ["--image", ctx.file.image_tar.short_path]
         runfiles = ctx.runfiles(
             files = [ctx.executable._structure_test, ctx.file.image_tar] + ctx.files.configs,
+        )
+    elif ctx.file.image_config:
+        load_statement = ""
+        args += ["--metadata", ctx.file.image_config.short_path, "--force", True]
+        runfiles = ctx.runfiles(
+            files = [ctx.executable._structure_test, ctx.file.image_config] + ctx.files.configs,
         )
     else:
         load_statement = "%s --norun" % ctx.executable.image.short_path
@@ -76,6 +82,7 @@ _container_test = rule(
             values = [
                 "docker",
                 "tar",
+                "host",
             ],
         ),
         "image": attr.label(
@@ -86,6 +93,11 @@ _container_test = rule(
         "image_tar": attr.label(
             doc = "When using the tar driver, label of the container image tarball",
             allow_single_file = [".tar"],
+        ),
+        "image_config": attr.label(
+            doc = "When using the host driver, label of the container metadata file",
+            allow_files = [".yml", ".json"],
+            single_file = True,
         ),
         "loaded_name": attr.string(
             doc = "When using the docker driver, the name:tag of the image when loaded into the docker daemon",
@@ -127,10 +139,13 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
 
     image_loader = None
     image_tar = None
+    image_config = None
     loaded_name = None
 
     if driver == "tar":
         image_tar = image + ".tar"
+    elif driver == "host":
+        image_config = image + ".json"
     else:
         # Give the image a predictable name when loaded
         image_loader = "%s.image" % name
@@ -153,6 +168,7 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
         loaded_name = loaded_name,
         image = image_loader,
         image_tar = image_tar,
+        image_config = image_config,
         configs = configs,
         verbose = verbose,
         driver = driver,
