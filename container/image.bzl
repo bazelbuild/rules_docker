@@ -60,6 +60,8 @@ load(
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
+    _get_layer_deps_runfiles = "get_deps_runfiles",
+    _layer_deps = "deps",
 )
 load(
     "//skylib:filetype.bzl",
@@ -426,7 +428,7 @@ def _impl(
     _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 
     runfiles = ctx.runfiles(
-        files = unzipped_layers + diff_ids + [config_file, config_digest] +
+        files = unzipped_layers + diff_ids + [config_file, config_digest] + _get_layer_deps_runfiles(ctx) +
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
@@ -495,7 +497,7 @@ _attrs = dicts.add(_layer.attrs, {
         cfg = "host",
         executable = True,
     ),
-}, _hash_tools, _layer_tools, _zip_tools)
+}, _hash_tools, _layer_tools, _layer_deps, _zip_tools)
 
 _outputs = dict(_layer.outputs)
 

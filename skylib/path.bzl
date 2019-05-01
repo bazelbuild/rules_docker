@@ -87,7 +87,13 @@ def strip_prefix(path, prefix):
 
 def runfile(ctx, f):
     """Return the runfiles relative path of f."""
-    if ctx.workspace_name:
-        return ctx.workspace_name + "/" + f.short_path
-    else:
+    if f.short_path.startswith("../"):
+        return f.short_path[len("../"):]
+    if not ctx.workspace_name:
         return f.short_path
+    if f.short_path.startswith(ctx.workspace_name):
+        return f.short_path
+    return ctx.workspace_name + "/" + f.short_path
+
+def rlocation(ctx, f):
+    return "$(rlocation {})".format(runfile(ctx, f))

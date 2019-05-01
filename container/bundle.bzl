@@ -21,6 +21,8 @@ load(
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
+    _get_layer_deps_runfiles = "get_deps_runfiles",
+    _layer_deps = "deps",
 )
 load(
     "//skylib:label.bzl",
@@ -79,7 +81,7 @@ def _container_bundle_impl(ctx):
         DefaultInfo(
             executable = ctx.outputs.executable,
             files = depset(),
-            runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
+            runfiles = ctx.runfiles(files = (stamp_files + runfiles + _get_layer_deps_runfiles(ctx))),
         ),
     ]
 
@@ -93,7 +95,7 @@ container_bundle_ = rule(
             default = False,
             mandatory = False,
         ),
-    }, _layer_tools),
+    }, _layer_tools, _layer_deps),
     executable = True,
     outputs = {
         "out": "%{name}.tar",

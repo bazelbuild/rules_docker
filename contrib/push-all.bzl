@@ -20,11 +20,8 @@ the embedded image references.
 load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
     "//skylib:path.bzl",
-    "runfile",
+    _rlocation = "rlocation",
 )
-
-def _get_runfile_path(ctx, f):
-    return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
     """Core implementation of container_push."""
@@ -35,7 +32,7 @@ def _impl(ctx):
     if stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
 
-    stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
+    stamp_arg = " ".join(["--stamp-info-file=%s" % _rlocation(ctx, f) for f in stamp_inputs])
 
     scripts = []
     runfiles = []
@@ -50,14 +47,14 @@ def _impl(ctx):
                   "docker_build, consider dropping the '.tar' extension. " +
                   "If the image is checked in, consider using " +
                   "docker_import instead.")
-            legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
+            legacy_base_arg = "--tarball=%s" % _rlocation(ctx, image["legacy"])
             runfiles += [image["legacy"]]
 
         blobsums = image.get("blobsum", [])
-        digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
+        digest_arg = " ".join(["--digest=%s" % _rlocation(ctx, f) for f in blobsums])
         blobs = image.get("zipped_layer", [])
-        layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
-        config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
+        layer_arg = " ".join(["--layer=%s" % _rlocation(ctx, f) for f in blobs])
+        config_arg = "--config=%s" % _rlocation(ctx, image["config"])
 
         runfiles += [image["config"]] + blobsums + blobs
 
@@ -74,7 +71,7 @@ def _impl(ctx):
                     digest_arg,
                     layer_arg,
                 ),
-                "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
+                "%{container_pusher}": _rlocation(ctx, ctx.executable._pusher),
             },
             output = out,
             is_executable = True,
@@ -87,7 +84,7 @@ def _impl(ctx):
         template = ctx.file._all_tpl,
         substitutions = {
             "%{push_statements}": "\n".join([
-                "async \"%s\"" % _get_runfile_path(ctx, command)
+                "async \"%s\"" % _rlocation(ctx, command)
                 for command in scripts
             ]),
         },

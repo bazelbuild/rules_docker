@@ -20,7 +20,7 @@ load(
 )
 load(
     "//skylib:path.bzl",
-    _get_runfile_path = "runfile",
+    _rlocation = "rlocation",
 )
 
 def _extract_layers(ctx, name, artifact):
@@ -176,7 +176,7 @@ def incremental_load(
         # First load the legacy base image, if it exists.
         if image.get("legacy"):
             load_statements += [
-                "load_legacy '%s'" % _get_runfile_path(ctx, image["legacy"]),
+                "load_legacy \"%s\"" % _rlocation(ctx, image["legacy"]),
             ]
 
         pairs = zip(image["diff_id"], image["unzipped_layer"])
@@ -184,12 +184,12 @@ def incremental_load(
         # Import the config and the subset of layers not present
         # in the daemon.
         load_statements += [
-            "import_config '%s' %s" % (
-                _get_runfile_path(ctx, image["config"]),
+            "import_config \"%s\" %s" % (
+                _rlocation(ctx, image["config"]),
                 " ".join([
-                    "'%s' '%s'" % (
-                        _get_runfile_path(ctx, diff_id),
-                        _get_runfile_path(ctx, unzipped_layer),
+                    "\"%s\" \"%s\"" % (
+                        _rlocation(ctx, diff_id),
+                        _rlocation(ctx, unzipped_layer),
                     )
                     for (diff_id, unzipped_layer) in pairs
                 ]),
@@ -199,12 +199,12 @@ def incremental_load(
         # Now tag the imported config with the specified tag.
         tag_reference = tag if not stamp else tag.replace("{", "${")
         tag_statements += [
-            "tag_layer \"%s\" '%s'" % (
+            "tag_layer \"%s\" \"%s\"" % (
                 # Turn stamp variable references into bash variables.
-                # It is notable that the only legal use of '{' in a
-                # tag would be for stamp variables, '$' is not allowed.
+                # It is notable that the only legal use of \"{\" in a
+                # tag would be for stamp variables, \"$\" is not allowed.
                 tag_reference,
-                _get_runfile_path(ctx, image["config_digest"]),
+                _rlocation(ctx, image["config_digest"]),
             ),
         ]
         if run:
@@ -223,7 +223,7 @@ def incremental_load(
             # variables, and turn references to them into bash variable
             # references.
             "%{stamp_statements}": "\n".join([
-                "read_variables %s" % _get_runfile_path(ctx, f)
+                "read_variables %s" % _rlocation(ctx, f)
                 for f in stamp_files
             ]),
             "%{tag_statements}": "\n".join(tag_statements),
@@ -250,3 +250,13 @@ tools = {
         allow_files = True,
     ),
 }
+
+deps = {
+    "_bash_runfiles": attr.label(
+        default = Label("@bazel_tools//tools/bash/runfiles"),
+        allow_files = True,
+    ),
+}
+
+def get_deps_runfiles(ctx):
+    return ctx.files._bash_runfiles

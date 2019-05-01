@@ -13,24 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eu
-function guess_runfiles() {
-    if [ -d ${BASH_SOURCE[0]}.runfiles ]; then
-        # Runfiles are adjacent to the current script.
-        echo "$( cd ${BASH_SOURCE[0]}.runfiles && pwd )"
-    else
-        # The current script is within some other script's runfiles.
-        mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        echo $mydir | sed -e 's|\(.*\.runfiles\)/.*|\1|'
-    fi
-}
-
-RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
+# --- begin runfiles.bash initialization ---
+# Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
+set -euo pipefail
+if [[ ! -d "${RUNFILES_DIR:-/dev/null}" && ! -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
+  if [[ -f "$0.runfiles_manifest" ]]; then
+    export RUNFILES_MANIFEST_FILE="$0.runfiles_manifest"
+  elif [[ -f "$0.runfiles/MANIFEST" ]]; then
+    export RUNFILES_MANIFEST_FILE="$0.runfiles/MANIFEST"
+  elif [[ -f "$0.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
+    export RUNFILES_DIR="$0.runfiles"
+  fi
+fi
+if [[ -f "${RUNFILES_DIR:-/dev/null}/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
+  source "${RUNFILES_DIR}/bazel_tools/tools/bash/runfiles/runfiles.bash"
+elif [[ -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
+  source "$(grep -m1 "^bazel_tools/tools/bash/runfiles/runfiles.bash " \
+            "$RUNFILES_MANIFEST_FILE" | cut -d ' ' -f 2-)"
+else
+  echo >&2 "ERROR: cannot find @bazel_tools//tools/bash/runfiles:runfiles.bash"
+  exit 1
+fi
+# --- end runfiles.bash initialization ---
 
 PIDS=()
 function async() {
     # Launch the command asynchronously and track its process id.
-    PYTHON_RUNFILES=${RUNFILES} "$@" &
+    PYTHON_RUNFILES=${RUNFILES_DIR} "$@" &
     PIDS+=($!)
 }
 

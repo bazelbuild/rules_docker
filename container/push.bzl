@@ -23,14 +23,13 @@ load(
     "//container:layer_tools.bzl",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
+    _get_layer_deps_runfiles = "get_deps_runfiles",
+    _layer_deps = "deps",
 )
 load(
     "//skylib:path.bzl",
-    "runfile",
+    _rlocation = "rlocation",
 )
-
-def _get_runfile_path(ctx, f):
-    return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
     """Core implementation of container_push."""
@@ -52,22 +51,22 @@ def _impl(ctx):
               "docker_build, consider dropping the '.tar' extension. " +
               "If the image is checked in, consider using " +
               "docker_import instead.")
-        pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
+        pusher_args += ["--tarball=%s" % _rlocation(ctx, tarball)]
         digester_args.add("--tarball", tarball)
         image_files += [tarball]
     if config:
-        pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
+        pusher_args += ["--config=%s" % _rlocation(ctx, config)]
         digester_args.add("--config", config)
         image_files += [config]
     if manifest:
-        pusher_args += ["--manifest=%s" % _get_runfile_path(ctx, manifest)]
+        pusher_args += ["--manifest=%s" % _rlocation(ctx, manifest)]
         digester_args.add("--manifest", manifest)
         image_files += [manifest]
     for f in blobsums:
-        pusher_args += ["--digest=%s" % _get_runfile_path(ctx, f)]
+        pusher_args += ["--digest=%s" % _rlocation(ctx, f)]
         digester_args.add("--digest", f)
     for f in blobs:
-        pusher_args += ["--layer=%s" % _get_runfile_path(ctx, f)]
+        pusher_args += ["--layer=%s" % _rlocation(ctx, f)]
         digester_args.add("--layer", f)
     if ctx.attr.format == "OCI":
         pusher_args += ["--oci"]
@@ -90,7 +89,7 @@ def _impl(ctx):
     tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
     runfiles_tag_file = []
     if ctx.file.tag_file:
-        tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
+        tag = "$(cat {})".format(_rlocation(ctx, ctx.file.tag_file))
         runfiles_tag_file = [ctx.file.tag_file]
     if ctx.attr.stamp:
         print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
@@ -99,7 +98,7 @@ def _impl(ctx):
     # configure stamping), we enable stamping.
     stamp = "{" in tag or "{" in registry or "{" in repository
     stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
-    pusher_args += [" ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])]
+    pusher_args += [" ".join(["--stamp-info-file=%s" % _rlocation(ctx, f) for f in stamp_inputs])]
     pusher_args += ["--name={registry}/{repository}:{tag}".format(
         registry = registry,
         repository = repository,
@@ -116,12 +115,12 @@ def _impl(ctx):
         template = ctx.file._tag_tpl,
         substitutions = {
             "%{args}": " ".join(pusher_args),
-            "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
+            "%{container_pusher}": _rlocation(ctx, ctx.executable._pusher),
         },
         output = ctx.outputs.executable,
         is_executable = True,
     )
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs + runfiles_tag_file)
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs + runfiles_tag_file + _get_layer_deps_runfiles(ctx))
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
@@ -190,7 +189,7 @@ container_push = rule(
             default = Label("//container:push-tag.sh.tpl"),
             allow_single_file = True,
         ),
-    }, _layer_tools),
+    }, _layer_tools, _layer_deps),
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
