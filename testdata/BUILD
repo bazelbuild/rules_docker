@@ -470,6 +470,7 @@ container_bundle(
 py_binary(
     name = "gen_deb",
     srcs = ["gen_deb.py"],
+    python_version = "PY2",
 )
 
 generate_deb(
