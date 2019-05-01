@@ -30,6 +30,7 @@ py_binary(
     name = "extract_config",
     srcs = ["extract_config.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         "@containerregistry",
@@ -48,6 +49,7 @@ py_binary(
     name = "join_layers",
     srcs = ["join_layers.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
@@ -60,6 +62,7 @@ py_binary(
     name = "create_image_config",
     srcs = ["create_image_config.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
@@ -73,6 +76,7 @@ py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
     legacy_create_init = True,
+    python_version = "PY2",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [":build_tar_lib"],
@@ -167,6 +171,7 @@ py_test(
     size = "medium",
     srcs = ["image_test.py"],
     data = TEST_DATA,
+    python_version = "PY2",
     deps = ["@containerregistry"],
 )
 

@@ -29,6 +29,7 @@ py_binary(
     name = "extract_image_id",
     srcs = [":extract_image_id.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     deps = [":extract_image_id_lib"],
 )
 
@@ -41,6 +42,7 @@ py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
     legacy_create_init = False,
+    python_version = "PY2",
     deps = [":extract_image_id_lib"],
 )
 
@@ -56,5 +58,6 @@ alias(
 py_binary(
     name = "idd",
     srcs = ["idd.py"],
+    python_version = "PY2",
     legacy_create_init = False,
 )
