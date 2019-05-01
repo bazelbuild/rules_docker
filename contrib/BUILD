@@ -58,6 +58,6 @@ alias(
 py_binary(
     name = "idd",
     srcs = ["idd.py"],
-    python_version = "PY2",
     legacy_create_init = False,
+    python_version = "PY2",
 )
