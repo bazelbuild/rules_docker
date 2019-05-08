@@ -290,9 +290,9 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "816ee04419c49f5abe75fcaf1a192a0eec339f9997f7a3abed976b2c7ef412ad",
-    strip_prefix = "bazel-toolchains-0786fae511bbfe60e411eea48f589e472943e49b",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/0786fae511bbfe60e411eea48f589e472943e49b.tar.gz"],
+    sha256 = "d63355e9d35b34232fa6be517ee1a2df80c1e01b111507f9f3dca124c316be8b",
+    strip_prefix = "bazel-toolchains-4b3f507f3104a69299c1fb8d242e4269fa50f5c5",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/4b3f507f3104a69299c1fb8d242e4269fa50f5c5.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")

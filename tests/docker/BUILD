@@ -66,6 +66,13 @@ container_test(
     image = ":set_cmd",
 )
 
+container_test(
+    name = "set_cmd_test_host",
+    configs = ["//tests/docker/configs:set_cmd.yaml"],
+    driver = "host",
+    image = ":set_cmd",
+)
+
 container_image(
     name = "set_entrypoint",
     base = "@distroless_fixed_id//image",
