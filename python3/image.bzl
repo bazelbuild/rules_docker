@@ -40,6 +40,9 @@ def repositories():
     """
     _repositories()
 
+    # Register the default py_toolchain for containerized execution
+    native.register_toolchains("@io_bazel_rules_docker//toolchains/python:container_py_toolchain")
+
     excludes = native.existing_rules().keys()
     if "py3_image_base" not in excludes:
         container_pull(
@@ -82,7 +85,9 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
 
-    native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
+    # TODO(ngiraldo): Add exec_compatible_with=["@io_bazel_rules_docker//toolchains/pythin:run_in_container"]
+    # once py_binary targets support it.
+    native.py_binary(name = binary_name, python_version = "PY3", deps = deps + layers, **kwargs)
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.

@@ -18,4 +18,3 @@ test --incompatible_use_python_toolchains
 test --host_force_python=PY2
 run --incompatible_use_python_toolchains
 run --host_force_python=PY2
-
