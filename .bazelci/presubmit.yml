@@ -49,8 +49,6 @@ platforms:
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
   macos:
-    shell_commands:
-    - echo $PATH && echo $(which which) && echo $(which python) && echo $(which python2) && echo $(which python3)
     build_targets:
     - "//tests/docker:test_digest_output1"
     build_flags:
