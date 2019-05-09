@@ -282,6 +282,9 @@ load("//contrib:dockerfile_build.bzl", "dockerfile_image")
 
 dockerfile_image(
     name = "basic_dockerfile",
+    build_args = {
+        "ALPINE_version": "3.9",
+    },
     dockerfile = "//contrib:Dockerfile",
 )
 
