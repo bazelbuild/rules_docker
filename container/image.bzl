@@ -257,7 +257,6 @@ def _impl(
         operating_system = None,
         output_executable = None,
         output_tarball = None,
-        output_config = None,
         output_digest = None,
         output_layer = None,
         workdir = None,
@@ -285,7 +284,6 @@ def _impl(
     operating_system: Operating system to target (e.g. linux, windows)
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
-    output_config: File, overrides ctx.outputs.config
     output_digest: File, overrides ctx.outputs.digest
     output_layer: File, overrides ctx.outputs.layer
     workdir: str, overrides ctx.attr.workdir
@@ -300,7 +298,6 @@ def _impl(
     output_executable = output_executable or ctx.outputs.executable
     output_tarball = output_tarball or ctx.outputs.out
     output_digest = output_digest or ctx.outputs.digest
-    output_config = output_config or ctx.outputs.config
     output_layer = output_layer or ctx.outputs.layer
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
@@ -428,14 +425,6 @@ def _impl(
     _assemble_image(ctx, images, output_tarball)
     _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 
-    # Symlink config file for usage in structure tests
-    ln_path = config_file.path.split("/")[-1]
-    ctx.actions.run_shell(
-        outputs = [output_config],
-        inputs = [config_file],
-        command = "ln -s %s %s" % (ln_path, output_config.path),
-    )
-
     runfiles = ctx.runfiles(
         files = unzipped_layers + diff_ids + [config_file, config_digest] +
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
@@ -513,8 +502,6 @@ _outputs = dict(_layer.outputs)
 _outputs["out"] = "%{name}.tar"
 
 _outputs["digest"] = "%{name}.digest"
-
-_outputs["config"] = "%{name}.json"
 
 image = struct(
     attrs = _attrs,
