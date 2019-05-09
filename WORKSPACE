@@ -285,6 +285,9 @@ dockerfile_image(
     dockerfile = "//contrib:Dockerfile",
 )
 
+# Register the default py_toolchain for containerized execution
+register_toolchains("//toolchains/python:container_py_toolchain")
+
 http_archive(
     name = "bazel_toolchains",
     sha256 = "d63355e9d35b34232fa6be517ee1a2df80c1e01b111507f9f3dca124c316be8b",
