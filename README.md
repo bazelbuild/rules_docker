@@ -1119,13 +1119,13 @@ This can then be referenced in `BUILD` files as `@gitlab//image`.
 
 ## Python tools
 
-Starting with Bazel 0.25.0 its possible to configure python toolchains
+Starting with Bazel 0.25.0 it's possible to configure python toolchains
 for `rules_docker`.
 
 To use these features you need to enable the flags in the `.bazelrc`
 file at the root of this project.
 
-Use of these features requires a python toolchain to be registered.
+Use of these features require a python toolchain to be registered.
 `//py_images/image.bzl:deps` and `//py3_images/image.bzl:deps` register a
 default python toolchain (`//toolchains/python:container_py_toolchain`)
 that defines the path to python tools inside the default container used
