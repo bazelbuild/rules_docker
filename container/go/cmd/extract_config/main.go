@@ -1,3 +1,6 @@
+// This binary implements the ability to load a docker image tarball and
+// extract its config & manifest json to paths specified via command line
+// arguments.
 package main
 
 import (
