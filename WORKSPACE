@@ -282,8 +282,14 @@ load("//contrib:dockerfile_build.bzl", "dockerfile_image")
 
 dockerfile_image(
     name = "basic_dockerfile",
+    build_args = {
+        "ALPINE_version": "3.9",
+    },
     dockerfile = "//contrib:Dockerfile",
 )
+
+# Register the default py_toolchain for containerized execution
+register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",

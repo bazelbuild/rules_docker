@@ -54,24 +54,30 @@ def _impl(repository_ctx):
     dockerfile_path = repository_ctx.path(repository_ctx.attr.dockerfile)
     img_name = repository_ctx.name + ":dockerfile_image"
 
+    build_args = []
+    if repository_ctx.attr.build_args:
+        for pair in repository_ctx.attr.build_args.items():
+            build_args.extend(["--build-arg", "%s=%s" % (pair[0], pair[1])])
+
     # The docker bulid command needs to run using the supplied Dockerfile
     # because it may refer to relative paths in its ADD, COPY and WORKDIR
     # instructions.
-    build_args = [
-        docker_path,
-        "build",
+    command = [docker_path, "build"]
+    command.extend(build_args)
+    command.extend([
         "--no-cache",
         "-f",
         dockerfile_path,
         "-t",
         img_name,
         dockerfile_path.dirname,
-    ]
-    build_result = repository_ctx.execute(build_args)
+    ])
+
+    build_result = repository_ctx.execute(command)
     if build_result.return_code:
         fail("docker build command failed: {} ({})".format(
             build_result.stderr,
-            " ".join(build_args),
+            " ".join(command),
         ))
 
     image_tar = "dockerfile_image.tar"
@@ -96,6 +102,10 @@ exports_files(["{}"])
 
 dockerfile_image = repository_rule(
     attrs = {
+        "build_args": attr.string_dict(
+            doc = "A map of args to pass to the --build-arg option in the " +
+                  "`docker build` command.",
+        ),
         "docker_path": attr.string(
             doc = "The full path to the docker binary. If not specified, it " +
                   "will be searched for in the path. If not available, " +

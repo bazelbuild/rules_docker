@@ -397,6 +397,10 @@ If you need to modify somehow the container produced by
 <a href=#overview-1>Language Rules Overview</a> about how to do this
 and see <a href=#go_image-custom-base>go_image (custom base)</a> example below.
 
+If you are using `py_image` with a custom base that has python tools installed
+in a location different to the default base, please see
+<a href=#python-tools>Python tools</a>.
+
 ### py_image (fine layering)
 
 For Python and Java's `lang_image` rules, you can factor
@@ -473,6 +477,10 @@ If you need to modify somehow the container produced by
 `py3_image` (e.g., `env`, `symlink`), see note above in
 <a href=#overview-1>Language Rules Overview</a> about how to do this
 and see <a href=#go_image-custom-base>go_image (custom base)</a> example below.
+
+If you are using `py3_image` with a custom base that has python tools installed
+in a location different to the default base, please see
+<a href=#python-tools>Python tools</a>.
 
 ### nodejs_image
 
@@ -1108,6 +1116,44 @@ authenticated_container_pull(
 This can then be referenced in `BUILD` files as `@gitlab//image`.
 
 **NOTE:** This will only work on systems with Python >2.7.6
+
+## Python tools
+
+Starting with Bazel 0.25.0 it's possible to configure python toolchains
+for `rules_docker`.
+
+To use these features you need to enable the flags in the `.bazelrc`
+file at the root of this project.
+
+Use of these features require a python toolchain to be registered.
+`//py_images/image.bzl:deps` and `//py3_images/image.bzl:deps` register a
+default python toolchain (`//toolchains/python:container_py_toolchain`)
+that defines the path to python tools inside the default container used
+for these rules.
+
+### Known issues
+
+If you are using a custom base for `py_image` or `py3_image` builds that has
+python tools installed in a different location to those defined in
+`//toolchains/python:container_py_toolchain`, you will need to create a
+toolchain that points to these paths and register it _before_ the call to
+`py*_images/image.bzl:deps` in your `WORKSPACE`.
+
+Until Bazel 0.26.0 is relesed, registration of the default python toolchain
+will result in all python targets using that same toolchain, which might
+result in errors if any of those targets need to run locally.
+Once Bazel 0.26.0 is out, this default toolchain will only be compatible with
+python targets that run inside a container and will not interfere with
+other python targets.
+
+Use of python toolchain features, currently, only supports picking one
+version of python for execution of host tools. `rules_docker` heavily depends
+on execution of python host tools that are only compatible with python 2.
+Flags in the recommended `.bazelrc` file force all host tools to use python 2.
+If your project requires using host tools that are only compatible with
+python 3 you will not be able to use these features at the moment. We
+expect this issue to be resolved before use of python toolchain features
+becomes the default.
 
 ## Updating the `distroless` base images.
 
@@ -2079,4 +2125,5 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
   * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
+  * [Tink](https://www.tink.com)
   * [Wix](https://www.wix.com)

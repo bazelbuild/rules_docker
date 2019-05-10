@@ -24,9 +24,6 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
-    # Disable targets that are part of an embedded bazel project as buildkite
-    # only recognizes a single top level WORKSPACE file.
-    - "-//testing/examples/..."
     test_flags:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
@@ -47,9 +44,6 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
-    # Disable targets that are part of an embedded bazel project as buildkite
-    # only recognizes a single top level WORKSPACE file.
-    - "-//testing/examples/..."
     test_flags:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
@@ -71,12 +65,6 @@ platforms:
     build_targets:
     - "--"
     - "..."
-    # Disabled as docker is not available
-    # TODO(alex1545): enable once docker is supported on buildkite
-    - "-//tests/docker:basic_dockerfile_image"
-    # Disable targets that are part of an embedded bazel project as buildkite
-    # only recognizes a single top level WORKSPACE file.
-    - "-//testing/examples/..."
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
@@ -98,12 +86,6 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
-    # Disabled as docker is not available
-    # TODO(alex1545): enable once docker is supported on buildkite
-    - "-//tests/docker:basic_dockerfile_image"
-    # Disable targets that are part of an embedded bazel project as buildkite
-    # only recognizes a single top level WORKSPACE file.
-    - "-//testing/examples/..."
     test_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
