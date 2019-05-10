@@ -216,6 +216,16 @@ go_rules_dependencies()
 
 go_register_toolchains()
 
+http_archive(
+    name = "bazel_gazelle",
+    sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
+    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
+)
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+
+gazelle_dependencies()
+
 # Have the go_image dependencies for testing.
 load(
     "//go:image.bzl",
@@ -313,4 +323,10 @@ rbe_autoconfig(
     env = clang_env(),
     registry = "gcr.io",
     repository = "asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud",
+)
+
+go_repository(
+    name = "com_github_google_go_containerregistry",
+    commit = "1c6c7f61e8a5402b606c3c6db169fdcd1b0712b7",
+    importpath = "github.com/google/go-containerregistry",
 )

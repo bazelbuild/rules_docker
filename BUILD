@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_gazelle//:def.bzl", "gazelle")
 load("//contrib:test.bzl", "container_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -19,6 +20,14 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
+
+gazelle(
+    name = "gazelle",
+    prefix = "github.com/bazelbuild/rules_docker",
+)
+# Make Gazelle ignore Go files in the tesdata directory used by test Go Image
+# targets.
+# gazelle:exclude testdata
 
 config_setting(
     name = "fastbuild",
