@@ -178,9 +178,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "72fc4357b29ec93951d472ee22a4cc3f30e170234a4ec73ff678f43f7e276bd4",
-    strip_prefix = "rules_scala-14d9742496859faaf860b1adfc8126f3ed077921",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/14d9742496859faaf860b1adfc8126f3ed077921.tar.gz"],
+    sha256 = "47d04045d8e5bc51b4d0ee6f55745940f891b65ee1faf0ec7bb54c9794c5b661",
+    strip_prefix = "rules_scala-746145dc2088ee35f3d6371ea48573e916c23e28",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/746145dc2088ee35f3d6371ea48573e916c23e28.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -282,8 +282,14 @@ load("//contrib:dockerfile_build.bzl", "dockerfile_image")
 
 dockerfile_image(
     name = "basic_dockerfile",
+    build_args = {
+        "ALPINE_version": "3.9",
+    },
     dockerfile = "//contrib:Dockerfile",
 )
+
+# Register the default py_toolchain for containerized execution
+register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
