@@ -205,6 +205,13 @@ py_library(
             name = "gzip",
         )
 
+    if "bazel_gazelle" not in excludes:
+        http_archive(
+            name = "bazel_gazelle",
+            sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
+            urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
+        )
+
     native.register_toolchains(
         # Register the default docker toolchain that expects the 'docker'
         # executable to be in the PATH
