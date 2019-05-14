@@ -37,7 +37,7 @@ def _impl(ctx):
         )
     elif ctx.file.image_config:
         load_statement = ""
-        args += ["--metadata", ctx.file.image_config.short_path, "--force", True]
+        args += ["--metadata", ctx.file.image_config.short_path, "--force", "True"]
         runfiles = ctx.runfiles(
             files = [ctx.executable._structure_test, ctx.file.image_config] + ctx.files.configs,
         )
