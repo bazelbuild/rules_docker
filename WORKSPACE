@@ -303,9 +303,9 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "d63355e9d35b34232fa6be517ee1a2df80c1e01b111507f9f3dca124c316be8b",
-    strip_prefix = "bazel-toolchains-4b3f507f3104a69299c1fb8d242e4269fa50f5c5",
-    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/4b3f507f3104a69299c1fb8d242e4269fa50f5c5.tar.gz"],
+    sha256 = "c5cf0580bbbf919c5386167e5094685b913746cbc460a380a7d5ed7b2ae6ab14",
+    strip_prefix = "bazel-toolchains-8113732649079f5866103e88a72d27dead9fc9f2",
+    urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/8113732649079f5866103e88a72d27dead9fc9f2.tar.gz"],
 )
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
