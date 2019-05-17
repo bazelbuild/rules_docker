@@ -79,6 +79,11 @@ def repositories():
             name = "containerregistry",
             sha256 = "a8cdf2452323e0fefa4edb01c08b2ec438c9fa3192bc9f408b89287598c12abc",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
+            # containerregistry assumes a repository named @httplib2, but
+            # https://github.com/bazelbuild/bazel/issues/3998 means that this
+            # causes problems with the import path. Instead, we use
+            # repo_mapping and a fully-qualified repository name.
+            repo_mapping = {"@httplib2": "@com_github_httplib2_httplib2"},
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
         )
@@ -86,19 +91,29 @@ def repositories():
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
     # once transitive workspace instantiation lands.
 
-    if "httplib2" not in excludes:
+    if "com_github_httplib2_httplib2" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         http_archive(
-            name = "httplib2",
+            name = "com_github_httplib2_httplib2",
             build_file_content = """
 py_library(
    name = "httplib2",
-   srcs = glob(["**/*.py"]),
-   data = ["cacerts.txt"],
+   srcs = select({
+      "@bazel_tools//tools/python:PY2": glob(["python2/httplib2/**/*.py"]),
+      "@bazel_tools//tools/python:PY3": glob(["python3/httplib2/**/*.py"]),
+   }),
+   data = select({
+      "@bazel_tools//tools/python:PY2": ["python2/httplib2/cacerts.txt"],
+      "@bazel_tools//tools/python:PY3": ["python3/httplib2/cacerts.txt"],
+   }),
+   imports = select({
+      "@bazel_tools//tools/python:PY2": ["python2"],
+      "@bazel_tools//tools/python:PY3": ["python3"],
+   }),
    visibility = ["//visibility:public"]
 )""",
             sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
-            strip_prefix = "httplib2-0.12.1/python2/httplib2/",
+            strip_prefix = "httplib2-0.12.1",
             type = "tar.gz",
             urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
         )
@@ -138,7 +153,7 @@ py_library(
    srcs = glob(["**/*.py"]),
    visibility = ["//visibility:public"],
    deps = [
-     "@httplib2//:httplib2",
+     "@com_github_httplib2_httplib2//:httplib2",
      "@six//:six",
    ]
 )""",
@@ -156,7 +171,10 @@ py_library(
             build_file_content = """
 py_library(
    name = "concurrent",
-   srcs = glob(["**/*.py"]),
+   srcs = select({
+      "@bazel_tools//tools/python:PY2": glob(["**/*.py"]),
+      "@bazel_tools//tools/python:PY3": [],
+   }),
    visibility = ["//visibility:public"]
 )""",
             sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
