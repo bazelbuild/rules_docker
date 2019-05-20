@@ -194,9 +194,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "6b8d4448d1f06e93e1178bd6d92a0455b0c9c72c7b3ea35e3b6c86a2a4b27522",
-    strip_prefix = "rules_groovy-c338360fbda063f9313d122a83c28fd3a4e9bad6",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/c338360fbda063f9313d122a83c28fd3a4e9bad6.tar.gz"],
+    sha256 = "f5eceb2fb2339747c0d9e5a869d4e03f420e533de1562823109c2e93ea651638",
+    strip_prefix = "rules_groovy-1c39931457a04665fccecce78f953691b52187fc",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/1c39931457a04665fccecce78f953691b52187fc.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
