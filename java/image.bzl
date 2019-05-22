@@ -188,7 +188,7 @@ def _jar_app_layer_impl(ctx):
 
     # args and jvm flags of the form $(location :some_target) are expanded to the path of the underlying file
     args = [ctx.expand_location(arg, ctx.attr.data) for arg in ctx.attr.args]
-    jvm_flags = [ctx.expand_make_variables(ctx.expand_location(flag, ctx.attr.data), {}) for flag in ctx.attr.jvm_flags]
+    jvm_flags = [ctx.expand_make_variables("jvm_flags", ctx.expand_location(flag, ctx.attr.data), {}) for flag in ctx.attr.jvm_flags]
 
     entrypoint = [
         "/usr/bin/java",
