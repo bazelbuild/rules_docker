@@ -17,6 +17,10 @@ The signature of this rule is compatible with py_binary.
 """
 
 load(
+    "//container:container.bzl",
+    "container_pull",
+)
+load(
     "//lang:image.bzl",
     "app_layer",
     "filter_layer",
@@ -25,18 +29,20 @@ load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
-load(
-    "//container:container.bzl",
-    "container_pull",
-)
 
 # Load the resolved digests.
 load(":python.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the py_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
+
+    # Register the default py_toolchain for containerized execution
+    native.register_toolchains("@io_bazel_rules_docker//toolchains/python:container_py_toolchain")
 
     excludes = native.existing_rules().keys()
     if "py_image_base" not in excludes:
@@ -55,8 +61,8 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
     "@io_bazel_rules_docker//:debug": "@py_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@py_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@py_image_base//image",
     "//conditions:default": "@py_image_base//image",
 })
@@ -70,6 +76,9 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
     Args:
+        name: Name of the py_image target.
+        base: Base image to use in the py_image.
+        deps: Dependencies of the py_image target.
         layers: Augments "deps" with dependencies that should be put into
             their own layers.
         **kwargs: See py_binary.
@@ -81,7 +90,10 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
 
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
-    native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
+
+    # TODO(ngiraldo): Add exec_compatible_with=["@io_bazel_rules_docker//toolchains/pythin:run_in_container"]
+    # once py_binary targets support it.
+    native.py_binary(name = binary_name, python_version = "PY2", deps = deps + layers, **kwargs)
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
@@ -89,7 +101,6 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     for index, dep in enumerate(layers):
         base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
         base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary_name)
-
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
     app_layer(
@@ -101,4 +112,10 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
+        # The targets of the symlinks in the symlink layers are relative to the
+        # workspace directory under the app directory. Thus, create an empty
+        # workspace directory to ensure the symlinks are valid. See
+        # https://github.com/bazelbuild/rules_docker/issues/161 for details.
+        create_empty_workspace_dir = True,
     )

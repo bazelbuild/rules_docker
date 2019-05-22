@@ -24,7 +24,7 @@ load(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.34"
+CONTAINERREGISTRY_RELEASE = "v0.0.36"
 
 _local_tool_build_template = """
 sh_binary(
@@ -60,7 +60,7 @@ def repositories():
         http_file(
             name = "puller",
             executable = True,
-            sha256 = "2a3ccb6ef8f99ec0053b56380824a7c100ba00eb0e147d1bda748884113542f1",
+            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/puller.par")],
         )
@@ -69,7 +69,7 @@ def repositories():
         http_file(
             name = "importer",
             executable = True,
-            sha256 = "0eec1a4ffb26623dbb4075e5459fa0ede36548edf872d2691ebbcb3c4ccb8cf3",
+            sha256 = "4516a7bf62b052693001fd2b649080c4bb5228dcf698f31e77481fcb37b82ab4",
             urls = [("https://storage.googleapis.com/containerregistry-releases/" +
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
         )
@@ -77,7 +77,7 @@ def repositories():
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
-            sha256 = "8182728578f7d7178e7efcef8ce9074988a1a2667f20ecff5cf6234fba284dd3",
+            sha256 = "a8cdf2452323e0fefa4edb01c08b2ec438c9fa3192bc9f408b89287598c12abc",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
@@ -97,10 +97,10 @@ py_library(
    data = ["cacerts.txt"],
    visibility = ["//visibility:public"]
 )""",
-            sha256 = "d9f568c183d1230f271e9c60bd99f3f2b67637c3478c9068fea29f7cca3d911f",
-            strip_prefix = "httplib2-0.11.3/python2/httplib2/",
+            sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
+            strip_prefix = "httplib2-0.12.1/python2/httplib2/",
             type = "tar.gz",
-            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3"],
+            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
         )
 
     # Used by oauth2client
@@ -169,39 +169,47 @@ py_library(
     if "subpar" not in excludes:
         http_archive(
             name = "subpar",
-            sha256 = "cf3762b10426a1887d37f127b4c1390785ecb969254096eb714cc1db371f78d6",
-            strip_prefix = "subpar-a4f9b23bf01bcc7a52d458910af65a90ee991aff",
-            urls = ["https://github.com/google/subpar/archive/a4f9b23bf01bcc7a52d458910af65a90ee991aff.tar.gz"],
+            sha256 = "34bb4dadd86bbdd3b5736952167e20a1a4c27ff739de11532c4ef77c7c6a68d9",
+            # Commit from 2019-03-07.
+            strip_prefix = "subpar-35bb9f0092f71ea56b742a520602da9b3638a24f",
+            urls = ["https://github.com/google/subpar/archive/35bb9f0092f71ea56b742a520602da9b3638a24f.tar.gz"],
         )
 
     if "structure_test_linux" not in excludes:
         http_file(
             name = "structure_test_linux",
             executable = True,
-            sha256 = "543577685b33f0483bd4df72534ac9f84c17c9315d8afdcc536cce3591bb8f7c",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-linux-amd64"],
+            sha256 = "cfdfedd77c04becff0ea16a4b8ebc3b57bf404c56e5408b30d4fbb35853db67c",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-linux-amd64"],
         )
 
     if "structure_test_darwin" not in excludes:
         http_file(
             name = "structure_test_darwin",
             executable = True,
-            sha256 = "c1bc8664d411c6df23c002b41ab1b9a3d72ae930f194a997468bfae2f54ca751",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.4.0/container-structure-test-darwin-amd64"],
+            sha256 = "14e94f75112a8e1b08a2d10f2467d27db0b94232a276ddd1e1512593a7b7cf5a",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-darwin-amd64"],
         )
 
     # For bzl_library.
     if "bazel_skylib" not in excludes:
         http_archive(
             name = "bazel_skylib",
-            sha256 = "eb5c57e4c12e68c0c20bc774bfbc60a568e800d025557bc4ea022c6479acc867",
-            strip_prefix = "bazel-skylib-0.6.0",
-            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.6.0.tar.gz"],
+            sha256 = "2ea8a5ed2b448baf4a6855d3ce049c4c452a6470b1efd1504fdb7c1c134d220a",
+            strip_prefix = "bazel-skylib-0.8.0",
+            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.8.0.tar.gz"],
         )
 
     if "gzip" not in excludes:
         local_tool(
             name = "gzip",
+        )
+
+    if "bazel_gazelle" not in excludes:
+        http_archive(
+            name = "bazel_gazelle",
+            sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
+            urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
         )
 
     native.register_toolchains(

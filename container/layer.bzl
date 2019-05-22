@@ -15,24 +15,19 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "//skylib:filetype.bzl",
-    container_filetype = "container",
-    deb_filetype = "deb",
-    tar_filetype = "tar",
-)
-load(
     "@bazel_tools//tools/build_defs/hash:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
-load(
-    "//skylib:zip.bzl",
-    _gzip = "gzip",
-    _zip_tools = "tools",
-)
+load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
     "//container:layer_tools.bzl",
     _layer_tools = "tools",
+)
+load(
+    "//skylib:filetype.bzl",
+    deb_filetype = "deb",
+    tar_filetype = "tar",
 )
 load(
     "//skylib:path.bzl",
@@ -41,7 +36,11 @@ load(
     _canonicalize_path = "canonicalize",
     _join_path = "join",
 )
-load("//container:providers.bzl", "LayerInfo")
+load(
+    "//skylib:zip.bzl",
+    _gzip = "gzip",
+    _zip_tools = "tools",
+)
 
 def _magic_path(ctx, f, output_layer):
     # Right now the logic this uses is a bit crazy/buggy, so to support
@@ -77,7 +76,26 @@ def build_layer(
         debs = None,
         tars = None,
         operating_system = None):
-    """Build the current layer for appending it to the base layer"""
+    """Build the current layer for appending it to the base layer
+
+    Args:
+       ctx: The context
+       name: The name of the layer
+       output_layer: The output location for this layer
+       files: Files to include in the layer
+       file_map: Map of files to include in layer (source to dest inside layer)
+       empty_files: List of empty files in the layer
+       empty_dirs: List of empty dirs in the layer
+       directory: Directory in which to store the file inside the layer
+       symlinks: List of symlinks to include in the layer
+       debs: List of debian package tar files
+       tars: List of tar files
+       operating_system: The OS (e.g., 'linux', 'windows')
+
+    Returns:
+       the layer tar and its sha256 digest
+
+    """
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     layer = output_layer
     build_layer_exec = ctx.executable.build_layer
@@ -206,27 +224,27 @@ def _impl(
     )]
 
 _layer_attrs = dicts.add({
-    "data_path": attr.string(),
-    "directory": attr.string(default = "/"),
-    "files": attr.label_list(allow_files = True),
-    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
-    "tars": attr.label_list(allow_files = tar_filetype),
-    "debs": attr.label_list(allow_files = deb_filetype),
-    "symlinks": attr.string_dict(),
-    "env": attr.string_dict(),
-    # Implicit/Undocumented dependencies.
-    "empty_files": attr.string_list(),
-    "empty_dirs": attr.string_list(),
-    "operating_system": attr.string(
-        default = "linux",
-        mandatory = False,
-    ),
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
+    "data_path": attr.string(),
+    "debs": attr.label_list(allow_files = deb_filetype),
+    "directory": attr.string(default = "/"),
+    "empty_dirs": attr.string_list(),
+    # Implicit/Undocumented dependencies.
+    "empty_files": attr.string_list(),
+    "env": attr.string_dict(),
+    "files": attr.label_list(allow_files = True),
+    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
+    "operating_system": attr.string(
+        default = "linux",
+        mandatory = False,
+    ),
+    "symlinks": attr.string_dict(),
+    "tars": attr.label_list(allow_files = tar_filetype),
 }, _hash_tools, _layer_tools, _zip_tools)
 
 _layer_outputs = {

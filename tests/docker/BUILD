@@ -11,21 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
+load(
+    "@bazel_tools//tools/build_rules:test_rules.bzl",
+    "file_test",
+)
+load("//container:bundle.bzl", "container_bundle")
 load(
     "//container:container.bzl",
     "container_image",
     "container_import",
     "container_push",
 )
-load("//contrib:test.bzl", "container_test")
-load(
-    "@bazel_tools//tools/build_rules:test_rules.bzl",
-    "file_test",
-)
-load("//container:bundle.bzl", "container_bundle")
 load("//contrib:push-all.bzl", docker_push_all = "docker_push")
+load("//contrib:test.bzl", "container_test")
+load(":apple.bzl", "create_banana_directory")
+
+package(default_visibility = ["//visibility:public"])
 
 container_test(
     name = "structure_test",
@@ -61,6 +63,13 @@ container_image(
 container_test(
     name = "set_cmd_test",
     configs = ["//tests/docker/configs:set_cmd.yaml"],
+    image = ":set_cmd",
+)
+
+container_test(
+    name = "set_cmd_test_host",
+    configs = ["//tests/docker/configs:set_cmd.yaml"],
+    driver = "host",
     image = ":set_cmd",
 )
 
@@ -218,6 +227,22 @@ container_test(
     image = ":set_env_csv",
 )
 
+# Image with Bazel Make variables in the env field.
+container_image(
+    name = "set_env_make_vars",
+    base = "@distroless_fixed_id//image",
+    env = {
+        "$(ENV_KEY)": "$(ENV_VALUE)",
+    },
+)
+
+# This test checks that Bazel Make variables are expanded in the env field.
+container_test(
+    name = "set_env_make_vars_test",
+    configs = ["//tests/docker/configs:set_env_make_vars.yaml"],
+    image = ":set_env_make_vars",
+)
+
 genrule(
     name = "special_characters_file",
     outs = ["gen= foo.out"],
@@ -251,6 +276,24 @@ container_push(
     tags = ["manual"],
 )
 
+genrule(
+    name = "push_tag_file",
+    srcs = [],
+    outs = ["test.tag"],
+    cmd = """echo test > $@""",
+    output_to_bindir = 1,
+)
+
+container_push(
+    name = "push_tag_file_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+
 container_push(
     name = "push_stamped_test",
     format = "Docker",
@@ -274,9 +317,9 @@ file_test(
 )
 
 file_test(
-    name = "k8s_pause_amd64_digest_test",
-    content = "sha256:59eec8837a4d942cc19a52b8c09ea75121acc38114a2c68b98983ce9356b8610",
-    file = "@k8s_pause_amd64//image:digest",
+    name = "distroless_fixed_id_image_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@distroless_fixed_id//image:image.digest",
 )
 
 file_test(
@@ -284,8 +327,6 @@ file_test(
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",
 )
-
-load(":apple.bzl", "create_banana_directory")
 
 create_banana_directory(
     name = "banana_directory",
@@ -315,4 +356,11 @@ container_bundle(
 docker_push_all(
     name = "test_docker_push_three_images_bundle",
     bundle = ":three_images_bundle",
+)
+
+container_test(
+    name = "basic_dockerfile_image",
+    configs = ["//tests/docker/configs:basic_dockerfile.yaml"],
+    driver = "tar",
+    image = "@basic_dockerfile//image:dockerfile_image",
 )

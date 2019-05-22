@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
-load("//scala:image.bzl", "scala_image")
 load("//contrib:test.bzl", "container_test")
+load("//scala:image.bzl", "scala_image")
+
+package(default_visibility = ["//visibility:public"])
 
 scala_library(
     name = "scala_image_library",

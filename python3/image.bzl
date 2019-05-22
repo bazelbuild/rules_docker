@@ -17,6 +17,10 @@ The signature of this rule is compatible with py_binary.
 """
 
 load(
+    "//container:container.bzl",
+    "container_pull",
+)
+load(
     "//lang:image.bzl",
     "app_layer",
 )
@@ -24,18 +28,20 @@ load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
-load(
-    "//container:container.bzl",
-    "container_pull",
-)
 
 # Load the resolved digests.
 load(":python3.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the py3_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
+
+    # Register the default py_toolchain for containerized execution
+    native.register_toolchains("@io_bazel_rules_docker//toolchains/python:container_py_toolchain")
 
     excludes = native.existing_rules().keys()
     if "py3_image_base" not in excludes:
@@ -54,8 +60,8 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@py3_image_base//image",
     "@io_bazel_rules_docker//:debug": "@py3_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@py3_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@py3_image_base//image",
     "//conditions:default": "@py3_image_base//image",
 })
@@ -64,6 +70,9 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
+    name: Name of the py3_image rule target.
+    base: Base image to use for the py3_image.
+    deps: Dependencies of the py3_image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See py_binary.
@@ -76,7 +85,9 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
 
-    native.py_binary(name = binary_name, deps = deps + layers, **kwargs)
+    # TODO(ngiraldo): Add exec_compatible_with=["@io_bazel_rules_docker//toolchains/pythin:run_in_container"]
+    # once py_binary targets support it.
+    native.py_binary(name = binary_name, python_version = "PY3", deps = deps + layers, **kwargs)
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
@@ -96,4 +107,5 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )

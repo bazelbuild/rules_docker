@@ -11,40 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Test to compare ids of images in tarballs.
 
-# Implementation of compare_ids_test
-def _compare_ids_test_impl(ctx):
-    tar_files = []
-    for image in ctx.attr.images:
-        tar_files += image.files.to_list()
-
-    if (len(tar_files) == 0):
-        fail("No images provided for test.")
-
-    if (len(tar_files) == 1 and not ctx.attr.id):
-        fail("One tar provided. Need either second tar or an id to compare it to.")
-
-    runfiles = ctx.runfiles(
-        files = tar_files +
-                ctx.attr._compare_ids_test_script[DefaultInfo].data_runfiles.files.to_list(),
-    )
-
-    id_args = []
-    if ctx.attr.id:
-        id_args = ["--id", ctx.attr.id]
-
-    args = " ".join([f.short_path for f in tar_files] + id_args)
-
-    ctx.actions.write(
-        output = ctx.outputs.executable,
-        content = "python {} {}".format(ctx.executable._compare_ids_test_script.short_path, args),
-        is_executable = True,
-    )
-
-    return [DefaultInfo(runfiles = runfiles)]
-
-"""
-Test to compare ids of images in tarballs.
 Useful for testing reproducibility.
 
 Args:
@@ -70,15 +38,44 @@ compare_ids_test(
 )
 """
 
+# Implementation of compare_ids_test
+def _compare_ids_test_impl(ctx):
+    tar_files = ctx.files.images
+
+    if (len(tar_files) == 0):
+        fail("No images provided for test.")
+
+    if (len(tar_files) == 1 and not ctx.attr.id):
+        fail("One tar provided. Need either second tar or an id to compare it to.")
+
+    runfiles = ctx.runfiles(
+        files = tar_files,
+        transitive_files = ctx.attr._compare_ids_test_script[DefaultInfo].data_runfiles.files,
+    )
+
+    id_args = []
+    if ctx.attr.id:
+        id_args = ["--id", ctx.attr.id]
+
+    args = " ".join([f.short_path for f in tar_files] + id_args)
+
+    ctx.actions.write(
+        output = ctx.outputs.executable,
+        content = "python {} {}".format(ctx.executable._compare_ids_test_script.short_path, args),
+        is_executable = True,
+    )
+
+    return [DefaultInfo(runfiles = runfiles)]
+
 compare_ids_test = rule(
     attrs = {
-        "images": attr.label_list(
-            mandatory = True,
-            allow_files = True,
-        ),
         "id": attr.string(
             mandatory = False,
             default = "",
+        ),
+        "images": attr.label_list(
+            mandatory = True,
+            allow_files = True,
         ),
         "_compare_ids_test_script": attr.label(
             allow_files = True,

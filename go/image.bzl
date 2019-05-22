@@ -16,6 +16,14 @@
 The signature of this rule is compatible with go_binary.
 """
 
+# It is expected that the Go rules have been properly
+# initialized before loading this file to initialize
+# go_image.
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(
+    "//container:container.bzl",
+    "container_pull",
+)
 load(
     "//lang:image.bzl",
     "app_layer",
@@ -24,22 +32,16 @@ load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
-load(
-    "//container:container.bzl",
-    "container_pull",
-)
-
-# It is expected that the Go rules have been properly
-# initialized before loading this file to initialize
-# go_image.
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
 # Load the resolved digests.
 load(":go.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the go_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -59,8 +61,8 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
     "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
     "//conditions:default": "@go_image_base//image",
 })
@@ -69,6 +71,9 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     """Constructs a container image wrapping a go_binary target.
 
   Args:
+    name: Name of the go_image target.
+    base: Base image to use to build the go_image.
+    deps: Dependencies of the go image target.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into their own layers.
     **kwargs: See go_binary.
@@ -89,6 +94,8 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
+    restricted_to = kwargs.get("restricted_to", None)
+    compatible_with = kwargs.get("compatible_with", None)
     app_layer(
         name = name,
         base = base,
@@ -97,4 +104,7 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
+        restricted_to = restricted_to,
+        compatible_with = compatible_with,
     )

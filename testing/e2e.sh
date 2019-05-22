@@ -131,7 +131,11 @@ EOF
 
 
 function clear_docker() {
-  docker rmi -f $(docker images -aq) || true
+  # Get the IDs of images except the local registry image "registry:2" which is
+  # used in a few of the tests. This avoids having to pull the registry image
+  # multiple times in the end to end tests.
+  images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
+  docker rmi -f $images || builtin true
   stop_containers
 }
 
@@ -397,6 +401,16 @@ function test_container_push() {
   docker stop -t 0 $cid
 }
 
+function test_container_push_tag_file() {
+  cd "${ROOT}"
+  clear_docker
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  bazel build tests/docker:push_tag_file_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/docker/push_tag_file_test)" '--name=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/docker/test.tag)'
+
+  docker stop -t 0 $cid
+}
+
 # Launch a private docker registry at localhost:5000 that requires a basic
 # htpasswd authentication with credentials at docker-config/htpasswd and needs
 # the docker client to be using the authentication from
@@ -490,6 +504,45 @@ function test_container_push_all() {
   docker stop -t 0 $cid
 }
 
+function test_container_pull_cache() {
+  cd "${ROOT}"
+  clear_docker
+  scratch_dir="/tmp/_tmp_containnerregistry"
+  cache_dir="$scratch_dir/containnerregistry_cache"
+  bazel_cache="$scratch_dir/bazel_custom_cache"
+
+  # Delete and recreate temp directories.
+  rm -rf $scratch_dir
+  mkdir -p $cache_dir
+  mkdir -p $bazel_cache
+
+  # Run container puller one with caching.
+  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=600 bazel --output_base=$bazel_cache test //tests/docker:distoless_fixed_id_digest_test
+
+  # Rerun the puller by changing the puller timeout to force a rerun of of the
+  # target but now using the cache instead of downloading it again.
+  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=601 bazel --output_base=$bazel_cache test //tests/docker:distoless_fixed_id_digest_test
+
+  rm -rf $scratch_dir
+}
+
+# TODO(alex1545): remove this test from here and enable running on buildkite
+# once docker is supported.
+function test_dockerfile_image_basic() {
+  cd "${ROOT}"
+  clear_docker
+  bazel test tests/docker:basic_dockerfile_image
+}
+
+function test_py_image_deps_as_layers() {
+  cd "${ROOT}"
+  clear_docker
+  # Build and run the python image where the "six" module pip dependency was
+  # specified via "layers". https://github.com/bazelbuild/rules_docker/issues/161
+  EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
+}
+
+test_py_image_deps_as_layers
 test_container_push_with_stamp
 test_container_push_all
 test_container_push_with_auth
@@ -543,4 +596,7 @@ test_rust_image -c dbg
 test_nodejs_image -c opt
 test_nodejs_image -c dbg
 test_container_push
+test_container_push_tag_file
 test_launcher_image
+test_container_pull_cache
+test_dockerfile_image_basic

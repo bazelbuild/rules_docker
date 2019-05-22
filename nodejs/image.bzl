@@ -17,6 +17,12 @@ The signature of this rule is compatible with nodejs_binary.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load(
+    "//container:container.bzl",
+    "container_pull",
+    _container = "container",
+)
 load(
     "//lang:image.bzl",
     "app_layer",
@@ -26,19 +32,16 @@ load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
-load(
-    "//container:container.bzl",
-    "container_pull",
-    _container = "container",
-)
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
 # Load the resolved digests.
 load(":nodejs.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the nodejs_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -58,17 +61,17 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
     "@io_bazel_rules_docker//:debug": "@nodejs_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@nodejs_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@nodejs_image_base//image",
     "//conditions:default": "@nodejs_debug_image_base//image",
 })
 
 def _runfiles(dep):
-    return depset(transitive = [dep.default_runfiles.files, dep.data_runfiles.files, dep.files])
+    return depset(transitive = [dep[DefaultInfo].default_runfiles.files, dep[DefaultInfo].data_runfiles.files, dep.files])
 
 def _emptyfiles(dep):
-    return depset(transitive = [dep.default_runfiles.empty_filenames, dep.data_runfiles.empty_filenames])
+    return depset(transitive = [dep[DefaultInfo].default_runfiles.empty_filenames, dep[DefaultInfo].data_runfiles.empty_filenames])
 
 def _dep_layer_impl(ctx):
     return app_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
@@ -77,18 +80,21 @@ _dep_layer = rule(
     attrs = dicts.add(_container.image.attrs, {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
+
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = False),
+        # Set this to true to create an empty workspace directory under the
+        # app directory specified as the 'directory' attribute.
+        "create_empty_workspace_dir": attr.bool(default = False),
+
+        # Override the defaults.
+        # https://github.com/bazelbuild/bazel/issues/2176
+        "data_path": attr.string(default = "."),
         # The dependency whose runfiles we're appending.
         "dep": attr.label(
             mandatory = True,
             allow_files = True,
         ),
-
-        # The binary target for which we are synthesizing an image.
-        "binary": attr.label(mandatory = False),
-
-        # Override the defaults.
-        # https://github.com/bazelbuild/bazel/issues/2176
-        "data_path": attr.string(default = "."),
         "directory": attr.string(default = "/app"),
         "legacy_run_behavior": attr.bool(default = False),
     }),
@@ -104,16 +110,20 @@ def nodejs_image(
         data = [],
         layers = [],
         node_modules = "//:node_modules",
+        binary = None,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
 
   Args:
+    name: Name of the nodejs_image target.
+    base: Base image to use for the nodejs_image.
+    data: Runtime dependencies of the nodejs_image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    node_modules: The list of Node modules to include in the nodejs image.
+    binary: An alternative binary target to use instead of generating one.
     **kwargs: See nodejs_binary.
   """
-    binary_name = name + ".binary"
-
     layers = [
         # Put the Node binary into its own layer.
         "@nodejs//:node",
@@ -121,19 +131,21 @@ def nodejs_image(
         node_modules,
     ] + layers
 
-    nodejs_binary(
-        name = binary_name,
-        node_modules = node_modules,
-        data = data + layers,
-        **kwargs
-    )
+    if not binary:
+        binary = name + ".binary"
+        nodejs_binary(
+            name = binary,
+            node_modules = node_modules,
+            data = data + layers,
+            **kwargs
+        )
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        _dep_layer(name = this_name, base = base, dep = dep, binary = binary_name)
+        _dep_layer(name = this_name, base = base, dep = dep, binary = binary, testonly = kwargs.get("testonly"))
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -141,9 +153,10 @@ def nodejs_image(
     app_layer(
         name = name,
         base = base,
-        binary = binary_name,
+        binary = binary,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )

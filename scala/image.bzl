@@ -17,7 +17,6 @@ The signature of scala_image is compatible with scala_binary.
 """
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_binary")
-load("//container:container.bzl", "container_image")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
@@ -38,6 +37,13 @@ def scala_image(
     """Builds a container image overlaying the scala_binary.
 
   Args:
+    name: Name of the scala_image target.
+    base: Base image to use for the scala_image.
+    main_class: The main entrypoint class for the scala binary in the scala
+                image.
+    deps: Dependencies of the scala image target.
+    runtime_deps: Runtime dependencies of the scala image.
+    jvm_flags: Flags to pass to the JVM when running the scala image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See scala_binary.
@@ -78,6 +84,7 @@ def scala_image(
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )
 
 def repositories():

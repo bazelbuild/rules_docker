@@ -14,7 +14,15 @@
 """Rules for dealing with labels and their string form."""
 
 def string_to_label(label_list, string_list):
-    """Form a mapping from label strings to the resolved label."""
+    """Return a mapping from label strings to the resolved label.
+
+    Args:
+      label_list: The list of labels
+      string_list: The list of strings
+
+    Returns:
+      A mapping from label strings to the resolved label.
+    """
     label_string_dict = dict()
     for i in range(len(label_list)):
         string = string_list[i]

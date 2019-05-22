@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 exports_files(["push-tag.sh.tpl"])
 
@@ -28,6 +29,8 @@ filegroup(
 py_binary(
     name = "extract_config",
     srcs = ["extract_config.py"],
+    legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         "@containerregistry",
@@ -45,27 +48,42 @@ py_library(
 py_binary(
     name = "join_layers",
     srcs = ["join_layers.py"],
+    legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@bazel_tools//third_party/py/six",
         "@containerregistry",
+        "@six",
     ],
 )
 
 py_binary(
     name = "create_image_config",
     srcs = ["create_image_config.py"],
+    legacy_create_init = False,
+    python_version = "PY2",
     visibility = ["//visibility:public"],
     deps = [
         ":utils",
-        "@bazel_tools//third_party/py/six",
         "@containerregistry",
+        "@six",
     ],
 )
 
+# TODO(xingao): Flip legacy_create_init to False if possible.
 py_binary(
     name = "build_tar",
+    srcs = ["build_tar.py"],
+    legacy_create_init = True,
+    python_version = "PY2",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [":build_tar_lib"],
+)
+
+py_library(
+    name = "build_tar_lib",
     srcs = ["build_tar.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
@@ -153,6 +171,7 @@ py_test(
     size = "medium",
     srcs = ["image_test.py"],
     data = TEST_DATA,
+    python_version = "PY2",
     deps = ["@containerregistry"],
 )
 

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+""" Generated file with dependencies for language rule."""
 
 # !!!! THIS IS A GENERATED FILE TO NOT EDIT IT BY HAND !!!!
 #
@@ -18,8 +19,8 @@
 # git repository.
 
 DIGESTS = {
-    # "gcr.io/distroless/python3:debug" circa 2018-10-19 17:12 -0400
-    "debug": "sha256:9a1266df45718b40c4db119809952288009ab2cbeed441cec160339f15613383",
-    # "gcr.io/distroless/python3:latest" circa 2018-10-19 17:12 -0400
-    "latest": "sha256:6febb457154653617a44728cf3ec28514c2f13c17c9289ae7b7620f945fee13b",
+    # "gcr.io/distroless/python3:debug" circa 2019-03-05 10:43 -0500
+    "debug": "sha256:0f1a00c4201984089b0dc6e517151d81f2528d09e56f83e8bdf4c29be9500f92",
+    # "gcr.io/distroless/python3:latest" circa 2019-03-05 10:43 -0500
+    "latest": "sha256:87c1a60c29753b9e7bb6e4933f02a7254aac2ad5ae2c19368e1218c887f7b848",
 }

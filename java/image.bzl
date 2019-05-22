@@ -18,12 +18,8 @@ The signature of java_image is compatible with java_binary.
 The signature of war_image is compatible with java_library.
 """
 
-load("@bazel_tools//tools/build_defs/repo:jvm.bzl", "jvm_maven_import_external")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load(
-    "//repositories:repositories.bzl",
-    _repositories = "repositories",
-)
+load("@bazel_tools//tools/build_defs/repo:jvm.bzl", "jvm_maven_import_external")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -33,6 +29,10 @@ load(
     "//lang:image.bzl",
     "app_layer_impl",
     "layer_file_path",
+)
+load(
+    "//repositories:repositories.bzl",
+    _repositories = "repositories",
 )
 
 # Load the resolved digests.
@@ -46,8 +46,11 @@ load(
 )
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
+    """Import the dependencies of the java_image rule.
+
+    Call the core "repositories" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
     _repositories()
 
     excludes = native.existing_rules().keys()
@@ -89,32 +92,53 @@ def repositories():
         )
 
 DEFAULT_JAVA_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@java_image_base//image",
     "@io_bazel_rules_docker//:debug": "@java_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@java_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@java_image_base//image",
     "//conditions:default": "@java_image_base//image",
 })
 
 DEFAULT_JETTY_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@jetty_image_base//image",
     "@io_bazel_rules_docker//:debug": "@jetty_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@jetty_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@jetty_image_base//image",
     "//conditions:default": "@jetty_image_base//image",
 })
 
 def java_files(f):
+    """Filter out the list of java source files from the given list of runfiles.
+
+    Args:
+        f: Runfiles for a java_image rule.
+
+    Returns:
+        Depset of java source files.
+    """
     files = []
-    if java_common.provider in f:
-        java_provider = f[java_common.provider]
-        files += java_provider.transitive_runtime_jars.to_list()
-    if hasattr(f, "files"):  # a jar file
-        files += f.files.to_list()
-    return files
+
+    if JavaInfo in f:
+        java_provider = f[JavaInfo]
+        files.append(java_provider.transitive_runtime_jars)
+
+    f_files = f[DefaultInfo].files
+    if f_files != None:
+        files.append(f_files)
+
+    return depset(transitive = files)
 
 def java_files_with_data(f):
+    """Filter out the list of java source and data files from the given list of runfiles.
+
+    Args:
+       f: Runfiles for a java_image rule.
+
+    Returns:
+       Depset of java source and data files.
+    """
     files = java_files(f)
-    if hasattr(f, "data_runfiles"):
-        files += f.data_runfiles.files.to_list()
+    data_runfiles = f[DefaultInfo].data_runfiles
+    if data_runfiles != None:
+        files = depset(transitive = [files, data_runfiles.files])
     return files
 
 def _jar_dep_layer_impl(ctx):
@@ -137,16 +161,19 @@ jar_dep_layer = rule(
     attrs = dicts.add(_container.image.attrs, {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
-        # The dependency whose runfiles we're appending.
-        "dep": attr.label(providers = [DefaultInfo]),
 
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = False),
+        # Set this to true to create an empty workspace directory under the
+        # app directory specified as the 'directory' attribute.
+        "create_empty_workspace_dir": attr.bool(default = False),
+        # https://github.com/bazelbuild/bazel/issues/2176
+        "data_path": attr.string(default = "."),
+        # The dependency whose runfiles we're appending.
+        "dep": attr.label(),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
-        # https://github.com/bazelbuild/bazel/issues/2176
-        "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
     }),
     executable = True,
@@ -159,23 +186,20 @@ def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
     # layers don't include runfiles
-    available = depset(transitive = [depset(java_files(jar)) for jar in ctx.attr.jar_layers])
+    available = depset(transitive = [java_files(jar) for jar in ctx.attr.jar_layers])
 
     # We compute the set of unavailable stuff by walking deps
     # in the same way, adding in our binary and then subtracting
-    # out what it available.
-    unavailable = depset(transitive = [depset(java_files_with_data(jar)) for jar in ctx.attr.deps + ctx.attr.runtime_deps])
-    unavailable = depset(transitive = [unavailable, depset(java_files_with_data(ctx.attr.binary))])
-    unavailable = [x for x in unavailable.to_list() if x not in available.to_list()]
+    # out what is in available.
+    unavailable = depset(transitive = [java_files_with_data(jar) for jar in ctx.attr.deps + ctx.attr.runtime_deps])
+    unavailable = depset(transitive = [unavailable, java_files_with_data(ctx.attr.binary)])
+    unavailable = depset([x for x in unavailable.to_list() if x not in available.to_list()])
 
     # Remove files that are provided by the JDK from the unavailable set,
     # as these will be provided by the Java image.
-    unavailable = [x for x in unavailable if x not in ctx.files._jdk]
+    unavailable = depset([x for x in unavailable.to_list() if x not in ctx.files._jdk])
 
-    classpath = ":".join([
-        layer_file_path(ctx, x)
-        for x in depset(transitive = [available, depset(unavailable)]).to_list()
-    ])
+    classpath = ":".join([layer_file_path(ctx, x) for x in depset(transitive = [available, unavailable]).to_list()])
 
     # Classpaths can grow long and there is a limit on the length of a
     # command line, so mitigate this by always writing the classpath out
@@ -199,7 +223,7 @@ def _jar_app_layer_impl(ctx):
 
     file_map = {
         layer_file_path(ctx, f): f
-        for f in unavailable + [classpath_file]
+        for f in depset([classpath_file], transitive = [unavailable]).to_list()
     }
 
     return _container.image.implementation(
@@ -215,30 +239,30 @@ def _jar_app_layer_impl(ctx):
 
 jar_app_layer = rule(
     attrs = dicts.add(_container.image.attrs, {
-        # The binary target for which we are synthesizing an image.
-        "binary": attr.label(mandatory = True),
-        # The full list of dependencies that have their own layers
-        # factored into our base.
-        "jar_layers": attr.label_list(),
-        # The rest of the dependencies.
-        "deps": attr.label_list(),
-        "runtime_deps": attr.label_list(),
-        "jvm_flags": attr.string_list(),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
-        # The main class to invoke on startup.
-        "main_class": attr.string(mandatory = False),
-
-        # Whether the classpath should be passed as a file.
-        "_classpath_as_file": attr.bool(default = False),
+        # The binary target for which we are synthesizing an image.
+        "binary": attr.label(mandatory = True),
+        "data": attr.label_list(allow_files = True),
+        # https://github.com/bazelbuild/bazel/issues/2176
+        "data_path": attr.string(default = "."),
 
         # Override the defaults.
         "directory": attr.string(default = "/app"),
-        # https://github.com/bazelbuild/bazel/issues/2176
-        "data_path": attr.string(default = "."),
-        "workdir": attr.string(default = ""),
+        # The full list of dependencies that have their own layers
+        # factored into our base.
+        "jar_layers": attr.label_list(),
+        "jvm_flags": attr.string_list(),
         "legacy_run_behavior": attr.bool(default = False),
-        "data": attr.label_list(allow_files = True),
+        # The main class to invoke on startup.
+        "main_class": attr.string(mandatory = False),
+        "workdir": attr.string(default = ""),
+        "runtime_deps": attr.label_list(),
+        # The rest of the dependencies.
+        "deps": attr.label_list(),
+
+        # Whether the classpath should be passed as a file.
+        "_classpath_as_file": attr.bool(default = False),
         "_jdk": attr.label(
             default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
             providers = [java_common.JavaRuntimeInfo],
@@ -262,6 +286,11 @@ def java_image(
     """Builds a container image overlaying the java_binary.
 
   Args:
+    name: Name of the image target.
+    base: Base image to use for the java image.
+    deps: Dependencies of the java image rule.
+    runtime_deps: Runtime dependencies of the java image.
+    jvm_flags: Flags to pass to the JVM when running the java image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     main_class: This parameter is optional. If provided it will be used in the
@@ -314,6 +343,7 @@ def java_image(
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )
 
 def _war_dep_layer_impl(ctx):
@@ -324,18 +354,18 @@ def _war_dep_layer_impl(ctx):
     # we should use a file_map based scheme.
     return _container.image.implementation(
         ctx,
-        files = java_files(ctx.attr.dep),
+        files = java_files(ctx.attr.dep).to_list(),
     )
 
 _war_dep_layer = rule(
     attrs = dicts.add(_container.image.attrs, {
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
-        # The dependency whose runfiles we're appending.
-        "dep": attr.label(mandatory = True),
 
         # The binary target for which we are synthesizing an image.
         "binary": attr.label(mandatory = False),
+        # The dependency whose runfiles we're appending.
+        "dep": attr.label(mandatory = True),
 
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
@@ -366,20 +396,20 @@ def _war_app_layer_impl(ctx):
 
 _war_app_layer = rule(
     attrs = dicts.add(_container.image.attrs, {
-        # The library target for which we are synthesizing an image.
-        "library": attr.label(mandatory = True),
-        # The full list of dependencies that have their own layers
-        # factored into our base.
-        "jar_layers": attr.label_list(),
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
-        "entrypoint": attr.string_list(default = []),
 
         # Override the defaults.
         "directory": attr.string(default = "/jetty/webapps/ROOT/WEB-INF/lib"),
+        "entrypoint": attr.string_list(default = []),
+        # The full list of dependencies that have their own layers
+        # factored into our base.
+        "jar_layers": attr.label_list(),
         # WE WANT PATHS FLATTENED
         # "data_path": attr.string(default = "."),
         "legacy_run_behavior": attr.bool(default = False),
+        # The library target for which we are synthesizing an image.
+        "library": attr.label(mandatory = True),
     }),
     executable = True,
     outputs = _container.image.outputs,
@@ -395,6 +425,9 @@ def war_image(name, base = None, deps = [], layers = [], **kwargs):
   https://github.com/bazelbuild/bazel/issues/3519
 
   Args:
+    name: Name of the war_image target.
+    base: Base image to use for the war image.
+    deps: Dependencies of the way image target.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     **kwargs: See java_library.

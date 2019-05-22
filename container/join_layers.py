@@ -25,10 +25,7 @@ from six.moves import cStringIO
 
 from container import utils
 from containerregistry.client import docker_name
-from containerregistry.client.v1 import docker_image as v1_image
-from containerregistry.client.v1 import save as v1_save
 from containerregistry.client.v2_2 import save as v2_2_save
-from containerregistry.client.v2_2 import v2_compat
 from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 

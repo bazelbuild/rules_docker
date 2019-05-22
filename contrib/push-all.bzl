@@ -17,6 +17,7 @@ This variant of container_push accepts a container_bundle target and publishes
 the embedded image references.
 """
 
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
     "//skylib:path.bzl",
     "runfile",
@@ -27,8 +28,8 @@ def _get_runfile_path(ctx, f):
 
 def _impl(ctx):
     """Core implementation of container_push."""
-    stamp = ctx.attr.bundle.stamp
-    images = ctx.attr.bundle.container_images
+    stamp = ctx.attr.bundle[BundleInfo].stamp
+    images = ctx.attr.bundle[BundleInfo].container_images
 
     stamp_inputs = []
     if stamp:
@@ -94,26 +95,31 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    return struct(runfiles = ctx.runfiles(files = [
-        ctx.executable._pusher,
-    ] + stamp_inputs + runfiles + ctx.attr._pusher.default_runfiles.files.to_list()))
+    return [
+        DefaultInfo(
+            runfiles = ctx.runfiles(
+                files = [ctx.executable._pusher] + stamp_inputs + runfiles,
+                transitive_files = ctx.attr._pusher[DefaultInfo].default_runfiles.files,
+            ),
+        ),
+    ]
 
 container_push = rule(
     attrs = {
-        "bundle": attr.label(mandatory = True),
+        "bundle": attr.label(
+            mandatory = True,
+            doc = "The bundle of tagged images to publish.",
+        ),
         "format": attr.string(
             mandatory = True,
             values = [
                 "OCI",
                 "Docker",
             ],
+            doc = "The form to push: Docker or OCI.",
         ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),
-            allow_single_file = True,
-        ),
-        "_tag_tpl": attr.label(
-            default = Label("//container:push-tag.sh.tpl"),
             allow_single_file = True,
         ),
         "_pusher": attr.label(
@@ -122,19 +128,16 @@ container_push = rule(
             executable = True,
             allow_files = True,
         ),
+        "_tag_tpl": attr.label(
+            default = Label("//container:push-tag.sh.tpl"),
+            allow_single_file = True,
+        ),
     },
     executable = True,
     implementation = _impl,
 )
 
-"""Pushes a bundle of container images.
-
-Args:
-  name: name of the rule.
-  bundle: the bundle of tagged images to publish.
-  format: the form to push: Docker or OCI.
-"""
-
+# Pushes a bundle of container images.
 def docker_push(*args, **kwargs):
     if "format" in kwargs:
         fail(

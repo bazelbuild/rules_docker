@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
-load("//groovy:image.bzl", "groovy_image")
 load("//contrib:test.bzl", "container_test")
+load("//groovy:image.bzl", "groovy_image")
+
+package(default_visibility = ["//visibility:public"])
 
 groovy_library(
     name = "groovy_image_library",

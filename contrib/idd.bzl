@@ -11,6 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Bazel wrapper for the idd.py script.
+Used for finding differences between image targets.
+
+Args:
+    image1: Image target or image tarball file (from docker save) - first image to compare
+    image2: Image target or image tarball file (from docker save) - second image to compare
+    args: (optional) list of strings - arguments to apply to idd.py call
+                                        refer to idd.py docs for more info
+
+Ex.
+
+idd(
+    name = "name",
+    image1 = "@<image1>//image",
+    image2 = "hopefully_identical_image.tar",
+    args = ["-v", "-d"]
+)
+"""
+
 load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
@@ -31,26 +51,6 @@ def _impl(ctx):
     )
 
     return [DefaultInfo(runfiles = runfiles)]
-
-"""
-Bazel wrapper for the idd.py script.
-Used for finding differences between image targets.
-
-Args:
-    image1: Image target or image tarball file (from docker save) - first image to compare
-    image2: Image target or image tarball file (from docker save) - second image to compare
-    args: (optional) list of strings - arguments to apply to idd.py call
-                                        refer to idd.py docs for more info
-
-Ex.
-
-idd(
-    name = "name",
-    image1 = "@<image1>//image",
-    image2 = "hopefully_identical_image.tar",
-    args = ["-v", "-d"]
-)
-"""
 
 idd = rule(
     attrs = {

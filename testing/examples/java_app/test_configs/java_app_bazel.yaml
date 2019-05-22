@@ -1,0 +1,8 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint:
+    - "/usr/bin/java"
+    - "-cp"
+    - "/app/dockerfile_examples/java_app/java_app_bazel.binary.jar:/app/dockerfile_examples/java_app/java_app_bazel.binary"
+    - "ProjectRunner"

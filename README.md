@@ -90,13 +90,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.6.0
+# Download the rules_docker repository at release v0.7.0
 http_archive(
     name = "io_bazel_rules_docker",
-    # Replace with a real SHA256 checksum
-    sha256 = "{SHA256}"
-    strip_prefix = "rules_docker-{HEAD}",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/{HEAD}.tar.gz"],
+    sha256 = "aed1c249d4ec8f703edddf35cbe9dfaca0b5f5ea6e4cd9e83e99f3b0d1136c3d",
+    strip_prefix = "rules_docker-0.7.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.7.0.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -190,6 +189,11 @@ See also:
  https://github.com/awslabs/amazon-ecr-credential-helper)
  * [Azure Docker Credential Helper](
  https://github.com/Azure/acr-docker-credential-helper)
+
+Once you've setup your docker client configuration, see [here](#container_pull-custom-client-configuration)
+for an example of how to use container_pull with custom docker authentication credentials
+and [here](#container_push-custom-client-configuration) for an example of how
+to use container_push with custom docker authentication credentials.
 
 ## Varying image names
 
@@ -393,6 +397,10 @@ If you need to modify somehow the container produced by
 <a href=#overview-1>Language Rules Overview</a> about how to do this
 and see <a href=#go_image-custom-base>go_image (custom base)</a> example below.
 
+If you are using `py_image` with a custom base that has python tools installed
+in a location different to the default base, please see
+<a href=#python-tools>Python tools</a>.
+
 ### py_image (fine layering)
 
 For Python and Java's `lang_image` rules, you can factor
@@ -469,6 +477,10 @@ If you need to modify somehow the container produced by
 `py3_image` (e.g., `env`, `symlink`), see note above in
 <a href=#overview-1>Language Rules Overview</a> about how to do this
 and see <a href=#go_image-custom-base>go_image (custom base)</a> example below.
+
+If you are using `py3_image` with a custom base that has python tools installed
+in a location different to the default base, please see
+<a href=#python-tools>Python tools</a>.
 
 ### nodejs_image
 
@@ -573,14 +585,11 @@ go_image(
     name = "go_image",
     srcs = ["main.go"],
     importpath = "github.com/your/path/here",
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
 )
 ```
-
-Notice that it is important to explicitly specify `goarch`, `goos`, and `pure`
-as the binary should be built for Linux since it will run on a Linux container.
+Notice that it is important to explicitly build this target with the
+`--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64` flag
+as the binary should be built for Linux since it will run in a Linux container.
 
 If you need to modify somehow the container produced by
 `go_image` (e.g., `env`, `symlink`), see note above in
@@ -946,6 +955,11 @@ container_pull(
 
 This can then be referenced in `BUILD` files as `@base//image`.
 
+To get the correct digest one can run `docker manifest inspect gcr.io/my-project/my-base:tag` once [experimental docker cli featuers are enabled](https://docs.docker.com/engine/reference/commandline/manifest_inspect).
+
+See [here](#container_pull-custom-client-configuration) for an example of how
+to use container_pull with custom docker authentication credentials.
+
 ### container_push
 
 This target pushes on `bazel run :push_foo`:
@@ -963,6 +977,48 @@ container_push(
 
 We also support the `docker_push` (from `docker/docker.bzl`) and `oci_push`
 (from `oci/oci.bzl`) aliases, which bake in the `format = "..."` attribute.
+
+See [here](#container_push-custom-client-configuration) for an example of how
+to use container_push with custom docker authentication credentials.
+
+### container_push (Custom client configuration)
+If you wish to use container_push using custom docker authentication credentials,
+in `WORKSPACE`:
+```python
+# Download the rules_docker repository
+http_archive(
+    name = "io_bazel_rules_docker",
+    ...
+)
+
+# Load the macro that allows you to customize the docker toolchain configuration.
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+
+docker_toolchain_configure(
+  name = "docker_config",
+  # Replace this with a path to a directory which has a custom docker client
+  # config.json. Docker allows you to specify custom authentication credentials
+  # in the client configuration JSON file.
+  # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
+  # for more details.
+  client_config="/path/to/docker/client/config",
+)
+```
+In `BUILD` file:
+```python
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
+
+container_push(
+   name = "push_foo",
+   image = ":foo",
+   format = "Docker",
+   registry = "gcr.io",
+   repository = "my-project/my-image",
+   tag = "dev",
+)
+```
 
 ### container_pull (DockerHub)
 
@@ -1061,6 +1117,44 @@ This can then be referenced in `BUILD` files as `@gitlab//image`.
 
 **NOTE:** This will only work on systems with Python >2.7.6
 
+## Python tools
+
+Starting with Bazel 0.25.0 it's possible to configure python toolchains
+for `rules_docker`.
+
+To use these features you need to enable the flags in the `.bazelrc`
+file at the root of this project.
+
+Use of these features require a python toolchain to be registered.
+`//py_images/image.bzl:deps` and `//py3_images/image.bzl:deps` register a
+default python toolchain (`//toolchains/python:container_py_toolchain`)
+that defines the path to python tools inside the default container used
+for these rules.
+
+### Known issues
+
+If you are using a custom base for `py_image` or `py3_image` builds that has
+python tools installed in a different location to those defined in
+`//toolchains/python:container_py_toolchain`, you will need to create a
+toolchain that points to these paths and register it _before_ the call to
+`py*_images/image.bzl:deps` in your `WORKSPACE`.
+
+Until Bazel 0.26.0 is relesed, registration of the default python toolchain
+will result in all python targets using that same toolchain, which might
+result in errors if any of those targets need to run locally.
+Once Bazel 0.26.0 is out, this default toolchain will only be compatible with
+python targets that run inside a container and will not interfere with
+other python targets.
+
+Use of python toolchain features, currently, only supports picking one
+version of python for execution of host tools. `rules_docker` heavily depends
+on execution of python host tools that are only compatible with python 2.
+Flags in the recommended `.bazelrc` file force all host tools to use python 2.
+If your project requires using host tools that are only compatible with
+python 3 you will not be able to use these features at the moment. We
+expect this issue to be resolved before use of python toolchain features
+becomes the default.
+
 ## Updating the `distroless` base images.
 
 The digest references to the `distroless` base images must be updated over time
@@ -1085,7 +1179,20 @@ container_pull(name, registry, repository, digest, tag)
 A repository rule that pulls down a Docker base image in a manner suitable for
 use with `container_image`'s `base` attribute.
 
+**NOTE:** container_pull now supports authentication using custom docker client
+configuration. See [here](#container_pull-custom-client-configuration) for details.
+
 **NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
+
+**NOTE:** Set `DOCKER_REPO_CACHE` env variable to make the container puller
+cache downloaded layers at the directory specified as a value to this env
+variable. The caching feature hasn't been thoroughly tested and may be thread
+unsafe. If you notice flakiness after enabling it, see the warning below on how
+to workaround it.
+
+**NOTE:** `container_pull` is suspected to have thread safety issues. To
+ensure multiple container_pull(s) don't execute concurrently, please use the
+bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
 
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
@@ -1232,6 +1339,9 @@ container_push(name, image, registry, repository, tag)
 
 An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
 
+**NOTE:** container_push now supports authentication using custom docker client
+configuration. See [here](#container_push-custom-client-configuration) for details.
+
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
     <col class="col-param" />
@@ -1294,6 +1404,7 @@ An executable rule that pushes a Docker image to a Docker registry on `bazel run
       <td><code>stamp</code></td>
       <td>
         <p><code>Bool; optional</code></p>
+        <p>Deprecated: it is now automatically inferred.</p>
         <p>If true, enable use of workspace status variables
         (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
         and custom values set using <code>--workspace_status_command</code>)
@@ -1452,7 +1563,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
           },
           </code>
         </p>
-	<p>The values of this field support stamp variables.</p>
+	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
       </td>
     </tr>
   </tbody>
@@ -1714,7 +1825,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
           },
           </code>
         </p>
-	<p>The values of this field support stamp variables.</p>
+	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
       </td>
     </tr>
     <tr>
@@ -1816,6 +1927,26 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         Only valid when <code>launcher</code> is specified.</p>
       </td>
     </tr>
+    <tr>
+      <td><code>legacy_run_behavior</code></td>
+      <td>
+        <p><code>Bool; optional, default to True</code></p>
+        <p>If set to False, <code>bazel run</code> on the
+        <code>container_image</code> target will directly invoke
+        <code>docker run</code>.</p>
+        <p>Note that it defaults to <code>False</code> when using
+        <code>&lt;lang&gt;_image</code> rules.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>docker_run_flags</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>Optional flags to use with <code>docker run</code> command.</p>
+        <p>Only used when <code>legacy_run_behavior</code> is set to
+        <code>False</code>.</p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -1883,6 +2014,7 @@ A rule that aliases and saves N images into a single `docker save` tarball.
       <td><code>stamp</code></td>
       <td>
         <p><code>Bool; optional</code></p>
+        <p>Deprecated: it is now automatically inferred.</p>
         <p>If true, enable use of workspace status variables
         (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
         and custom values set using <code>--workspace_status_command</code>)
@@ -1979,9 +2111,19 @@ creates a `container_import` target. The created target can be referenced as
       <td><code>file</code></td>
       <td>
         <p><code>The `docker save` tarball file; required</code></p>
-        <p>A label targetting a single file which is a compressed or
+        <p>A label targeting a single file which is a compressed or
            uncompressed tar, as obtained through `docker save IMAGE`.</p>
       </td>
     </tr>
   </tbody>
 </table>
+
+## Adopters
+Here's a (non-exhaustive) list of companies that use `rules_docker` in production. Don't see yours? [You can add it in a PR!](https://github.com/bazelbuild/rules_docker/edit/master/README.md)
+  * [Aura Devices](https://auradevices.io/)
+  * [Etsy](https://www.etsy.com)
+  * [Evertz](https://evertz.com/)
+  * [Jetstack](https://www.jetstack.io/)
+  * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
+  * [Tink](https://www.tink.com)
+  * [Wix](https://www.wix.com)

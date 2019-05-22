@@ -14,6 +14,11 @@
 """Tools for dealing with Docker Image layers."""
 
 load(
+    "@io_bazel_rules_docker//container:providers.bzl",
+    "ImageInfo",
+    "ImportInfo",
+)
+load(
     "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
@@ -45,10 +50,23 @@ def _extract_layers(ctx, name, artifact):
     }
 
 def get_from_target(ctx, name, attr_target, file_target = None):
+    """Gets all layers from the given target.
+
+    Args:
+       ctx: The context
+       name: The name of the target
+       attr_target: The attribute to get layers from
+       file_target: If not None, layers are extracted from this target
+
+    Returns:
+       The extracted layers
+    """
     if file_target:
         return _extract_layers(ctx, name, file_target)
-    elif hasattr(attr_target, "container_parts"):
-        return attr_target.container_parts
+    elif attr_target and ImageInfo in attr_target:
+        return attr_target[ImageInfo].container_parts
+    elif attr_target and ImportInfo in attr_target:
+        return attr_target[ImportInfo].container_parts
     else:
         if not hasattr(attr_target, "files"):
             return {}
@@ -56,7 +74,14 @@ def get_from_target(ctx, name, attr_target, file_target = None):
         return _extract_layers(ctx, name, target)
 
 def assemble(ctx, images, output, stamp = False):
-    """Create the full image from the list of layers."""
+    """Create the full image from the list of layers.
+
+    Args:
+       ctx: The context
+       images: List of images/layers to assemple
+       output: The output path for the image tar
+       stamp: Whether to stamp the produced image
+    """
     args = [
         "--output=" + output.path,
     ]
@@ -114,7 +139,17 @@ def incremental_load(
         stamp = False,
         run = False,
         run_flags = None):
-    """Generate the incremental load statement."""
+    """Generate the incremental load statement.
+
+
+    Args:
+       ctx: The context
+       images: List of images/layers to load
+       output: The output path for the load script
+       stamp: Whether to stamp the produced image
+       run: Whether to run the script or not
+       run_flags: Additional run flags
+    """
     stamp_files = []
     if stamp:
         stamp_files = [ctx.info_file, ctx.version_file]
@@ -182,6 +217,8 @@ def incremental_load(
         template = ctx.file.incremental_load_template,
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{load_statements}": "\n".join(load_statements),
+            "%{run_statements}": "\n".join(run_statements),
             # If this rule involves stamp variables than load them as bash
             # variables, and turn references to them into bash variable
             # references.
@@ -189,27 +226,25 @@ def incremental_load(
                 "read_variables %s" % _get_runfile_path(ctx, f)
                 for f in stamp_files
             ]),
-            "%{load_statements}": "\n".join(load_statements),
             "%{tag_statements}": "\n".join(tag_statements),
-            "%{run_statements}": "\n".join(run_statements),
         },
         output = output,
         is_executable = True,
     )
 
 tools = {
+    "extract_config": attr.label(
+        default = Label("//container:extract_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
     "incremental_load_template": attr.label(
         default = Label("//container:incremental_load_template"),
         allow_single_file = True,
     ),
     "join_layers": attr.label(
         default = Label("//container:join_layers"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
-    ),
-    "extract_config": attr.label(
-        default = Label("//container:extract_config"),
         cfg = "host",
         executable = True,
         allow_files = True,

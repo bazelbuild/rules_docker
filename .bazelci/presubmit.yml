@@ -1,14 +1,22 @@
 ---
+buildifier:
+  version: 0.22.0
+  # Check for issues with the format of our bazel config files.
+  # All warnings from https://github.com/bazelbuild/buildtools/blob/master/WARNINGS.md
+  # are enabled except:
+  # rule-impl-return, uninitialized, return-value, rule-impl-return
+  # TODO (suvanjan): Re-enable once issues are fixed.
+  warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,positional-args,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
 platforms:
-  ubuntu1404:
+  ubuntu1604:
     test_targets:
     # We are running the skipped targets remotely only.
     - "--"
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
-    # Temporarily disabled tests that do not run in BuildKite CI
-    # anymore.
+    - "-//:structure_test_at_workspace_root"
+    # Disabled tests that do not run in BuildKite CI.
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
@@ -20,15 +28,15 @@ platforms:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
-  ubuntu1604:
+  ubuntu1804:
     test_targets:
     # We are running the skipped targets remotely only.
     - "--"
     - "..."
     - "-//tests/container/..."
     - "-//tests/docker/..."
-    # Temporarily disabled tests that do not run in BuildKite CI
-    # anymore.
+    - "-//:structure_test_at_workspace_root"
+    # Disabled tests that do not run in BuildKite CI.
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
@@ -58,13 +66,19 @@ platforms:
     - "--"
     - "..."
     build_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/docker:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
     test_targets:
     - "--"
+    - "//:structure_test_at_workspace_root"
     - "//tests/..."
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
@@ -73,8 +87,13 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     test_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.1:nosla_xenial_docker"
+    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
+    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/docker:set_env_make_vars_test
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"

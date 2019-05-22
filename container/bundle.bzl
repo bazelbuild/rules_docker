@@ -14,10 +14,7 @@
 """Rule for bundling Container images into a tarball."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load(
-    "//skylib:label.bzl",
-    _string_to_label = "string_to_label",
-)
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
@@ -25,7 +22,10 @@ load(
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
-load("//container:providers.bzl", "BundleInfo")
+load(
+    "//skylib:label.bzl",
+    _string_to_label = "string_to_label",
+)
 
 def _container_bundle_impl(ctx):
     """Implementation for the container_bundle rule."""
@@ -52,14 +52,14 @@ def _container_bundle_impl(ctx):
 
         target = ctx.attr.images[unresolved_tag]
 
-        l = _get_layers(ctx, ctx.label.name, image_target_dict[target])
-        images[tag] = l
-        runfiles += [l.get("config")]
-        runfiles += [l.get("config_digest")]
-        runfiles += l.get("unzipped_layer", [])
-        runfiles += l.get("diff_id", [])
-        if l.get("legacy"):
-            runfiles += [l.get("legacy")]
+        layer = _get_layers(ctx, ctx.label.name, image_target_dict[target])
+        images[tag] = layer
+        runfiles += [layer.get("config")]
+        runfiles += [layer.get("config_digest")]
+        runfiles += layer.get("unzipped_layer", [])
+        runfiles += layer.get("diff_id", [])
+        if layer.get("legacy"):
+            runfiles += [layer.get("legacy")]
 
     _incr_load(
         ctx,
@@ -71,28 +71,24 @@ def _container_bundle_impl(ctx):
 
     stamp_files = [ctx.info_file, ctx.version_file] if stamp else []
 
-    return struct(
-        container_images = images,
-        stamp = stamp,
-        providers = [
-            BundleInfo(
-                container_images = images,
-                stamp = stamp,
-            ),
-            DefaultInfo(
-                files = depset(),
-                executable = ctx.outputs.executable,
-                runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
-            ),
-        ],
-    )
+    return [
+        BundleInfo(
+            container_images = images,
+            stamp = stamp,
+        ),
+        DefaultInfo(
+            executable = ctx.outputs.executable,
+            files = depset(),
+            runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
+        ),
+    ]
 
 container_bundle_ = rule(
     attrs = dicts.add({
-        "images": attr.string_dict(),
+        "image_target_strings": attr.string_list(),
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
-        "image_target_strings": attr.string_list(),
+        "images": attr.string_dict(),
         "stamp": attr.bool(
             default = False,
             mandatory = False,

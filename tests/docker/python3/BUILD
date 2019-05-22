@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-load("//python3:image.bzl", "py3_image")
 load("//contrib:test.bzl", "container_test")
+load("//python3:image.bzl", "py3_image")
+
+package(default_visibility = ["//visibility:public"])
 
 py3_image(
     name = "py3_image",

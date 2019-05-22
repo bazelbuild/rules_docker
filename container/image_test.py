@@ -213,6 +213,7 @@ class ImageTest(unittest.TestCase):
       cfg = json.loads(img.config_file())
       self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
 
+  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again
   def test_with_stamped_creation_time(self):
     with TestImage('with_stamped_creation_time') as img:
       self.assertEqual(2, len(img.fs_layers()))
@@ -232,6 +233,7 @@ class ImageTest(unittest.TestCase):
       # Assume that any value for 'created' within a reasonable bound is fine.
       self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
+  # This test is flaky. If it fails, do a bazel clean --expunge_async and try again
   def test_with_default_stamped_creation_time(self):
     # {BUILD_TIMESTAMP} should be the default when `stamp = True` and
     # `creation_time` isn't explicitly defined.
@@ -391,7 +393,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_passwd(self):
     with TestImage('with_passwd') as img:
-      self.assertDigest(img, '27149ceaab154631346209b42c9494708210901fbb6e9f88cb9370fb51f30999')
+      self.assertDigest(img, 'b5ddebd09ebfc17bee33929d65a925416739acaeefefe82d87197f112cabbb7f')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
 
@@ -399,13 +401,13 @@ class ImageTest(unittest.TestCase):
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/passwd').read()
         self.assertEqual(
-          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
           content)
         self.assertEqual(layer.getmember("./etc/passwd").mode, PASSWD_FILE_MODE)
 
   def test_with_passwd_tar(self):
     with TestImage('with_passwd_tar') as img:
-      self.assertDigest(img, 'b8f091c370d6a8a6f74e11327f52e579f73dd93d9cf82e39e83b3096bb0c2256')
+      self.assertDigest(img, 'ceaff61cd81661d85eac1078134baec9c9b34ed4337c84103f8a147a912e8cf2')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
 
@@ -413,7 +415,7 @@ class ImageTest(unittest.TestCase):
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/password').read()
         self.assertEqual(
-          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\n',
+          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
           content)
         self.assertEqual(layer.getmember("./etc/password").mode, PASSWD_FILE_MODE)
         self.assertTarInfo(layer.getmember("./root"), 0, 0, DIR_PERMISSION, True)
@@ -471,6 +473,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/py_image.binary',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/BUILD',
         './app/testdata/py_image.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        './app/io_bazel_rules_docker',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -515,6 +518,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image_with_symlinks_in_data.binary',
         './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/foo.txt',
         './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        './app/io_bazel_rules_docker',
         # TODO(mattmoor): The path normalization for symlinks should match
         # files to avoid this redundancy.
         '/app',
@@ -566,6 +570,7 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2',
         './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/__init__.py',
         './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        './app/io_bazel_rules_docker',
         '/app',
         '/app/testdata',
         '/app/testdata/py_image_complex.binary',
