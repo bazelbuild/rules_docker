@@ -169,10 +169,10 @@ py_library(
     if "subpar" not in excludes:
         http_archive(
             name = "subpar",
-            sha256 = "75a2c1b32d808e33b77bcd9972ddbf9fff784ba8f92bd51ed890688664d797e9",
+            sha256 = "34bb4dadd86bbdd3b5736952167e20a1a4c27ff739de11532c4ef77c7c6a68d9",
             # Commit from 2019-03-07.
-            strip_prefix = "subpar-5b0f501356b86f16da5aac25bc2069e25e74b67d",
-            urls = ["https://github.com/google/subpar/archive/5b0f501356b86f16da5aac25bc2069e25e74b67d.tar.gz"],
+            strip_prefix = "subpar-35bb9f0092f71ea56b742a520602da9b3638a24f",
+            urls = ["https://github.com/google/subpar/archive/35bb9f0092f71ea56b742a520602da9b3638a24f.tar.gz"],
         )
 
     if "structure_test_linux" not in excludes:
@@ -203,6 +203,13 @@ py_library(
     if "gzip" not in excludes:
         local_tool(
             name = "gzip",
+        )
+
+    if "bazel_gazelle" not in excludes:
+        http_archive(
+            name = "bazel_gazelle",
+            sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
+            urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
         )
 
     native.register_toolchains(
