@@ -63,8 +63,8 @@ container_pull(
 
 dockerfile_image(
     name = "basic_alpine_dockerfile",
-    dockerfile = "//basic:Dockerfile",
     cache = True,
+    dockerfile = "//basic:Dockerfile",
 )
 
 dockerfile_image(

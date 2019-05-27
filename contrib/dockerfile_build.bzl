@@ -63,7 +63,6 @@ def _impl(repository_ctx):
     if not repository_ctx.attr.cache:
         cache_args.append("--no-cache")
 
-
     # The docker bulid command needs to run using the supplied Dockerfile
     # because it may refer to relative paths in its ADD, COPY and WORKDIR
     # instructions.
