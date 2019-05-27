@@ -110,6 +110,10 @@ dockerfile_image = repository_rule(
             doc = "A map of args to pass to the --build-arg option in the " +
                   "`docker build` command.",
         ),
+        "cache": attr.bool(
+            default = False,
+            doc = "Turn on docker caching for the build.",
+        ),
         "docker_path": attr.string(
             doc = "The full path to the docker binary. If not specified, it " +
                   "will be searched for in the path. If not available, " +
@@ -119,10 +123,6 @@ dockerfile_image = repository_rule(
             allow_single_file = True,
             mandatory = True,
             doc = "The label for the Dockerfile to build the image from.",
-        ),
-        "cache": attr.bool(
-            default = False,
-            doc = "Turn on docker caching for the build.",
         ),
     },
     implementation = _impl,
