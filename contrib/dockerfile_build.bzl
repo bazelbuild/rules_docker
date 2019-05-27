@@ -59,13 +59,18 @@ def _impl(repository_ctx):
         for pair in repository_ctx.attr.build_args.items():
             build_args.extend(["--build-arg", "%s=%s" % (pair[0], pair[1])])
 
+    cache_args = []
+    if not repository_ctx.attr.cache:
+        cache_args.append("--no-cache")
+
+
     # The docker bulid command needs to run using the supplied Dockerfile
     # because it may refer to relative paths in its ADD, COPY and WORKDIR
     # instructions.
     command = [docker_path, "build"]
     command.extend(build_args)
+    command.extend(cache_args)
     command.extend([
-        "--no-cache",
         "-f",
         dockerfile_path,
         "-t",
@@ -115,6 +120,10 @@ dockerfile_image = repository_rule(
             allow_single_file = True,
             mandatory = True,
             doc = "The label for the Dockerfile to build the image from.",
+        ),
+        "cache": attr.bool(
+            default = False,
+            doc = "Turn on docker caching for the build.",
         ),
     },
     implementation = _impl,
