@@ -49,8 +49,8 @@ def _impl(ctx):
             transitive_files = ctx.attr.image[DefaultInfo].files,
         ).merge(ctx.attr.image[DefaultInfo].data_runfiles)
 
-    if not ctx.attr.verbose:
-        args += ["--quiet"]
+    if ctx.attr.verbose:
+        args += ["--verbosity", "debug"]
 
     for c in ctx.files.configs:
         args += ["--config", c.short_path]
