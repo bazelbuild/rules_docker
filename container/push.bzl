@@ -116,8 +116,8 @@ container_push = rule(
                 "Docker",
             ],
         ),
-        "key": attr.string(mandatory = True),
-        "cert": attr.string(mandatory = True),
+        "key": attr.string(),
+        "cert": attr.string(),
         "domain": attr.string(),
         "_tag_tpl": attr.label(
             default = Label("//container:push-tag.sh.tpl"),
