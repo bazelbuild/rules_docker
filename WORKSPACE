@@ -300,11 +300,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "36e5cb9f15543faa195daa9ee9c8a7f0306f6b4f3e407ffcdb9410884d9ac4de",
-    strip_prefix = "bazel-toolchains-0.25.0",
+    sha256 = "c6159396a571280c71d072a38147d43dcb44f78fc15976d0d47e6d0bf015458d",
+    strip_prefix = "bazel-toolchains-0.26.1",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.25.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.25.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.26.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.26.1.tar.gz",
     ],
 )
 
