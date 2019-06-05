@@ -20,7 +20,9 @@ package main
 import (
 	"flag"
 	"log"
-	// "../../../../../go-containerregistry/pkg/authn"
+
+	"../../../../../go-containerregistry/pkg/authn"
+	// "github.com/google/go-containerregistry/pkg/authn"
 )
 
 var (
@@ -50,8 +52,7 @@ func main() {
 	// If the user provided a client config directory, instruct the keychain resolver
 	// to use it to look for the docker client config
 	if *clientConfigDir != "" {
-		// set the members of the struct??
-		// authn.DefaultKeychain.ConfigDir = *clientConfigDir
+		authn.SetDefaultKeychainConfigDir(*clientConfigDir)
 	}
 
 	log.Printf("Successfully pulled image %q into %q", *name, *directory)
