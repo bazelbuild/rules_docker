@@ -1,7 +1,7 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  entrypoint: ['/app/tests/docker/go/go_image.binary']
+  entrypoint: ['/app']
   cmd: [
     'arg0',
     'arg1',

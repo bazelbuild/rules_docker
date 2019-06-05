@@ -25,8 +25,9 @@ def main():
   print('Third: %d' % py_image_library.fn(3))
   print('Fourth: %d' % py_image_library.fn(4))
   print(sys.argv)
+  print(os.getcwd())
   if len(sys.argv) > 1:
-    print(os.stat(sys.argv[2]))
+    print(os.stat(sys.argv[3]))
 
 
 if __name__ == '__main__':

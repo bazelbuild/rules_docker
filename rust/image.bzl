@@ -56,7 +56,6 @@ def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwarg
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         base = app_layer(name = "%s_%d" % (name, index), base = base, dep = dep)
-        base = app_layer(name = "%s_%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)

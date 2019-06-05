@@ -100,7 +100,6 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
         base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
-        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary_name)
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
     app_layer(

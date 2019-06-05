@@ -3,7 +3,7 @@ schemaVersion: 2.0.0
 metadataTest:
   entrypoint: [
     '/usr/bin/python',
-    '/app/tests/docker/python3/py3_image.binary',
+    '/app',
   ]
   cmd: [
     'arg0',

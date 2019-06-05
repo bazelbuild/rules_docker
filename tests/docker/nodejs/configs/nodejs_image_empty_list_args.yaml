@@ -9,5 +9,5 @@ metadataTest:
       value: "noninteractive"
     - key: PATH
       value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-  entrypoint: ['/app/tests/docker/nodejs/nodejs_image_empty_list_args.binary']
-  workdir: "/app/tests/docker/nodejs/nodejs_image_empty_list_args.binary.runfiles/io_bazel_rules_docker"
+  entrypoint: ['/app']
+  workdir: "/app.runfiles/io_bazel_rules_docker"

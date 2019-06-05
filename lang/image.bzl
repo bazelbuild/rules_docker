@@ -29,19 +29,10 @@ load(
     _get_layers = "get_from_target",
 )
 
-def _binary_name(ctx):
-    # For //foo/bar/baz:blah this would translate to
-    # /app/foo/bar/baz/blah
-    return "/".join([
-        ctx.attr.directory,
-        ctx.attr.binary.label.package,
-        ctx.attr.binary.label.name,
-    ])
-
 def _runfiles_dir(ctx):
     # For @foo//bar/baz:blah this would translate to
     # /app/bar/baz/blah.runfiles
-    return _binary_name(ctx) + ".runfiles"
+    return ctx.attr.directory
 
 # The directory relative to which all ".short_path" paths are relative.
 
@@ -58,13 +49,13 @@ def _external_dir(ctx):
     # /app/bar/baz/blah.runfiles/foo/external
     return "/".join([_reference_dir(ctx), "external"])
 
-# The final location that this file needs to exist for the foo_binary target to
-# properly execute.
+# The foo_binary independent location in which we store a particular dependency's
+# file such that it can be shared.
 
-def _final_emptyfile_path(ctx, name):
+def _layer_emptyfile_path(ctx, name):
     if not name.startswith("external/"):
         # Names that don't start with external are relative to our own workspace.
-        return _reference_dir(ctx) + "/" + name
+        return "/".join([_reference_dir(ctx), name])
 
     # References to workspace-external dependencies, which are identifiable
     # because their path begins with external/, are inconsistent with the
@@ -77,36 +68,11 @@ def _final_emptyfile_path(ctx, name):
 
     return "/".join([_runfiles_dir(ctx), name[len("external/"):]])
 
-# The final location that this file needs to exist for the foo_binary target to
-# properly execute.
-
-def _final_file_path(ctx, f):
-    return "/".join([_reference_dir(ctx), f.short_path])
-
-# The foo_binary independent location in which we store a particular dependency's
-# file such that it can be shared.
-
-def _layer_emptyfile_path(ctx, name):
-    if not name.startswith("external/"):
-        # Names that don't start with external are relative to our own workspace.
-        return "/".join([ctx.attr.directory, ctx.workspace_name, name])
-
-    # References to workspace-external dependencies, which are identifiable
-    # because their path begins with external/, are inconsistent with the
-    # form of their File counterparts, whose ".short_form" is relative to
-    #    .../foo.runfiles/workspace-name/  (aka _reference_dir(ctx))
-    # whereas we see:
-    #    external/foreign-workspace/...
-    # so we "fix" the empty files' paths by removing "external/" and basing them
-    # directly on the runfiles path.
-
-    return "/".join([ctx.attr.directory, name[len("external/"):]])
-
 # The foo_binary independent location in which we store a particular dependency's
 # file such that it can be shared.
 
 def layer_file_path(ctx, f):
-    return "/".join([ctx.attr.directory, ctx.workspace_name, f.short_path])
+    return "/".join([_reference_dir(ctx), f.short_path])
 
 def _default_runfiles(dep):
     if FilterLayerInfo in dep:
@@ -146,14 +112,12 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     workdir = None
 
     parent_parts = _get_layers(ctx, ctx.attr.name, ctx.attr.base)
-    filepath = _final_file_path if ctx.attr.binary else layer_file_path
-    emptyfilepath = _final_emptyfile_path if ctx.attr.binary else _layer_emptyfile_path
     dep = ctx.attr.dep or ctx.attr.binary
     top_layer = ctx.attr.binary and not ctx.attr.dep
 
     if ctx.attr.create_empty_workspace_dir:
         # Create an empty directory for the workspace in the app directory.
-        empty_dirs.append("/".join([ctx.attr.directory, ctx.workspace_name]))
+        empty_dirs.append(_reference_dir(ctx))
 
     # Compute the set of runfiles that have been made available
     # in our base image, tracking absolute paths.
@@ -164,19 +128,18 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     # Compute the set of remaining runfiles to include into the
     # application layer.
-
     file_map = {
-        filepath(ctx, f): f
+        layer_file_path(ctx, f): f
         # runfiles(dep) can be `depset` or `list`. Covert it to `depset` first
         # and then call to_list() on it as to_list() cannot be called on type `list`.
         for f in depset(runfiles(dep)).to_list()
-        if filepath(ctx, f) not in available and layer_file_path(ctx, f) not in available
+        if layer_file_path(ctx, f) not in available
     }
 
     empty_files = [
-        emptyfilepath(ctx, f)
+        _layer_emptyfile_path(ctx, f)
         for f in depset(emptyfiles(dep)).to_list()
-        if emptyfilepath(ctx, f) not in available and _layer_emptyfile_path(ctx, f) not in available
+        if _layer_emptyfile_path(ctx, f) not in available
     ]
 
     symlinks = {}
@@ -191,25 +154,14 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
             if hasattr(s, "path")  # "path" and "target_file" are exposed to starlark since bazel 0.21.0.
         })
 
-        symlinks.update({
-            _final_file_path(ctx, f): layer_file_path(ctx, f)
-            for f in runfiles(dep).to_list()
-            if _final_file_path(ctx, f) not in file_map and _final_file_path(ctx, f) not in available
-        })
-        symlinks.update({
-            _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
-            for f in emptyfiles(dep).to_list()
-            if _final_emptyfile_path(ctx, f) not in empty_files and _final_emptyfile_path(ctx, f) not in available
-        })
-
     entrypoint = None
     if top_layer:
-        entrypoint = ctx.attr.entrypoint + [_binary_name(ctx)]
-        workdir = ctx.attr.workdir or "/".join([_runfiles_dir(ctx), ctx.workspace_name])
+        entrypoint = ctx.attr.entrypoint + ["/app"]
+        workdir = ctx.attr.workdir or _reference_dir(ctx)
         symlinks.update({
             # Create a symlink from our entrypoint to where it will actually be put
             # under runfiles.
-            _binary_name(ctx): _final_file_path(ctx, ctx.executable.binary),
+            "/app": layer_file_path(ctx, ctx.executable.binary),
             # Create a directory symlink from <workspace>/external to the runfiles
             # root, since they may be accessed via either path.
             _external_dir(ctx): _runfiles_dir(ctx),
@@ -263,7 +215,7 @@ _app_layer = rule(
         # If not specified, then the layer will be treated as the top layer,
         # and all remaining deps of "binary" will be added under runfiles.
         "dep": attr.label(),
-        "directory": attr.string(default = "/app"),
+        "directory": attr.string(default = "/app.runfiles"),
         "entrypoint": attr.string_list(default = []),
         "legacy_run_behavior": attr.bool(default = False),
         "workdir": attr.string(default = ""),
