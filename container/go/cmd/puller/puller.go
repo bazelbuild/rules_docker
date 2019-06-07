@@ -31,7 +31,7 @@ var (
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
 	osVersion       = flag.String("os-version", "", "Image's operating system version, if referring to a multi-platform manifest list.")
-	osFeature       = flag.String("os-features", "", "Image's operating system features, if referring to a multi-platform manifest list.")
+	osFeatures      = flag.String("os-features", "", "Image's operating system features, if referring to a multi-platform manifest list.")
 	variant         = flag.String("variant", "", "Image's CPU variant, if referring to a multi-platform manifest list.")
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
