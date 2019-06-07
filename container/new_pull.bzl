@@ -18,30 +18,6 @@ Bazel rule for downloading base images without a Docker client to
 construct new images.
 """
 
-def python(repository_ctx):
-    """Resolves the python path.
-
-    Args:
-      repository_ctx: The repository context
-
-    Returns:
-      The path to the python interpreter
-    """
-
-    if "BAZEL_PYTHON" in repository_ctx.os.environ:
-        return repository_ctx.os.environ.get("BAZEL_PYTHON")
-
-    python_path = repository_ctx.which("python2")
-    if not python_path:
-        python_path = repository_ctx.which("python")
-    if not python_path:
-        python_path = repository_ctx.which("python.exe")
-    if python_path:
-        return python_path
-
-    fail("rules_docker requires a python interpreter installed. " +
-         "Please set BAZEL_PYTHON, or put it on your path.")
-
 _container_pull_attrs = {
     "architecture": attr.string(
         default = "amd64",
@@ -94,7 +70,8 @@ _container_pull_attrs = {
     ),
     "_puller": attr.label(
         executable = True,
-        default = Label("@puller//file:downloaded"),
+        # default = Label("@io_bazel_rules_docker//container/go/cmd/puller:puller"),
+        default = Label("@puller//:puller"),
         cfg = "host",
     ),
 }
@@ -118,31 +95,31 @@ container_import(
 
 exports_files(["image.digest", "digest"])
 """)
+    # print(repository_ctx.path(repository_ctx.attr._puller))
 
     args = [
-        python(repository_ctx),
         repository_ctx.path(repository_ctx.attr._puller),
-        "--directory",
+        "-directory",
         repository_ctx.path("image"),
-        "--os",
+        "-os",
         repository_ctx.attr.os,
-        "--os-version",
+        "-os-version",
         repository_ctx.attr.os_version,
-        "--os-features",
+        "-os-features",
         " ".join(repository_ctx.attr.os_features),
-        "--architecture",
+        "-architecture",
         repository_ctx.attr.architecture,
-        "--variant",
+        "-variant",
         repository_ctx.attr.cpu_variant,
-        "--features",
-        " ".join(repository_ctx.attr.platform_features),
+        "-features",
+        " ".join(repository_ctx.attr.platform_features)
     ]
 
-    print(args)
+    # print(args)
 
     # Use the custom docker client config directory if specified.
     if repository_ctx.attr.docker_client_config != "":
-        args += ["--client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
+        args += ["-client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
 
     cache_dir = repository_ctx.os.environ.get("DOCKER_REPO_CACHE")
     if cache_dir:
@@ -150,14 +127,14 @@ exports_files(["image.digest", "digest"])
             cache_dir = cache_dir.replace("~", repository_ctx.os.environ["HOME"], 1)
 
         args += [
-            "--cache",
+            "-cache",
             cache_dir,
         ]
 
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
     if repository_ctx.attr.digest:
         args += [
-            "--name",
+            "-name",
             "{registry}/{repository}@{digest}".format(
                 registry = repository_ctx.attr.registry,
                 repository = repository_ctx.attr.repository,
@@ -166,7 +143,7 @@ exports_files(["image.digest", "digest"])
         ]
     else:
         args += [
-            "--name",
+            "-name",
             "{registry}/{repository}:{tag}".format(
                 registry = repository_ctx.attr.registry,
                 repository = repository_ctx.attr.repository,
@@ -183,11 +160,9 @@ exports_files(["image.digest", "digest"])
         fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
 
     updated_attrs = {
-        k: getattr(repository_ctx.attr, k)
-        for k in _container_pull_attrs.keys()
+        k: getattr(repository_ctx.attr, k) for k in _container_pull_attrs.keys()
     }
     updated_attrs["name"] = repository_ctx.name
-    print(" ".join(args))
 
     digest_result = repository_ctx.execute(["cat", repository_ctx.path("image/digest")])
     if digest_result.return_code:
@@ -219,7 +194,7 @@ pull = struct(
 
 # This rule pulls a container image into our intermediate format.  The
 # output of this rule can be used interchangeably with `docker_build`.
-container_pull = repository_rule(
+new_container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,
     environ = [

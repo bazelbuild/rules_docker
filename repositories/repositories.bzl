@@ -57,13 +57,18 @@ def repositories():
     excludes = native.existing_rules().keys()
 
     if "puller" not in excludes:
-        http_file(
+        # http_file(
+        #     name = "puller",
+        #     executable = True,
+        #     sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
+        #     urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+        #              CONTAINERREGISTRY_RELEASE + "/puller.par")],
+        # )
+
+        native.local_repository(
             name = "puller",
-            executable = True,
-            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
-            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
-        )
+            path = "/usr/local/google/home/xwinxu/go_puller",
+        )        
 
     if "importer" not in excludes:
         http_file(

@@ -52,6 +52,7 @@ func main() {
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
+	log.Fatalf("here")
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
