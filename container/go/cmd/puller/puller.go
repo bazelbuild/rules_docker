@@ -20,29 +20,27 @@ package main
 import (
 	"flag"
 	"log"
-
-	"../../../../../go-containerregistry/pkg/authn"
-	// "github.com/google/go-containerregistry/pkg/authn"
+	"os"
 )
 
 var (
-	name            = flag.String("name", "", "The name of the docker image to pull and save. Supports fully-qualified tag or digest references.")
+	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
 	directory       = flag.String("directory", "", "Where to save the images files.")
-	clientConfigDir = flag.String("clientConfigDir", "", "The path to the directory where the client Docker configuration files are located. Overiddes the value from DOCKER_CONFIG.")
-	cache           = flag.String("cache", "", "Image's files cache directory.")
-	threads         = 8
+	clientConfigDir = flag.String("client-config-dir", "", "Specifies where the custom docker config.json is located. Overiddes the value from DOCKER_CONFIG.")
+	cachePath       = flag.String("cache", "", "Image's files cache directory.")
+	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
+	os1             = flag.String("os", "linux", "The image's OS, if referring to a multi-platform manifest list. Default linux.")
+	osVers          = flag.String("os-version", "", "The image's os version to pull if referring to a multi-platform manifest list.")
+	osFeat          = flag.String("os-feature", "", "The image's os features when pulling a multi-platform manifest list.")
+	variant         = flag.String("variant", "", "The desired CPU variant when image refers to a multi-platform manifest list.")
+	features        = flag.String("features", "", "The desired platform features when image refers to a multi-platform manifest list.")
 )
 
 func main() {
 	flag.Parse()
 	log.Println("Running the Image Puller to pull images from a Docker Registry...")
-	log.Println("Command line arguments:")
-	log.Printf("-name: %q", *name)
-	log.Printf("-directory: %q", *directory)
-	log.Printf("-clientConfigDir: %q", *clientConfigDir)
-	log.Printf("-cache: %q", *cache)
 
-	if *name == "" {
+	if *imgName == "" {
 		log.Fatalln("Required option -name was not specified.")
 	}
 	if *directory == "" {
@@ -52,8 +50,8 @@ func main() {
 	// If the user provided a client config directory, instruct the keychain resolver
 	// to use it to look for the docker client config
 	if *clientConfigDir != "" {
-		authn.SetDefaultKeychainConfigDir(*clientConfigDir)
+		os.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	log.Printf("Successfully pulled image %q into %q", *name, *directory)
+	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
