@@ -234,9 +234,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "2183e4fa62d0ebea3da1dd94ba7e64e02fb97ffa084972fb1a49f5f3a6cd7219",
-    strip_prefix = "rules_rust-adccbbad58411657102ab8168aee7c5f4ff3af4c",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/adccbbad58411657102ab8168aee7c5f4ff3af4c.tar.gz"],
+    sha256 = "29d9fc1cdbd737c51db5983d1ac8e64cdc684c4683bafbcc624d3d81de92a32f",
+    strip_prefix = "rules_rust-8417c8954efbd0cefc8dd84517b2afff5e907d5a",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/8417c8954efbd0cefc8dd84517b2afff5e907d5a.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -252,9 +252,9 @@ bazel_version(name = "bazel_version")
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "0073995c6e66b211f0e3f7d055e9f4dd4b3e38f3ae4995d963fbec76886ef405",
-    strip_prefix = "rules_d-4602eae4dc9937d3a0b81d79f60b716d1d05f8fa",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/4602eae4dc9937d3a0b81d79f60b716d1d05f8fa.tar.gz"],
+    sha256 = "bf8d7e7d76f4abef5a732614ac06c0ccffbe5aa5fdc983ea4fa3a81ec68e1f8c",
+    strip_prefix = "rules_d-0579d30b7667a04b252489ab130b449882a7bdba",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/0579d30b7667a04b252489ab130b449882a7bdba.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
