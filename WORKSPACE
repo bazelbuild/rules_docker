@@ -314,8 +314,10 @@ rbe_autoconfig(
     name = "buildkite_config",
 )
 
+# gazelle:repo bazel_gazelle
+
 go_repository(
     name = "com_github_google_go_containerregistry",
-    commit = "1c6c7f61e8a5402b606c3c6db169fdcd1b0712b7",
+    commit = "6991786f93129be24f857070fe94754a9ea02a0a",
     importpath = "github.com/google/go-containerregistry",
 )
