@@ -23,9 +23,10 @@ import (
 	"log"
 	ospkg "os"
 
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
@@ -44,8 +45,13 @@ var (
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
+// Tag applied to images that were pulled by digest. This denotes that the
+// image was (probably) never tagged with this, but lets us avoid applying the
+// ":latest" tag which might be misleading.
 const iWasADigestTag = "i-was-a-digest"
 
+// NOTE: This function is mostly copied from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
+// with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional
 // cache files and required platform specifications.
 func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
@@ -84,38 +90,12 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
 
 	// file to write to
 	var dstFile string
-	dstFile = dstPath + imgName
-	// dstFile = dstPath + "/image/newIM"
+	// TODO(xwinxu): figure out the output tarball mechanism, currently hard coded to "img"
+	dstFile = dstPath + "/" + "img"
 
-	// log.Println(dstFile)
-	// var hash v1.Hash
-	// if hash, err = i.Digest(); err != nil {
-	// 	log.Fatalf("image does not contain a digest")
-	// }
-	// var imgeIdx v1.ImageIndex
-	// if imgeIdx, err = remote.Index(ref); err != nil {
-	// 	log.Fatalf("image index generation unsuccessful")
-	// }
-	// if imgeIdx, err = layout.ImageIndexFromPath("dstFile/usr/local/google/home/xwinxu/.cache/bazel/_bazel_xwinxu/0458725fb0c356861a05660e4f1704aa/external/new_distroless_base/imagenewIM"); err != nil {
-	// 	log.Fatalf("image index generation  failed.")
-	// }
-
-	// var imgIdx v1.ImageIndex
-	// if imgIdx, err = imgeIdx.ImageIndex(hash); err != nil {
-	// 	log.Fatalf("generating image index from image failed")
-	// }
-
-	if _, err := tarball.WriteToFile(dstFile, tag, i); err != nil {
-		// if err := tarball.MultiWriteToFile(dstPath, map[name.Tag]v1.Image{tag: i}); err != nil {
+	if err := tarball.WriteToFile(dstFile, tag, i); err != nil {
 		log.Fatalf("writing image %q: %v", dstFile, err)
 	}
-
-	// untar the compressed image and rename the configuration file to config.json
-	// cmd := exec.Command("tar", "-xvf", dstFile)
-	// if err := cmd.Run(); err != nil {
-	// 	log.Fatalf("unable to untar the image %q", dstFile)
-	// }
-
 }
 
 func main() {
