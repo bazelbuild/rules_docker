@@ -23,11 +23,9 @@ import (
 	"log"
 	ospkg "os"
 
-	// v1 "github.com/google/go-containerregistry/pkg/v1"
-	v1 "../../../../../go-containerregistry/pkg/v1"
-
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
@@ -84,9 +82,40 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
 		}
 	}
 
-	if err := tarball.WriteToFile(dstPath, tag, i); err != nil {
-		log.Fatalf("writing image %q: %v", dstPath, err)
+	// file to write to
+	var dstFile string
+	dstFile = dstPath + imgName
+	// dstFile = dstPath + "/image/newIM"
+
+	// log.Println(dstFile)
+	// var hash v1.Hash
+	// if hash, err = i.Digest(); err != nil {
+	// 	log.Fatalf("image does not contain a digest")
+	// }
+	// var imgeIdx v1.ImageIndex
+	// if imgeIdx, err = remote.Index(ref); err != nil {
+	// 	log.Fatalf("image index generation unsuccessful")
+	// }
+	// if imgeIdx, err = layout.ImageIndexFromPath("dstFile/usr/local/google/home/xwinxu/.cache/bazel/_bazel_xwinxu/0458725fb0c356861a05660e4f1704aa/external/new_distroless_base/imagenewIM"); err != nil {
+	// 	log.Fatalf("image index generation  failed.")
+	// }
+
+	// var imgIdx v1.ImageIndex
+	// if imgIdx, err = imgeIdx.ImageIndex(hash); err != nil {
+	// 	log.Fatalf("generating image index from image failed")
+	// }
+
+	if _, err := tarball.WriteToFile(dstFile, tag, i); err != nil {
+		// if err := tarball.MultiWriteToFile(dstPath, map[name.Tag]v1.Image{tag: i}); err != nil {
+		log.Fatalf("writing image %q: %v", dstFile, err)
 	}
+
+	// untar the compressed image and rename the configuration file to config.json
+	// cmd := exec.Command("tar", "-xvf", dstFile)
+	// if err := cmd.Run(); err != nil {
+	// 	log.Fatalf("unable to untar the image %q", dstFile)
+	// }
+
 }
 
 func main() {
@@ -105,6 +134,7 @@ func main() {
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
+
 	// log.Fatalf("here")
 
 	// Create a Platform struct with arguments
@@ -120,5 +150,4 @@ func main() {
 	pull(*imgName, *directory, *cachePath, platform)
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
-
 }

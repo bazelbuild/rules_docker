@@ -13,16 +13,36 @@
 # limitations under the License.
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@bazel_gazelle//:def.bzl", "gazelle")
 
-go_library(
-    name = "new_container_puller",
-    srcs = ["puller.go"],
-    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/puller",
-    visibility = ["//visibility:private"],
-)
+# gazelle:prefix github.com/bazelbuild/rules_docker
+gazelle(name = "gazelle")
+
+# go_library(
+#     name = "new_container_puller",
+#     srcs = ["puller.go"],
+#     importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/puller",
+#     visibility = ["//visibility:private"],
+#     # deps = ["@com_github_google_go_containerregistry"],
+# )
 
 go_binary(
     name = "puller",
-    embed = [":new_container_puller"],
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["puller.go"],
+    importpath = "github.com/bazelbuild/rules_docker",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/name:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/cache:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
+    ],
 )

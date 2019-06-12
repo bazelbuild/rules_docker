@@ -190,6 +190,7 @@ exports_files(["image.digest", "digest"])
     print(" ".join(args))
 
     digest_result = repository_ctx.execute(["cat", repository_ctx.path("image/digest")])
+    print(digest_result.stdout)
     if digest_result.return_code:
         fail("Failed to read digest: %s" % digest_result.stderr)
     updated_attrs["digest"] = digest_result.stdout

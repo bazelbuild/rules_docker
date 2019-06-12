@@ -38,7 +38,6 @@ load(
     "container_load",
     "container_pull",
 )
-
 load(
     "//container:new_pull.bzl",
     "new_container_pull",
@@ -233,6 +232,8 @@ go_register_toolchains()
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
+# Make gazelle happy because we import bazel_gazelle in //repositories:repositories.bzl.
+# gazelle:repo bazel_gazelle
 gazelle_dependencies()
 
 # Have the go_image dependencies for testing.
@@ -328,6 +329,17 @@ rbe_autoconfig(
 
 go_repository(
     name = "com_github_google_go_containerregistry",
-    commit = "1c6c7f61e8a5402b606c3c6db169fdcd1b0712b7",
+    build_file_generation = "on",
+    commit = "6991786f93129be24f857070fe94754a9ea02a0a",
     importpath = "github.com/google/go-containerregistry",
 )
+
+#### For use with other PRs, change commit number
+# go_repository(
+#     name = "com_github_xiaohegong_go_containerregistry",
+#     commit = "de3c6ea2f306de86e3df3b7267bbd7c3b2b5da05",
+#     importpath = "github.com/google/go-containerregistry",
+#     build_file_generation = "on",
+#     remote = "https://github.com/xiaohegong/go-containerregistry",
+#     vcs = "git",
+# )
