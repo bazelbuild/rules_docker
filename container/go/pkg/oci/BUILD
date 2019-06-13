@@ -8,5 +8,6 @@ go_library(
     deps = [
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
     ],
 )

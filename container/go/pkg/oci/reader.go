@@ -14,37 +14,38 @@
 //////////////////////////////////////////////////////////////////////
 // Reads an OCI image layout on disk.
 // https://github.com/opencontainers/image-spec/blob/master/image-layout.md
-package reader
+package oci
 
 import (
-	"log"
+	"fmt"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-
 	"github.com/google/go-containerregistry/pkg/v1/layout"
+	"github.com/pkg/errors"
 )
 
-// Read gets and returns the image in the given path <src> that follows the OCI Image Layout.
+// Read returns a docker image from the given path. The docker image should have been written by "Write".
+// The image in the given path <src> follows the OCI Image Layout.
 // (https://github.com/opencontainers/image-spec/blob/master/image-layout.md#oci-image-layout-specification)
 // Specifically, <src> must contains "index.json" that servers as an entrypoint for the contained image.
 // The image content and configs must be non-empty and stored in <src>/blobs/<SHAxxx>/.
 // NOTE: this only reads index with a single image.
-func Read(src string) v1.Image {
-	// Open the layout at /src as an Image Index.
+func Read(src string) (v1.Image, error) {
+	// Reading the image layout.
 	idx, err := layout.ImageIndexFromPath(src)
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.Wrapf(err, "unable to read image from %s", src)
 	}
 
 	// Read the contents of the layout -- we expect to find a single image.
 	// TODO (xiaohegong): handle case with multiple manifests.
 	manifest, err := idx.IndexManifest()
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.Wrapf(err, "unable to read image from %s", src)
 	}
 
 	if len(manifest.Manifests) > 1 {
-		log.Fatalf("found %d manifests, expected 1", len(manifest.Manifests))
+		return nil, fmt.Errorf("got %d manifests, want 1", len(manifest.Manifests))
 	}
 
 	// Read that single image as a v1.Image and return it.
@@ -52,7 +53,8 @@ func Read(src string) v1.Image {
 
 	img, err := idx.Image(digest)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf(err.Error())
 	}
-	return img
+
+	return img, nil
 }
