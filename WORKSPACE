@@ -178,9 +178,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "d50b071d6be3ba9860a9c70dcabdcce5d9024efb18548799ba1191188ba844dd",
-    strip_prefix = "rules_scala-7ffc700e32cc72d13be91dab366dd960c17a4c48",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/7ffc700e32cc72d13be91dab366dd960c17a4c48.tar.gz"],
+    sha256 = "4889a1ea12fa3b3535181f8fc2c8c0e1be426348a4063e100dc9bc9c9741af2a",
+    strip_prefix = "rules_scala-73e266be96037ff351f0d3aa01238ed4c6f7271c",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/73e266be96037ff351f0d3aa01238ed4c6f7271c.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -234,9 +234,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "2183e4fa62d0ebea3da1dd94ba7e64e02fb97ffa084972fb1a49f5f3a6cd7219",
-    strip_prefix = "rules_rust-adccbbad58411657102ab8168aee7c5f4ff3af4c",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/adccbbad58411657102ab8168aee7c5f4ff3af4c.tar.gz"],
+    sha256 = "29d9fc1cdbd737c51db5983d1ac8e64cdc684c4683bafbcc624d3d81de92a32f",
+    strip_prefix = "rules_rust-8417c8954efbd0cefc8dd84517b2afff5e907d5a",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/8417c8954efbd0cefc8dd84517b2afff5e907d5a.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -252,9 +252,9 @@ bazel_version(name = "bazel_version")
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "0073995c6e66b211f0e3f7d055e9f4dd4b3e38f3ae4995d963fbec76886ef405",
-    strip_prefix = "rules_d-4602eae4dc9937d3a0b81d79f60b716d1d05f8fa",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/4602eae4dc9937d3a0b81d79f60b716d1d05f8fa.tar.gz"],
+    sha256 = "bf8d7e7d76f4abef5a732614ac06c0ccffbe5aa5fdc983ea4fa3a81ec68e1f8c",
+    strip_prefix = "rules_d-0579d30b7667a04b252489ab130b449882a7bdba",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/0579d30b7667a04b252489ab130b449882a7bdba.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
@@ -300,11 +300,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "c6159396a571280c71d072a38147d43dcb44f78fc15976d0d47e6d0bf015458d",
-    strip_prefix = "bazel-toolchains-0.26.1",
+    sha256 = "37cdd6e1ba444cfc7c93d68e906cb9f00bf4511723f9ebe5955a1bbbb632de02",
+    strip_prefix = "bazel-toolchains-0.26.2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.26.1.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.26.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.26.2.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.26.2.tar.gz",
     ],
 )
 
@@ -314,8 +314,10 @@ rbe_autoconfig(
     name = "buildkite_config",
 )
 
+# gazelle:repo bazel_gazelle
+
 go_repository(
     name = "com_github_google_go_containerregistry",
-    commit = "1c6c7f61e8a5402b606c3c6db169fdcd1b0712b7",
+    commit = "6991786f93129be24f857070fe94754a9ea02a0a",
     importpath = "github.com/google/go-containerregistry",
 )
