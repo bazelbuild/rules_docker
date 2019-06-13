@@ -64,7 +64,7 @@ def repositories():
             sha256 = "59b8faec497bb73069e1cc525f655b5b5f860864371db12a233b64decfc325ff",
             urls = [(" https://storage.googleapis.com/rules_docker/b0f78e9c51dbeb5bc52f89339e7325fa3140424e/puller-linux-amd64")],
         )
-    
+
     if "puller" not in excludes:
         # Old puller binary pin.
         http_file(
