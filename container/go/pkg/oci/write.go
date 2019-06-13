@@ -26,21 +26,10 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/layout"
 )
 
-// Path represents an OCI image layout ooted in a file system path
-var path layout.Path
-
-// Write writes a v1.Image to the Path and updates the index.json to reference it.
-// This is just syntactic sugar wrapping Path.AppendImage from the go-container registry.
-// func Write(img v1.Image, path layout.Path) error {
-// 	if err := path.AppendImage(img); err != nil {
-// 		return fmt.Errorf("unable to write image to path")
-// 	}
-// 	return nil
-// }
-
 // Write writes a v1.Image to the Path and updates the index.json to reference it.
 // This is just syntactic sugar wrapping Path.AppendImage from the go-container registry.
 func Write(img v1.Image, dstPath string) error {
+	// Path represents an OCI image layout ooted in a file system path
 	var path layout.Path
 	var err error
 
