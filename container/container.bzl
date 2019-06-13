@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Rules for manipulation container images."""
+# TODO(xwinxu): modify for the new container rules using go container registry
 
 load("//container:bundle.bzl", _container_bundle = "container_bundle")
 load("//container:flatten.bzl", _container_flatten = "container_flatten")
@@ -36,6 +37,7 @@ container_load = _container_load
 container = struct(
     image = image,
 )
+<<<<<<< HEAD
 
 """ For the new container rules using go container registry."""
 
@@ -62,3 +64,5 @@ container = struct(
 # container = struct(
 #     image = image,
 # )
+=======
+>>>>>>> b50af34c89ce9827013368eef647d623d49b4e47
