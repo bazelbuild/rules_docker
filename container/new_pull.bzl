@@ -70,9 +70,7 @@ _container_pull_attrs = {
     ),
     "_puller": attr.label(
         executable = True,
-        default = Label("@io_bazel_rules_docker//container/go/cmd/puller:puller"),
-        # Below for use with local repository.
-        # default = Label("@puller//:puller"),
+        default = Label("@go_puller//file:downloaded"),
         cfg = "host",
     ),
 }
