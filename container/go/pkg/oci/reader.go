@@ -31,7 +31,6 @@ import (
 // The image content and configs must be non-empty and stored in <src>/blobs/<SHAxxx>/.
 // NOTE: this only reads index with a single image.
 func Read(src string) (v1.Image, error) {
-	// Reading the image layout.
 	idx, err := layout.ImageIndexFromPath(src)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to read image from %s", src)
@@ -53,7 +52,7 @@ func Read(src string) (v1.Image, error) {
 
 	img, err := idx.Image(digest)
 	if err != nil {
-		return nil, fmt.Errorf(err.Error())
+		return nil, errors.Wrapf(err, "unable to load image with digest %s obtained from the manifest", digest)
 	}
 
 	return img, nil
