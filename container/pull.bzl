@@ -100,7 +100,7 @@ _container_pull_attrs = {
 }
 
 def _impl(repository_ctx):
-    """Core implementation of container_pull."""
+    """Implementation of container_pull."""
 
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
