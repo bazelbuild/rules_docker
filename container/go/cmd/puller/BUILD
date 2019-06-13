@@ -11,18 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ###
+# Build file for new puller binary based on go-containerregistry backend.
 
+load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-go_library(
-    name = "new_container_puller",
-    srcs = ["puller.go"],
-    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/puller",
-    visibility = ["//visibility:private"],
-)
+# gazelle:prefix github.com/bazelbuild/rules_docker
+gazelle(name = "gazelle")
 
 go_binary(
     name = "puller",
-    embed = [":new_container_puller"],
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["puller.go"],
+    importpath = "github.com/bazelbuild/rules_docker",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//container/go/pkg/oci:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/name:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/cache:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
+    ],
 )
