@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ###
+# ####
 # Build for the new writer function to write OCI Format Images to disk.
 
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
