@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-// This binary pulls images from a Docker Registry.
+// This binary pulls images from a Docker Registry using the go-containerregistry as backend.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
@@ -49,7 +49,7 @@ var (
 // ":latest" tag which might be misleading.
 const iWasADigestTag = "i-was-a-digest"
 
-// NOTE: This function is mostly copied from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
+// NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional
 // cache files and required platform specifications.

@@ -13,6 +13,7 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary writes images into the OCI Image Layout format.
+// Uses the go-containerregistry API as backend.
 
 package oci
 
