@@ -57,13 +57,28 @@ def repositories():
     excludes = native.existing_rules().keys()
 
     if "puller" not in excludes:
+        # New puller binary pin.
         http_file(
             name = "puller",
             executable = True,
-            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
-            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
+            sha256 = "59b8faec497bb73069e1cc525f655b5b5f860864371db12a233b64decfc325ff",
+            urls = [(" https://storage.googleapis.com/rules_docker/b0f78e9c51dbeb5bc52f89339e7325fa3140424e/puller-linux-amd64")],
         )
+
+        # Old puller binary pin.
+        # http_file(
+        #     name = "puller",
+        #     executable = True,
+        #     sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
+        #     urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+        #              CONTAINERREGISTRY_RELEASE + "/puller.par")],
+        # )
+
+        # Use for local testing if there is a local repository set up.
+        # native.local_repository(
+        #     name = "puller",
+        #     path = "/usr/local/google/home/xwinxu/go_puller",
+        # )
 
     if "importer" not in excludes:
         http_file(
