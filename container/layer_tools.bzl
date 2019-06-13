@@ -219,6 +219,7 @@ def incremental_load(
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{load_statements}": "\n".join(load_statements),
             "%{run_statements}": "\n".join(run_statements),
+            "%{run}": str(run),
             # If this rule involves stamp variables than load them as bash
             # variables, and turn references to them into bash variable
             # references.

@@ -70,8 +70,9 @@ _container_pull_attrs = {
     ),
     "_puller": attr.label(
         executable = True,
-        # default = Label("@io_bazel_rules_docker//container/go/cmd/puller:puller"),
-        default = Label("@puller//:puller"),
+        default = Label("@io_bazel_rules_docker//container/go/cmd/puller:puller"),
+        # Below for use with local repository.
+        # default = Label("@puller//:puller"),
         cfg = "host",
     ),
 }
@@ -112,7 +113,7 @@ exports_files(["image.digest", "digest"])
         "-variant",
         repository_ctx.attr.cpu_variant,
         "-features",
-        " ".join(repository_ctx.attr.platform_features)
+        " ".join(repository_ctx.attr.platform_features),
     ]
 
     # print(args)
@@ -163,7 +164,8 @@ exports_files(["image.digest", "digest"])
         fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
 
     updated_attrs = {
-        k: getattr(repository_ctx.attr, k) for k in _container_pull_attrs.keys()
+        k: getattr(repository_ctx.attr, k)
+        for k in _container_pull_attrs.keys()
     }
     updated_attrs["name"] = repository_ctx.name
 
@@ -175,10 +177,10 @@ exports_files(["image.digest", "digest"])
 
     if repository_ctx.attr.digest != updated_attrs["digest"]:
         fail(("SHA256 of the image specified does not match SHA256 of the pulled image. " +
-            "Expected {}, but pulled image with {}. " +
-            "It is possible that you have a pin to a manifest list " +
-            "which points to another image, if so, " +
-            "change the pin to point at the actual Docker image").format(
+              "Expected {}, but pulled image with {}. " +
+              "It is possible that you have a pin to a manifest list " +
+              "which points to another image, if so, " +
+              "change the pin to point at the actual Docker image").format(
             repository_ctx.attr.digest,
             updated_attrs["digest"],
         ))
@@ -186,7 +188,6 @@ exports_files(["image.digest", "digest"])
     # Add image.digest for compatibility with container_digest, which generates
     # foo.digest for an image named foo.
     repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
-        
 
     return updated_attrs
 
