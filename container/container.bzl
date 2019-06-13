@@ -37,32 +37,3 @@ container_load = _container_load
 container = struct(
     image = image,
 )
-<<<<<<< HEAD
-
-""" For the new container rules using go container registry."""
-
-# load("//container:bundle.bzl", _container_bundle = "new_container_bundle")
-# load("//container:flatten.bzl", _container_flatten = "new_container_flatten")
-# load("//container:image.bzl", new_container_image = "container_image", _image = "image")
-# load("//container:import.bzl", _container_import = "new_container_import")
-# load("//container:layer.bzl", _container_layer = "new_container_layer")
-# load("//container:load.bzl", _container_load = "new_container_load")
-# load("//container:new_pull.bzl", __container_pull = "new_container_pull")
-# load("//container:push.bzl", _container_push = "new_container_push")
-
-# Explicitly re-export the functions
-# container_bundle = _container_bundle
-# container_flatten = _container_flatten
-# container_image = _container_image
-# image = _image
-# container_layer = _container_layer
-# container_import = _container_import
-# new_container_pull = __container_pull
-# container_push = _container_push
-# container_load = _container_load
-
-# container = struct(
-#     image = image,
-# )
-=======
->>>>>>> b50af34c89ce9827013368eef647d623d49b4e47
