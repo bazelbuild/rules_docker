@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-<<<<<<< HEAD
 # ####
 # Build file for new puller binary based on go-containerregistry backend.
 
@@ -41,27 +40,3 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
     ],
 )
-=======
-
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-
-go_library(
-    name = "go_default_library",
-    srcs = ["puller.go"],
-    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/puller",
-    visibility = ["//visibility:private"],
-    deps = [
-        "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/name:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
-    ],
-)
-
-go_binary(
-    name = "puller",
-    embed = [":go_default_library"],
-    visibility = ["//visibility:public"],
-)
->>>>>>> 116657d9cae424f6ec2114d4e84cf68fc629ac00

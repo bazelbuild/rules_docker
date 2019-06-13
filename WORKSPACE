@@ -39,18 +39,6 @@ load(
     "container_pull",
 )
 
-load(
-    "//container:new_pull.bzl",
-    "new_container_pull",
-)
-
-# For go-containerregistry rule tests
-new_container_pull(
-    name = "new_distroless_base",
-    registry = "gcr.io",
-    repository = "distroless/base",
-)
-
 # These are for testing.
 container_pull(
     name = "distroless_base",

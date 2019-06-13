@@ -138,8 +138,6 @@ exports_files(["image.digest", "digest"])
         " ".join(repository_ctx.attr.platform_features),
     ]
 
-    print(args)
-
     # Use the custom docker client config directory if specified.
     if repository_ctx.attr.docker_client_config != "":
         args += ["--client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
@@ -187,7 +185,6 @@ exports_files(["image.digest", "digest"])
         for k in _container_pull_attrs.keys()
     }
     updated_attrs["name"] = repository_ctx.name
-    print(" ".join(args))
 
     digest_result = repository_ctx.execute(["cat", repository_ctx.path("image/digest")])
     if digest_result.return_code:
