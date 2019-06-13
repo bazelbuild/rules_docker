@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-// This binary writes images into a tarball format.
-// Disclaimer: we will change the package name from tarball to a more efficient format once it is implemented in the future.
+// This binary writes images into the OCI Image Layout format.
 
 package oci
 
