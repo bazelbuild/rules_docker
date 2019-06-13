@@ -29,7 +29,7 @@ import (
 // Specifically, <src> must contains "index.json" that servers as an entrypoint
 // for the contained image. The image content and configs must be non-empty
 // and stored in <src>/blobs/<SHAxxx>/.
-// Note: t
+// NOTE: this only reads index with a single image
 func Read(src string) v1.Image {
 	// Open the layout at /src as an Image Index.
 	idx, err := layout.ImageIndexFromPath(src)
