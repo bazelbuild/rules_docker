@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "new_container_puller",
+    name = "go_default_library",
     srcs = ["puller.go"],
     importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/puller",
     visibility = ["//visibility:private"],
@@ -27,4 +27,10 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
     ],
+)
+
+go_binary(
+    name = "puller",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
 )
