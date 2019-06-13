@@ -185,7 +185,7 @@ exports_files(["image.digest", "digest"])
         for k in _container_pull_attrs.keys()
     }
     updated_attrs["name"] = repository_ctx.name
-    
+
     digest_result = repository_ctx.execute(["cat", repository_ctx.path("image/digest")])
     if digest_result.return_code:
         fail("Failed to read digest: %s" % digest_result.stderr)
