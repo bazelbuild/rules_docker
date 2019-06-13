@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of container_pull based on google/containerregistry.
+"""An new implementation of container_pull based on google/containerregistry using google/go-containerregistry.
 
-This wraps the containerregistry.tools.fast_puller executable in a
+This wraps the rulesdocker.go.cmd.puller.puller executable in a
 Bazel rule for downloading base images without a Docker client to
 construct new images.
 """
