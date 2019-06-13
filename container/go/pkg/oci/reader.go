@@ -26,10 +26,9 @@ import (
 
 // Read gets and returns the image in the given path <src> that follows the OCI Image Layout.
 // (https://github.com/opencontainers/image-spec/blob/master/image-layout.md#oci-image-layout-specification)
-// Specifically, <src> must contains "index.json" that servers as an entrypoint
-// for the contained image. The image content and configs must be non-empty
-// and stored in <src>/blobs/<SHAxxx>/.
-// NOTE: this only reads index with a single image
+// Specifically, <src> must contains "index.json" that servers as an entrypoint for the contained image.
+// The image content and configs must be non-empty and stored in <src>/blobs/<SHAxxx>/.
+// NOTE: this only reads index with a single image.
 func Read(src string) v1.Image {
 	// Open the layout at /src as an Image Index.
 	idx, err := layout.ImageIndexFromPath(src)
@@ -38,7 +37,7 @@ func Read(src string) v1.Image {
 	}
 
 	// Read the contents of the layout -- we expect to find a single image.
-	// TODO (xiaohegong): handle case with multiple manifests
+	// TODO (xiaohegong): handle case with multiple manifests.
 	manifest, err := idx.IndexManifest()
 	if err != nil {
 		log.Fatal(err)
