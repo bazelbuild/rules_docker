@@ -14,6 +14,7 @@
 # ###
 # Build for the new writer function to write OCI Format Images to disk.
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
 go_library(
     name = "go_default_library",
     srcs = [
