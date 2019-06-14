@@ -21,6 +21,7 @@ import (
 	"flag"
 	"log"
 	ospkg "os"
+	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -53,7 +54,7 @@ const iWasADigestTag = "i-was-a-digest"
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional
 // cache files and required platform specifications.
-func pull(imgName, dstPath, cachePath string, platform *v1.Platform) {
+func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -62,7 +63,7 @@ func pull(imgName, dstPath, cachePath string, platform *v1.Platform) {
 	log.Printf("Pulling %v", ref)
 
 	// Fetch the image with desired cache files and platform specs.
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(*platform))
+	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
 	if err != nil {
 		log.Fatalf("reading image %q: %v", ref, err)
 	}
@@ -99,12 +100,12 @@ func main() {
 		Architecture: *arch,
 		OS:           *os,
 		OSVersion:    *osVersion,
-		OSFeatures:   []string{*osFeatures},
+		OSFeatures:   strings.Fields(*osFeatures),
 		Variant:      *variant,
-		Features:     []string{*features},
+		Features:     strings.Fields(*features),
 	}
 
-	pull(*imgName, *directory, *cachePath, &platform)
+	pull(*imgName, *directory, *cachePath, platform)
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
