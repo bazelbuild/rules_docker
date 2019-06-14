@@ -1,0 +1,52 @@
+# Copyright 2017 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This cloudbuild.yaml file is used to release the go puller binary.
+
+timeout: 21600s
+options:
+    machineType: "N1_HIGHCPU_32"
+
+steps:
+# Step: print the bazel version for record
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "version"
+    id: "version"
+    waitFor: ["-"]   # wait for nothing - start immediately
+
+# TODO(xingao): Once we have tests for the go binary, run the tests before
+# pushing the binaries to GCS.
+
+# TODO(xingao): Once https://github.com/bazelbuild/rules_go/issues/2089 is fixed,
+# Release go binary built for darwin_amd64.
+
+# Step: build the Linux release binary
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "build"
+      - "--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64"
+      - "//container/go/cmd/puller:puller"
+    id: "build-linux"
+    waitFor: ["version"]
+
+# Step: push the Linux release binary
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/puller/linux_amd64_stripped/puller"
+      - "gs://rules_docker/$COMMIT_SHA/puller-linux-amd64"
+    waitFor: ["build-linux"]
