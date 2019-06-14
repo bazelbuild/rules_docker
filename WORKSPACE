@@ -321,3 +321,9 @@ go_repository(
     commit = "6991786f93129be24f857070fe94754a9ea02a0a",
     importpath = "github.com/google/go-containerregistry",
 )
+
+go_repository(
+    name = "com_github_pkg_errors",
+    commit = "27936f6d90f9c8e1145f11ed52ffffbfdb9e0af7",
+    importpath = "github.com/pkg/errors",
+)
