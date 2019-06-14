@@ -53,7 +53,7 @@ const iWasADigestTag = "i-was-a-digest"
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional
 // cache files and required platform specifications.
-func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
+func pull(imgName, dstPath, cachePath string, platform *v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -62,7 +62,7 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
 	log.Printf("Pulling %v", ref)
 
 	// Fetch the image with desired cache files and platform specs.
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
+	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(*platform))
 	if err != nil {
 		log.Fatalf("reading image %q: %v", ref, err)
 	}
@@ -104,7 +104,7 @@ func main() {
 		Features:     []string{*features},
 	}
 
-	pull(*imgName, *directory, *cachePath, platform)
+	pull(*imgName, *directory, *cachePath, &platform)
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
