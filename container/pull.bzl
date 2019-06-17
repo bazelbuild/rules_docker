@@ -178,7 +178,7 @@ exports_files(["image.digest", "digest"])
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:
-        fail("Pull command failed: %s (%s)" % (result.stderr, " ".join(args)))
+        fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args])))
 
     updated_attrs = {
         k: getattr(repository_ctx.attr, k)
