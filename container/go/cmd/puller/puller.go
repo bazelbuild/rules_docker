@@ -54,7 +54,7 @@ const iWasADigestTag = "i-was-a-digest"
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional
 // cache files and required platform specifications.
-func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
+func pull(imgName, dstPath, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -102,7 +102,7 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	pull(*imgName, *directory, *cachePath, platform)
+	pull(*imgName, *directory, platform)
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
