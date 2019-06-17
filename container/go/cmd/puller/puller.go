@@ -37,7 +37,6 @@ var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
 	directory       = flag.String("directory", "", "Where to save the images files.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
-	cachePath       = flag.String("cache", "", "Image's files cache directory.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
 	osVersion       = flag.String("os-version", "", "Image's operating system version, if referring to a multi-platform manifest list.")
@@ -67,9 +66,6 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
 	if err != nil {
 		log.Fatalf("reading image %q: %v", ref, err)
-	}
-	if cachePath != "" {
-		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
 
 	// // Image file to write to disk.
