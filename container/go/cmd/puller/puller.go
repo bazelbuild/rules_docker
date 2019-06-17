@@ -51,8 +51,7 @@ const iWasADigestTag = "i-was-a-digest"
 
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
-// Pull the image with given <imgName> to destination <dstPath> with optional
-// cache files and required platform specifications.
+// Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
 func pull(imgName, dstPath string, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
