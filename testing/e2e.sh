@@ -445,7 +445,7 @@ function test_container_push_with_auth() {
   # Run the container_push test in the Bazel workspace that configured
   # the docker toolchain rule to use authentication.
   cd "${ROOT}/testing/custom_toolchain_auth"
-  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting authenticated container_push..."
   EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test)" "localhost:5000/docker/test:test was published"
   bazel clean
@@ -454,7 +454,7 @@ function test_container_push_with_auth() {
   # configured docker toolchain. The default configuration doesn't setup
   # authentication and this should fail.
   cd "${ROOT}/testing/default_toolchain"
-  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting unauthenticated container_push..."
   EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test  2>&1)" "Error publishing localhost:5000/docker/test:test"
   bazel clean
@@ -465,7 +465,7 @@ function test_container_pull_with_auth() {
   launch_private_registry_with_auth
 
   cd "${ROOT}/testing/custom_toolchain_auth"
-  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   # Remove the old image if it exists
   docker rmi bazel/image:image || true
   # Push the locally built container to the private repo
@@ -477,7 +477,7 @@ function test_container_pull_with_auth() {
   # configured docker toolchain. The default configuration doesn't setup
   # authentication and this should fail.
   cd "${ROOT}/testing/default_toolchain"
-  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting unauthenticated container_pull..."
   EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image 2>&1)" "Error pulling and saving image localhost:5000/docker/test:test"
 }
@@ -590,9 +590,8 @@ test_groovy_scala_image -c opt
 test_groovy_scala_image -c dbg
 test_rust_image -c opt
 test_rust_image -c dbg
-# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
-# test_d_image -c opt
-# test_d_image -c dbg
+test_d_image -c opt
+test_d_image -c dbg
 test_nodejs_image -c opt
 test_nodejs_image -c dbg
 test_container_push
