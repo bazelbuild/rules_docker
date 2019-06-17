@@ -44,11 +44,6 @@ var (
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
-// Tag applied to images that were pulled by digest. This denotes that the
-// image was (probably) never tagged with this, but lets us avoid applying the
-// ":latest" tag which might be misleading.
-const iWasADigestTag = "i-was-a-digest"
-
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
