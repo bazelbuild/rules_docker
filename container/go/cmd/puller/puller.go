@@ -1,4 +1,4 @@
-// Copyright 2015 The Bazel Authors. All rights reserved.
+/// Copyright 2015 The Bazel Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
-// The pulled image is in OCI Image Format and this binary can also accomodate manifest lists.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
@@ -44,16 +43,21 @@ var (
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
+// Tag applied to images that were pulled by digest. This denotes that the
+// image was (probably) never tagged with this, but lets us avoid applying the
+// ":latest" tag which might be misleading.
+const iWasADigestTag = "i-was-a-digest"
+
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
-// Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
+// Pull the image with given <imgName> to destination <dstPath> with optional
+// cache files and required platform specifications.
 func pull(imgName, dstPath string, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
 		log.Fatalf("parsing tag %q: %v", imgName, err)
 	}
-	log.Printf("Pulling %v", ref)
 
 	// Fetch the image with desired cache files and platform specs.
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
@@ -63,6 +67,7 @@ func pull(imgName, dstPath string, platform v1.Platform) {
 
 	// // Image file to write to disk.
 	if err := oci.Write(img, dstPath); err != nil {
+		// if err := oci.Write(img, path); err != nil {
 		log.Fatalf("failed to write image to %q: %v", dstPath, err)
 	}
 }
@@ -79,12 +84,12 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config.
+	// to use it to look for the docker client config
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	// Create a Platform struct with given arguments.
+	// Create a Platform struct with arguments
 	platform := v1.Platform{
 		Architecture: *arch,
 		OS:           *os,
