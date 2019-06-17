@@ -178,9 +178,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "4889a1ea12fa3b3535181f8fc2c8c0e1be426348a4063e100dc9bc9c9741af2a",
-    strip_prefix = "rules_scala-73e266be96037ff351f0d3aa01238ed4c6f7271c",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/73e266be96037ff351f0d3aa01238ed4c6f7271c.tar.gz"],
+    sha256 = "13653fbea1a7a3978b1929ee9894397feac0b6ca49ab5ec892917bdb1a8e9dab",
+    strip_prefix = "rules_scala-24b06eec5cedc25085203d588cca99e894a62345",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/24b06eec5cedc25085203d588cca99e894a62345.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -206,10 +206,10 @@ groovy_repositories()
 # For our go_image test.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "a82a352bffae6bee4e95f68a8d80a70e87f42c4741e6a448bec11998fcc82329",
+    sha256 = "f04d2373bcaf8aa09bccb08a98a57e721306c8f6043a2a0ee610fd6853dcde3d",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/0.18.5/rules_go-0.18.5.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/0.18.5/rules_go-0.18.5.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
     ],
 )
 
@@ -300,11 +300,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "37cdd6e1ba444cfc7c93d68e906cb9f00bf4511723f9ebe5955a1bbbb632de02",
-    strip_prefix = "bazel-toolchains-0.26.2",
+    sha256 = "e76afea244b1767e19fb38e1f1be448ebdf48d52ade0b3687c5794d8a1362fe8",
+    strip_prefix = "bazel-toolchains-0.26.3",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.26.2.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.26.2.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.26.3.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.26.3.tar.gz",
     ],
 )
 
