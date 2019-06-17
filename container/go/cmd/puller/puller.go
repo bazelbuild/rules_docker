@@ -13,6 +13,7 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
+// The pulled image is in OCI Image Format and this binary can also accomodate manifest lists.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
