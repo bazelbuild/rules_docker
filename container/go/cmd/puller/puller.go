@@ -1,4 +1,4 @@
-/// Copyright 2015 The Bazel Authors. All rights reserved.
+// Copyright 2015 The Bazel Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,7 +68,6 @@ func pull(imgName, dstPath string, platform v1.Platform) {
 
 	// // Image file to write to disk.
 	if err := oci.Write(img, dstPath); err != nil {
-		// if err := oci.Write(img, path); err != nil {
 		log.Fatalf("failed to write image to %q: %v", dstPath, err)
 	}
 }
