@@ -38,8 +38,8 @@ var (
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
-	osVersion       = flag.String("os-version", "", "Image's operating system version, if referring to a multi-platform manifest list.")
-	osFeatures      = flag.String("os-features", "", "Image's operating system features, if referring to a multi-platform manifest list.")
+	osVersion       = flag.String("os-version", "", "Image's operating system version, if referring to a multi-platform manifest list. Input strings are space separated.")
+	osFeatures      = flag.String("os-features", "", "Image's operating system features, if referring to a multi-platform manifest list. Input strings are space separated.")
 	variant         = flag.String("variant", "", "Image's CPU variant, if referring to a multi-platform manifest list.")
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
@@ -84,12 +84,12 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config
+	// to use it to look for the docker client config.
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	// Create a Platform struct with arguments
+	// Create a Platform struct with given arguments.
 	platform := v1.Platform{
 		Architecture: *arch,
 		OS:           *os,
