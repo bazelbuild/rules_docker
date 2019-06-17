@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 )
 
+// This test index is pulled by puller.go from gcr.io/distroless/base@sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77
 var (
 	manifestDigest = v1.Hash{
 		Algorithm: "sha256",
