@@ -564,62 +564,62 @@ function test_dockerfile_image_arbitrary() {
   bazel test --host_force_python=PY2 ...
 }
 
-test_py_image_deps_as_layers
-test_container_push_with_stamp
-test_container_push_all
-test_container_push_with_auth
-test_container_pull_with_auth
-test_top_level
-test_bazel_build_then_run_docker_build_clean
-test_bazel_run_docker_build_clean
-test_bazel_run_docker_bundle_clean
-test_bazel_run_docker_import_clean
-test_bazel_run_docker_build_incremental
-test_bazel_run_docker_bundle_incremental
-test_bazel_run_docker_import_incremental
-test_py_image -c opt
-test_py_image -c dbg
-test_py_image_complex -c opt
-test_py_image_complex -c dbg
-test_py3_image_with_custom_run_flags -c opt
-test_py3_image_with_custom_run_flags -c dbg
-test_cc_image -c opt
-test_cc_image -c dbg
-test_cc_binary_as_image -c opt
-test_cc_binary_as_image -c dbg
-test_cc_image_wrapper
-test_go_image -c opt
-test_go_image -c dbg
-test_go_image_busybox
-test_go_image_with_tags
-test_java_image -c opt
-test_java_image -c dbg
-test_java_image_with_custom_run_flags -c opt
-test_java_image_with_custom_run_flags -c dbg
-test_java_sandwich_image -c opt
-test_java_sandwich_image -c dbg
-test_java_simple_image
-test_java_image_arg_echo
-test_war_image
-test_war_image_with_custom_run_flags
-test_scala_image -c opt
-test_scala_image -c dbg
-test_scala_sandwich_image -c opt
-test_scala_sandwich_image -c dbg
-test_groovy_image -c opt
-test_groovy_image -c dbg
-test_groovy_scala_image -c opt
-test_groovy_scala_image -c dbg
-test_rust_image -c opt
-test_rust_image -c dbg
-test_d_image -c opt
-test_d_image -c dbg
-test_nodejs_image -c opt
-test_nodejs_image -c dbg
-test_container_push
-test_container_push_tag_file
-test_launcher_image
-test_container_pull_cache
+# test_py_image_deps_as_layers
+# test_container_push_with_stamp
+# test_container_push_all
+# test_container_push_with_auth
+# test_container_pull_with_auth
+# test_top_level
+# test_bazel_build_then_run_docker_build_clean
+# test_bazel_run_docker_build_clean
+# test_bazel_run_docker_bundle_clean
+# test_bazel_run_docker_import_clean
+# test_bazel_run_docker_build_incremental
+# test_bazel_run_docker_bundle_incremental
+# test_bazel_run_docker_import_incremental
+# test_py_image -c opt
+# test_py_image -c dbg
+# test_py_image_complex -c opt
+# test_py_image_complex -c dbg
+# test_py3_image_with_custom_run_flags -c opt
+# test_py3_image_with_custom_run_flags -c dbg
+# test_cc_image -c opt
+# test_cc_image -c dbg
+# test_cc_binary_as_image -c opt
+# test_cc_binary_as_image -c dbg
+# test_cc_image_wrapper
+# test_go_image -c opt
+# test_go_image -c dbg
+# test_go_image_busybox
+# test_go_image_with_tags
+# test_java_image -c opt
+# test_java_image -c dbg
+# test_java_image_with_custom_run_flags -c opt
+# test_java_image_with_custom_run_flags -c dbg
+# test_java_sandwich_image -c opt
+# test_java_sandwich_image -c dbg
+# test_java_simple_image
+# test_java_image_arg_echo
+# test_war_image
+# test_war_image_with_custom_run_flags
+# test_scala_image -c opt
+# test_scala_image -c dbg
+# test_scala_sandwich_image -c opt
+# test_scala_sandwich_image -c dbg
+# test_groovy_image -c opt
+# test_groovy_image -c dbg
+# test_groovy_scala_image -c opt
+# test_groovy_scala_image -c dbg
+# test_rust_image -c opt
+# test_rust_image -c dbg
+# test_d_image -c opt
+# test_d_image -c dbg
+# test_nodejs_image -c opt
+# test_nodejs_image -c dbg
+# test_container_push
+# test_container_push_tag_file
+# test_launcher_image
+# test_container_pull_cache
 # test_dockerfile_image_basic
 # test_dockerfile_image_extended
 # test_dockerfile_image_java_app
