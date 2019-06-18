@@ -34,6 +34,11 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["reader_test.go"],
+    data = glob(["test_data/**"]),
     embed = [":go_default_library"],
-    deps = ["@com_github_bazelbuild_rules_docker//container/go/pkg/oci/:go_default_library"],
+    deps = [
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
+    ],
 )
