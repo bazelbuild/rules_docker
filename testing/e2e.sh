@@ -526,20 +526,42 @@ function test_container_pull_cache() {
   rm -rf $scratch_dir
 }
 
-# TODO(alex1545): remove this test from here and enable running on buildkite
-# once docker is supported.
-function test_dockerfile_image_basic() {
-  cd "${ROOT}"
-  clear_docker
-  bazel test tests/docker:basic_dockerfile_image
-}
-
 function test_py_image_deps_as_layers() {
   cd "${ROOT}"
   clear_docker
   # Build and run the python image where the "six" module pip dependency was
   # specified via "layers". https://github.com/bazelbuild/rules_docker/issues/161
   EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
+}
+
+function test_dockerfile_image_basic() {
+  cd "${ROOT}/testing/examples/basic"
+  clear_docker
+  bazel test ...
+}
+
+function test_dockerfile_image_extended() {
+  cd "${ROOT}/testing/examples/extended"
+  clear_docker
+  bazel test ...
+}
+
+function test_dockerfile_image_java_app() {
+  cd "${ROOT}/testing/examples/java_app"
+  clear_docker
+  bazel test ...
+}
+
+function test_dockerfile_image_apt_pkgs() {
+  cd "${ROOT}/testing/examples/run_instruction_apt_pkgs"
+  clear_docker
+  bazel test --host_force_python=PY2 ...
+}
+
+function test_dockerfile_image_arbitrary() {
+  cd "${ROOT}/testing/examples/run_instruction_arbitrary"
+  clear_docker
+  bazel test --host_force_python=PY2 ...
 }
 
 test_py_image_deps_as_layers
@@ -599,3 +621,7 @@ test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
 test_dockerfile_image_basic
+test_dockerfile_image_extended
+test_dockerfile_image_java_app
+test_dockerfile_image_apt_pkgs
+test_dockerfile_image_arbitrary

@@ -36,10 +36,36 @@ _java_image_repos()
 
 http_archive(
     name = "base_images_docker",
-    sha256 = "ce6043d38aa7fad421910311aecec865beb060eb56d8c3eb5af62b2805e9379c",
-    strip_prefix = "base-images-docker-7657d04ad9e30b9b8d981b96ae57634cd45ba18a",
-    urls = ["https://github.com/GoogleCloudPlatform/base-images-docker/archive/7657d04ad9e30b9b8d981b96ae57634cd45ba18a.tar.gz"],
+    sha256 = "2c421ca558d043c4da34ddfbee0868c23f10022ee647106dad5f37849e3b0f2f",
+    strip_prefix = "base-images-docker-ed6a6f01d92d8ea3ffd01eac3bc9aa009e168c16",
+    urls = ["https://github.com/GoogleCloudPlatform/base-images-docker/archive/ed6a6f01d92d8ea3ffd01eac3bc9aa009e168c16.tar.gz"],
 )
+
+load("@base_images_docker//package_managers:repositories.bzl", package_manager_deps = "deps")
+
+package_manager_deps()
+
+load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
+
+pip_repositories()
+
+pip_import(
+    name = "pip_deps",
+    requirements = "@base_images_docker//package_managers:requirements-pip.txt",
+)
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "f04d2373bcaf8aa09bccb08a98a57e721306c8f6043a2a0ee610fd6853dcde3d",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
+
+go_rules_dependencies()
 
 container_pull(
     name = "alpine_linux_amd64",
