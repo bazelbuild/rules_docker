@@ -9,15 +9,23 @@ import (
 )
 
 var readertests = []struct {
+	// A descriptive name for this test case.
+	name string
+	// The hash code of the manifest metadata file.
 	manifestDigest v1.Hash
-	configDigest   v1.Hash
-	layerHashes    []v1.Hash
-	mediaType      types.MediaType
-	testPath       string
+	// The hash code of the config metadata file.
+	configDigest v1.Hash
+	// An array of hash codes for each layer in this image.
+	layerHashes []v1.Hash
+	// The media type of this image.
+	mediaType types.MediaType
+	// The relative path of this test case.
+	testPath string
 }{
-	// #1 - test_index1, this test index is the output of puller.go
-	// from gcr.io/distroless/base@sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77
+	// #1 This test index is the output of puller.go
+	// from gcr.io/distroless/base@sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77.
 	{
+		"distroless(/test_index1)",
 		v1.Hash{
 			Algorithm: "sha256",
 			Hex:       "edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77",
@@ -44,12 +52,13 @@ var readertests = []struct {
 // TestRead checks the v1.Image outputted by <Read> by validating its manifest, layers and configs.
 func TestRead(t *testing.T) {
 	for _, rt := range readertests {
-		t.Run("testsrc:"+rt.testPath, func(t *testing.T) {
+		t.Run(rt.name, func(t *testing.T) {
 			img, err := Read(rt.testPath)
 			if err != nil {
 				t.Fatalf("Read(%s): %v", rt.testPath, err)
 			}
 
+			// Validates that img does not violate any invariants of the image format by validating the layers, manifests and config.
 			if err := validate.Image(img); err != nil {
 				t.Errorf("validate.Image(): %v", err)
 			}
@@ -58,7 +67,7 @@ func TestRead(t *testing.T) {
 			if err != nil {
 				t.Errorf("img.MediaType(): %v", err)
 			} else if got, want := mt, rt.mediaType; got != want {
-				t.Errorf("img.MediaType(); want: %v got: %v", want, got)
+				t.Errorf("img.MediaType(); got: %v want: %v", got, want)
 			}
 
 			cfg, err := img.LayerByDigest(rt.configDigest)
@@ -77,7 +86,7 @@ func TestRead(t *testing.T) {
 			}
 
 			if got, want := cfgDigest, cfgName; got != want {
-				t.Errorf("ConfigName(); want: %v got: %v", want, got)
+				t.Errorf("ConfigName(); got: %v want: %v", got, want)
 			}
 
 			layers, err := img.Layers()
@@ -85,24 +94,30 @@ func TestRead(t *testing.T) {
 				t.Fatalf("img.Layers(): %v", err)
 			}
 
-			// Validate the digests and media type for each layer
+			// Validate the digests and media type for each layer.
 			for i, layer := range layers {
-				ld, err := layer.Digest()
-				if err != nil {
-					t.Fatalf("layers[%d].Digest(): %v", i, err)
-				}
-				if got, want := ld, rt.layerHashes[i]; got != want {
-					t.Fatalf("layers[%d].Digest(); want: %q got: %q", i, want, got)
-				}
-
-				mt, err := layer.MediaType()
-				if err != nil {
-					t.Fatalf("layers[%d].MediaType(): %v", i, err)
-				}
-				if got, want := mt, types.DockerLayer; got != want {
-					t.Fatalf("layers[%d].MediaType(); want: %q got: %q", i, want, got)
-				}
+				validateLayer(layer, rt.layerHashes[i], i, t)
 			}
+
 		})
+	}
+}
+
+// validateLayer checks if the digests and media type matches for the given layer.
+func validateLayer(layer v1.Layer, layerHash v1.Hash, i int, t *testing.T) {
+	ld, err := layer.Digest()
+	if err != nil {
+		t.Fatalf("layers[%d].Digest(): %v", i, err)
+	}
+	if got, want := ld, layerHash; got != want {
+		t.Fatalf("layers[%d].Digest(); got: %q want: %q", i, got, want)
+	}
+
+	mt, err := layer.MediaType()
+	if err != nil {
+		t.Fatalf("layers[%d].MediaType(): %v", i, err)
+	}
+	if got, want := mt, types.DockerLayer; got != want {
+		t.Fatalf("layers[%d].MediaType(); got: %q want: %q", i, got, want)
 	}
 }
