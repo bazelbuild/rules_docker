@@ -13,23 +13,35 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
+<<<<<<< HEAD
+<<<<<<< HEAD
 // For the format specification, if the format is:
 // 		1. 'docker': image is pulled as tarball and may be used with `docker load -i`.
 // 		2. 'oci' (default): image will be pulled as a collection of files in OCI layout to directory.
 // 		3. 'both': both formats of image are pulled.
+=======
+>>>>>>> new puller binary and OCI writer utility
+=======
+>>>>>>> new puller binary and OCI writer utility
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	ospkg "os"
+<<<<<<< HEAD
 	"path"
 	"strings"
 
 	"github.com/pkg/errors"
+=======
+	"strings"
+
+	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+>>>>>>> new puller binary and OCI writer utility
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -38,7 +50,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
 
 var (
@@ -55,6 +66,8 @@ var (
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 // Tag applied to images that were pulled by digest. This denotes
 // that the image was (probably) not tagged with this, but avoids
 // applying the ":latest" tag which might be misleading.
@@ -84,6 +97,23 @@ func getTag(ref name.Reference) name.Reference {
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional cache files and required platform specifications.
 func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) error {
+=======
+=======
+>>>>>>> new puller binary and OCI writer utility
+// Tag applied to images that were pulled by digest. This denotes that the
+// image was (probably) never tagged with this, but lets us avoid applying the
+// ":latest" tag which might be misleading.
+const iWasADigestTag = "i-was-a-digest"
+
+// NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
+// with slight modification to take in a platform argument.
+// Pull the image with given <imgName> to destination <dstPath> with optional
+// cache files and required platform specifications.
+func pull(imgName, dstPath string, platform v1.Platform) {
+<<<<<<< HEAD
+>>>>>>> new puller binary and OCI writer utility
+=======
+>>>>>>> new puller binary and OCI writer utility
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -99,6 +129,8 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 	// Image file to write to disk, either a tarball, OCI layout, or both.
 	switch format {
 	case "docker":
@@ -118,8 +150,25 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 		if err := oci.Write(img, dstPath); err != nil {
 			log.Fatalf("failed to write image to %q: %v", dstPath, err)
 		}
+=======
+=======
+>>>>>>> new puller binary and OCI writer utility
+	// // Image file to write to disk.
+	if err := oci.Write(img, dstPath); err != nil {
+		// if err := oci.Write(img, path); err != nil {
+		log.Fatalf("failed to write image to %q: %v", dstPath, err)
+<<<<<<< HEAD
+>>>>>>> new puller binary and OCI writer utility
+=======
+>>>>>>> new puller binary and OCI writer utility
 	}
+}
 
+func main() {
+	flag.Parse()
+	log.Println("Running the Image Puller to pull images from a Docker Registry...")
+
+<<<<<<< HEAD
 	return nil
 }
 
@@ -127,6 +176,8 @@ func main() {
 	flag.Parse()
 	log.Println("Running the Image Puller to pull images from a Docker Registry...")
 
+=======
+>>>>>>> new puller binary and OCI writer utility
 	if *imgName == "" {
 		log.Fatalln("Required option -name was not specified.")
 	}
@@ -140,6 +191,8 @@ func main() {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 	formatOptions := map[string]bool{
 		"oci":    true,
 		"docker": true,
@@ -150,6 +203,12 @@ func main() {
 	}
 
 	// Create a Platform struct with given arguments.
+=======
+	// Create a Platform struct with arguments
+>>>>>>> new puller binary and OCI writer utility
+=======
+	// Create a Platform struct with arguments
+>>>>>>> new puller binary and OCI writer utility
 	platform := v1.Platform{
 		Architecture: *arch,
 		OS:           *os,
@@ -159,9 +218,13 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
+<<<<<<< HEAD
 	if err := pull(*imgName, *directory, *format, *cachePath, platform); err != nil {
 		log.Fatalf("Image pull was unsuccessful: %v", err)
 	}
+=======
+	pull(*imgName, *directory, platform)
+>>>>>>> new puller binary and OCI writer utility
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }

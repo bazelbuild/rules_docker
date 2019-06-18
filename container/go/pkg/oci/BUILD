@@ -13,7 +13,11 @@
 # limitations under the License.
 # ###
 # Build for the new writer function to write OCI Format Images to disk.
+<<<<<<< HEAD
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+=======
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+>>>>>>> new puller binary and OCI writer utility
 
 go_library(
     name = "go_default_library",
