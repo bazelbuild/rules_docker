@@ -77,7 +77,7 @@ def _impl(repository_ctx):
     if build_result.return_code:
         fail("docker build command failed: {} ({})".format(
             build_result.stderr,
-            " ".join(command),
+            " ".join([str(e) for e in command]),
         ))
 
     image_tar = "dockerfile_image.tar"
