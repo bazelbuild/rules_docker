@@ -34,6 +34,7 @@ load(
     "//contrib:with-tag.bzl",
     container_image_with_tag = "container_image",
 )
+load("//d:image.bzl", "d_image")
 load("//docker:docker.bzl", "docker_push")
 load("//groovy:image.bzl", "groovy_image")
 load(
@@ -902,15 +903,14 @@ container_image(
     legacy_run_behavior = False,
 )
 
-# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
-#d_image(
-#    name = "d_image",
-#    srcs = ["main.d"],
-#    args = [
-#        "arg0",
-#        "arg1",
-#    ],
-#)
+d_image(
+    name = "d_image",
+    srcs = ["main.d"],
+    args = [
+        "arg0",
+        "arg1",
+    ],
+)
 
 generate_deb(
     name = "pkg1",
