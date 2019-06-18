@@ -84,7 +84,7 @@ func TestRead(t *testing.T) {
 				t.Fatalf("img.Layers(): %v", err)
 			}
 
-			// Validate the digests for each layer
+			// Validate the digests and media type for each layer
 			for i, layer := range layers {
 				ld, err := layer.Digest()
 				if err != nil {
@@ -93,10 +93,7 @@ func TestRead(t *testing.T) {
 				if got, want := ld, rt.layerHashes[i]; got != want {
 					t.Fatalf("layers[%d].Digest(); want: %q got: %q", i, want, got)
 				}
-			}
 
-			// Validate the media type for each layer
-			for i, layer := range layers {
 				mt, err := layer.MediaType()
 				if err != nil {
 					t.Fatalf("layers[%d].MediaType(): %v", i, err)
