@@ -33,6 +33,10 @@ images.**  This means:
 Also, unlike traditional container builds (e.g. Dockerfile), the Docker images
 produced by `container_image` are deterministic / reproducible.
 
+To get started with building Docker images, check out the
+[examples](https://github.com/bazelbuild/rules_docker/tree/master/testing/examples)
+that build the same images using both rules_docker and a Dockerfile.
+
 __NOTE:__ `container_push` and `container_pull` make use of
 [google/containerregistry](https://github.com/google/containerregistry) for
 registry interactions.
