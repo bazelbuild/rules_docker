@@ -1,4 +1,4 @@
-FROM gcr.io/cloud-marketplace/google/ubuntu1604:latest
+FROM l.gcr.io/google/ubuntu1604:latest
 
 RUN \
   apt-get update && \

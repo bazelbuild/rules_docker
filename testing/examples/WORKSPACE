@@ -76,8 +76,8 @@ container_pull(
 
 container_pull(
     name = "ubuntu1604",
-    registry = "gcr.io",
-    repository = "cloud-marketplace/google/ubuntu1604",
+    registry = "l.gcr.io",
+    repository = "google/ubuntu1604",
     tag = "latest",
 )
 
