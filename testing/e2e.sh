@@ -620,8 +620,8 @@ test_container_push
 test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
-test_dockerfile_image_basic
-test_dockerfile_image_extended
-test_dockerfile_image_java_app
-# test_dockerfile_image_apt_pkgs
+# test_dockerfile_image_basic
+# test_dockerfile_image_extended
+# test_dockerfile_image_java_app
+test_dockerfile_image_apt_pkgs
 # test_dockerfile_image_arbitrary
