@@ -17,10 +17,11 @@ var readertests = []struct {
 }{
 	// #1 - test_index1, this test index is the output of puller.go
 	// from gcr.io/distroless/base@sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77
-	{v1.Hash{
-		Algorithm: "sha256",
-		Hex:       "edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77",
-	},
+	{
+		v1.Hash{
+			Algorithm: "sha256",
+			Hex:       "edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77",
+		},
 		v1.Hash{
 			Algorithm: "sha256",
 			Hex:       "a0cfcd4cc98a67def7ce9a0c7644d1c415d56d6d44c4a079a447f7eafb253048",
