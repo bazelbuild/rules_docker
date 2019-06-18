@@ -21,12 +21,11 @@ load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 load(
     "//container:container.bzl",
     "container_pull",
-    _container = "container",
 )
 load(
     "//lang:image.bzl",
     "app_layer",
-    "app_layer_impl",
+    lang_image = "image",
 )
 load(
     "//repositories:repositories.bzl",
@@ -74,33 +73,18 @@ def _emptyfiles(dep):
     return depset(transitive = [dep[DefaultInfo].default_runfiles.empty_filenames, dep[DefaultInfo].data_runfiles.empty_filenames])
 
 def _dep_layer_impl(ctx):
-    return app_layer_impl(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
+    return lang_image.implementation(ctx, runfiles = _runfiles, emptyfiles = _emptyfiles)
 
 _dep_layer = rule(
-    attrs = dicts.add(_container.image.attrs, {
-        # The base image on which to overlay the dependency layers.
-        "base": attr.label(mandatory = True),
-
-        # The binary target for which we are synthesizing an image.
-        "binary": attr.label(mandatory = False),
-        # Set this to true to create an empty workspace directory under the
-        # app directory specified as the 'directory' attribute.
-        "create_empty_workspace_dir": attr.bool(default = False),
-
-        # Override the defaults.
-        # https://github.com/bazelbuild/bazel/issues/2176
-        "data_path": attr.string(default = "."),
-        # The dependency whose runfiles we're appending.
+    attrs = dicts.add(lang_image.attrs, {
         "dep": attr.label(
             mandatory = True,
-            allow_files = True,
+            allow_files = True,  # override
         ),
-        "directory": attr.string(default = "/app"),
-        "legacy_run_behavior": attr.bool(default = False),
     }),
     executable = True,
-    outputs = _container.image.outputs,
-    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
+    outputs = lang_image.outputs,
+    toolchains = lang_image.toolchains,
     implementation = _dep_layer_impl,
 )
 
