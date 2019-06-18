@@ -29,6 +29,9 @@ platforms:
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
   ubuntu1804:
+    build_targets:
+    - "@new_alpine_linux_armv6//..."
+    - "@new_distroless_base//..."
     test_targets:
     # We are running the skipped targets remotely only.
     - "--"
