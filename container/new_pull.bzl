@@ -81,17 +81,16 @@ def _impl(repository_ctx):
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
 
-    # TODO(xwinxu): change container_import rule to have an oci attribute to account for new OCI Image Layout
-    # currently exclude:     exports_files(["image.digest", "digest"]) in BUILD
-    repository_ctx.file("image/BUILD", """
-package(default_visibility = ["//visibility:public"])
+    # Currently exports all files pulled by the binary and cannot be depended on by other rules_docker rules.
+    # We will implement a new_container_import rule to comprehend this oci layout.
+    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "image_new",
+    name = "image",
     srcs = glob(["image/**"]),
 )
-exports_files(["index.json"])
-    """)
+
+exports_files(glob(["**"]))""")
 
     args = [
         repository_ctx.path(repository_ctx.attr._puller),

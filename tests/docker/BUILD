@@ -331,9 +331,7 @@ file_test(
 # For testing the new container pull rule
 file_test(
     name = "new_alpine_linux_armv6_test",
-    file = "@new_alpine_linux_armv6//image:index.json",
-    content = """
-{
+    content = """{
    "schemaVersion": 2,
    "manifests": [
       {
@@ -342,15 +340,13 @@ file_test(
          "digest": "sha256:f29c3d10359dd0e6d0c11e4f715735b678c0ab03a7ac4565b4b6c08980f6213b"
       }
    ]
-}
-    """,
+}""",
+    file = "@new_alpine_linux_armv6//image:index.json",
 )
 
 file_test(
     name = "new_distroless_base_test",
-    file = "@new_distroless_base//image:index.json",
-    content = """
-{
+    content = """{
    "schemaVersion": 2,
    "manifests": [
       {
@@ -359,8 +355,8 @@ file_test(
          "digest": "sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77"
       }
    ]
-}
-    """,
+}""",
+    file = "@new_distroless_base//image:index.json",
 )
 
 create_banana_directory(
