@@ -15,8 +15,8 @@
 """Repository rule for building a Docker image from a Dockerfile and saving it
    into a tar file.
 
-This rule uses the docker tool installed in the system to build the image or run
-the Kaniko executor container to build the image and then save it as a tar file.
+This rule uses either the docker tool installed in the system or the Kaniko
+executor container to build the image and then save it as a tar file.
 The saved tar file is available for other rules to use (e.g. container_image,
 container_load, container_test)
 
@@ -151,7 +151,9 @@ _dockerfile_image = repository_rule(
                   "docker or kaniko build command.",
         ),
         "docker_path": attr.string(
-            doc = "The full path to the docker binary.",
+            doc = "The full path to the docker binary. If not specified, it " +
+                  "will be searched for in the path. If not available, " +
+                  "the rule build will fail.",
         ),
         "dockerfile": attr.label(
             allow_single_file = True,
@@ -159,10 +161,12 @@ _dockerfile_image = repository_rule(
             doc = "The label for the Dockerfile to build the image from.",
         ),
         "driver": attr.string(
+            mandatory = True,
             doc = "The image building tool to use. Currently, `docker` and " +
                   "`kaniko` are supported.",
         ),
         "kaniko_image_path": attr.string(
+            mandatory = True,
             doc = "Set by dockerfile_image macro. The full image path of the " +
                   "kaniko executor image to use to build the output image. " +
                   "This should not be set by users directly.",
@@ -228,6 +232,7 @@ def dockerfile_image(
     _dockerfile_image(
         name = name,
         build_args = build_args,
+        docker_path = docker_path,
         dockerfile = dockerfile,
         driver = driver,
         kaniko_image_path = kaniko_image_path,

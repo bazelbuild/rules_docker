@@ -23,7 +23,7 @@ set -ex
 data=$(%{docker_path} create -v %{kaniko_workspace} %{image_path})
 %{docker_path} cp %{build_context_dir}/. ${data}:%{kaniko_workspace}
 
-# Pass an empty entrypoint to override any set by default in the container.
+# Run the Kaniko executor container to build the image and extract as a tarball.
 id=$(%{docker_path} run -d --volumes-from ${data} %{image_path} \
     --context=%{kaniko_workspace} --tarPath=%{extract_file} %{kaniko_flags})
 
