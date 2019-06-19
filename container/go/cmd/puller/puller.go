@@ -13,6 +13,7 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
+// The pulled image is in OCI Image Format and this binary can also accomodate manifest lists.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
@@ -37,21 +38,15 @@ var (
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
-	osVersion       = flag.String("os-version", "", "Image's operating system version, if referring to a multi-platform manifest list.")
-	osFeatures      = flag.String("os-features", "", "Image's operating system features, if referring to a multi-platform manifest list.")
+	osVersion       = flag.String("os-version", "", "Image's operating system version, if referring to a multi-platform manifest list. Input strings are space separated.")
+	osFeatures      = flag.String("os-features", "", "Image's operating system features, if referring to a multi-platform manifest list. Input strings are space separated.")
 	variant         = flag.String("variant", "", "Image's CPU variant, if referring to a multi-platform manifest list.")
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
-// Tag applied to images that were pulled by digest. This denotes that the
-// image was (probably) never tagged with this, but lets us avoid applying the
-// ":latest" tag which might be misleading.
-const iWasADigestTag = "i-was-a-digest"
-
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
-// Pull the image with given <imgName> to destination <dstPath> with optional
-// cache files and required platform specifications.
+// Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
 func pull(imgName, dstPath string, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
@@ -68,7 +63,6 @@ func pull(imgName, dstPath string, platform v1.Platform) {
 
 	// // Image file to write to disk.
 	if err := oci.Write(img, dstPath); err != nil {
-		// if err := oci.Write(img, path); err != nil {
 		log.Fatalf("failed to write image to %q: %v", dstPath, err)
 	}
 }
@@ -85,12 +79,12 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config
+	// to use it to look for the docker client config.
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	// Create a Platform struct with arguments
+	// Create a Platform struct with given arguments.
 	platform := v1.Platform{
 		Architecture: *arch,
 		OS:           *os,

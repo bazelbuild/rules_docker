@@ -34,6 +34,28 @@ load(
 container_repositories()
 
 load(
+    "//container:new_pull.bzl",
+    "new_container_pull",
+)
+
+# These are for testing the new container push
+new_container_pull(
+    name = "new_alpine_linux_armv6",
+    architecture = "arm",
+    cpu_variant = "v6",
+    os = "linux",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_distroless_base",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)
+
+load(
     "//container:container.bzl",
     "container_load",
     "container_pull",
@@ -288,12 +310,25 @@ _nodejs_image_repos()
 load("//contrib:dockerfile_build.bzl", "dockerfile_image")
 
 dockerfile_image(
-    name = "basic_dockerfile",
+    name = "dockerfile_docker",
     build_args = {
         "ALPINE_version": "3.9",
     },
-    dockerfile = "//contrib:Dockerfile",
+    dockerfile = "//testdata/dockerfile_build:Dockerfile",
 )
+
+[dockerfile_image(
+    name = "dockerfile_kaniko_%s" % tag,
+    build_args = {
+        "ALPINE_version": "3.9",
+    },
+    dockerfile = "//testdata/dockerfile_build:Dockerfile",
+    driver = "kaniko",
+    kaniko_tag = tag,
+) for tag in [
+    "latest",
+    "debug",
+]]
 
 # Register the default py_toolchain for containerized execution
 register_toolchains("//toolchains/python:container_py_toolchain")

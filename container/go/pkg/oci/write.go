@@ -18,8 +18,12 @@
 package oci
 
 import (
+<<<<<<< HEAD
 	"fmt"
 	"log"
+=======
+	"github.com/pkg/errors"
+>>>>>>> upstream/master
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -29,7 +33,11 @@ import (
 // Write writes a v1.Image to the Path and updates the index.json to reference it.
 // This is just syntactic sugar wrapping Path.AppendImage from the go-container registry.
 func Write(img v1.Image, dstPath string) error {
+<<<<<<< HEAD
 	// Path represents an OCI image layout ooted in a file system path
+=======
+	// Path represents an OCI image layout rooted in a file system path
+>>>>>>> upstream/master
 	var path layout.Path
 	var err error
 
@@ -37,13 +45,21 @@ func Write(img v1.Image, dstPath string) error {
 	if path, err = layout.FromPath(dstPath); err != nil {
 		// Does not already exist, so initialize it with an empty index.
 		if path, err = layout.Write(dstPath, empty.Index); err != nil {
+<<<<<<< HEAD
 			log.Fatalf("cannot initialize layout: %v", err)
+=======
+			return errors.Wrapf(err, "cannot initialize layout")
+>>>>>>> upstream/master
 		}
 
 	}
 
 	if err := path.AppendImage(img); err != nil {
+<<<<<<< HEAD
 		return fmt.Errorf("unable to write image to path")
+=======
+		return errors.Wrapf(err, "unable to write image to path")
+>>>>>>> upstream/master
 	}
 	return nil
 }

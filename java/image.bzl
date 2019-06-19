@@ -27,8 +27,8 @@ load(
 )
 load(
     "//lang:image.bzl",
-    "app_layer_impl",
     "layer_file_path",
+    lang_image = "image",
 )
 load(
     "//repositories:repositories.bzl",
@@ -155,30 +155,13 @@ def _jar_dep_layer_impl(ctx):
     # type option here. The app layer would also need to be updated to
     # consider data flies include in the dep_layer as "available" so they
     # aren't duplicated in the top layer.
-    return app_layer_impl(ctx, runfiles = java_files_with_data)
+    return lang_image.implementation(ctx, runfiles = java_files_with_data)
 
 jar_dep_layer = rule(
-    attrs = dicts.add(_container.image.attrs, {
-        # The base image on which to overlay the dependency layers.
-        "base": attr.label(mandatory = True),
-
-        # The binary target for which we are synthesizing an image.
-        "binary": attr.label(mandatory = False),
-        # Set this to true to create an empty workspace directory under the
-        # app directory specified as the 'directory' attribute.
-        "create_empty_workspace_dir": attr.bool(default = False),
-        # https://github.com/bazelbuild/bazel/issues/2176
-        "data_path": attr.string(default = "."),
-        # The dependency whose runfiles we're appending.
-        "dep": attr.label(),
-
-        # Override the defaults.
-        "directory": attr.string(default = "/app"),
-        "legacy_run_behavior": attr.bool(default = False),
-    }),
+    attrs = lang_image.attrs,
     executable = True,
-    outputs = _container.image.outputs,
-    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
+    outputs = lang_image.outputs,
+    toolchains = lang_image.toolchains,
     implementation = _jar_dep_layer_impl,
 )
 

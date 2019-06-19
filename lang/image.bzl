@@ -126,7 +126,7 @@ def _default_symlinks(dep):
     else:
         return dep[DefaultInfo].default_runfiles.symlinks
 
-def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
+def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     """Appends a layer for a single dependency's runfiles.
 
     Args:
@@ -238,9 +238,8 @@ def app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         null_cmd = args == [],
     )
 
-_app_layer = rule(
+image = struct(
     attrs = dicts.add(_container.image.attrs, {
-
         # The base image on which to overlay the dependency layers.
         "base": attr.label(mandatory = True),
         # The binary target for which we are synthesizing an image.
@@ -258,6 +257,7 @@ _app_layer = rule(
         "data": attr.label_list(allow_files = True),
 
         # Override the defaults.
+        # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
         # The dependency whose runfiles we're appending.
         # If not specified, then the layer will be treated as the top layer,
@@ -268,10 +268,17 @@ _app_layer = rule(
         "legacy_run_behavior": attr.bool(default = False),
         "workdir": attr.string(default = ""),
     }),
-    executable = True,
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
-    implementation = app_layer_impl,
+    implementation = _app_layer_impl,
+)
+
+_app_layer = rule(
+    attrs = image.attrs,
+    executable = True,
+    outputs = image.outputs,
+    toolchains = image.toolchains,
+    implementation = image.implementation,
 )
 
 # Convenience function that instantiates the _app_layer rule and returns
