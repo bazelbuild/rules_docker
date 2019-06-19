@@ -34,6 +34,28 @@ load(
 container_repositories()
 
 load(
+    "//container:new_pull.bzl",
+    "new_container_pull",
+)
+
+# These are for testing the new container push
+new_container_pull(
+    name = "new_alpine_linux_armv6",
+    architecture = "arm",
+    cpu_variant = "v6",
+    os = "linux",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_distroless_base",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)
+
+load(
     "//container:container.bzl",
     "container_load",
     "container_pull",
