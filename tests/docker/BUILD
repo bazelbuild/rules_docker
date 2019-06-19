@@ -392,7 +392,7 @@ docker_push_all(
 [container_test(
     name = "test_dockerfile_image_%s" % driver,
     configs = ["//tests/docker/configs:dockerfile_image.yaml"],
-    image = "@loaded_image_%s//image" % driver,
+    image = "@loaded_dockerfile_image_%s//image" % driver,
 ) for driver in [
     "docker",
     "kaniko_latest",

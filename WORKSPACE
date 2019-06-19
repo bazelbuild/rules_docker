@@ -332,7 +332,7 @@ dockerfile_image(
 
 # Load the image tarball.
 [container_load(
-    name = "loaded_image_%s" % driver,
+    name = "loaded_dockerfile_image_%s" % driver,
     file = "@dockerfile_%s//image:dockerfile_image.tar" % driver,
 ) for driver in [
     "docker",
