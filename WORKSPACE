@@ -288,12 +288,25 @@ _nodejs_image_repos()
 load("//contrib:dockerfile_build.bzl", "dockerfile_image")
 
 dockerfile_image(
-    name = "basic_dockerfile",
+    name = "dockerfile_docker",
     build_args = {
         "ALPINE_version": "3.9",
     },
-    dockerfile = "//contrib:Dockerfile",
+    dockerfile = "//testdata/dockerfile_build:Dockerfile",
 )
+
+[dockerfile_image(
+    name = "dockerfile_kaniko_%s" % tag,
+    build_args = {
+        "ALPINE_version": "3.9",
+    },
+    dockerfile = "//testdata/dockerfile_build:Dockerfile",
+    driver = "kaniko",
+    kaniko_tag = tag,
+) for tag in [
+    "latest",
+    "debug",
+]]
 
 # Register the default py_toolchain for containerized execution
 register_toolchains("//toolchains/python:container_py_toolchain")
