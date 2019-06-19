@@ -358,9 +358,13 @@ docker_push_all(
     bundle = ":three_images_bundle",
 )
 
-container_test(
-    name = "basic_dockerfile_image",
-    configs = ["//tests/docker/configs:basic_dockerfile.yaml"],
+[container_test(
+    name = "test_dockerfile_image_%s" % driver,
+    configs = ["//tests/docker/configs:dockerfile_image.yaml"],
     driver = "tar",
-    image = "@basic_dockerfile//image:dockerfile_image",
-)
+    image = "@dockerfile_%s//image:dockerfile_image" % driver,
+) for driver in [
+    "docker",
+    "kaniko_latest",
+    "kaniko_debug",
+]]
