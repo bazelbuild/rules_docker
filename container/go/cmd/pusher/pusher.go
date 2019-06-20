@@ -17,9 +17,8 @@ package main
 
 import (
 	"flag"
-	"log"
-	"os"
 	"fmt"
+	"log"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -56,12 +55,12 @@ func main() {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	img, err := readImage(*src, *format string)
+	img, err := readImage(*src, *format)
 	if err != nil {
 		log.Fatalln("Error reading from %s: %v", *src, err)
 	}
 
-	if err := push(*dst, img); err != nil{
+	if err := push(*dst, img); err != nil {
 		log.Fatalln("Error pushing image to %s: %v", *dst, err)
 	}
 }
@@ -84,10 +83,10 @@ func push(dst string, img v1.Image) error {
 // Return a v1.Image after reading an OCI index or a Docker tarball from src.
 func readImage(src, format string) (v1.Image, error) {
 	if format == "oci" {
-			return oci.Read(src)
+		return oci.Read(src)
 	}
- if format == "docker" {
-		 return tarball.ImageFromPath(src, nil)
+	if format == "docker" {
+		return tarball.ImageFromPath(src, nil)
 	}
 	return nil, fmt.Errorf("unknown image format %q", format)
 }
