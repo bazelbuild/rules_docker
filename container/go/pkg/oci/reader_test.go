@@ -2,28 +2,29 @@ package oci
 
 import (
 	"testing"
+	"fmt"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 )
 
+// readerTests has test cases for the Read function that loads a docker image stored on disk serialized in OCI format by "Write".
 var readertests = []struct {
-	// A descriptive name for this test case.
+	// name is the name of this test case.
 	name string
-	// The hash code of the manifest metadata file.
+	// manifestDigest is the hash code of the manifest metadata file.
 	manifestDigest v1.Hash
-	// The hash code of the config metadata file.
+	// configDigest is the hash code of the config metadata file.
 	configDigest v1.Hash
-	// An array of hash codes for each layer in this image.
+	// layerHashes is an array of hash codes for each layer in this image.
 	layerHashes []v1.Hash
-	// The media type of this image.
+	// mediaType is the media type of this image.
 	mediaType types.MediaType
-	// The relative path of this test case.
+	// testPath is the relative path of this test case.
 	testPath string
 }{
-	// #1 This test index is the output of puller.go
-	// from gcr.io/distroless/base@sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77.
+	// This test index ensures the image downloaded by puller.go from gcr.io/distroless/base@sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77 located in testdata/test_index1 can be loaded.
 	{
 		"distroless(/test_index1)",
 		v1.Hash{
@@ -96,7 +97,9 @@ func TestRead(t *testing.T) {
 
 			// Validate the digests and media type for each layer.
 			for i, layer := range layers {
-				validateLayer(layer, rt.layerHashes[i], i, t)
+				_, err := validateLayer(layer, rt.layerHashes[i]); err != nil {
+					t.Fatalf("layers[%d] is invalid: %v", i, err)
+				}
 			}
 
 		})
@@ -104,20 +107,22 @@ func TestRead(t *testing.T) {
 }
 
 // validateLayer checks if the digests and media type matches for the given layer.
-func validateLayer(layer v1.Layer, layerHash v1.Hash, i int, t *testing.T) {
+func validateLayer(layer v1.Layer, layerHash v1.Hash) (int, error){
 	ld, err := layer.Digest()
 	if err != nil {
-		t.Fatalf("layers[%d].Digest(): %v", i, err)
+		return nil, err
 	}
 	if got, want := ld, layerHash; got != want {
-		t.Fatalf("layers[%d].Digest(); got: %q want: %q", i, got, want)
+		return nil, fmt.Errorf("Digest(); got: %q want: %q", i, got, want)
 	}
 
 	mt, err := layer.MediaType()
 	if err != nil {
-		t.Fatalf("layers[%d].MediaType(): %v", i, err)
+		return nil, err
 	}
 	if got, want := mt, types.DockerLayer; got != want {
-		t.Fatalf("layers[%d].MediaType(); got: %q want: %q", i, got, want)
+		return nil, fmt.Errorf("MediaType(); got: %q want: %q", i, got, want)
 	}
+	
+	return 0, nil
 }
