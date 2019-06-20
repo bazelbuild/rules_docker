@@ -97,7 +97,7 @@ func TestRead(t *testing.T) {
 
 			// Validate the digests and media type for each layer.
 			for i, layer := range layers {
-				_, err := validateLayer(layer, rt.layerHashes[i]); err != nil {
+				if _, err := validateLayer(layer, rt.layerHashes[i]); err != nil {
 					t.Fatalf("layers[%d] is invalid: %v", i, err)
 				}
 			}
