@@ -31,7 +31,7 @@ import (
 var (
 	dst             = flag.String("dst", "", "The destination location including repo and digest/tag of the docker image to push. Supports fully-qualified tag or digest references.")
 	src             = flag.String("src", "", "The path of the source index relative to the execution workspace.")
-	format          = flag.String("format", "", "The form to push, OCI or Docker (A tarball).")
+	format          = flag.String("format", "", "The form to push, oci or docker (A tarball).")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 )
 
@@ -56,7 +56,7 @@ func main() {
 	}
 
 	var isOCI = true
-	if *format != "OCI" {
+	if *format != "oci" {
 		isOCI = false
 	}
 
@@ -65,7 +65,7 @@ func main() {
 
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout or Docker tarball format .
-// Push the image from <src> to destination <dst> with specified format (OCI or Docker).
+// Push the image from <src> to destination <dst> with specified format (oci or docker).
 func push(dst, src string, isOCI bool) {
 	// Read an OCI index or a Docker tarball from src.
 	var img v1.Image
