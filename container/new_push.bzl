@@ -34,29 +34,24 @@ def _get_runfile_path(ctx, f):
 def _impl(ctx):
     """Core implementation of new_container_push."""
 
-    # TODO (xiaohegong): Possible optimization for efficiently pushing intermediate
+    # TODO (xiaohegong): 1) Possible optimization for efficiently pushing intermediate
     # representation, similar with the old python implementation, e.g., push-by-layer.
-    # Some of the arguments omitted from before: --tarball, --config, --manifest, --digest, --layer, --oci.
-
-    # TODO (xiaohegong): The old implementation outputs a {image_name}.digest for compatibility with container_digest, omitted for now.
-    # ctx.actions.run(
-    #     inputs = image_files,
-    #     outputs = [ctx.outputs.digest],
-    #     executable = ctx.executable._digester,
-    #     arguments = [digester_args],
-    #     tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
-    #     mnemonic = "ContainerPushDigest",
-    # )
-
-    # NOTE: Implementation of attr.tag_file, docker toolchain custom client config and attr.stamp are omitted for now
+    # Some of the digester arguments omitted from before: --tarball, --config, --manifest, --digest, --layer, --oci.
+    # 2) The old implementation outputs a {image_name}.digest for compatibility with container_digest, omitted for now.
+    # 3) Use and implementation of attr.stamp.
 
     pusher_args = []
-    digester_args = ctx.actions.args()
 
-    # create pusher launcher
+    # Parse and get destination registry to be pushed to
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
     repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
     tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
+
+    # If a tag file is provided, override <tag> with tag value
+    runfiles_tag_file = []
+    if ctx.file.tag_file:
+        tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
+        runfiles_tag_file = [ctx.file.tag_file]
 
     pusher_args += ["-dst", "{registry}/{repository}:{tag}".format(
         registry = registry,
@@ -64,14 +59,24 @@ def _impl(ctx):
         tag = tag,
     )]
 
-    for f in ctx.files.image:
-      if f.basename == "index.json":
-        pusher_args += ["-src", "{index_dir}".format(
-        index_dir = f.dirname,
-        )]
-        break
-    print(pusher_args)
-    # print(ctx.files.image.path)
+    # Find and set src to correct paths depending the image format to be pushed
+    if ctx.attr.format == "OCI":
+      for f in ctx.files.image:
+        if f.basename == "index.json":
+          pusher_args += ["-src", "{index_dir}".format(
+          index_dir = f.dirname,
+          )]
+          break
+    else:
+      pusher_args += ["-src", str(ctx.files.image[0].path)]
+
+    pusher_args += ["-format", str(ctx.attr.format)]
+
+    # If the docker toolchain is configured to use a custom client config
+    # directory, use that instead
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+    if toolchain_info.client_config != "":
+        pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
 
     ctx.actions.expand_template(
         template = ctx.file._tag_tpl,
@@ -83,7 +88,7 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher])
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + runfiles_tag_file)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
@@ -98,17 +103,16 @@ def _impl(ctx):
         ),
     ]
 
-
-
 # Pushes a container image to a registry.
 new_container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
-            # values = [
-            #     "OCI",
-            #     "Docker",
-            # ],
-            doc = "The form to push: Docker or OCI.",
+            default = "OCI",
+            values = [
+                "OCI",
+                "Docker",
+            ],
+            doc = "The form to push: Docker or OCI, default to 'OCI'.",
         ),
         "image": attr.label(
             allow_files = True,
@@ -141,8 +145,7 @@ new_container_push = rule(
             executable = True,
         ),
         "_pusher": attr.label(
-            # default = Label("@go_pusher//file:downloaded"),
-            default = Label("@pusher//:pusher"),
+            default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,
@@ -155,7 +158,4 @@ new_container_push = rule(
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
-    # outputs = {
-    #     "digest": "%{name}.digest",
-    # },
 )
