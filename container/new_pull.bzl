@@ -76,12 +76,11 @@ _container_pull_attrs = {
             "Both",
         ],
         doc = "(optional) The format of the image to be pulled, default to 'OCI', " +
-                "option for 'Docker' (tarball) or 'Both'."
+              "option for 'Docker' (tarball) or 'Both'.",
     ),
     "_puller": attr.label(
         executable = True,
-        default = Label("@go_puller//:puller"),
-        # default = Label("@go_puller//file:downloaded"),
+        default = Label("@go_puller//file:downloaded"),
         cfg = "host",
     ),
 }
