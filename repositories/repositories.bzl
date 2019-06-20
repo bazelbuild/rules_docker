@@ -56,7 +56,17 @@ def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
 
+    if "go_puller" not in excludes:
+        # Go puller binary.
+        http_file(
+            name = "go_puller",
+            executable = True,
+            sha256 = "02166c47cb84a67aaf59b86782729f1d5e568b035d80bc3a8ae3b0316d3db3e2",
+            urls = [("https://storage.googleapis.com/rules_docker/4e1a68bfa2507a3e76f84f90f8993fe085e6389a/puller-linux-amd64")],
+        )
+
     if "puller" not in excludes:
+        # Python puller binary.
         http_file(
             name = "puller",
             executable = True,
