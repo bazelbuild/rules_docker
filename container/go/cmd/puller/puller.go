@@ -13,6 +13,10 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
+// For the format specification, if the format is:
+//       1. 'docker': image is pulled as tarball and may be used with `docker load -i`.
+// 		 2. 'oci' (default): image will be pulled as a collection of files in OCI layout to directory.
+// 		 3. 'both': both formats of image are pulled.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
@@ -37,7 +41,7 @@ import (
 var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
 	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify the directory to save the tarball. The tarball is named as image.tar.")
-	format          = flag.String("format", "", "The format, options being 'oci', docker', or 'both', in which to pull the docker image. 'docker' tarball may be used with `docker load -i`. Default 'oci', OCI layout format.")
+	format          = flag.String("format", "", "Format to pull image from remote registry: If 'docker', image is pulled as tarball. If 'oci' (default), image will be pulled as a collection of files in OCI layout. Specify 'both' if both formats are needed.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
@@ -89,7 +93,6 @@ func pull(imgName, dstPath, format string, platform v1.Platform) {
 	}
 
 	// Image file to write to disk, either a tarball, OCI layout, or both.
-	// TODO(xwinxu): tarball might been given a digest - if original ref was not tag, tag image with: i-was-a-digest
 	switch format {
 	case "docker":
 		tag := getTag(ref)
