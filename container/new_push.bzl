@@ -61,19 +61,20 @@ def _impl(ctx):
 
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
+        found = false
         for f in ctx.files.image:
             if f.basename == "index.json":
                 pusher_args += ["-src", "{index_dir}".format(
                     index_dir = f.dirname,
                 )]
-                break
+                found = True
+        if not found:
+          fail("Did not find an index.json in the image attribute specified to {}".format(ctx.attr.image))
     else:
-<<<<<<< HEAD
         if len(ctx.files.image) > 0:
           pusher_args += ["-src", str(ctx.files.image[0].path)]
-=======
-        pusher_args += ["-src", str(ctx.files.image[0].path)]
->>>>>>> 9e79625d0187ea0946150674dc2b4e68a5678e53
+        else:
+          fail("Did not find an image tarball in the image attribute specified to {}".format(ctx.attr.image))
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
@@ -150,12 +151,7 @@ new_container_push = rule(
             executable = True,
         ),
         "_pusher": attr.label(
-<<<<<<< HEAD
-            # default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
-            default = Label("@pusher//:pusher"),
-=======
             default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
->>>>>>> 9e79625d0187ea0946150674dc2b4e68a5678e53
             cfg = "host",
             executable = True,
             allow_files = True,
