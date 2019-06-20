@@ -130,6 +130,15 @@ func main() {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
+	formatOptions := map[string]bool{
+		"oci":    true,
+		"docker": true,
+		"both":   true,
+	}
+	if *format != "" && !formatOptions[*format] {
+		log.Fatalln("Invalid option -format. Must be one of 'oci', 'docker', or 'both'.")
+	}
+
 	// Create a Platform struct with given arguments.
 	platform := v1.Platform{
 		Architecture: *arch,
