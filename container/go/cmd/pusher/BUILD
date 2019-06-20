@@ -13,9 +13,8 @@
 # limitations under the License.
 # ###
 # Build file for new puller binary based on go-containerregistry backend.
-load("//container:new_push.bzl", "new_container_push")
-load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # gazelle:prefix github.com/bazelbuild/rules_docker
 gazelle(name = "gazelle")
@@ -39,24 +38,4 @@ go_binary(
     name = "pusher",
     embed = [":go_pusher"],
     visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "oci_test_index1",
-    srcs = glob(["testdata/test_index1/**"]),
-)
-
-new_container_push(
-    name = "new_push_test_oci",
-    image = ":oci_test_index1",
-    registry = "gcr.io",
-    repository = "asci-toolchain-sandbox/bzl_test",
-)
-
-new_container_push(
-    name = "new_push_test_tar",
-    image = "testdata/image.tar",
-    registry = "gcr.io",
-    repository = "asci-toolchain-sandbox/bzl_test_push_tar",
-    format = "docker",
 )
