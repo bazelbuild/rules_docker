@@ -48,15 +48,12 @@ var (
 
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
-// Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
-func pull(imgName, dstPath string, platform v1.Platform) {
+// Pull the image with given <imgName> to destination <dstPath> with optional cache files and required platform specifications.
+func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
 		log.Fatalf("parsing tag %q: %v", imgName, err)
-	}
-	if cachePath != "" {
-		i = cache.Image(i, cache.NewFilesystemCache(cachePath))
 	}
 	log.Printf("Pulling %v", ref)
 
@@ -64,6 +61,9 @@ func pull(imgName, dstPath string, platform v1.Platform) {
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
 	if err != nil {
 		log.Fatalf("reading image %q: %v", ref, err)
+	}
+	if cachePath != "" {
+		i = cache.Image(i, cache.NewFilesystemCache(cachePath))
 	}
 
 	// // Image file to write to disk.
@@ -99,7 +99,7 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	pull(*imgName, *directory, platform)
+	pull(*imgName, *directory, *cachePath, platform)
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
