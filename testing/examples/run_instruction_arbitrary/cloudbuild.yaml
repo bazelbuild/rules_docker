@@ -15,7 +15,7 @@
 # Tests that verify the example manipulating arbitrary commands using
 # rules_docker and Dockerfile.
 
-timeout: 21600s
+timeout: 1800s
 options:
     machineType: "N1_HIGHCPU_32"
 

@@ -15,7 +15,7 @@
 # Tests that verify the example installing apt packages using rules_docker
 # and Dockerfile.
 
-timeout: 21600s
+timeout: 1800s
 options:
     machineType: "N1_HIGHCPU_32"
 
