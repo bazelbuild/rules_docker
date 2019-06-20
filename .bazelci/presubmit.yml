@@ -65,6 +65,8 @@ platforms:
     build_targets:
     - "--"
     - "..."
+    - "new_tar_alpine_linux_armv6//..."
+    - "new_tar_distroless_base//..."
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
