@@ -38,6 +38,16 @@ _container_pull_attrs = {
               " is not defined, the home directory will be used.",
         mandatory = False,
     ),
+    "format": attr.string(
+        default = "OCI",
+        values = [
+            "OCI",
+            "Docker",
+            "Both",
+        ],
+        doc = "(optional) The format of the image to be pulled, default to 'OCI', " +
+              "option for 'Docker' (tarball) or 'Both'.",
+    ),
     "os": attr.string(
         default = "linux",
         doc = "(optional) Which os to pull if this image refers to a " +
@@ -67,16 +77,6 @@ _container_pull_attrs = {
         default = "latest",
         doc = "(optional) The tag of the image, default to 'latest' " +
               "if this and 'digest' remain unspecified.",
-    ),
-    "format": attr.string(
-        default = "OCI",
-        values = [
-            "OCI",
-            "Docker",
-            "Both",
-        ],
-        doc = "(optional) The format of the image to be pulled, default to 'OCI', " +
-              "option for 'Docker' (tarball) or 'Both'.",
     ),
     "_puller": attr.label(
         executable = True,
