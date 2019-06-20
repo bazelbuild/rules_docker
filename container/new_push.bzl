@@ -68,8 +68,12 @@ def _impl(ctx):
                 )]
                 break
     else:
+<<<<<<< HEAD
         if len(ctx.files.image) > 0:
           pusher_args += ["-src", str(ctx.files.image[0].path)]
+=======
+        pusher_args += ["-src", str(ctx.files.image[0].path)]
+>>>>>>> 9e79625d0187ea0946150674dc2b4e68a5678e53
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
@@ -146,8 +150,12 @@ new_container_push = rule(
             executable = True,
         ),
         "_pusher": attr.label(
+<<<<<<< HEAD
             # default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
             default = Label("@pusher//:pusher"),
+=======
+            default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
+>>>>>>> 9e79625d0187ea0946150674dc2b4e68a5678e53
             cfg = "host",
             executable = True,
             allow_files = True,
