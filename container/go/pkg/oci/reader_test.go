@@ -1,8 +1,8 @@
 package oci
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
@@ -107,22 +107,23 @@ func TestRead(t *testing.T) {
 }
 
 // validateLayer checks if the digests and media type matches for the given layer.
-func validateLayer(layer v1.Layer, layerHash v1.Hash) (int, error){
+func validateLayer(layer v1.Layer, layerHash v1.Hash) (int, error) {
 	ld, err := layer.Digest()
+
 	if err != nil {
-		return nil, err
+		return 1, err
 	}
 	if got, want := ld, layerHash; got != want {
-		return nil, fmt.Errorf("Digest(); got: %q want: %q", i, got, want)
+		return 1, fmt.Errorf("Digest(); got: %q want: %q", got, want)
 	}
 
 	mt, err := layer.MediaType()
 	if err != nil {
-		return nil, err
+		return 1, err
 	}
 	if got, want := mt, types.DockerLayer; got != want {
-		return nil, fmt.Errorf("MediaType(); got: %q want: %q", i, got, want)
+		return 1, fmt.Errorf("MediaType(); got: %q want: %q", got, want)
 	}
-	
+
 	return 0, nil
 }
