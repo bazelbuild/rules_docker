@@ -20,6 +20,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	ospkg "os"
 	"strings"
@@ -30,11 +31,13 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
 
 var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
-	directory       = flag.String("directory", "", "Where to save the images files.")
+	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify output tarball name.")
+	format          = flag.String("format", "", "The format, options being 'Docker' or 'Both', in which to pull the docker image. Default OCI layout format.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
@@ -44,16 +47,42 @@ var (
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
+// Tag applied to images that were pulled by digest. This denotes
+// that the image was (probably) not tagged with this, but avoids
+// applying the ":latest" tag which might be misleading.
+const iWasADigestTag = "i-was-a-digest"
+
+// getTag parses the reference inside the name flag and returns the apt tag.
+// WriteToFile requires a tag to write to the tarball, but may have been given a digest,
+// in which case we tag the image with :i-was-a-digest instead.
+func getTag(ref name.Reference) name.Reference {
+	var err error
+	tag, ok := ref.(name.Tag)
+	if !ok {
+		d, ok := ref.(name.Digest)
+		if !ok {
+			log.Fatal("ref wasn't a tag or digest")
+		}
+		s := fmt.Sprintf("%s:%s", d.Repository.Name(), iWasADigestTag)
+		tag, err = name.NewTag(s)
+		if err != nil {
+			log.Fatalf("parsing digest as tag (%s): %v", s, err)
+		}
+	}
+	return tag
+}
+
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
-func pull(imgName, dstPath string, platform v1.Platform) {
+func pull(imgName, dstPath, format string, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
 		log.Fatalf("parsing tag %q: %v", imgName, err)
 	}
 	log.Printf("Pulling %v", ref)
+	log.Printf(ref.String())
 
 	// Fetch the image with desired cache files and platform specs.
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
@@ -61,9 +90,26 @@ func pull(imgName, dstPath string, platform v1.Platform) {
 		log.Fatalf("reading image %q: %v", ref, err)
 	}
 
-	// // Image file to write to disk.
-	if err := oci.Write(img, dstPath); err != nil {
-		log.Fatalf("failed to write image to %q: %v", dstPath, err)
+	// Image file to write to disk, either a tarball, OCI layout, or both.
+	// TODO(xwinxu): tarball might been given a digest - if original ref was not tag, tag image with: i-was-a-digest
+	switch format {
+	case "Docker":
+		tag := getTag(ref)
+		if err := tarball.WriteToFile(dstPath+"/image.tar", tag, img); err != nil {
+			log.Fatalf("writing image tarball to %q: %v", dstPath, err)
+		}
+	case "Both":
+		tag := getTag(ref)
+		if err := tarball.WriteToFile(dstPath+"/image.tar", tag, img); err != nil {
+			log.Fatalf("writing image tarball to %q: %v", dstPath, err)
+		}
+		if err := oci.Write(img, dstPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		}
+	default:
+		if err := oci.Write(img, dstPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		}
 	}
 }
 
@@ -94,7 +140,7 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	pull(*imgName, *directory, platform)
+	pull(*imgName, *directory, *format, platform)
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }

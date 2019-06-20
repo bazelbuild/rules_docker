@@ -68,9 +68,20 @@ _container_pull_attrs = {
         doc = "(optional) The tag of the image, default to 'latest' " +
               "if this and 'digest' remain unspecified.",
     ),
+    "format": attr.string(
+        default = "OCI",
+        values = [
+            "OCI",
+            "Docker",
+            "Both",
+        ],
+        doc = "(optional) The format of the image to be pulled, default to 'OCI', " +
+                "option for 'Docker' (tarball) or 'Both'."
+    ),
     "_puller": attr.label(
         executable = True,
-        default = Label("@go_puller//file:downloaded"),
+        default = Label("@go_puller//:puller"),
+        # default = Label("@go_puller//file:downloaded"),
         cfg = "host",
     ),
 }
@@ -96,6 +107,8 @@ exports_files(glob(["**"]))""")
         repository_ctx.path(repository_ctx.attr._puller),
         "-directory",
         repository_ctx.path("image"),
+        "-format",
+        repository_ctx.attr.format,
         "-os",
         repository_ctx.attr.os,
         "-os-version",
