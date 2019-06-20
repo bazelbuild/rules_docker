@@ -16,9 +16,11 @@ workspace(name = "dockerfile_examples")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
-local_repository(
+http_archive(
     name = "io_bazel_rules_docker",
-    path = "../..",
+    sha256 = "9fec5e921ca318736fb25acdfdc9a5b425837790c08a525398908b5f8951190d",
+    strip_prefix = "rules_docker-8dda5776426f8c742f0bfc230fa455c841afec83",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/8dda5776426f8c742f0bfc230fa455c841afec83.tar.gz"],
 )
 
 load(
