@@ -89,7 +89,7 @@ exports_files(["{}"])
         if build_result.return_code:
             fail("Image build command failed: {} ({})".format(
                 build_result.stderr,
-                " ".join(command),
+                " ".join([str(e) for e in command]),
             ))
 
         save_result = repository_ctx.execute([
