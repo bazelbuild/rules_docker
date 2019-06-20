@@ -18,7 +18,8 @@ package main
 import (
 	"flag"
 	"log"
-	ospkg "os"
+	"os"
+	"fmt"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -55,40 +56,38 @@ func main() {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	var isOCI = true
-	if *format != "oci" {
-		isOCI = false
+	img, err := readImage(*src, *format string)
+	if err != nil {
+		log.Fatalln("Error reading from %s: %v", *src, err)
 	}
 
-	push(*dst, *src, isOCI)
+	if err := push(*dst, img); err != nil{
+		log.Fatalln("Error pushing image to %s: %v", *dst, err)
+	}
 }
 
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout or Docker tarball format .
-// Push the image from <src> to destination <dst> with specified format (oci or docker).
-func push(dst, src string, isOCI bool) {
-	// Read an OCI index or a Docker tarball from src.
-	var img v1.Image
-	var err error
-	if isOCI {
-		img, err = oci.Read(src)
-		if err != nil {
-			log.Fatalf("error reading OCI Layout from path %s: %v", src, err)
-		}
-	} else {
-		img, err = tarball.ImageFromPath(src, nil)
-		if err != nil {
-			log.Fatalf("error reading Docker Tarball from path %s: %v", src, err)
-		}
-	}
-
+// Push the given image to destination <dst>.
+func push(dst string, img v1.Image) error {
 	// Push the image to dst.
 	ref, err := name.ParseReference(dst)
 	if err != nil {
-		log.Fatalf("parsing tag %q: %v", dst, err)
+		return fmt.Errorf("parsing tag %q: %v", dst, err)
 	}
 
 	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf(err)
 	}
+}
+
+// Return a v1.Image after reading an OCI index or a Docker tarball from src.
+func readImage(src, format string) (v1.Image, error) {
+	if format == "oci" {
+			return oci.Read(src)
+	}
+ if format == "docker" {
+		 return tarball.ImageFromPath(src, nil)
+	}
+	return nil, fmt.Errorf("unknown image format %q", format)
 }

@@ -68,7 +68,8 @@ def _impl(ctx):
                 )]
                 break
     else:
-        pusher_args += ["-src", str(ctx.files.image[0].path)]
+        if len(ctx.files.image) > 0:
+          pusher_args += ["-src", str(ctx.files.image[0].path)]
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
