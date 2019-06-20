@@ -534,36 +534,6 @@ function test_py_image_deps_as_layers() {
   EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
 }
 
-function test_dockerfile_image_basic() {
-  cd "${ROOT}/testing/examples/basic"
-  clear_docker
-  bazel test ...
-}
-
-function test_dockerfile_image_extended() {
-  cd "${ROOT}/testing/examples/extended"
-  clear_docker
-  bazel test ...
-}
-
-function test_dockerfile_image_java_app() {
-  cd "${ROOT}/testing/examples/java_app"
-  clear_docker
-  bazel test ...
-}
-
-function test_dockerfile_image_apt_pkgs() {
-  cd "${ROOT}/testing/examples/run_instruction_apt_pkgs"
-  clear_docker
-  bazel test --host_force_python=PY2 ...
-}
-
-function test_dockerfile_image_arbitrary() {
-  cd "${ROOT}/testing/examples/run_instruction_arbitrary"
-  clear_docker
-  bazel test --host_force_python=PY2 ...
-}
-
 test_py_image_deps_as_layers
 test_container_push_with_stamp
 test_container_push_all
@@ -620,8 +590,3 @@ test_container_push
 test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
-test_dockerfile_image_basic
-test_dockerfile_image_extended
-test_dockerfile_image_java_app
-test_dockerfile_image_apt_pkgs
-test_dockerfile_image_arbitrary
