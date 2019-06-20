@@ -59,18 +59,18 @@ new_container_pull(
     name = "new_tar_alpine_linux_armv6",
     architecture = "arm",
     cpu_variant = "v6",
+    format = "Docker",
     os = "linux",
     registry = "index.docker.io",
     repository = "library/alpine",
-    format = "Docker",
     tag = "3.8",
 )
 
 new_container_pull(
     name = "new_tar_distroless_base",
+    format = "Docker",
     registry = "gcr.io",
     repository = "distroless/base",
-    format = "Docker",
 )
 
 load(
