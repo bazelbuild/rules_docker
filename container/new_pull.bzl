@@ -39,11 +39,11 @@ _container_pull_attrs = {
         mandatory = False,
     ),
     "format": attr.string(
-        default = "OCI",
+        default = "oci",
         values = [
-            "OCI",
-            "Docker",
-            "Both",
+            "oci",
+            "docker",
+            "both",
         ],
         doc = "(optional) The format of the image to be pulled, default to 'OCI', " +
               "option for 'Docker' (tarball) or 'Both'.",
