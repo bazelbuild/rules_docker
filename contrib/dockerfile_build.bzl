@@ -79,17 +79,17 @@ exports_files(["{}"])
             # because it may refer to relative paths in its ADD, COPY and WORKDIR
             # instructions.
             "-f",
-            dockerfile_path,
+            str(dockerfile_path),
             "-t",
             img_name,
-            dockerfile_path.dirname,
+            str(dockerfile_path.dirname),
         ])
 
         build_result = repository_ctx.execute(command)
         if build_result.return_code:
             fail("Image build command failed: {} ({})".format(
                 build_result.stderr,
-                " ".join([str(e) for e in command]),
+                " ".join(command),
             ))
 
         save_result = repository_ctx.execute([

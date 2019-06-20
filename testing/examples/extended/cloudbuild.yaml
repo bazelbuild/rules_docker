@@ -15,15 +15,7 @@
 # Tests that verify the extended example of rules_docker vs Dockerfile.
 
 steps:
-  # Confirm bazel and docker are installed.
-  - name: "gcr.io/asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud"
-    entrypoint: "sh"
-    args: ["-c", "bazel version && docker version"]
-    id: "versions"
-    waitFor: ["-"]
-
   # Test the extended example.
-  - name: "gcr.io/asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud"
-    entrypoint: "sh"
-    args: ["-c", "cd testing/examples && bazel test //extended:all"]
-    waitFor: ["versions"]
+  - name: "l.gcr.io/google/bazel"
+    args: ["test", "//extended:all"]
+    dir: "testing/examples"
