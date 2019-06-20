@@ -146,6 +146,13 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
     elif driver == "host":
         image_config = image + ".json"
     else:
+        if image.endswith(".tar"):
+            fail("It is not supported to directly use a tarball as the input " +
+                 "image when 'driver' is 'docker'. Please use " +
+                 "'container_load' repository rule to load the image tarball " +
+                 "into rules_docker's intermediate format first and then use " +
+                 "the target produced in the 'container_test' target.")
+
         # Give the image a predictable name when loaded
         image_loader = "%s.image" % name
 

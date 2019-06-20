@@ -41,14 +41,12 @@ fileContentTests:
     path: '/file_to_copy.txt'
     expectedContents: ['Another file to copy']
 
-# TODO(xingao): Enable these tests once "diff_id" key not found in image error
-# is fixed in container_bundle.
-# commandTests:
-#   - name: "gcc_test"
-#     command: "gcc"
-#     args: ["--version"]
-#     expectedError: ["gcc \\(Alpine .*"]
-#   - name: "python2_test"
-#     command: "python"
-#     args: ["-V"]
-#     expectedError: ["Python 2\\..*"]
+commandTests:
+  - name: "gcc_test"
+    command: "gcc"
+    args: ["--version"]
+    expectedOutput: ["gcc \\(Alpine .*"]
+  - name: "python2_test"
+    command: "python"
+    args: ["-V"]
+    expectedError: ["Python 2\\..*"]
