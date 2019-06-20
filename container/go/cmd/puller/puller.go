@@ -14,9 +14,9 @@
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
 // For the format specification, if the format is:
-//       1. 'docker': image is pulled as tarball and may be used with `docker load -i`.
-// 		 2. 'oci' (default): image will be pulled as a collection of files in OCI layout to directory.
-// 		 3. 'both': both formats of image are pulled.
+// 		1. 'docker': image is pulled as tarball and may be used with `docker load -i`.
+// 		2. 'oci' (default): image will be pulled as a collection of files in OCI layout to directory.
+// 		3. 'both': both formats of image are pulled.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
