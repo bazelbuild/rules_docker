@@ -330,6 +330,16 @@ dockerfile_image(
     "debug",
 ]]
 
+# Load the image tarball.
+[container_load(
+    name = "loaded_dockerfile_image_%s" % driver,
+    file = "@dockerfile_%s//image:dockerfile_image.tar" % driver,
+) for driver in [
+    "docker",
+    "kaniko_latest",
+    "kaniko_debug",
+]]
+
 # Register the default py_toolchain for containerized execution
 register_toolchains("//toolchains/python:container_py_toolchain")
 
