@@ -97,7 +97,7 @@ func TestRead(t *testing.T) {
 
 			// Validate the digests and media type for each layer.
 			for i, layer := range layers {
-				if _, err := validateLayer(layer, rt.layerHashes[i]); err != nil {
+				if err := validateLayer(layer, rt.layerHashes[i]); err != nil {
 					t.Fatalf("layers[%d] is invalid: %v", i, err)
 				}
 			}
@@ -107,23 +107,23 @@ func TestRead(t *testing.T) {
 }
 
 // validateLayer checks if the digests and media type matches for the given layer.
-func validateLayer(layer v1.Layer, layerHash v1.Hash) (int, error) {
+func validateLayer(layer v1.Layer, layerHash v1.Hash) error {
 	ld, err := layer.Digest()
 
 	if err != nil {
-		return 1, err
+		return err
 	}
 	if got, want := ld, layerHash; got != want {
-		return 1, fmt.Errorf("Digest(); got: %q want: %q", got, want)
+		return fmt.Errorf("Digest(); got: %q want: %q", got, want)
 	}
 
 	mt, err := layer.MediaType()
 	if err != nil {
-		return 1, err
+		return err
 	}
 	if got, want := mt, types.DockerLayer; got != want {
-		return 1, fmt.Errorf("MediaType(); got: %q want: %q", got, want)
+		return fmt.Errorf("MediaType(); got: %q want: %q", got, want)
 	}
 
-	return 0, nil
+	return nil
 }
