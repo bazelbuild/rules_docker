@@ -13,8 +13,8 @@
 # limitations under the License.
 # ###
 # Build file for new puller binary based on go-containerregistry backend.
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_binary")
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_binary")
 
 # gazelle:prefix github.com/bazelbuild/rules_docker
 gazelle(name = "gazelle")
