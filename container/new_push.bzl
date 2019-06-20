@@ -60,7 +60,7 @@ def _impl(ctx):
     )]
 
     # Find and set src to correct paths depending the image format to be pushed
-    if ctx.attr.format == "OCI":
+    if ctx.attr.format == "oci":
       for f in ctx.files.image:
         if f.basename == "index.json":
           pusher_args += ["-src", "{index_dir}".format(
@@ -107,12 +107,12 @@ def _impl(ctx):
 new_container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
-            default = "OCI",
+            default = "oci",
             values = [
-                "OCI",
-                "Docker",
+                "oci",
+                "docker",
             ],
-            doc = "The form to push: Docker or OCI, default to 'OCI'.",
+            doc = "The form to push: docker or oci, default to 'oci'.",
         ),
         "image": attr.label(
             allow_files = True,
