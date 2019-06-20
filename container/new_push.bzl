@@ -145,7 +145,8 @@ new_container_push = rule(
             executable = True,
         ),
         "_pusher": attr.label(
-            default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
+            # default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
+            default = Label("@pusher//:pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,
