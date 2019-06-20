@@ -16,11 +16,11 @@
 This wraps the rules_docker.container.go.cmd.pusher.pusher executable in a
 Bazel rule for publishing images.
 """
+
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo")
 load(
     "//container:layer_tools.bzl",
-    _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
 load(
@@ -61,14 +61,14 @@ def _impl(ctx):
 
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
-      for f in ctx.files.image:
-        if f.basename == "index.json":
-          pusher_args += ["-src", "{index_dir}".format(
-          index_dir = f.dirname,
-          )]
-          break
+        for f in ctx.files.image:
+            if f.basename == "index.json":
+                pusher_args += ["-src", "{index_dir}".format(
+                    index_dir = f.dirname,
+                )]
+                break
     else:
-      pusher_args += ["-src", str(ctx.files.image[0].path)]
+        pusher_args += ["-src", str(ctx.files.image[0].path)]
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
@@ -145,7 +145,8 @@ new_container_push = rule(
             executable = True,
         ),
         "_pusher": attr.label(
-            default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
+            # default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
+            default = Label("@pusher//:pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,
