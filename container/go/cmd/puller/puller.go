@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"log"
 	ospkg "os"
+	"path"
 	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -36,8 +37,8 @@ import (
 
 var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
-	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify output tarball name.")
-	format          = flag.String("format", "", "The format, options being 'Docker' or 'Both', in which to pull the docker image. Default OCI layout format.")
+	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify the directory to save the tarball. The tarball is named as image.tar.")
+	format          = flag.String("format", "", "The format, options being 'docker' or 'both', in which to pull the docker image. Default OCI layout format.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
@@ -92,15 +93,15 @@ func pull(imgName, dstPath, format string, platform v1.Platform) {
 	// Image file to write to disk, either a tarball, OCI layout, or both.
 	// TODO(xwinxu): tarball might been given a digest - if original ref was not tag, tag image with: i-was-a-digest
 	switch format {
-	case "Docker":
+	case "docker":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(dstPath+"/image.tar", tag, img); err != nil {
-			log.Fatalf("writing image tarball to %q: %v", dstPath, err)
+		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
 		}
-	case "Both":
+	case "both":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(dstPath+"/image.tar", tag, img); err != nil {
-			log.Fatalf("writing image tarball to %q: %v", dstPath, err)
+		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
 		}
 		if err := oci.Write(img, dstPath); err != nil {
 			log.Fatalf("failed to write image to %q: %v", dstPath, err)
