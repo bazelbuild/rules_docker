@@ -18,16 +18,21 @@ package main
 import (
 	"flag"
 	"log"
+	ospkg "os"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
 
 var (
-	dst = flag.String("dst", "", "The destination location including repo and digest/tag of the docker image to push. Supports fully-qualified tag or digest references.")
-	src = flag.String("src", "", "The path of the source index relative to the execution workspace.")
+	dst             = flag.String("dst", "", "The destination location including repo and digest/tag of the docker image to push. Supports fully-qualified tag or digest references.")
+	src             = flag.String("src", "", "The path of the source index relative to the execution workspace.")
+	format          = flag.String("format", "", "The form to push, OCI or Docker (A tarball).")
+	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 )
 
 func main() {
@@ -40,16 +45,41 @@ func main() {
 	if *src == "" {
 		log.Fatalln("Required option -src was not specified.")
 	}
+	if *format == "" {
+		log.Fatalln("Required option -format was not specified.")
+	}
 
-	push(*dst, *src)
+	// If the user provided a client config directory, instruct the keychain resolver
+	// to use it to look for the docker client config.
+	if *clientConfigDir != "" {
+		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
+	}
+
+	var isOCI = true
+	if *format != "OCI" {
+		isOCI = false
+	}
+
+	push(*dst, *src, isOCI)
 }
 
-func push(dst, src string) {
-	log.Println("src:" + src)
-	log.Println("dst:" + dst)
-	img, err := oci.Read(src)
-	if err != nil {
-		log.Fatalf("error reading from path: %v", err)
+// NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
+// with modification for option to push OCI layout or Docker tarball format .
+// Push the image from <src> to destination <dst> with specified format (OCI or Docker).
+func push(dst, src string, isOCI bool) {
+	// Read an OCI index or a Docker tarball from src.
+	var img v1.Image
+	var err error
+	if isOCI {
+		img, err = oci.Read(src)
+		if err != nil {
+			log.Fatalf("error reading OCI Layout from path %s: %v", src, err)
+		}
+	} else {
+		img, err = tarball.ImageFromPath(src, nil)
+		if err != nil {
+			log.Fatalf("error reading Docker Tarball from path %s: %v", src, err)
+		}
 	}
 
 	// Push the image to dst.
@@ -61,5 +91,4 @@ func push(dst, src string) {
 	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {
 		log.Fatal(err)
 	}
-
 }

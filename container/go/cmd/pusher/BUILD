@@ -29,7 +29,9 @@ go_library(
         "//container/go/pkg/oci:go_default_library",
         "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
         "@com_github_google_go_containerregistry//pkg/name:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
     ],
 )
 
@@ -37,16 +39,4 @@ go_binary(
     name = "pusher",
     embed = [":go_pusher"],
     visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "image_test_new",
-    srcs = glob(["testdata/**"]),
-)
-
-new_container_push(
-    name = "new_push_test",
-    image = ":image_test_new",
-    registry = "gcr.io",
-    repository = "asci-toolchain-sandbox/bzl_test",
 )
