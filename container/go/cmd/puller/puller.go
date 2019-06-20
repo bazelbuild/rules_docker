@@ -82,7 +82,6 @@ func pull(imgName, dstPath, format string, platform v1.Platform) {
 		log.Fatalf("parsing tag %q: %v", imgName, err)
 	}
 	log.Printf("Pulling %v", ref)
-	log.Printf(ref.String())
 
 	// Fetch the image with desired cache files and platform specs.
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
