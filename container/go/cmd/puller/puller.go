@@ -38,7 +38,7 @@ import (
 var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
 	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify the directory to save the tarball. The tarball is named as image.tar.")
-	format          = flag.String("format", "", "The format, options being 'docker' or 'both', in which to pull the docker image. Default OCI layout format.")
+	format          = flag.String("format", "", "The format, options being 'oci', docker', or 'both', in which to pull the docker image. 'docker' tarball may be used with `docker load -i`. Default 'oci', OCI layout format.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
