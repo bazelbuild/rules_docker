@@ -61,7 +61,7 @@ def _impl(ctx):
 
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
-        found = false
+        found = False
         for f in ctx.files.image:
             if f.basename == "index.json":
                 pusher_args += ["-src", "{index_dir}".format(
@@ -69,11 +69,13 @@ def _impl(ctx):
                 )]
                 found = True
         if not found:
-            fail("Did not find an index.json in the image attribute specified to {}".format(ctx.attr.image))
-    elif len(ctx.files.image) > 0:
+            fail("Did not find an index.json in the image attribute {} specified to {}".format(ctx.attr.image, ctx.label))
+    if ctx.attr.format == "docker":
+        if len(ctx.files.image) == 0:
+            fail("Attribute image {} to {} did not contain an image tarball".format(ctx.attr.image, ctx.label))
+        if len(ctx.files.image) > 1:
+            fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
         pusher_args += ["-src", str(ctx.files.image[0].path)]
-    else:
-        fail("Did not find an image tarball in the image attribute specified to {}".format(ctx.attr.image))
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
