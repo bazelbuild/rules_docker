@@ -56,7 +56,7 @@ new_container_pull(
 )
 
 new_container_pull(
-    name = "new_tar_alpine_linux_armv6",
+    name = "new_alpine_linux_armv6_tar",
     architecture = "arm",
     cpu_variant = "v6",
     format = "docker",
@@ -67,7 +67,7 @@ new_container_pull(
 )
 
 new_container_pull(
-    name = "new_both_distroless_base",
+    name = "new_distroless_base_both",
     format = "both",
     registry = "gcr.io",
     repository = "distroless/base",

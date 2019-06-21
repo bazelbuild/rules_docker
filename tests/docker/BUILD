@@ -360,34 +360,40 @@ file_test(
 )
 
 file_test(
-    name = "new_tar_alpine_linux_armv6_test2",
+    name = "new_alpine_linux_armv6_test2",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
     file = "@new_alpine_linux_armv6//image:oci-layout",
-    regexp = ".*",
 )
 
 file_test(
     name = "new_distroless_base_test2",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
     file = "@new_distroless_base//image:oci-layout",
-    regexp = ".*",
 )
 
 # Merely testing for the presence of the pulled image.tar for now.
 file_test(
-    name = "new_tar_alpine_linux_armv6_test",
-    file = "@new_tar_alpine_linux_armv6//image:image.tar",
+    name = "new_alpine_linux_armv6_tar_test",
+    file = "@new_alpine_linux_armv6_tar//image:image.tar",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_both_distroless_base_test",
-    file = "@new_both_distroless_base//image:image.tar",
+    name = "new_distroless_base_both_test",
+    file = "@new_distroless_base_both//image:image.tar",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_both_distroless_base_test2",
-    file = "@new_both_distroless_base//image:oci-layout",
-    regexp = ".*",
+    name = "new_distroless_base_both_test2",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
+    file = "@new_distroless_base_both//image:oci-layout",
 )
 
 create_banana_directory(
