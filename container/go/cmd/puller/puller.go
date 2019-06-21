@@ -83,7 +83,7 @@ func getTag(ref name.Reference) name.Reference {
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional cache files and required platform specifications.
-func pull(imgName, dstPath, cachePath string, platform v1.Platform) error {
+func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) error {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -159,7 +159,7 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	if err := pull(*imgName, *directory, *cachePath, platform); err != nil {
+	if err := pull(*imgName, *directory, *format, *cachePath, platform); err != nil {
 		log.Fatalf("Image pull was unsuccessful: %v", err)
 	}
 
