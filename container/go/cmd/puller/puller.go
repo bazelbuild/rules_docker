@@ -91,12 +91,12 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config
+	// to use it to look for the docker client config.
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	// Create a Platform struct with arguments
+	// Create a Platform struct with arguments.
 	platform := v1.Platform{
 		Architecture: *arch,
 		OS:           *os,
