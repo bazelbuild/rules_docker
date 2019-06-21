@@ -19,7 +19,9 @@ options:
     machineType: "N1_HIGHCPU_32"
 
 steps:
-  # Step to copy the rules_docker repo to a separete persistent volume.
+  # Step to copy the rules_docker repo to a separete persistent volume
+  # from the /workspace directory, where GCB copies the project's source
+  # code by default.
   # This is needed because the rules_docker repo and Bazel's output_base
   # connot co-exist under the same directory. This is because the 'internal'
   # Bazel project (with examples) uses a `local_repository` target to point to
