@@ -13,15 +13,20 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
-// The pulled image is in OCI Image Format and this binary can also accomodate manifest lists.
+// For the format specification, if the format is:
+// 		1. 'docker': image is pulled as tarball and may be used with `docker load -i`.
+// 		2. 'oci' (default): image will be pulled as a collection of files in OCI layout to directory.
+// 		3. 'both': both formats of image are pulled.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	ospkg "os"
+	"path"
 	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -30,11 +35,13 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
 
 var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
-	directory       = flag.String("directory", "", "Where to save the images files.")
+	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify the directory to save the tarball. The tarball is named as image.tar.")
+	format          = flag.String("format", "", "Format to pull image from remote registry: If 'docker', image is pulled as tarball. If 'oci' (default), image will be pulled as a collection of files in OCI layout. Specify 'both' if both formats are needed.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
@@ -44,16 +51,40 @@ var (
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
+// Tag applied to images that were pulled by digest. This denotes
+// that the image was (probably) not tagged with this, but avoids
+// applying the ":latest" tag which might be misleading.
+const iWasADigestTag = "i-was-a-digest"
+
+// getTag parses the reference inside the name flag and returns the apt tag.
+// WriteToFile requires a tag to write to the tarball, but may have been given a digest,
+// in which case we tag the image with :i-was-a-digest instead.
+func getTag(ref name.Reference) name.Reference {
+	var err error
+	tag, ok := ref.(name.Tag)
+	if !ok {
+		d, ok := ref.(name.Digest)
+		if !ok {
+			log.Fatal("ref wasn't a tag or digest")
+		}
+		s := fmt.Sprintf("%s:%s", d.Repository.Name(), iWasADigestTag)
+		tag, err = name.NewTag(s)
+		if err != nil {
+			log.Fatalf("parsing digest as tag (%s): %v", s, err)
+		}
+	}
+	return tag
+}
+
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
-func pull(imgName, dstPath string, platform v1.Platform) {
+func pull(imgName, dstPath, format string, platform v1.Platform) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
 		log.Fatalf("parsing tag %q: %v", imgName, err)
 	}
-	log.Printf("Pulling %v", ref)
 
 	// Fetch the image with desired cache files and platform specs.
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
@@ -61,9 +92,25 @@ func pull(imgName, dstPath string, platform v1.Platform) {
 		log.Fatalf("reading image %q: %v", ref, err)
 	}
 
-	// // Image file to write to disk.
-	if err := oci.Write(img, dstPath); err != nil {
-		log.Fatalf("failed to write image to %q: %v", dstPath, err)
+	// Image file to write to disk, either a tarball, OCI layout, or both.
+	switch format {
+	case "docker":
+		tag := getTag(ref)
+		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
+		}
+	case "both":
+		tag := getTag(ref)
+		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
+		}
+		if err := oci.Write(img, dstPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		}
+	default:
+		if err := oci.Write(img, dstPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		}
 	}
 }
 
@@ -79,9 +126,18 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config.
+	// to use it to look for the docker client config
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
+	}
+
+	formatOptions := map[string]bool{
+		"oci":    true,
+		"docker": true,
+		"both":   true,
+	}
+	if *format != "" && !formatOptions[*format] {
+		log.Fatalln("Invalid option -format. Must be one of 'oci', 'docker', or 'both'.")
 	}
 
 	// Create a Platform struct with given arguments.
@@ -94,7 +150,7 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	pull(*imgName, *directory, platform)
+	pull(*imgName, *directory, *format, platform)
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
