@@ -73,11 +73,11 @@ func push(dst string, img v1.Image) error {
 	// Push the image to dst.
 	ref, err := name.ParseReference(dst)
 	if err != nil {
-		return errors.Wrapf("parsing tag %q: %v", dst, err)
+		return errors.Wrapf(err, "parsing tag %q", dst)
 	}
 
 	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {
-		return errors.Wrapf(err)
+		return errors.Wrapf(err, "")
 	}
 
 	return nil
@@ -91,5 +91,5 @@ func readImage(src, format string) (v1.Image, error) {
 	if format == "docker" {
 		return tarball.ImageFromPath(src, nil)
 	}
-	return nil, errors.Wrapf("unknown image format %q", format)
+	return nil, errors.Errorf("unknown image format %q", format)
 }
