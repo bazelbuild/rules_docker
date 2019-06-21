@@ -13,7 +13,6 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // This binary pulls images from a Docker Registry using the go-containerregistry as backend.
-// The pulled image is in OCI Image Format and this binary can also accomodate manifest lists.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
@@ -23,6 +22,8 @@ import (
 	"log"
 	ospkg "os"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -46,30 +47,36 @@ var (
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 )
 
+// Tag applied to images that were pulled by digest. This denotes that the
+// image was (probably) never tagged with this, but lets us avoid applying the
+// ":latest" tag which might be misleading.
+const iWasADigestTag = "i-was-a-digest"
+
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional cache files and required platform specifications.
-func pull(imgName, dstPath, cachePath string, platform v1.Platform) {
+func pull(imgName, dstPath, cachePath string, platform v1.Platform) (err error) {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
-		log.Fatalf("parsing tag %q: %v", imgName, err)
+		return errors.Wrapf(err, "parsing tag %q", imgName)
 	}
-	log.Printf("Pulling %v", ref)
 
 	// Fetch the image with desired cache files and platform specs.
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
 	if err != nil {
-		log.Fatalf("reading image %q: %v", ref, err)
+		return errors.Wrapf(err, "reading image %q", ref)
 	}
 	if cachePath != "" {
-		i = cache.Image(i, cache.NewFilesystemCache(cachePath))
+		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
 
 	// // Image file to write to disk.
 	if err := oci.Write(img, dstPath); err != nil {
-		log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		return errors.Wrapf(err, "failed to write image to %q", dstPath)
 	}
+
+	return nil
 }
 
 func main() {
@@ -84,12 +91,12 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config.
+	// to use it to look for the docker client config
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	// Create a Platform struct with given arguments.
+	// Create a Platform struct with arguments
 	platform := v1.Platform{
 		Architecture: *arch,
 		OS:           *os,
@@ -99,7 +106,9 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	pull(*imgName, *directory, *cachePath, platform)
+	if err := pull(*imgName, *directory, *cachePath, platform); err != nil {
+		log.Fatalln("Image pull was unsuccessful: %v", err)
+	}
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
