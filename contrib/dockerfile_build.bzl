@@ -79,10 +79,10 @@ exports_files(["{}"])
             # because it may refer to relative paths in its ADD, COPY and WORKDIR
             # instructions.
             "-f",
-            dockerfile_path,
+            str(dockerfile_path),
             "-t",
             img_name,
-            dockerfile_path.dirname,
+            str(dockerfile_path.dirname),
         ])
 
         build_result = repository_ctx.execute(command)

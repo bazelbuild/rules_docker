@@ -1,0 +1,52 @@
+# Copyright 2017 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Tests that verify the example installing apt packages using rules_docker
+# and Dockerfile.
+
+options:
+    machineType: "N1_HIGHCPU_32"
+
+steps:
+  # Step to copy the rules_docker repo to a separete persistent volume
+  # from the /workspace directory, where GCB copies the project's source
+  # code by default.
+  # This is needed because the rules_docker repo and Bazel's output_base
+  # connot co-exist under the same directory. This is because the 'internal'
+  # Bazel project (with examples) uses a `local_repository` target to point to
+  # rules_docker repo, which then leads to infinite symlink expansion error
+  # when the 'internal' project tries to access files under
+  # external/io_bazel_rules_docker.
+  # Also the output_base cannot be set to a location outside /workspace, as it
+  # leads to the error described in the next step's comment.
+  - name: "l.gcr.io/google/bazel"
+    entrypoint: "sh"
+    args: ["-c", "cp -a /workspace/. /rules_docker/"]
+    volumes:
+      - name: "vol1"
+        path: "/rules_docker"
+
+  # Test the run_instruction_apt_pkgs example.
+  - name: "l.gcr.io/google/bazel"
+    # Building this example image with rules_docker uses the `download_pkgs`
+    # and `install_pkgs` rules that store intermediate files outside the
+    # mounted /workspace directory. As a result the `install_pkgs` target is
+    # unable to access a file at /tmp/installer.sh to build successfully.
+    # Setting the output_base explicitly to a directory we have access to,
+    # resolves this issue.
+    args: ["--output_base=/workspace/bazel_outputs", "test", "//run_instruction_apt_pkgs:all"]
+    dir: "/rules_docker/testing/examples"
+    volumes:
+      - name: "vol1"
+        path: "/rules_docker"
