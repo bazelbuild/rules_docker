@@ -15,7 +15,6 @@
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
-    "rule_test",
 )
 load("//container:bundle.bzl", "container_bundle")
 load(
@@ -362,33 +361,33 @@ file_test(
 
 file_test(
     name = "new_tar_alpine_linux_armv6_test2",
-    regexp = ".*",
     file = "@new_alpine_linux_armv6//image:oci-layout",
+    regexp = ".*",
 )
 
 file_test(
     name = "new_distroless_base_test2",
-    regexp = ".*",
     file = "@new_distroless_base//image:oci-layout",
+    regexp = ".*",
 )
 
 # Merely testing for the presence of the pulled image.tar for now.
 file_test(
     name = "new_tar_alpine_linux_armv6_test",
-    regexp = ".*",
     file = "@new_tar_alpine_linux_armv6//image:image.tar",
+    regexp = ".*",
 )
 
 file_test(
     name = "new_both_distroless_base_test",
-    regexp = ".*",
     file = "@new_both_distroless_base//image:image.tar",
+    regexp = ".*",
 )
 
 file_test(
     name = "new_both_distroless_base_test2",
-    regexp = ".*",
     file = "@new_both_distroless_base//image:oci-layout",
+    regexp = ".*",
 )
 
 create_banana_directory(
