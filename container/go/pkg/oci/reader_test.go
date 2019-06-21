@@ -1,3 +1,18 @@
+// Copyright 2015 The Bazel Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////
+// Tests for Read function.
 package oci
 
 import (
@@ -61,7 +76,7 @@ func TestRead(t *testing.T) {
 
 			// Validates that img does not violate any invariants of the image format by validating the layers, manifests and config.
 			if err := validate.Image(img); err != nil {
-				t.Errorf("validate.Image(): %v", err)
+				t.Fatalf("validate.Image(): %v", err)
 			}
 
 			mt, err := img.MediaType()
@@ -73,17 +88,17 @@ func TestRead(t *testing.T) {
 
 			cfg, err := img.LayerByDigest(rt.configDigest)
 			if err != nil {
-				t.Fatalf("LayerByDigest(%s): %v", rt.configDigest, err)
+				t.Errorf("LayerByDigest(%s): %v", rt.configDigest, err)
 			}
 
 			cfgName, err := img.ConfigName()
 			if err != nil {
-				t.Fatalf("ConfigName(): %v", err)
+				t.Errorf("ConfigName(): %v", err)
 			}
 
 			cfgDigest, err := cfg.Digest()
 			if err != nil {
-				t.Fatalf("cfg.Digest(): %v", err)
+				t.Errorf("cfg.Digest(): %v", err)
 			}
 
 			if got, want := cfgDigest, cfgName; got != want {
@@ -92,7 +107,7 @@ func TestRead(t *testing.T) {
 
 			layers, err := img.Layers()
 			if err != nil {
-				t.Fatalf("img.Layers(): %v", err)
+				t.Errorf("img.Layers(): %v", err)
 			}
 
 			// Validate the digests and media type for each layer.
@@ -126,4 +141,53 @@ func validateLayer(layer v1.Layer, layerHash v1.Hash) error {
 	}
 
 	return nil
+}
+
+// readerErrorTests has error handling test cases for the Read function.
+// Ensures the Read function exits gracefully when given invalid/mismatching path, digest or type.
+var readerErrorTests = []struct {
+	// name is the name of this test case.
+	name string
+	// testPath is the relative path of this test case.
+	testPath string
+}{
+	// Tests error handling for a non-existent index path.
+	{
+		"non-existent testPath",
+		"testdata/does_not_exist",
+	},
+	// Tests error handling for an index missing index.json file.
+	{
+		"missing index.json",
+		"testdata/test_index2",
+	},
+	// Tests error handling for an index missing manifest metadata file.
+	{
+		"missing manifest metadata",
+		"testdata/test_index3",
+	},
+	// Tests error handling for an index missing config metadata file.
+	{
+		"missing config file",
+		"testdata/test_index4",
+	},
+	// Tests error handling for an index missing the specified layer.
+	{
+		"missing layer",
+		"testdata/test_index5",
+	},
+}
+
+// TestReadErrors checks if each error resulted from readerErrorTests is handled appropriately.
+// Tests will fail if Read does not report an error in these cases.
+func TestReadErrors(t *testing.T) {
+	for _, rt := range readerErrorTests {
+		t.Run(rt.name, func(t *testing.T) {
+			_, err := Read(rt.testPath)
+
+			if err == nil {
+				t.Fatalf("got unexpected success when trying to read an OCI image index, want error")
+			}
+		})
+	}
 }
