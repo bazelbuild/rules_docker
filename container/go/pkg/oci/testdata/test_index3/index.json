@@ -3,8 +3,8 @@
    "manifests": [
       {
          "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 528,
-         "digest": "sha256:f29c3d10359dd0e6d0c11e4f715735b678c0ab03a7ac4565b4b6c08980f6213b"
+         "size": 772,
+         "digest": "sha256:4817a495758a70edcaa9ed6723cd927f21c44e2061313b03aaf5d5ae2c1bff46"
       }
    ]
 }

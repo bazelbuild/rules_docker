@@ -39,25 +39,29 @@ var readertests = []struct {
 	// testPath is the relative path of this test case.
 	testPath string
 }{
-	// This test index ensures the image downloaded by puller.go from gcr.io/distroless/base@sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77 located in testdata/test_index1 can be loaded.
+	// This test index ensures the image downloaded by puller.go from gcr.io/asci-toolchain-sandbox/small_img@sha256:4817a495758a70edcaa9ed6723cd927f21c44e2061313b03aaf5d5ae2c1bff46 located in testdata/test_index1 can be loaded.
 	{
-		"distroless(/test_index1)",
+		"three layer small img(/test_index1)",
 		v1.Hash{
 			Algorithm: "sha256",
-			Hex:       "edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77",
+			Hex:       "4817a495758a70edcaa9ed6723cd927f21c44e2061313b03aaf5d5ae2c1bff46",
 		},
 		v1.Hash{
 			Algorithm: "sha256",
-			Hex:       "a0cfcd4cc98a67def7ce9a0c7644d1c415d56d6d44c4a079a447f7eafb253048",
+			Hex:       "93cd8b73a9da05da6e1a9739e3610cbb0f19439d693931d3bf011d1d92b9e569",
 		},
 		[]v1.Hash{
 			v1.Hash{
 				Algorithm: "sha256",
-				Hex:       "1558143043601a425aa864511da238799b57fcf7d062d47044f6ddd0e04fe99a",
+				Hex:       "2cbd3e7a7cca7df9201e626abe080efe75e0588dda3c0188b1caf3a011f300ca",
 			},
 			v1.Hash{
 				Algorithm: "sha256",
-				Hex:       "5f5edd681dcbc3a4a9df93e200e59e1708031e65b2299970eabdc91a78cc8234",
+				Hex:       "26c668c40574f4fefe17ddfbc3a8744a5b83b8c00a03dff790cbe6a397f66d79",
+			},
+			v1.Hash{
+				Algorithm: "sha256",
+				Hex:       "3d4d5ef7eb586de880424d1613e36bc25a1617239ff81d8cf961c6481e6193af",
 			},
 		},
 		types.DockerManifestSchema2,
