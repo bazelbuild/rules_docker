@@ -29,11 +29,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/pkg/errors"
 
+	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/cache"
+
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
@@ -43,6 +46,7 @@ var (
 	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify the directory to save the tarball. The tarball is named as image.tar.")
 	format          = flag.String("format", "", "Format to pull image from remote registry: If 'docker', image is pulled as tarball. If 'oci' (default), image will be pulled as a collection of files in OCI layout. Specify 'both' if both formats are needed.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
+	cachePath       = flag.String("cache", "", "Image's files cache directory.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
 	os              = flag.String("os", "", "Image's operating system, if referring to a multi-platform manifest list. Default linux.")
 	osVersion       = flag.String("os-version", "", "Image's operating system version, if referring to a multi-platform manifest list. Input strings are space separated.")
@@ -78,18 +82,21 @@ func getTag(ref name.Reference) name.Reference {
 
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
-// Pull the image with given <imgName> to destination <dstPath> with optional required platform specifications.
-func pull(imgName, dstPath, format string, platform v1.Platform) {
+// Pull the image with given <imgName> to destination <dstPath> with optional cache files and required platform specifications.
+func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) error {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
-		log.Fatalf("parsing tag %q: %v", imgName, err)
+		return errors.Wrapf(err, "parsing tag %q", imgName)
 	}
 
 	// Fetch the image with desired cache files and platform specs.
 	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
 	if err != nil {
-		log.Fatalf("reading image %q: %v", ref, err)
+		return errors.Wrapf(err, "reading image %q", ref)
+	}
+	if cachePath != "" {
+		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
 
 	// Image file to write to disk, either a tarball, OCI layout, or both.
@@ -112,6 +119,8 @@ func pull(imgName, dstPath, format string, platform v1.Platform) {
 			log.Fatalf("failed to write image to %q: %v", dstPath, err)
 		}
 	}
+
+	return nil
 }
 
 func main() {
@@ -150,7 +159,9 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	pull(*imgName, *directory, *format, platform)
+	if err := pull(*imgName, *directory, *format, *cachePath, platform); err != nil {
+		log.Fatalf("Image pull was unsuccessful: %v", err)
+	}
 
 	log.Printf("Successfully pulled image %q into %q", *imgName, *directory)
 }
