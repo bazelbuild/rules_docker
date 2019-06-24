@@ -58,16 +58,17 @@ func main() {
 
 	img, err := readImage(*src, *format)
 	if err != nil {
-		log.Fatalln("Error reading from %s: %v", *src, err)
+		log.Fatalf("Error reading from %s: %v", *src, err)
 	}
 
 	if err := push(*dst, img); err != nil {
-		log.Fatalln("Error pushing image to %s: %v", *dst, err)
+		log.Fatalf("Error pushing image to %s: %v", *dst, err)
 	}
 
 	log.Println("Successfully pushed %s image from %s to %s", *format, *src, *dst)
 }
 
+// push pushes the given image to the given destination.
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout or Docker tarball format .
 // Push the given image to destination <dst>.
@@ -75,17 +76,17 @@ func push(dst string, img v1.Image) error {
 	// Push the image to dst.
 	ref, err := name.ParseReference(dst)
 	if err != nil {
-		return errors.Wrapf(err, "parsing tag %q", dst)
+		return errors.Wrapf(err, "error parsing %q as an image reference", dst)
 	}
 
 	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {
-		return errors.Wrapf(err, "")
+		return errors.Wrapf(err, "unable to push image to %s", dst)
 	}
 
 	return nil
 }
 
-// Return a v1.Image after reading an OCI index or a Docker tarball from src.
+// readImage returns a v1.Image after reading an OCI index or a Docker tarball from src.
 func readImage(src, format string) (v1.Image, error) {
 	if format == "oci" {
 		return oci.Read(src)
