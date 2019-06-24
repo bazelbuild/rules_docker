@@ -21,6 +21,7 @@ import (
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
+	"github.com/google/go-containerregistry/pkg/v1/validate"
 	"github.com/pkg/errors"
 )
 
@@ -53,6 +54,10 @@ func Read(src string) (v1.Image, error) {
 	img, err := idx.Image(digest)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to load image with digest %s obtained from the manifest", digest)
+	}
+
+	if err := validate.Image(img); err != nil {
+		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid OCI layout format", digest)
 	}
 
 	return img, nil
