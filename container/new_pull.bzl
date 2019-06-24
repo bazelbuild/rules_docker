@@ -45,8 +45,8 @@ _container_pull_attrs = {
             "docker",
             "both",
         ],
-        doc = "(optional) The format of the image to be pulled, default to 'OCI', " +
-              "option for 'Docker' (tarball) or 'Both'.",
+        doc = "(optional) The format of the image to be pulled, default to 'OCI' (OCI Layout Format), " +
+              "option for 'Docker' (tarball compatible with `docker load` command) or 'Both' (pulling both OCI format and a tarball).",
     ),
     "os": attr.string(
         default = "linux",

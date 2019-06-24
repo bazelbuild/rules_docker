@@ -330,7 +330,7 @@ file_test(
 
 # For testing the new container pull rule
 file_test(
-    name = "new_alpine_linux_armv6_test",
+    name = "new_alpine_linux_armv6_test_index_json",
     content = """{
    "schemaVersion": 2,
    "manifests": [
@@ -345,7 +345,7 @@ file_test(
 )
 
 file_test(
-    name = "new_distroless_base_test",
+    name = "new_distroless_base_test_index_json",
     content = """{
    "schemaVersion": 2,
    "manifests": [
@@ -360,7 +360,7 @@ file_test(
 )
 
 file_test(
-    name = "new_alpine_linux_armv6_test2",
+    name = "new_alpine_linux_armv6_test_oci_layout",
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
@@ -368,7 +368,7 @@ file_test(
 )
 
 file_test(
-    name = "new_distroless_base_test2",
+    name = "new_distroless_base_test_oci_layout",
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
@@ -377,19 +377,19 @@ file_test(
 
 # Merely testing for the presence of the pulled image.tar for now.
 file_test(
-    name = "new_alpine_linux_armv6_tar_test",
+    name = "new_alpine_linux_armv6_tar_test_image_tar",
     file = "@new_alpine_linux_armv6_tar//image:image.tar",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_distroless_base_both_test",
+    name = "new_distroless_base_both_test_image_tar",
     file = "@new_distroless_base_both//image:image.tar",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_distroless_base_both_test2",
+    name = "new_distroless_base_both_test_oci_layout",
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
