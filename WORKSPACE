@@ -55,6 +55,24 @@ new_container_pull(
     repository = "distroless/base",
 )
 
+new_container_pull(
+    name = "new_alpine_linux_armv6_tar",
+    architecture = "arm",
+    cpu_variant = "v6",
+    format = "docker",
+    os = "linux",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_distroless_base_both",
+    format = "both",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)
+
 load(
     "//container:container.bzl",
     "container_load",
