@@ -38,6 +38,16 @@ _container_pull_attrs = {
               " is not defined, the home directory will be used.",
         mandatory = False,
     ),
+    "format": attr.string(
+        default = "oci",
+        values = [
+            "oci",
+            "docker",
+            "both",
+        ],
+        doc = "(optional) The format of the image to be pulled, default to 'OCI' (OCI Layout Format), " +
+              "option for 'Docker' (tarball compatible with `docker load` command) or 'Both' (pulling both OCI format and a tarball).",
+    ),
     "os": attr.string(
         default = "linux",
         doc = "(optional) Which os to pull if this image refers to a " +
@@ -96,6 +106,8 @@ exports_files(glob(["**"]))""")
         repository_ctx.path(repository_ctx.attr._puller),
         "-directory",
         repository_ctx.path("image"),
+        "-format",
+        repository_ctx.attr.format,
         "-os",
         repository_ctx.attr.os,
         "-os-version",

@@ -20,6 +20,10 @@ CONTAINER_IMAGE_TARGETS_QUERY="
 bazel query 'kind(\"container_image\", \"testdata/...\") except
     (\"//testdata:py3_image_base_with_custom_run_flags\" union
     \"//testdata:java_image_base_with_custom_run_flags\" union
+    \"//testdata:docker_run_flags_use_default\" union
+    \"//testdata:docker_run_flags_overrides_default\" union
+    \"//testdata:docker_run_flags_inherits_base\" union
+    \"//testdata:docker_run_flags_overrides_base\" union
     \"//testdata:war_image_base_with_custom_run_flags\")'
 "
 
@@ -534,6 +538,31 @@ function test_py_image_deps_as_layers() {
   EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
 }
 
+function test_docker_run_flags_use_default() {
+  cd "${ROOT}"
+  bazel build testdata:docker_run_flags_use_default
+  # This depends on the generated image name to ensure no _additional_ flags other than the default were included
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_use_default)" "-i --rm --network=host bazel/testdata:docker_run_flags_use_default"
+}
+
+function test_docker_run_flags_override_default() {
+  cd "${ROOT}"
+  bazel build testdata:docker_run_flags_overrides_default
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_default)" "-i --rm --network=host -e ABC=ABC"
+}
+
+function test_docker_run_flags_inherit_from_base() {
+  cd "${ROOT}"
+  bazel build testdata:docker_run_flags_inherits_base
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_inherits_base)" "-i --rm --network=host -e ABC=ABC"
+}
+
+function test_docker_run_flags_overrides_base() {
+  cd "${ROOT}"
+  bazel build testdata:docker_run_flags_overrides_base
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_base)" "-i --rm --network=host -e ABC=DEF"
+}
+
 test_py_image_deps_as_layers
 test_container_push_with_stamp
 test_container_push_all
@@ -590,3 +619,7 @@ test_container_push
 test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
+test_docker_run_flags_use_default
+test_docker_run_flags_override_default
+test_docker_run_flags_inherit_from_base
+test_docker_run_flags_overrides_base

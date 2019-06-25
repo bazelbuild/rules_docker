@@ -305,10 +305,21 @@ def _impl(
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
 
-    # docker_run_flags from base override those from ctx.
-    docker_run_flags = ctx.attr.docker_run_flags
-    if ctx.attr.base and ImageInfo in ctx.attr.base:
+    # If this target specifies docker_run_flags, they are always used.
+    # Fall back to the base image's run flags if present, otherwise use the default value.
+    #
+    # We do not use the default argument of attrs.string() in order to distinguish between
+    # an image using the default and an image intentionally overriding the base's run flags.
+    # Since this is a string attribute, the default value is the empty string.
+    if ctx.attr.docker_run_flags != "":
+        docker_run_flags = ctx.attr.docker_run_flags
+    elif ctx.attr.base and ImageInfo in ctx.attr.base:
         docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
+    else:
+        # Run the container using host networking, so that the service is
+        # available to the developer without having to poke around with
+        # docker inspect.
+        docker_run_flags = "-i --rm --network=host"
 
     if ctx.attr.launcher:
         if not file_map:
@@ -464,12 +475,7 @@ _attrs = dicts.add(_layer.attrs, {
         allow_files = True,
     ),
     "creation_time": attr.string(),
-    # Run the container using host networking, so that the service is
-    # available to the developer without having to poke around with
-    # docker inspect.
-    "docker_run_flags": attr.string(
-        default = "-i --rm --network=host",
-    ),
+    "docker_run_flags": attr.string(),
     "entrypoint": attr.string_list(),
     "label_file_strings": attr.string_list(),
     # Implicit/Undocumented dependencies.
