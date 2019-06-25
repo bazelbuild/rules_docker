@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /////////////////////////////////////////////////////////////////////
-// This rule imports an image from a `docker save` tarball.package loader using the go_containerregistry.
+// This rule imports an image from a `docker save` tarball using the go_containerregistry.
 //
 // Extracts the tarball, examines the layers, and creates a container_import
 // target for use with container_image
@@ -33,14 +33,15 @@ var (
 	tarball   = flag.String("tarball", "", "The path to the tarball to load.")
 )
 
-func load(tar, directory string) error {
+// load loads a docker save tarball at path <tar> into the OCI layout at path <dir>.
+func load(tar, dir string) error {
 	img, err := tb.ImageFromPath(tar, nil)
 	if err != nil {
-		return errors.Wrapf(err, "failed to read docker image tarball from %q", directory)
+		return errors.Wrapf(err, "failed to read docker image tarball from %q", dir)
 	}
 
-	if err = oci.Write(img, directory); err != nil {
-		return errors.Wrapf(err, "error writing image to path %s", directory)
+	if err = oci.Write(img, dir); err != nil {
+		return errors.Wrapf(err, "failed to write image to OCI layout at path %s", dir)
 	}
 
 	return nil
