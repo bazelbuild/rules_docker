@@ -722,6 +722,10 @@ war_image(
 )
 ```
 
+The produced image uses Jetty 9.x to serve the web application. Servlets included in the web application need to follow the API specification 3.0. For best compatibility, use a [Servlet dependency provided by the Jetty project](https://search.maven.org/search?q=g:org.mortbay.jetty%20AND%20a:servlet-api&core=gav).
+
+A Servlet implementation needs to declare the `@WebServlet` annotation to be auto-discovered. The use of a `web.xml` to declare the Servlet URL mapping is not supported.
+
 If you need to modify somehow the container produced by
 `war_image` (e.g., `env`, `symlink`), see note above in
 <a href=#overview-1>Language Rules Overview</a> about how to do this
