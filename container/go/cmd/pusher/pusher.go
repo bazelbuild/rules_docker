@@ -19,6 +19,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -56,6 +57,11 @@ func main() {
 		os.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
+	// Ensure src is a directory, trim basename index.json if not.
+	if filepath.Base(*src) == "index.json" {
+		*src = filepath.Dir(*src)
+	}
+
 	img, err := readImage(*src, *format)
 	if err != nil {
 		log.Fatalf("Error reading from %s: %v", *src, err)
@@ -65,7 +71,7 @@ func main() {
 		log.Fatalf("Error pushing image to %s: %v", *dst, err)
 	}
 
-	log.Println("Successfully pushed %s image from %s to %s", *format, *src, *dst)
+	log.Printf("Successfully pushed %s image from %s to %s", *format, *src, *dst)
 }
 
 // push pushes the given image to the given destination.
