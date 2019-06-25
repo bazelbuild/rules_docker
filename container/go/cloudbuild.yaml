@@ -32,16 +32,16 @@ steps:
 # TODO(xingao): Once https://github.com/bazelbuild/rules_go/issues/2089 is fixed,
 # Release go binary built for darwin_amd64.
 
-# Step: build the Linux release binary
+# Step: build the puller release binary for Linux
   - name: "l.gcr.io/google/bazel"
     args:
       - "build"
       - "--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64"
       - "//container/go/cmd/puller:puller"
-    id: "build-linux"
+    id: "build-puller-linux"
     waitFor: ["version"]
 
-# Step: push the Linux release binary
+# Step: push the puller release binary for Linux
   - name: "gcr.io/cloud-builders/gsutil"
     args:
       - "cp"
@@ -49,4 +49,23 @@ steps:
       - "public-read"
       - "bazel-bin/container/go/cmd/puller/linux_amd64_stripped/puller"
       - "gs://rules_docker/$COMMIT_SHA/puller-linux-amd64"
-    waitFor: ["build-linux"]
+    waitFor: ["build-puller-linux"]
+
+# Step: build the loader release binary for Linux
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "build"
+      - "--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64"
+      - "//container/go/cmd/loader:loader"
+    id: "build-loader-linux"
+    waitFor: ["version"]
+
+# Step: push the loader release binary for Linux
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/loader/linux_amd64_stripped/loader"
+      - "gs://rules_docker/$COMMIT_SHA/loader-linux-amd64"
+    waitFor: ["build-loader-linux"]
