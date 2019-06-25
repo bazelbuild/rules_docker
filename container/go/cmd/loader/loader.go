@@ -62,5 +62,5 @@ func main() {
 		log.Fatalf("Failed to load tarball into OCI format: %v", err)
 	}
 
-	log.Printf("Successfully written docker image tarball to %q", *outDir)
+	log.Printf("Successfully wrote docker image tarball to %q", *outDir)
 }
