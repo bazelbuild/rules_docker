@@ -84,6 +84,19 @@ def repositories():
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
         )
 
+    if "loader" not in excludes:
+        native.local_repository(
+            name = "loader",
+            path = "/usr/local/google/home/xwinxu/go_puller",
+        )
+        # http_file(
+        #     name = "loader",
+        #     executable = True,
+        #     sha256 = "4516a7bf62b052693001fd2b649080c4bb5228dcf698f31e77481fcb37b82ab4",
+        #     urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+        #              CONTAINERREGISTRY_RELEASE + "/importer.par")],
+        # )
+
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
