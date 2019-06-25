@@ -938,3 +938,27 @@ go_binary(
     name = "main",
     srcs = ["main.go"],
 )
+
+container_image(
+    name = "docker_run_flags_use_default",
+    legacy_run_behavior = False,
+)
+
+container_image(
+    name = "docker_run_flags_overrides_default",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+container_image(
+    name = "docker_run_flags_inherits_base",
+    base = ":docker_run_flags_overrides_default",
+    legacy_run_behavior = False,
+)
+
+container_image(
+    name = "docker_run_flags_overrides_base",
+    base = ":docker_run_flags_overrides_default",
+    docker_run_flags = "-i --rm --network=host -e ABC=DEF",
+    legacy_run_behavior = False,
+)
