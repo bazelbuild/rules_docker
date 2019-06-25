@@ -433,7 +433,6 @@ file_test(
 # To test the new container load binary
 file_test(
     name = "new_pause_tar_test_index_json",
-    file = "@new_pause_tar//image:index.json",
     content = """{
    "schemaVersion": 2,
    "manifests": [
@@ -444,14 +443,15 @@ file_test(
       }
    ]
 }""",
+    file = "@new_pause_tar//image:index.json",
 )
 
 file_test(
     name = "new_pause_tar_test_oci_layout",
-    file = "@new_pause_tar//image:oci-layout",
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
+    file = "@new_pause_tar//image:oci-layout",
 )
 
 create_banana_directory(
