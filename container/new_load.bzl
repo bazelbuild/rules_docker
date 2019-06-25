@@ -17,11 +17,6 @@ This extracts the tarball, examines the layers and creates a
 container_import target for use with container_image.
 """
 
-load(
-    "//container:new_pull.bzl",
-    "new_container_pull",
-)
-
 def _impl(repository_ctx):
     """Core implementation of new_container_load."""
 
@@ -58,7 +53,7 @@ new_container_load = repository_rule(
             executable = True,
             default = Label("@loader//:loader"),
             cfg = "host",
-        )
+        ),
     },
     implementation = _impl,
 )
