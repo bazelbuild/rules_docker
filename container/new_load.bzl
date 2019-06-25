@@ -30,6 +30,7 @@ filegroup(
     name = "image",
     srcs = glob(["image/**"]),
 )
+exports_files(["index.json", "oci-layout"])
 """, executable = False)
 
     result = repository_ctx.execute([

@@ -430,6 +430,30 @@ file_test(
     file = "@new_distroless_base_both//image:oci-layout",
 )
 
+# To test the new container load binary
+file_test(
+    name = "new_pause_tar_test_index_json",
+    file = "@new_pause_tar//image:index.json",
+    content = """{
+   "schemaVersion": 2,
+   "manifests": [
+      {
+         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+         "size": 586,
+         "digest": "sha256:22e0bb47f6dd1938d7c30febe82ac37e99907fd8c76421ab87829ad6a3636bf9"
+      }
+   ]
+}""",
+)
+
+file_test(
+    name = "new_pause_tar_test_oci_layout",
+    file = "@new_pause_tar//image:oci-layout",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
+)
+
 create_banana_directory(
     name = "banana_directory",
 )
