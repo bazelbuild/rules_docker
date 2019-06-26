@@ -548,7 +548,8 @@ function test_container_push_with_stamp() {
   docker stop -t 0 $cid
 }
 
-# TODO: test_new_container_push_with_stamp()
+# TODO: test_new_container_push_with_stamp().
+# "stamp-info-file" flag is not yet supported in new container_push, but should be tested if implemented later.
 
 function test_container_push_all() {
   cd "${ROOT}"
