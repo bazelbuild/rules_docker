@@ -84,6 +84,14 @@ def repositories():
                      CONTAINERREGISTRY_RELEASE + "/importer.par")],
         )
 
+    if "loader" not in excludes:
+        http_file(
+            name = "loader",
+            executable = True,
+            sha256 = "30bbb44eae9651a55d07fb9d39f58936fe3d9817780e1887df07d7beb21ef5ad",
+            urls = [("https://storage.googleapis.com/rules_docker/a08df0ab2a345cd07359bb69672dcf21867e50e5/loader-linux-amd64")],
+        )
+
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
