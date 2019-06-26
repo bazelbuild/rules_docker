@@ -51,7 +51,10 @@ load(":stamp_info.bzl", "stamp_info")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["pause.tar", "go_pusher_test.tar"])
+exports_files([
+    "pause.tar",
+    "go_pusher_test.tar",
+])
 
 exports_files(["BUILD"])
 
