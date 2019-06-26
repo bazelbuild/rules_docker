@@ -40,14 +40,15 @@ var (
 )
 
 var testCases = []struct {
-	// name is the name of the test case
+	// name is the name of the test case.
 	name string
-	// dataPath is where the test data is found
+	// dataPath is where the test data is found.
 	dataPath string
-	// the sha code for the manifest
-	shaPath string
-	// content is the oci layout content where the key is the file path and value is sha256 sum
-	content map[string]v1.Hash
+	// path to the image manifest relative to the dataPath.
+	manifestPath string
+	// content is the OCI layout content where the key is the file path and value is the sha256 sum.
+	// it contains a mapping of the sha256 code of the different files inside the OCI layout.
+	expectedContent map[string]v1.Hash
 }{
 	{
 		"alpine_linux",
@@ -61,35 +62,35 @@ var testCases = []struct {
 	},
 }
 
-// TestWrite checks to ensure that the v1.Image written is in OCI format by validating image output format and content
+// TestWrite checks to ensure that the v1.Image written is in OCI format by validating image output format and content.
 func TestWrite(t *testing.T) {
 	for _, wt := range testCases {
 		t.Run(wt.name, func(t *testing.T) {
 			tmp, err := ioutil.TempDir("", "write-oci-index-test")
 			if err != nil {
-				t.Errorf("Write(%s): %v", os.TempDir(), err)
+				t.Errorf("Unable to create a TempDir %s: %v", os.TempDir(), err)
 			}
 
 			defer os.RemoveAll(tmp)
 
 			img, err := tarball.ImageFromPath(wt.dataPath, nil)
 			if err != nil {
-				t.Errorf("error loading image from testdata: %v", err)
+				t.Errorf("Error loading image from testdata: %v", err)
 			}
 
 			if err := Write(img, tmp); err != nil {
-				t.Errorf("error writing image to temp path: %v", err)
+				t.Errorf("Write(%s): %v", tmp, err)
 			}
 
-			if err := assertValidImageOCILayout(tmp, img, wt.content, wt.shaPath); err != nil {
-				t.Errorf("image index written is not a valid OCI format: %v", err)
+			if err := assertValidImageOCILayout(tmp, img, wt.expectedContent, wt.manifestPath); err != nil {
+				t.Errorf("Image index written is not a valid OCI format: %v", err)
 			}
 		})
 	}
 }
 
 // assertValidImageOCILayout checks that the index written is not corrupt
-// and that the contents of the OCI layout are all present and non-corrupt
+// and that the contents of the OCI layout are all present and non-corrupt.
 func assertValidImageOCILayout(ociDir string, img v1.Image, content map[string]v1.Hash, shaPth string) error {
 	written, err := layout.ImageIndexFromPath(ociDir)
 	if err != nil {
@@ -97,16 +98,16 @@ func assertValidImageOCILayout(ociDir string, img v1.Image, content map[string]v
 	}
 
 	if err := validate.Index(written); err != nil {
-		return errors.Wrapf(err, "validate.Index() = %v", err)
+		return errors.Wrapf(err, "validate.Index() =")
 	}
 
 	// validate that the contents of blobs/ were written in the following format:
 	// Top level:
-	//     oci-layout, index.json, blobs/
+	//     oci-layout, index.json, blobs/.
 	// Under blobs/, for each image:
-	// 	   one file for each layer, config blob, and manifest blob
+	// 	   one file for each layer, config blob, and manifest blob.
 	for k := range content {
-		// validate the files (i.e. index.json, oci-layout)
+		// validate the files (i.e. index.json, oci-layout).
 		if err := validateFile(path.Join(ociDir, k), k, content[k].Hex, ociDir); err != nil {
 			return errors.Wrapf(err, "failed to validate %s file", k)
 		}
@@ -115,41 +116,41 @@ func assertValidImageOCILayout(ociDir string, img v1.Image, content map[string]v
 	return nil
 }
 
-// compares the SHA256 value of src file to example
+// compares the SHA256 value of src file to example.
 func compareSHA(src, want string) error {
 	f, err := os.Open(src)
 	if err != nil {
-		return fmt.Errorf("failed to open file: %v", err)
+		return errors.Wrapf(err, "failed to open file")
 	}
 	defer f.Close()
 
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
-		return fmt.Errorf("sha256 hashing failed: %v", err)
+		return errors.Wrapf(err, "sha256 hashing of file %s failed", src)
 	}
 	got := hex.EncodeToString(h.Sum(nil))
 	if strings.Compare(got, want) != 0 {
-		return fmt.Errorf("sha256 hex code did not match, wanted: %s got: %s", want, got)
+		return fmt.Errorf("sha256 hex code of file %s did not match, got: %s want: %s", src, got, want)
 	}
 
 	return nil
 }
 
-// validates a file being tested for by checking file is not empty or corrupt
+// validates a file being tested for by checking file is not empty or corrupt.
 func validateFile(src, file, want, dir string) error {
 	f, err := os.Stat(src)
 	if err != nil {
-		return fmt.Errorf("could not obtain stat: %v", err)
+		return errors.Wrapf(err, "unable to stat %s", src)
 	}
 
 	if os.IsNotExist(err) {
-		return fmt.Errorf("wrong OCI output format; got: %v, missing: %s", err, file)
+		return errors.Wrapf(err, "wrong OCI output format; got: %v, want: %s", err, file)
 	}
 	if f.Size() == 0 {
 		return fmt.Errorf("error occured: empty %s, size: %d", file, f.Size())
 	}
 	if err = compareSHA(path.Join(dir, file), want); err != nil {
-		return fmt.Errorf("sha256 hex code did not match, %v", err)
+		return errors.Wrapf(err, "sha256 hex code for %s did not match", src)
 	}
 
 	return nil
