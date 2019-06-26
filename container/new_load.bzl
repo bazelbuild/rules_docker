@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for loading an image from 'docker save' or container_pull (MM format) 
-   tarballs into OCI intermediate layout.
+"""Rule for loading an image from 'docker save' tarball or the current 
+   container_pull tarball format into OCI intermediate layout.
 
 This extracts the tarball amd creates a filegroup of the untarred objects in OCI layout.
 """
