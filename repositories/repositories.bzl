@@ -85,17 +85,12 @@ def repositories():
         )
 
     if "loader" not in excludes:
-        native.local_repository(
+        http_file(
             name = "loader",
-            path = "/usr/local/google/home/xwinxu/go_puller",
+            executable = True,
+            sha256 = "30bbb44eae9651a55d07fb9d39f58936fe3d9817780e1887df07d7beb21ef5ad",
+            urls = [("https://storage.googleapis.com/rules_docker/a08df0ab2a345cd07359bb69672dcf21867e50e5/loader-linux-amd64")],
         )
-        # http_file(
-        #     name = "loader",
-        #     executable = True,
-        #     sha256 = "4516a7bf62b052693001fd2b649080c4bb5228dcf698f31e77481fcb37b82ab4",
-        #     urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-        #              CONTAINERREGISTRY_RELEASE + "/importer.par")],
-        # )
 
     if "containerregistry" not in excludes:
         http_archive(

@@ -33,7 +33,7 @@ filegroup(
     name = "image",
     srcs = glob(["image/**"]),
 )
-exports_files(glob["**"])
+exports_files(glob(["**"]))
 """, executable = False)
 
     result = repository_ctx.execute([
