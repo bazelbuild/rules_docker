@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for importing an image from 'docker save' tarballs.
+"""Rule for loading an image from 'docker save' or container_pull (MM format) 
+   tarballs into OCI intermediate layout.
 
-This extracts the tarball, examines the layers and creates a
-container_import target for use with container_image.
+This extracts the tarball amd creates a filegroup of the untarred objects in OCI layout.
 """
 
 def _impl(repository_ctx):
@@ -26,11 +26,14 @@ def _impl(repository_ctx):
     repository_ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
 
+# TODO(xwinxu): this will be changed to new_container_import once that is implemented later
+# similar to what we have in new_pull.bzl
+
 filegroup(
     name = "image",
     srcs = glob(["image/**"]),
 )
-exports_files(["index.json", "oci-layout"])
+exports_files(glob["**"])
 """, executable = False)
 
     result = repository_ctx.execute([
@@ -52,7 +55,7 @@ new_container_load = repository_rule(
         ),
         "_loader": attr.label(
             executable = True,
-            default = Label("@loader//:loader"),
+            default = Label("@loader//file:downloaded"),
             cfg = "host",
         ),
     },
