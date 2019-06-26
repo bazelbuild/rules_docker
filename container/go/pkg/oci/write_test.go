@@ -1,3 +1,19 @@
+// Copyright 2015 The Bazel Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////
+// Tests for Write function.
+
 package oci
 
 import (
@@ -15,12 +31,11 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
+	"github.com/pkg/errors"
 )
 
 var (
 	blob     = "blobs/"
-	index    = "index.json"
-	ocif     = "oci-layout"
 	testPath = "testdata/test_write1"
 )
 
@@ -62,37 +77,27 @@ func TestWrite(t *testing.T) {
 				t.Errorf("error loading image from testdata: %v", err)
 			}
 
-			if err := assertImageIndexValid(tmp, img); err != nil {
-				t.Errorf("image written is not a valid index: %v", err)
+			if err := Write(img, tmp); err != nil {
+				t.Errorf("error writing image to temp path: %v", err)
 			}
 
-			if err = assertOCIFormat(tmp, img, wt.content, wt.shaPath); err != nil {
-				t.Errorf("image is not in oci format: %v", err)
+			if err := assertValidImageOCILayout(tmp, img, wt.content, wt.shaPath); err != nil {
+				t.Errorf("image index written is not a valid OCI format: %v", err)
 			}
 		})
 	}
 }
 
-func assertImageIndexValid(tmp string, img v1.Image) error {
-	if err := Write(img, tmp); err != nil {
-		return fmt.Errorf("error writing image to temp path %s", tmp)
-	}
-
+// assertValidImageOCILayout checks that the index written is not corrupt
+// and that the contents of the OCI layout are all present and non-corrupt
+func assertValidImageOCILayout(tmp string, img v1.Image, content map[string]v1.Hash, shaPth string) error {
 	written, err := layout.ImageIndexFromPath(tmp)
 	if err != nil {
-		return fmt.Errorf("failed to write image to temp path %s", tmp)
+		return errors.Wrapf(err, "failed to write image to temp path %s", tmp)
 	}
 
 	if err := validate.Index(written); err != nil {
-		return fmt.Errorf("validate.Index() = %v", err)
-	}
-
-	return nil
-}
-
-func assertOCIFormat(tmp string, img v1.Image, content map[string]v1.Hash, shaPth string) error {
-	if err := Write(img, "/usr/local/google/home/xwinxu/Desktop/temp/temp"); err != nil {
-		return fmt.Errorf("error writing image to temp path %s", tmp)
+		return errors.Wrapf(err, "validate.Index() = %v", err)
 	}
 
 	// validate that the contents of blobs/ were written in the following format:
@@ -102,18 +107,18 @@ func assertOCIFormat(tmp string, img v1.Image, content map[string]v1.Hash, shaPt
 	// 	   one file for each layer, config blob, and manifest blob
 	blobs := path.Join(tmp, blob)
 	file := path.Join(blobs, "sha256", "9a96f3888ebad00d46bca04ccb591e70d091624835998668af551f48512d9b5c")
-	if err := validateDir(blobs, content["blobs/sha256/9a96f3888ebad00d46bca04ccb591e70d091624835998668af551f48512d9b5c"].Hex, tmp, file); err != nil {
-		return fmt.Errorf("failed to validate blobs/ directory: %v", err)
-	}
-
-	// validate the index.json file
-	if err := validateFile(path.Join(tmp, index), index, content["index.json"].Hex, tmp); err != nil {
-		return fmt.Errorf("failed to validate index.json file: %v", err)
-	}
-
-	// validate the oci-layout file
-	if err := validateFile(path.Join(tmp, ocif), ocif, content["oci-layout"].Hex, tmp); err != nil {
-		return fmt.Errorf("failed to validate index.json file: %v", err)
+	for k := range content {
+		if strings.Contains(k, "/") {
+			// validate any directories (i.e. blobs)
+			if err := validateDir(blobs, content[k].Hex, tmp, file); err != nil {
+				return fmt.Errorf("failed to validate blobs/ directory: %v", err)
+			}
+		} else {
+			// validate the files (i.e. index.json, oci-layout)
+			if err := validateFile(path.Join(tmp, k), k, content[k].Hex, tmp); err != nil {
+				return fmt.Errorf("failed to validate %s file: %v", k, err)
+			}
+		}
 	}
 
 	return nil
