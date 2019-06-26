@@ -321,7 +321,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_tar",
     format = "docker",
-    image = "testdata/image.tar",
+    image = "//testdata:go_pusher_test.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
