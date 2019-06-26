@@ -65,7 +65,7 @@ def _impl(ctx):
         for f in ctx.files.image:
             if f.basename == "index.json":
                 pusher_args += ["-src", "{index_dir}".format(
-                    index_dir = _get_runfile_path(ctx, f)
+                    index_dir = _get_runfile_path(ctx, f),
                 )]
                 found = True
         if not found:
@@ -95,8 +95,8 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] \
-        + runfiles_tag_file + ctx.files.image)
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] +
+                                    runfiles_tag_file + ctx.files.image)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [

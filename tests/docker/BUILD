@@ -338,18 +338,6 @@ new_container_push(
     tags = ["manual"],
 )
 
-"""
-new_container_push(
-    name = "new_push_stamped_test",
-    format = "oci",
-    image = "//container/go/pkg/oci:oci_test_index1",
-    registry = "localhost:5000",
-    repository = "docker/test/{BUILD_USER}",
-    tag = "{BUILD_USER}",
-    tags = ["manual"],
-)
-"""
-
 file_test(
     name = "test_push_digest_output",
     content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
