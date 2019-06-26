@@ -43,3 +43,9 @@ go_test(
         "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
     ],
 )
+
+filegroup(
+    name = "oci_test_index1",
+    srcs = glob(["testdata/test_index1/**"]),
+    visibility = ["//visibility:public"],
+)
