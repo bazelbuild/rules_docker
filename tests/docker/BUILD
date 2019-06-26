@@ -23,6 +23,10 @@ load(
     "container_import",
     "container_push",
 )
+load(
+    "//container:new_push.bzl",
+    "new_container_push",
+)
 load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
@@ -301,6 +305,36 @@ container_push(
     registry = "localhost:5000",
     repository = "docker/test/{BUILD_USER}",
     tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_oci",
+    format = "oci",
+    image = "//container/go/pkg/oci:oci_test_index1",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_tar",
+    format = "docker",
+    image = "//testdata:go_pusher_test.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_tag_file_test",
+    format = "oci",
+    image = "//container/go/pkg/oci:oci_test_index1",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
     tags = ["manual"],
 )
 

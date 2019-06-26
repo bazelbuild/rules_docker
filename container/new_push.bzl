@@ -65,7 +65,7 @@ def _impl(ctx):
         for f in ctx.files.image:
             if f.basename == "index.json":
                 pusher_args += ["-src", "{index_dir}".format(
-                    index_dir = f.dirname,
+                    index_dir = _get_runfile_path(ctx, f),
                 )]
                 found = True
         if not found:
@@ -75,7 +75,7 @@ def _impl(ctx):
             fail("Attribute image {} to {} did not contain an image tarball".format(ctx.attr.image, ctx.label))
         if len(ctx.files.image) > 1:
             fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
-        pusher_args += ["-src", str(ctx.files.image[0].path)]
+        pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
@@ -95,7 +95,8 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + runfiles_tag_file)
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] +
+                                    runfiles_tag_file + ctx.files.image)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [

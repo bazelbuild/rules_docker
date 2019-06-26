@@ -415,6 +415,33 @@ function test_container_push_tag_file() {
   docker stop -t 0 $cid
 }
 
+function test_new_container_push_oci() {
+  cd "${ROOT}"
+  clear_docker
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/docker:new_push_test_oci 2>&1)" "Successfully pushed oci image"
+  docker stop -t 0 $cid
+}
+
+function test_new_container_push_tar() {
+  cd "${ROOT}"
+  clear_docker
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/docker:new_push_test_tar 2>&1)" "Successfully pushed docker image"
+
+  docker stop -t 0 $cid
+}
+function test_new_container_push_tag_file() {
+  cd "${ROOT}"
+  clear_docker
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  bazel build tests/docker:new_push_tag_file_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/docker/new_push_tag_file_test)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/docker/test.tag)'
+
+  docker stop -t 0 $cid
+}
+
 # Launch a private docker registry at localhost:5000 that requires a basic
 # htpasswd authentication with credentials at docker-config/htpasswd and needs
 # the docker client to be using the authentication from
@@ -464,6 +491,33 @@ function test_container_push_with_auth() {
   bazel clean
 }
 
+# Test container push where the local registry requires htpsswd authentication
+function test_new_container_push_with_auth() {
+  clear_docker
+  launch_private_registry_with_auth
+
+  # run here file_test targets to verify test outputs of new_push_test
+
+  # Run the new_container_push test in the Bazel workspace that configured
+  # the docker toolchain rule to use authentication.
+  cd "${ROOT}/testing/custom_toolchain_auth"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting authenticated new container_push..."
+
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:new_push_test_oci 2>&1)" "Successfully pushed oci image from"
+  bazel clean
+
+  # Run the new_container_push test in the Bazel workspace that uses the default
+  # configured docker toolchain. The default configuration doesn't setup
+  # authentication and this should fail.
+  cd "${ROOT}/testing/default_toolchain"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting unauthenticated new container_push..."
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:new_push_test_oci  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
+  bazel clean
+}
+
+
 function test_container_pull_with_auth() {
   clear_docker
   launch_private_registry_with_auth
@@ -493,6 +547,9 @@ function test_container_push_with_stamp() {
   bazel run tests/docker:push_stamped_test
   docker stop -t 0 $cid
 }
+
+# TODO: test_new_container_push_with_stamp().
+# "stamp-info-file" flag is not yet supported in new container_push, but should be tested if implemented later.
 
 function test_container_push_all() {
   cd "${ROOT}"
@@ -567,6 +624,10 @@ test_py_image_deps_as_layers
 test_container_push_with_stamp
 test_container_push_all
 test_container_push_with_auth
+test_new_container_push_oci
+test_new_container_push_tar
+test_new_container_push_tag_file
+test_new_container_push_with_auth
 test_container_pull_with_auth
 test_top_level
 test_bazel_build_then_run_docker_build_clean
