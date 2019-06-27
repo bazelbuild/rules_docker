@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Tests that verify the java_image eexample of rules_docker.
+# Tests that verify the java_image example of rules_docker.
 # This basic test verifies dependencies can be resolved correctly for a
 # simple repo using java_image.
 
 steps:
-  # Test the java_app example.
+  # Test the java_image example.
   - name: "l.gcr.io/google/bazel"
     args: ["build", "//..."]
     dir: "testing/java_image"
