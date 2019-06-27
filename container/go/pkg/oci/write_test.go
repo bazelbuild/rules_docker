@@ -46,7 +46,7 @@ var testCases = []struct {
 	dataPath string
 	// path to the image manifest relative to the dataPath.
 	manifestPath string
-	// expectedContent is a mapping form a file expected to exist in the image
+	// expectedContent is a mapping from a file expected to exist in the image
 	// relative to the "dataPath" to the expected sha256 digest of that file.
 	expectedContent map[string]v1.Hash
 }{
