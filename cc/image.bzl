@@ -24,13 +24,21 @@ load(
     "//lang:image.bzl",
     "app_layer",
 )
+load(
+    "//repositories:go_repositories.bzl",
+    _go_deps = "go_deps",
+)
 
 # Load the resolved digests.
 load(":cc.bzl", "DIGESTS")
 
 def repositories():
     """Import the dependencies for the cc_image rule.
+
+    Call the core "go_deps" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
     """
+    _go_deps()
 
     excludes = native.existing_rules().keys()
     if "cc_image_base" not in excludes:

@@ -126,6 +126,8 @@ load(
 )
 container_repositories()
 
+# This is NOT needed when going through the language lang_image
+# "repositories" function(s).
 load(
     "@io_bazel_rules_docker//repositories:go_repositories.bzl",
     container_go_deps = "go_deps",
@@ -338,13 +340,6 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
-
-load(
     "@io_bazel_rules_docker//cc:image.bzl",
     _cc_image_repos = "repositories",
 )
@@ -400,13 +395,6 @@ load(
 )
 
 container_repositories()
-
-load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
 
 load(
     "@io_bazel_rules_docker//python:image.bzl",
@@ -559,13 +547,6 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
-
-load(
     "@io_bazel_rules_docker//nodejs:image.bzl",
     _nodejs_image_repos = "repositories",
 )
@@ -610,13 +591,6 @@ load(
 )
 
 container_repositories()
-
-load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
 
 load(
     "@io_bazel_rules_docker//go:image.bzl",
@@ -720,13 +694,6 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
-
-load(
     "@io_bazel_rules_docker//java:image.bzl",
     _java_image_repos = "repositories",
 )
@@ -764,13 +731,6 @@ load(
 )
 
 container_repositories()
-
-load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
 
 load(
     "@io_bazel_rules_docker//java:image.bzl",
@@ -838,13 +798,6 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
-
-load(
     "@io_bazel_rules_docker//scala:image.bzl",
     _scala_image_repos = "repositories",
 )
@@ -900,13 +853,6 @@ load(
 )
 
 container_repositories()
-
-load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
 
 load(
     "@io_bazel_rules_docker//groovy:image.bzl",
@@ -966,13 +912,6 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
-
-load(
     "@io_bazel_rules_docker//rust:image.bzl",
     _rust_image_repos = "repositories",
 )
@@ -1027,13 +966,6 @@ load(
 )
 
 container_repositories()
-
-load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
 
 load(
     "@io_bazel_rules_docker//d:image.bzl",

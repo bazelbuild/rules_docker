@@ -373,3 +373,5 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 rbe_autoconfig(
     name = "buildkite_config",
 )
+
+# gazelle:repo bazel_gazelle

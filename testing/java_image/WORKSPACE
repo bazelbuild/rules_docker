@@ -28,13 +28,6 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
-
-container_go_deps()
-
-load(
     "@io_bazel_rules_docker//java:image.bzl",
     _java_image_repos = "repositories",
 )
