@@ -29,6 +29,10 @@ load(
     "app_layer",
 )
 load(
+    "//repositories:go_repositories.bzl",
+    _go_deps = "go_deps",
+)
+load(
     "//repositories:repositories.bzl",
     _repositories = "repositories",
 )
@@ -43,6 +47,7 @@ def repositories():
     idempotent if folks call it themselves.
     """
     _repositories()
+    _go_deps()
 
     excludes = native.existing_rules().keys()
     if "go_image_base" not in excludes:

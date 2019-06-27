@@ -34,6 +34,13 @@ load(
 container_repositories()
 
 load(
+    "//repositories:go_repositories.bzl",
+    container_go_deps = "go_deps",
+)
+
+container_go_deps()
+
+load(
     "//container:new_pull.bzl",
     "new_container_pull",
 )
@@ -253,26 +260,6 @@ load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
 
 groovy_repositories()
 
-# For our go_image test.
-http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "f04d2373bcaf8aa09bccb08a98a57e721306c8f6043a2a0ee610fd6853dcde3d",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
-    ],
-)
-
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-
-go_rules_dependencies()
-
-go_register_toolchains()
-
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
-
-gazelle_dependencies()
-
 # Have the go_image dependencies for testing.
 load(
     "//go:image.bzl",
@@ -385,18 +372,4 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "buildkite_config",
-)
-
-# gazelle:repo bazel_gazelle
-
-go_repository(
-    name = "com_github_google_go_containerregistry",
-    commit = "6991786f93129be24f857070fe94754a9ea02a0a",
-    importpath = "github.com/google/go-containerregistry",
-)
-
-go_repository(
-    name = "com_github_pkg_errors",
-    commit = "27936f6d90f9c8e1145f11ed52ffffbfdb9e0af7",
-    importpath = "github.com/pkg/errors",
 )

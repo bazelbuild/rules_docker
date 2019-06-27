@@ -128,6 +128,15 @@ load(
 )
 container_repositories()
 
+# This is NOT needed when going through the language lang_image
+# "repositories" function(s).
+load(
+    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
+    container_go_deps = "go_deps",
+)
+
+container_go_deps()
+
 load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
