@@ -12,15 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Tests that verify the example manipulating arbitrary commands using
-# rules_docker and Dockerfile.
+workspace(name = "java_image_example")
 
-timeout: 1200s
-options:
-    machineType: "N1_HIGHCPU_32"
+local_repository(
+    name = "io_bazel_rules_docker",
+    path = "../../",
+)
 
-steps:
-  # Test the run_instruction_arbitrary example.
-  - name: "l.gcr.io/google/bazel"
-    args: ["test", "//run_instruction_arbitrary:all"]
-    dir: "testing/examples"
+# java_image rule dependencies.
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()
