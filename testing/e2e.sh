@@ -32,57 +32,6 @@ bazel query 'kind(\"container_image\", \"testdata/...\") except
 stop_containers
 trap "stop_containers" EXIT
 
-function test_top_level() {
-  local directory=$(mktemp -d)
-
-  cd "${directory}"
-
-  cat > "BUILD" <<EOF
-package(default_visibility = ["//visibility:private"])
-
-load(
-  "@io_bazel_rules_docker//docker:docker.bzl",
-  "docker_build",
-)
-
-docker_build(
-  name = "pause_based",
-  base = "@pause//image",
-  workdir = "/tmp",
-)
-EOF
-
-  cat > "WORKSPACE" <<EOF
-workspace(name = "top_level")
-
-local_repository(
-    name = "io_bazel_rules_docker",
-    path = "$ROOT",
-)
-
-load(
-  "@io_bazel_rules_docker//repositories:repositories.bzl",
-  container_repositories = "repositories",
-)
-container_repositories()
-
-load(
-  "@io_bazel_rules_docker//docker:docker.bzl",
-  "docker_pull",
-)
-
-docker_pull(
-  name = "pause",
-  registry = "gcr.io",
-  repository = "google-containers/pause",
-  tag = "2.0",
-)
-EOF
-
-  bazel build --verbose_failures --spawn_strategy=standalone --toolchain_resolution_debug :pause_based
-}
-
-
 function clear_docker() {
   # Get the IDs of images except the local registry image "registry:2" which is
   # used in a few of the tests. This avoids having to pull the registry image
@@ -90,71 +39,6 @@ function clear_docker() {
   images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
   docker rmi -f $images || builtin true
   stop_containers
-}
-
-function test_bazel_build_then_run_docker_build_clean() {
-  cd "${ROOT}"
-  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
-  do
-    clear_docker
-    bazel build $target
-    # Replace : with /
-    ./bazel-bin/${target/://}
-  done
-}
-
-function test_bazel_run_docker_build_clean() {
-  cd "${ROOT}"
-  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
-  do
-    clear_docker
-    bazel run $target
-  done
-}
-
-function test_bazel_run_docker_bundle_clean() {
-  cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
-  do
-    clear_docker
-    bazel run $target
-  done
-}
-
-function test_bazel_run_docker_import_clean() {
-  cd "${ROOT}"
-  for target in $(bazel query 'kind("docker_import", "testdata/...")');
-  do
-    clear_docker
-    bazel run $target
-  done
-}
-
-function test_bazel_run_docker_build_incremental() {
-  cd "${ROOT}"
-  clear_docker
-  for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
-  do
-    bazel run $target
-  done
-}
-
-function test_bazel_run_docker_bundle_incremental() {
-  cd "${ROOT}"
-  clear_docker
-  for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
-  do
-    bazel run $target
-  done
-}
-
-function test_bazel_run_docker_import_incremental() {
-  cd "${ROOT}"
-  clear_docker
-  for target in $(bazel query 'kind("docker_import", "testdata/...")');
-  do
-    bazel run $target
-  done
 }
 
 function test_py_image() {
@@ -289,18 +173,6 @@ function test_rust_image() {
   cd "${ROOT}"
   clear_docker
   EXPECT_CONTAINS "$(bazel run "$@" tests/docker/rust:rust_image)" "Hello world"
-}
-
-function test_d_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:d_image)" "Hello world"
-}
-
-function test_nodejs_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run tests/docker/nodejs:nodejs_image)" "Hello World!"
 }
 
 function test_container_push() {
@@ -503,31 +375,6 @@ function test_py_image_deps_as_layers() {
   EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
 }
 
-function test_docker_run_flags_use_default() {
-  cd "${ROOT}"
-  bazel build testdata:docker_run_flags_use_default
-  # This depends on the generated image name to ensure no _additional_ flags other than the default were included
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_use_default)" "-i --rm --network=host bazel/testdata:docker_run_flags_use_default"
-}
-
-function test_docker_run_flags_override_default() {
-  cd "${ROOT}"
-  bazel build testdata:docker_run_flags_overrides_default
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_default)" "-i --rm --network=host -e ABC=ABC"
-}
-
-function test_docker_run_flags_inherit_from_base() {
-  cd "${ROOT}"
-  bazel build testdata:docker_run_flags_inherits_base
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_inherits_base)" "-i --rm --network=host -e ABC=ABC"
-}
-
-function test_docker_run_flags_overrides_base() {
-  cd "${ROOT}"
-  bazel build testdata:docker_run_flags_overrides_base
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_base)" "-i --rm --network=host -e ABC=DEF"
-}
-
 test_py_image_deps_as_layers
 test_container_push_with_stamp
 test_container_push_all
@@ -537,14 +384,6 @@ test_new_container_push_tar
 test_new_container_push_tag_file
 test_new_container_push_with_auth
 test_container_pull_with_auth
-test_top_level
-test_bazel_build_then_run_docker_build_clean
-test_bazel_run_docker_build_clean
-test_bazel_run_docker_bundle_clean
-test_bazel_run_docker_import_clean
-test_bazel_run_docker_build_incremental
-test_bazel_run_docker_bundle_incremental
-test_bazel_run_docker_import_incremental
 test_py_image -c opt
 test_py_image -c dbg
 test_py_image_complex -c opt
@@ -571,15 +410,7 @@ test_groovy_scala_image -c opt
 test_groovy_scala_image -c dbg
 test_rust_image -c opt
 test_rust_image -c dbg
-test_d_image -c opt
-test_d_image -c dbg
-test_nodejs_image -c opt
-test_nodejs_image -c dbg
 test_container_push
 test_container_push_tag_file
 test_launcher_image
 test_container_pull_cache
-test_docker_run_flags_use_default
-test_docker_run_flags_override_default
-test_docker_run_flags_inherit_from_base
-test_docker_run_flags_overrides_base
