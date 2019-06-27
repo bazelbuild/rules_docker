@@ -120,13 +120,20 @@ docker_toolchain_configure(
   client_config="/path/to/docker/client/config",
 )
 
-# This is NOT needed when going through the language lang_image
-# "repositories" function(s).
 load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",
     container_repositories = "repositories",
 )
 container_repositories()
+
+# This is NOT needed when going through the language lang_image
+# "repositories" function(s).
+load(
+    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
+    container_go_deps = "go_deps",
+)
+
+container_go_deps()
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
@@ -326,6 +333,13 @@ To use `cc_image`, add the following to `WORKSPACE`:
 
 ```python
 load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load(
     "@io_bazel_rules_docker//cc:image.bzl",
     _cc_image_repos = "repositories",
 )
@@ -375,6 +389,13 @@ and see <a href=#go_image-custom-base>go_image (custom base)</a> example below.
 To use `py_image`, add the following to `WORKSPACE`:
 
 ```python
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
 load(
     "@io_bazel_rules_docker//python:image.bzl",
     _py_image_repos = "repositories",
@@ -518,7 +539,13 @@ npm_install(
     package_json = "//:package.json",
 )
 
-# Download base images, etc.
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
 load(
     "@io_bazel_rules_docker//nodejs:image.bzl",
     _nodejs_image_repos = "repositories",
@@ -558,15 +585,12 @@ To use `go_image`, add the following to `WORKSPACE`:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# You *must* import the Go rules before setting up the go_image rules.
-http_archive(
-    name = "io_bazel_rules_go",
-    # Replace with a real SHA256 checksum
-    sha256 = "{SHA256}"
-    # Replace with a real commit SHA
-    strip_prefix = "rules_go-{HEAD}",
-    urls = ["https://github.com/bazelbuild/rules_go/archive/{HEAD}.tar.gz"],
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
 )
+
+container_repositories()
 
 load(
     "@io_bazel_rules_docker//go:image.bzl",
@@ -663,6 +687,13 @@ To use `java_image`, add the following to `WORKSPACE`:
 
 ```python
 load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load(
     "@io_bazel_rules_docker//java:image.bzl",
     _java_image_repos = "repositories",
 )
@@ -694,6 +725,13 @@ and see <a href=#go_image-custom-base>go_image (custom base)</a> example.
 To use `war_image`, add the following to `WORKSPACE`:
 
 ```python
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
 load(
     "@io_bazel_rules_docker//java:image.bzl",
     _java_image_repos = "repositories",
@@ -753,6 +791,13 @@ load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
 scala_repositories()
 
 load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load(
     "@io_bazel_rules_docker//scala:image.bzl",
     _scala_image_repos = "repositories",
 )
@@ -801,6 +846,13 @@ http_archive(
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
 
 groovy_repositories()
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
 
 load(
     "@io_bazel_rules_docker//groovy:image.bzl",
@@ -853,6 +905,13 @@ load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
 rust_repositories()
 
 load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load(
     "@io_bazel_rules_docker//rust:image.bzl",
     _rust_image_repos = "repositories",
 )
@@ -900,6 +959,13 @@ http_archive(
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
 
 d_repositories()
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
 
 load(
     "@io_bazel_rules_docker//d:image.bzl",
