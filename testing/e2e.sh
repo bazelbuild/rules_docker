@@ -13,6 +13,7 @@ set -e
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+source ./testing/e2e/util.sh
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
@@ -26,58 +27,6 @@ bazel query 'kind(\"container_image\", \"testdata/...\") except
     \"//testdata:docker_run_flags_overrides_base\" union
     \"//testdata:war_image_base_with_custom_run_flags\")'
 "
-
-function fail() {
-  echo "FAILURE: $1"
-  exit 1
-}
-
-function CONTAINS() {
-  local complete="${1}"
-  local substring="${2}"
-
-  echo "${complete}" | grep -Fsq -- "${substring}"
-}
-
-function COUNT() {
-  local complete="${1}"
-  local substring="${2}"
-
-  echo "${complete}" | grep -Fso -- "${substring}" | wc -l
-}
-
-function EXPECT_CONTAINS() {
-  local complete="${1}"
-  local substring="${2}"
-  local message="${3:-Expected '${substring}' not found in '${complete}'}"
-
-  echo Checking "$1" contains "$2"
-  CONTAINS "${complete}" "${substring}" || fail "$message"
-}
-
-function EXPECT_CONTAINS_ONCE() {
-  local complete="${1}"
-  local substring="${2}"
-  local count=$(COUNT "${complete}" "${substring}")
-
-  echo Checking "$1" contains "$2" exactly once
-  if [[ count -ne "1" ]]; then
-    fail "${3:-Expected '${substring}' found ${count} in '${complete}'}"
-  fi
-}
-
-function EXPECT_NOT_CONTAINS() {
-  local complete="${1}"
-  local substring="${2}"
-  local message="${3:-Expected '${substring}' found in '${complete}'}"
-
-  echo Checking "$1" does not contain "$2"
-  ! (CONTAINS "${complete}" "${substring}") || fail "$message"
-}
-
-function stop_containers() {
-  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
-}
 
 # Clean up any containers [before] we start.
 stop_containers
@@ -246,51 +195,10 @@ EOF
   rm -f output.txt
 }
 
-function test_cc_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/cc:cc_image)" "Hello World"
-}
-
-function test_cc_binary_as_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_binary_as_image)" "Hello World"
-}
-
-function test_cc_image_wrapper() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
-}
-
 function test_launcher_image() {
   cd "${ROOT}"
   clear_docker
   EXPECT_CONTAINS "$(bazel run "$@" testdata:launcher_image)" "Launched via launcher!"
-}
-
-function test_go_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/go:go_image)" "Hello, world!"
-}
-
-function test_go_image_busybox() {
-  cd "${ROOT}"
-  clear_docker
-  bazel run -c dbg tests/docker/go:go_image -- --norun
-  local number=$RANDOM
-  EXPECT_CONTAINS "$(docker run -ti --rm --entrypoint=sh bazel/tests/docker/go:go_image -c \"echo aa${number}bb\")" "aa${number}bb"
-}
-
-function test_go_image_with_tags() {
-  cd "${ROOT}"
-  EXPECT_CONTAINS "$(bazel query //tests/docker/go:go_image)" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  echo yay
 }
 
 function test_java_image() {
@@ -643,15 +551,6 @@ test_py_image_complex -c opt
 test_py_image_complex -c dbg
 test_py3_image_with_custom_run_flags -c opt
 test_py3_image_with_custom_run_flags -c dbg
-test_cc_image -c opt
-test_cc_image -c dbg
-test_cc_binary_as_image -c opt
-test_cc_binary_as_image -c dbg
-test_cc_image_wrapper
-test_go_image -c opt
-test_go_image -c dbg
-test_go_image_busybox
-test_go_image_with_tags
 test_java_image -c opt
 test_java_image -c dbg
 test_java_image_with_custom_run_flags -c opt
