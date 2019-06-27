@@ -25,26 +25,13 @@ load(
     "app_layer",
     "filter_layer",
 )
-load(
-    "//repositories:go_repositories.bzl",
-    _go_deps = "go_deps",
-)
-load(
-    "//repositories:repositories.bzl",
-    _repositories = "repositories",
-)
 
 # Load the resolved digests.
 load(":python.bzl", "DIGESTS")
 
 def repositories():
     """Import the dependencies of the py_image rule.
-
-    Call the core "repositories" function to reduce boilerplate. This is
-    idempotent if folks call it themselves.
     """
-    _repositories()
-    _go_deps()
 
     # Register the default py_toolchain for containerized execution
     native.register_toolchains("@io_bazel_rules_docker//toolchains/python:container_py_toolchain")

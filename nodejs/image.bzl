@@ -27,26 +27,13 @@ load(
     "app_layer",
     lang_image = "image",
 )
-load(
-    "//repositories:go_repositories.bzl",
-    _go_deps = "go_deps",
-)
-load(
-    "//repositories:repositories.bzl",
-    _repositories = "repositories",
-)
 
 # Load the resolved digests.
 load(":nodejs.bzl", "DIGESTS")
 
 def repositories():
     """Import the dependencies of the nodejs_image rule.
-
-    Call the core "repositories" function to reduce boilerplate. This is
-    idempotent if folks call it themselves.
     """
-    _repositories()
-    _go_deps()
 
     excludes = native.existing_rules().keys()
     if "nodejs_image_base" not in excludes:
