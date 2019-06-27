@@ -14,7 +14,7 @@
 
 # This cloudbuild.yaml file is used to release the go puller binary.
 
-timeout: 21600s
+timeout: 3600s
 options:
     machineType: "N1_HIGHCPU_32"
 
