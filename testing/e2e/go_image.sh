@@ -41,6 +41,8 @@ function test_go_image_with_tags() {
   EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
 }
 
+# Call functions above with either 3 or 1 parameter
+# (simple approach to make migration easy for e2e.sh)
 if [[ $# -ne 1 ]]; then
   $1 $2 $3
 else

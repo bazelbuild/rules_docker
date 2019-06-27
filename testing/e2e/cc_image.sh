@@ -33,6 +33,8 @@ function test_cc_image_wrapper() {
   EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
 }
 
+# Call functions above with either 3 or 1 parameter
+# (simple approach to make migration easy for e2e.sh)
 if [[ $# -ne 1 ]]; then
   $1 $2 $3
 else

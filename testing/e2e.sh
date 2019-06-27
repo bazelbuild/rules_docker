@@ -13,6 +13,7 @@ set -e
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+source ./testing/e2e/util.sh
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
@@ -26,58 +27,6 @@ bazel query 'kind(\"container_image\", \"testdata/...\") except
     \"//testdata:docker_run_flags_overrides_base\" union
     \"//testdata:war_image_base_with_custom_run_flags\")'
 "
-
-function fail() {
-  echo "FAILURE: $1"
-  exit 1
-}
-
-function CONTAINS() {
-  local complete="${1}"
-  local substring="${2}"
-
-  echo "${complete}" | grep -Fsq -- "${substring}"
-}
-
-function COUNT() {
-  local complete="${1}"
-  local substring="${2}"
-
-  echo "${complete}" | grep -Fso -- "${substring}" | wc -l
-}
-
-function EXPECT_CONTAINS() {
-  local complete="${1}"
-  local substring="${2}"
-  local message="${3:-Expected '${substring}' not found in '${complete}'}"
-
-  echo Checking "$1" contains "$2"
-  CONTAINS "${complete}" "${substring}" || fail "$message"
-}
-
-function EXPECT_CONTAINS_ONCE() {
-  local complete="${1}"
-  local substring="${2}"
-  local count=$(COUNT "${complete}" "${substring}")
-
-  echo Checking "$1" contains "$2" exactly once
-  if [[ count -ne "1" ]]; then
-    fail "${3:-Expected '${substring}' found ${count} in '${complete}'}"
-  fi
-}
-
-function EXPECT_NOT_CONTAINS() {
-  local complete="${1}"
-  local substring="${2}"
-  local message="${3:-Expected '${substring}' found in '${complete}'}"
-
-  echo Checking "$1" does not contain "$2"
-  ! (CONTAINS "${complete}" "${substring}") || fail "$message"
-}
-
-function stop_containers() {
-  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
-}
 
 # Clean up any containers [before] we start.
 stop_containers
