@@ -19,7 +19,7 @@ local_repository(
     path = "../../",
 )
 
-# Java language rules.
+# java_image rule dependencies.
 load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",
     container_repositories = "repositories",
@@ -28,15 +28,15 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//java:image.bzl",
-    _java_image_repos = "repositories",
-)
-
-_java_image_repos()
-
-load(
     "@io_bazel_rules_docker//repositories:go_repositories.bzl",
     container_go_deps = "go_deps",
 )
 
 container_go_deps()
+
+load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image_repos = "repositories",
+)
+
+_java_image_repos()
