@@ -246,51 +246,10 @@ EOF
   rm -f output.txt
 }
 
-function test_cc_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/cc:cc_image)" "Hello World"
-}
-
-function test_cc_binary_as_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_binary_as_image)" "Hello World"
-}
-
-function test_cc_image_wrapper() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
-}
-
 function test_launcher_image() {
   cd "${ROOT}"
   clear_docker
   EXPECT_CONTAINS "$(bazel run "$@" testdata:launcher_image)" "Launched via launcher!"
-}
-
-function test_go_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/go:go_image)" "Hello, world!"
-}
-
-function test_go_image_busybox() {
-  cd "${ROOT}"
-  clear_docker
-  bazel run -c dbg tests/docker/go:go_image -- --norun
-  local number=$RANDOM
-  EXPECT_CONTAINS "$(docker run -ti --rm --entrypoint=sh bazel/tests/docker/go:go_image -c \"echo aa${number}bb\")" "aa${number}bb"
-}
-
-function test_go_image_with_tags() {
-  cd "${ROOT}"
-  EXPECT_CONTAINS "$(bazel query //tests/docker/go:go_image)" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  echo yay
 }
 
 function test_java_image() {
@@ -643,15 +602,6 @@ test_py_image_complex -c opt
 test_py_image_complex -c dbg
 test_py3_image_with_custom_run_flags -c opt
 test_py3_image_with_custom_run_flags -c dbg
-test_cc_image -c opt
-test_cc_image -c dbg
-test_cc_binary_as_image -c opt
-test_cc_binary_as_image -c dbg
-test_cc_image_wrapper
-test_go_image -c opt
-test_go_image -c dbg
-test_go_image_busybox
-test_go_image_with_tags
 test_java_image -c opt
 test_java_image -c dbg
 test_java_image_with_custom_run_flags -c opt
