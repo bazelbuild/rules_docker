@@ -46,8 +46,8 @@ var testCases = []struct {
 	dataPath string
 	// path to the image manifest relative to the dataPath.
 	manifestPath string
-	// content is the OCI layout content where the key is the file path and value is the sha256 sum.
-	// it contains a mapping of the sha256 code of the different files inside the OCI layout.
+	// expectedContent is a mapping form a file expected to exist in the image
+	// relative to the "dataPath" to the expected sha256 digest of that file.
 	expectedContent map[string]v1.Hash
 }{
 	{
@@ -91,14 +91,14 @@ func TestWrite(t *testing.T) {
 
 // assertValidImageOCILayout checks that the index written is not corrupt
 // and that the contents of the OCI layout are all present and non-corrupt.
-func assertValidImageOCILayout(ociDir string, img v1.Image, content map[string]v1.Hash, shaPth string) error {
+func assertValidImageOCILayout(ociDir string, img v1.Image, wantContent map[string]v1.Hash, shaPth string) error {
 	written, err := layout.ImageIndexFromPath(ociDir)
 	if err != nil {
 		return errors.Wrapf(err, "failed to write image to temp path %s", ociDir)
 	}
 
 	if err := validate.Index(written); err != nil {
-		return errors.Wrapf(err, "validate.Index() =")
+		return errors.Wrapf(err, "failed to validate the image written to %s using validate.Index()", ociDir)
 	}
 
 	// validate that the contents of blobs/ were written in the following format:
@@ -106,10 +106,10 @@ func assertValidImageOCILayout(ociDir string, img v1.Image, content map[string]v
 	//     oci-layout, index.json, blobs/.
 	// Under blobs/, for each image:
 	// 	   one file for each layer, config blob, and manifest blob.
-	for k := range content {
+	for wantFile, wantDigest := range wantContent {
 		// validate the files (i.e. index.json, oci-layout).
-		if err := validateFile(path.Join(ociDir, k), k, content[k].Hex, ociDir); err != nil {
-			return errors.Wrapf(err, "failed to validate %s file", k)
+		if err := validateFile(path.Join(ociDir, wantFile), wantFile, wantDigest.Hex, ociDir); err != nil {
+			return errors.Wrapf(err, "failed to validate %s file", wantFile)
 		}
 	}
 
@@ -128,8 +128,7 @@ func compareSHA(src, want string) error {
 	if _, err := io.Copy(h, f); err != nil {
 		return errors.Wrapf(err, "sha256 hashing of file %s failed", src)
 	}
-	got := hex.EncodeToString(h.Sum(nil))
-	if strings.Compare(got, want) != 0 {
+	if got := hex.EncodeToString(h.Sum(nil)); strings.Compare(got, want) != 0 {
 		return fmt.Errorf("sha256 hex code of file %s did not match, got: %s want: %s", src, got, want)
 	}
 
