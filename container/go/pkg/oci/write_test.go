@@ -54,6 +54,7 @@ var testCases = []struct {
 		"alpine_linux",
 		"testdata/test_write1/small_linux.tar",
 		"sha256/9a96f3888ebad00d46bca04ccb591e70d091624835998668af551f48512d9b5c",
+		// Note: the following keys correspond to the OCI image format.
 		map[string]v1.Hash{
 			"blobs/sha256/9a96f3888ebad00d46bca04ccb591e70d091624835998668af551f48512d9b5c": v1.Hash{Algorithm: "sha256", Hex: "9a96f3888ebad00d46bca04ccb591e70d091624835998668af551f48512d9b5c"},
 			"index.json": v1.Hash{Algorithm: "sha256", Hex: "ce6ed2e6817add8a5a0e94f4c2ac00360c7ca2cc98c4972b86530f14de622508"},
