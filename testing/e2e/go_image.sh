@@ -15,6 +15,8 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
+# Tests for go_image
+
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
@@ -42,6 +44,9 @@ function test_go_image_with_tags() {
 }
 
 # Call functions above with either 3 or 1 parameter
+# If 3 parameters: 1st parameter is name of function, 2nd and 3rd
+# passed as args
+# If 1 parameter: parameter is name of function
 # (simple approach to make migration easy for e2e.sh)
 if [[ $# -ne 1 ]]; then
   $1 $2 $3
