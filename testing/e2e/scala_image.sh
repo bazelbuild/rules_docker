@@ -15,37 +15,24 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
-# Tests for cc_image
+# Tests for scala_image
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
-function test_cc_image() {
+function test_scala_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/cc:cc_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/scala:scala_image)" "Hello World"
 }
 
-function test_cc_binary_as_image() {
+function test_scala_sandwich_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_binary_as_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:scala_sandwich_image)" "Hello World"
 }
 
-function test_cc_image_wrapper() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
-}
-
-# Call functions above with either 3 or 1 parameter
-# If 3 parameters: 1st parameter is name of function, 2nd and 3rd
-# passed as args
-# If 1 parameter: parameter is name of function
+# Call functions above with 3 parameters: 1st parameter is name of function,
+# 2nd and 3rd # passed as args
 # (simple approach to make migration easy for e2e.sh)
-if [[ $# -ne 1 ]]; then
-  $1 $2 $3
-else
-  $1
-fi
-
+$1 $2 $3

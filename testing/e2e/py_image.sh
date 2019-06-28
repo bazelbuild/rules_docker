@@ -15,35 +15,30 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
-# Tests for go_image
+# Tests for py_image
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
-function test_go_image() {
+function test_py_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/go:go_image)" "Hello, world!"
+  cat > output.txt <<EOF
+$(bazel run "$@" tests/docker/python:py_image)
+EOF
+  EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
+  EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
+  EXPECT_CONTAINS "$(cat output.txt)" "Third: 6"
+  EXPECT_CONTAINS "$(cat output.txt)" "Fourth: 7"
+  rm -f output.txt
 }
 
-function test_go_image_busybox() {
+function test_py_image_deps_as_layers() {
   cd "${ROOT}"
   clear_docker
-  bazel run -c dbg tests/docker/go:go_image -- --norun
-  local number=$RANDOM
-  id=$(docker run -d  --entrypoint=sh bazel/tests/docker/go:go_image -c "echo aa${number}bb")
-  docker wait $id
-  logs=$(docker logs $id)
-  EXPECT_CONTAINS $logs "aa${number}bb"
-}
-
-function test_go_image_with_tags() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel query //tests/docker/go:go_image)" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
+  # Build and run the python image where the "six" module pip dependency was
+  # specified via "layers". https://github.com/bazelbuild/rules_docker/issues/161
+  EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
 }
 
 # Call functions above with either 3 or 1 parameter
@@ -56,4 +51,3 @@ if [[ $# -ne 1 ]]; then
 else
   $1
 fi
-

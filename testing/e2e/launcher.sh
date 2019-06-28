@@ -15,37 +15,16 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
-# Tests for cc_image
+# Tests that the launcher can launch images.
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
-function test_cc_image() {
+function test_launcher_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/cc:cc_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:launcher_image)" "Launched via launcher!"
 }
 
-function test_cc_binary_as_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_binary_as_image)" "Hello World"
-}
-
-function test_cc_image_wrapper() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:cc_image_wrapper)" "Hello World"
-}
-
-# Call functions above with either 3 or 1 parameter
-# If 3 parameters: 1st parameter is name of function, 2nd and 3rd
-# passed as args
-# If 1 parameter: parameter is name of function
-# (simple approach to make migration easy for e2e.sh)
-if [[ $# -ne 1 ]]; then
-  $1 $2 $3
-else
-  $1
-fi
-
+# Call function above
+test_launcher_image

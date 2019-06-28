@@ -61,6 +61,13 @@ function EXPECT_NOT_CONTAINS() {
   ! (CONTAINS "${complete}" "${substring}") || fail "$message"
 }
 
-function stop_containers() {
-  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
+function clear_docker() {
+  # Get the IDs of images, filtering only the ones with "bazel/*" as registry
+  # and filtering the local registry image "registry:2" which is
+  # used in a few of the tests. This avoids having to pull the registry image
+  # multiple times in the end to end tests.
+  images=$(docker images "bazel/*" -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
+  if [ ! -z "$images" ]; then
+    docker rmi -f $images || builtin true
+  fi
 }

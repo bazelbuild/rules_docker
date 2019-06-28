@@ -33,6 +33,7 @@ bazel query 'kind(\"container_image\", \"testdata/...\") except
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
+  clear_docker
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     bazel run $target
@@ -41,6 +42,7 @@ function test_bazel_run_docker_build_clean() {
 
 function test_bazel_run_docker_bundle_clean() {
   cd "${ROOT}"
+  clear_docker
   for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
   do
     bazel run $target
@@ -49,6 +51,7 @@ function test_bazel_run_docker_bundle_clean() {
 
 function test_bazel_run_docker_import_clean() {
   cd "${ROOT}"
+  clear_docker
   for target in $(bazel query 'kind("docker_import", "testdata/...")');
   do
     bazel run $target
@@ -57,6 +60,7 @@ function test_bazel_run_docker_import_clean() {
 
 function test_bazel_run_docker_build_incremental() {
   cd "${ROOT}"
+  clear_docker
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     bazel run $target
@@ -65,6 +69,7 @@ function test_bazel_run_docker_build_incremental() {
 
 function test_bazel_run_docker_bundle_incremental() {
   cd "${ROOT}"
+  clear_docker
   for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
   do
     bazel run $target
@@ -73,6 +78,7 @@ function test_bazel_run_docker_bundle_incremental() {
 
 function test_bazel_run_docker_import_incremental() {
   cd "${ROOT}"
+  clear_docker
   for target in $(bazel query 'kind("docker_import", "testdata/...")');
   do
     bazel run $target
@@ -81,6 +87,7 @@ function test_bazel_run_docker_import_incremental() {
 
 function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
+  clear_docker
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
     bazel build $target

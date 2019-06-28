@@ -18,11 +18,18 @@ source ./testing/e2e/util.sh
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
+function stop_containers() {
+  docker rm -f $(docker ps -aq) > /dev/null 2>&1 || builtin true
+}
+
 # Clean up any containers [before] we start.
 stop_containers
 trap "stop_containers" EXIT
 
-function clear_docker() {
+# Function is kept here and not used from util as they have slightly different
+# behavior (this one clears all images, util only clears images with registry
+# that starts with 'bazel/..')
+function clear_docker_full() {
   # Get the IDs of images except the local registry image "registry:2" which is
   # used in a few of the tests. This avoids having to pull the registry image
   # multiple times in the end to end tests.
@@ -31,22 +38,9 @@ function clear_docker() {
   stop_containers
 }
 
-function test_py_image() {
-  cd "${ROOT}"
-  clear_docker
-  cat > output.txt <<EOF
-$(bazel run "$@" tests/docker/python:py_image)
-EOF
-  EXPECT_CONTAINS "$(cat output.txt)" "First: 4"
-  EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
-  EXPECT_CONTAINS "$(cat output.txt)" "Third: 6"
-  EXPECT_CONTAINS "$(cat output.txt)" "Fourth: 7"
-  rm -f output.txt
-}
-
 function test_py_image_complex() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cat > output.txt <<EOF
 $(bazel run "$@" testdata:py_image_complex)
 EOF
@@ -57,7 +51,7 @@ EOF
 
 function test_py3_image_with_custom_run_flags() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cat > output.txt <<EOF
 $(bazel run "$@" testdata:py3_image_with_custom_run_flags)
 EOF
@@ -69,54 +63,15 @@ EOF
   rm -f output.txt
 }
 
-function test_launcher_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:launcher_image)" "Launched via launcher!"
-}
-
 function test_java_image() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image)" "Hello World"
-}
-
-function test_java_partial_entrypoint_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_partial_entrypoint_image examples.images.Binary)" "Hello World"
-}
-
-function test_java_image_with_custom_run_flags() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
-}
-
-function test_java_sandwich_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_sandwich_image)" "Hello World"
-}
-
-function test_java_simple_image() {
-  cd "${ROOT}"
-  clear_docker
-  bazel run tests/docker/java:simple_java_image
-  docker run -ti --rm bazel/tests/docker/java:simple_java_image
-}
-
-function test_java_image_arg_echo() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS_ONCE "$(bazel run "$@" testdata:java_image_arg_echo)" "arg0"
-  EXPECT_CONTAINS_ONCE "$(docker run -ti --rm bazel/testdata:java_image_arg_echo | tr '\r' '\n')" "arg0"
 }
 
 function test_war_image() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   bazel build testdata:war_image.tar
   docker load -i bazel-bin/testdata/war_image.tar
   ID=$(docker run -d -p 8080:8080 bazel/testdata:war_image)
@@ -127,7 +82,7 @@ function test_war_image() {
 
 function test_war_image_with_custom_run_flags() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   # Use --norun to prevent actually running the war image. We are just checking
   # the `docker run` command in the generated load script contains the right
   # flags.
@@ -135,45 +90,21 @@ function test_war_image_with_custom_run_flags() {
   EXPECT_CONTAINS "$(cat bazel-bin/testdata/war_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
 }
 
-function test_scala_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/scala:scala_image)" "Hello World"
-}
-
-function test_scala_sandwich_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:scala_sandwich_image)" "Hello World"
-}
-
-function test_groovy_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/groovy:groovy_image)" "Hello World"
-}
-
-function test_groovy_scala_image() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" testdata:groovy_scala_image)" "Hello World"
-}
-
 function test_rust_image() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   EXPECT_CONTAINS "$(bazel run "$@" tests/docker/rust:rust_image)" "Hello world"
 }
 
 function test_d_image() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   EXPECT_CONTAINS "$(bazel run "$@" testdata:d_image)" "Hello world"
 }
 
 function test_container_push() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/docker:push_test
   # run here file_test targets to verify test outputs of push_test
@@ -183,7 +114,7 @@ function test_container_push() {
 
 function test_container_push_tag_file() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/docker:push_tag_file_test
   EXPECT_CONTAINS "$(cat bazel-bin/tests/docker/push_tag_file_test)" '--name=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/docker/test.tag)'
@@ -193,7 +124,7 @@ function test_container_push_tag_file() {
 
 function test_new_container_push_oci() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/docker:new_push_test_oci 2>&1)" "Successfully pushed oci image"
@@ -202,7 +133,7 @@ function test_new_container_push_oci() {
 
 function test_new_container_push_tar() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/docker:new_push_test_tar 2>&1)" "Successfully pushed docker image"
 
@@ -210,7 +141,7 @@ function test_new_container_push_tar() {
 }
 function test_new_container_push_tag_file() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/docker:new_push_tag_file_test
   EXPECT_CONTAINS "$(cat bazel-bin/tests/docker/new_push_tag_file_test)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/docker/test.tag)'
@@ -244,7 +175,7 @@ EOF
 
 # Test container push where the local registry requires htpsswd authentication
 function test_container_push_with_auth() {
-  clear_docker
+  clear_docker_full
   launch_private_registry_with_auth
 
   # run here file_test targets to verify test outputs of push_test
@@ -269,7 +200,7 @@ function test_container_push_with_auth() {
 
 # Test container push where the local registry requires htpsswd authentication
 function test_new_container_push_with_auth() {
-  clear_docker
+  clear_docker_full
   launch_private_registry_with_auth
 
   # run here file_test targets to verify test outputs of new_push_test
@@ -293,9 +224,8 @@ function test_new_container_push_with_auth() {
   bazel clean
 }
 
-
 function test_container_pull_with_auth() {
-  clear_docker
+  clear_docker_full
   launch_private_registry_with_auth
 
   cd "${ROOT}/testing/custom_toolchain_auth"
@@ -318,7 +248,7 @@ function test_container_pull_with_auth() {
 
 function test_container_push_with_stamp() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel run tests/docker:push_stamped_test
   docker stop -t 0 $cid
@@ -329,7 +259,7 @@ function test_container_push_with_stamp() {
 
 function test_container_push_all() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   # Use bundle push to push three images to the local registry.
   bazel run tests/docker:test_docker_push_three_images_bundle
@@ -343,7 +273,7 @@ function test_container_push_all() {
 
 function test_container_pull_cache() {
   cd "${ROOT}"
-  clear_docker
+  clear_docker_full
   scratch_dir="/tmp/_tmp_containnerregistry"
   cache_dir="$scratch_dir/containnerregistry_cache"
   bazel_cache="$scratch_dir/bazel_custom_cache"
@@ -363,52 +293,33 @@ function test_container_pull_cache() {
   rm -rf $scratch_dir
 }
 
-function test_py_image_deps_as_layers() {
-  cd "${ROOT}"
-  clear_docker
-  # Build and run the python image where the "six" module pip dependency was
-  # specified via "layers". https://github.com/bazelbuild/rules_docker/issues/161
-  EXPECT_CONTAINS "$(bazel run testdata/test:py_image_using_layers)" "Successfully imported six 1.11.0"
-}
-
-test_py_image_deps_as_layers
-test_container_push_with_stamp
+# Tests failing on GCB due to isssues with local registry
+test_container_push
 test_container_push_all
+test_container_push_tag_file
 test_container_push_with_auth
+test_container_push_with_stamp
 test_new_container_push_oci
 test_new_container_push_tar
 test_new_container_push_tag_file
 test_new_container_push_with_auth
 test_container_pull_with_auth
-test_py_image -c opt
-test_py_image -c dbg
+test_container_pull_cache
+
+# Tests failing on GCB due to permissions issue related to building tars
 test_py_image_complex -c opt
 test_py_image_complex -c dbg
 test_py3_image_with_custom_run_flags -c opt
 test_py3_image_with_custom_run_flags -c dbg
 test_java_image -c opt
 test_java_image -c dbg
-test_java_image_with_custom_run_flags -c opt
-test_java_image_with_custom_run_flags -c dbg
-test_java_sandwich_image -c opt
-test_java_sandwich_image -c dbg
-test_java_simple_image
-test_java_image_arg_echo
 test_war_image
 test_war_image_with_custom_run_flags
-test_scala_image -c opt
-test_scala_image -c dbg
-test_scala_sandwich_image -c opt
-test_scala_sandwich_image -c dbg
-test_groovy_image -c opt
-test_groovy_image -c dbg
-test_groovy_scala_image -c opt
-test_groovy_scala_image -c dbg
+
+# Test failing on GCB due to clang not finding ld.gold
 test_rust_image -c opt
 test_rust_image -c dbg
+
+# Test failing on GCB due to not finding cc
 test_d_image -c opt
 test_d_image -c dbg
-test_container_push
-test_container_push_tag_file
-test_launcher_image
-test_container_pull_cache
