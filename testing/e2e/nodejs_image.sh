@@ -22,6 +22,7 @@ ROOT=$PWD
 
 function test_nodejs_image() {
   cd "${ROOT}"
+  clear_docker
   EXPECT_CONTAINS "$(bazel run tests/docker/nodejs:nodejs_image)" "Hello World!"
 }
 

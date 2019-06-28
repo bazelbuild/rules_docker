@@ -15,35 +15,45 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
-# Tests for go_image
+# Tests for java_image
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
-function test_go_image() {
+function test_java_partial_entrypoint_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/go:go_image)" "Hello, world!"
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_partial_entrypoint_image examples.images.Binary)" "Hello World"
 }
 
-function test_go_image_busybox() {
+function test_java_image_with_custom_run_flags() {
   cd "${ROOT}"
   clear_docker
-  bazel run -c dbg tests/docker/go:go_image -- --norun
-  local number=$RANDOM
-  id=$(docker run -d  --entrypoint=sh bazel/tests/docker/go:go_image -c "echo aa${number}bb")
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
+}
+
+function test_java_sandwich_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:java_sandwich_image)" "Hello World"
+}
+
+function test_java_simple_image() {
+  cd "${ROOT}"
+  clear_docker
+  bazel run tests/docker/java:simple_java_image
+  docker run -d --rm bazel/tests/docker/java:simple_java_image
+}
+
+function test_java_image_arg_echo() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS_ONCE "$(bazel run "$@" testdata:java_image_arg_echo)" "arg0"
+  id=$(docker run -d bazel/testdata:java_image_arg_echo | tr '\r' '\n')
   docker wait $id
   logs=$(docker logs $id)
-  EXPECT_CONTAINS $logs "aa${number}bb"
-}
-
-function test_go_image_with_tags() {
-  cd "${ROOT}"
-  clear_docker
-  EXPECT_CONTAINS "$(bazel query //tests/docker/go:go_image)" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
+  EXPECT_CONTAINS_ONCE $logs "arg0"
 }
 
 # Call functions above with either 3 or 1 parameter
