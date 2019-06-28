@@ -23,7 +23,7 @@ ROOT=$PWD
 function test_scala_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/scala:scala_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/container/scala:scala_image)" "Hello World"
 }
 
 function test_scala_sandwich_image() {

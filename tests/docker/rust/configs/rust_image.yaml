@@ -1,9 +1,0 @@
-schemaVersion: 2.0.0
-
-metadataTest:
-  entrypoint: ['/app/tests/docker/rust/rust_image_binary']
-  cmd: [
-    'arg0',
-    'arg1',
-    'tests/docker/rust/BUILD',
-  ]

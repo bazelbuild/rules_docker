@@ -14,7 +14,6 @@ platforms:
     - "--"
     - "..."
     - "-//tests/container/..."
-    - "-//tests/docker/..."
     - "-//:structure_test_at_workspace_root"
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
@@ -34,7 +33,6 @@ platforms:
     - "--"
     - "..."
     - "-//tests/container/..."
-    - "-//tests/docker/..."
     - "-//:structure_test_at_workspace_root"
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
@@ -50,13 +48,13 @@ platforms:
     - "--incompatible_disallow_legacy_javainfo=false"
   macos:
     build_targets:
-    - "//tests/docker:test_digest_output1"
+    - "//tests/container:test_digest_output1"
     build_flags:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     test_targets:
-    - "//tests/docker:test_digest_output1"
+    - "//tests/container:test_digest_output1"
     test_flags:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
@@ -73,7 +71,7 @@ platforms:
     - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
-    # For tests/docker:set_env_make_vars
+    # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
     test_targets:
@@ -94,6 +92,6 @@ platforms:
     - "--keep_going"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
-    # For tests/docker:set_env_make_vars_test
+    # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"

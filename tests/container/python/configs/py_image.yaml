@@ -1,0 +1,12 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: [
+    '/usr/bin/python',
+    '/app/tests/container/python/py_image.binary',
+  ]
+  cmd: [
+    'arg0',
+    'arg1',
+    'tests/container/python/BUILD',
+  ]

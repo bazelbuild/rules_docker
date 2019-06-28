@@ -48,6 +48,6 @@ config_setting(
 # the workspace, which makes the Bazel package empty.
 container_test(
     name = "structure_test_at_workspace_root",
-    configs = ["//tests/docker/configs:test.yaml"],
+    configs = ["//tests/container/configs:test.yaml"],
     image = "//testdata:link_with_files_base",
 )
