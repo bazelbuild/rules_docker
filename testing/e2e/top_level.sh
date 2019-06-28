@@ -18,8 +18,6 @@ source ./testing/e2e/util.sh
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
-BAZEL_FLAGS="--action_env=PATH --verbose_failures"
-
 function test_top_level() {
     local directory=$(mktemp -d)
 

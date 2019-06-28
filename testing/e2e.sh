@@ -175,6 +175,12 @@ function test_rust_image() {
   EXPECT_CONTAINS "$(bazel run "$@" tests/docker/rust:rust_image)" "Hello world"
 }
 
+function test_d_image() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run "$@" testdata:d_image)" "Hello world"
+}
+
 function test_container_push() {
   cd "${ROOT}"
   clear_docker
@@ -410,6 +416,8 @@ test_groovy_scala_image -c opt
 test_groovy_scala_image -c dbg
 test_rust_image -c opt
 test_rust_image -c dbg
+test_d_image -c opt
+test_d_image -c dbg
 test_container_push
 test_container_push_tag_file
 test_launcher_image
