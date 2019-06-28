@@ -15,6 +15,8 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
+# Tests that a minimal repo with a docker_build rule can be built
+
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 

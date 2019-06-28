@@ -15,14 +15,26 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
+# Tests that run several build + run combinations of multiple images
+
 # Must be invoked from the root of the repo.
 ROOT=$PWD
+
+CONTAINER_IMAGE_TARGETS_QUERY="
+bazel query 'kind(\"container_image\", \"testdata/...\") except
+    (\"//testdata:py3_image_base_with_custom_run_flags\" union
+    \"//testdata:java_image_base_with_custom_run_flags\" union
+    \"//testdata:docker_run_flags_use_default\" union
+    \"//testdata:docker_run_flags_overrides_default\" union
+    \"//testdata:docker_run_flags_inherits_base\" union
+    \"//testdata:docker_run_flags_overrides_base\" union
+    \"//testdata:war_image_base_with_custom_run_flags\")'
+"
 
 function test_bazel_run_docker_build_clean() {
   cd "${ROOT}"
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
-    clear_docker
     bazel run $target
   done
 }
@@ -31,7 +43,6 @@ function test_bazel_run_docker_bundle_clean() {
   cd "${ROOT}"
   for target in $(bazel query 'kind("docker_bundle", "testdata/...")');
   do
-    clear_docker
     bazel run $target
   done
 }
@@ -40,7 +51,6 @@ function test_bazel_run_docker_import_clean() {
   cd "${ROOT}"
   for target in $(bazel query 'kind("docker_import", "testdata/...")');
   do
-    clear_docker
     bazel run $target
   done
 }
@@ -73,13 +83,12 @@ function test_bazel_build_then_run_docker_build_clean() {
   cd "${ROOT}"
   for target in $(eval $CONTAINER_IMAGE_TARGETS_QUERY);
   do
-    clear_docker
     bazel build $target
     # Replace : with /
     ./bazel-bin/${target/://}
   done
 }
 
-# Call functions above with 1st parameter
+# Call functions above. 1st parameter must be a function defined above
 # (simple approach to make migration easy for e2e.sh)
 $1

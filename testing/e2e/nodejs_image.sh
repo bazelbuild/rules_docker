@@ -15,6 +15,8 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
+# Tests for nodejs_image
+
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
@@ -23,6 +25,9 @@ function test_nodejs_image() {
   EXPECT_CONTAINS "$(bazel run tests/docker/nodejs:nodejs_image)" "Hello World!"
 }
 
-# Call function above with 3 parameters
+# Call functions above with either 3 or 1 parameter
+# If 3 parameters: 1st parameter is name of function, 2nd and 3rd
+# passed as args
+# If 1 parameter: parameter is name of function
 # (simple approach to make migration easy for e2e.sh)
 $1 $2 $3

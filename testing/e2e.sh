@@ -17,16 +17,6 @@ source ./testing/e2e/util.sh
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
-CONTAINER_IMAGE_TARGETS_QUERY="
-bazel query 'kind(\"container_image\", \"testdata/...\") except
-    (\"//testdata:py3_image_base_with_custom_run_flags\" union
-    \"//testdata:java_image_base_with_custom_run_flags\" union
-    \"//testdata:docker_run_flags_use_default\" union
-    \"//testdata:docker_run_flags_overrides_default\" union
-    \"//testdata:docker_run_flags_inherits_base\" union
-    \"//testdata:docker_run_flags_overrides_base\" union
-    \"//testdata:war_image_base_with_custom_run_flags\")'
-"
 
 # Clean up any containers [before] we start.
 stop_containers

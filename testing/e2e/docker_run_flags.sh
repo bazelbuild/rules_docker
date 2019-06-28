@@ -15,6 +15,8 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
+# Tests for use of docker run flags
+
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
@@ -43,6 +45,6 @@ function test_docker_run_flags_overrides_base() {
   EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_base)" "-i --rm --network=host -e ABC=DEF"
 }
 
-# Call functions above with 1st parameter
+# Call functions above. 1st parameter must be a function defined above
 # (simple approach to make migration easy for e2e.sh)
 $1
