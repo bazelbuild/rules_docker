@@ -27,6 +27,7 @@ import (
 	"log"
 	ospkg "os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -117,6 +118,53 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 	default:
 		if err := oci.Write(img, dstPath); err != nil {
 			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		}
+	}
+
+	if err := generateSym(img, dstPath); err != nil {
+		return errors.Wrapf(err, "failed to generate symbolic links for pulled image")
+	}
+
+	return nil
+}
+
+// generateSym creates symbolic links to the config.json and .tar.gz layers
+func generateSym(img v1.Image, dstPath string) error {
+	targetDir := path.Join(dstPath, "blobs/sha256")
+	// symlink for config.json
+	var config v1.Hash
+	var err error
+	if config, err = img.ConfigName(); err != nil {
+		return errors.Wrapf(err, "failed to get the config hex information for image")
+	}
+	configDir := path.Join(targetDir, config.Hex)
+	dstLink := path.Join(dstPath, "config.json")
+	if _, err := ospkg.Lstat(dstLink); err == nil {
+		ospkg.Remove(dstLink)
+	}
+	if err := ospkg.Symlink(configDir, dstLink); err != nil {
+		return errors.Wrapf(err, "failed to create symbolic link to config.json at %s", configDir)
+	}
+
+	// symlink for the layers
+	var layers []v1.Layer
+	if layers, err = img.Layers(); err != nil {
+		return errors.Wrapf(err, "failed to get the layers for image")
+	}
+	var layersDir string
+	for i, layer := range layers {
+		var layerDigest v1.Hash
+		if layerDigest, err = layer.Digest(); err != nil {
+			return errors.Wrapf(err, "failed to get layer digest")
+		}
+		layersDir = path.Join(targetDir, layerDigest.Hex)
+		out := strconv.Itoa(i) + ".tar.gz"
+		dstLink = path.Join(dstPath, out)
+		if _, err := ospkg.Lstat(dstLink); err == nil {
+			ospkg.Remove(dstLink)
+		}
+		if err = ospkg.Symlink(layersDir, dstLink); err != nil {
+			return errors.Wrapf(err, "failed to symbolic link to layer")
 		}
 	}
 
