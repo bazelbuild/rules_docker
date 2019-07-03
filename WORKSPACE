@@ -13,7 +13,7 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load(
     "//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
@@ -99,6 +99,18 @@ container_pull(
     repository = "distroless/cc",
 )
 
+http_file(
+    name = "bazel_gpg",
+    sha256 = "30af2ca7abfb65987cd61802ca6e352aadc6129dfb5bfc9c81f16617bc3a4416",
+    urls = ["https://bazel.build/bazel-release.pub.gpg"],
+)
+
+http_file(
+    name = "launchpad_openjdk_gpg",
+    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
+    urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
+)
+
 container_load(
     name = "pause_tar",
     file = "//testdata:pause.tar",
@@ -170,6 +182,13 @@ container_pull(
     repository = "distroless/base",
 )
 
+container_pull(
+    name = "debian_base",
+    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
+    registry = "gcr.io",
+    repository = "google-appengine/debian9",
+)
+
 # Have the py_image dependencies for testing.
 load(
     "//python:image.bzl",
@@ -197,6 +216,41 @@ pip_import(
 load("@pip_deps//:requirements.bzl", "pip_install")
 
 pip_install()
+
+#pip_import(
+#    name = "pip_deps_package_manager",
+#    requirements = "//docker/package_managers:requirements-pip.txt",
+#)
+
+#load("@pip_deps_package_manager//:requirements.bzl", pip_package_manager_install = "pip_install")
+
+#pip_package_manager_install()
+
+http_archive(
+    name = "base_images_docker",
+    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+)
+
+http_archive(
+    name = "ubuntu1604",
+    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/ubuntu1604",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+)
+
+http_archive(
+    name = "debian9",
+    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/debian9",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+)
+
+load("@ubuntu1604//:deps.bzl", ubuntu1604_deps = "deps")
+
+ubuntu1604_deps()
+
+load("@debian9//:deps.bzl", debian9_deps = "deps")
+
+debian9_deps()
 
 load(
     "//python3:image.bzl",
