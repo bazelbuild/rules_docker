@@ -28,7 +28,7 @@ import (
 )
 
 // Where the pulled OCI image artifacts are stored in.
-const artifactsDir = "image-oci"
+const OCIImageDir = "image-oci"
 
 // Where the alias to the correct config.json and layers.tar.gz are found
 const symlinksDir = "image"
@@ -37,20 +37,19 @@ const symlinksDir = "image"
 const targz = ".tar.gz"
 const configExt = "config.json"
 
-// generateSym creates predictable symbolic links to the config.json and layer .tar.gz files
+// LegacyFromOCIImage creates predictable symbolic links to the config.json and layer .tar.gz files
 // so that they may be easily consumed by container_import targets.
 // The dstPath is the top level directory in which the puller will create symlinks inside an image/ directory
 // pointing to actual pulled OCI image artifacts in image-oci/ directory.
-func generateSymlinks(img v1.Image, dstPath string) error {
-	targetDir := path.Join(dstPath, artifactsDir, "blobs/sha256")
+func LegacyFromOCIImage(img v1.Image, dstPath string) error {
+	targetDir := path.Join(dstPath, OCIImageDir, "blobs/sha256")
 	symlinkDir := path.Join(dstPath, symlinksDir)
 
 	// symlink for config.json, which is an expected attribute of container_import
 	// so we must rename the OCI layout's config file (named as the sha256 digest) under blobs/sha256
-	var config v1.Hash
-	var err error
-	if config, err = img.ConfigName(); err != nil {
-		return errors.Wrapf(err, "failed to get the config file's hash information for image")
+	config, err := img.ConfigName()
+	if err != nil {
+		return errors.Wrap(err, "failed to get the config file's hash information for image")
 	}
 	configPath := path.Join(targetDir, config.Hex)
 	if _, err = ospkg.Stat(configPath); ospkg.IsNotExist(err) {
@@ -70,10 +69,7 @@ func generateSymlinks(img v1.Image, dstPath string) error {
 	// symlink for the layers.
 	layers, err := img.Layers()
 	if err != nil {
-		return errors.Wrapf(err, "failed to initialize layers array, image does not have any layers")
-	}
-	if layers, err = img.Layers(); err != nil {
-		return errors.Wrapf(err, "failed to get the layers for image")
+		return errors.Wrap(err, "unable to get layers from image")
 	}
 	var layerPath string
 	for i, layer := range layers {
@@ -83,7 +79,7 @@ func generateSymlinks(img v1.Image, dstPath string) error {
 		}
 
 		layerPath = path.Join(targetDir, layerDigest.Hex)
-		if _, err = ospkg.Stat(layerPath); ospkg.IsNotExist(err) {
+		if _, err = ospkg.Stat(layerPath); err != nil {
 			return errors.Wrapf(err, "layer file does not exist at %s", layerPath)
 		}
 
