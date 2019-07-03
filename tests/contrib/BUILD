@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//contrib:test.bzl", "container_test")
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -154,3 +155,13 @@ docker_push(
     name = "test_docker_push_empty_bundle",
     bundle = ":create_empty_bundle",
 )
+
+[container_test(
+    name = "test_dockerfile_image_%s" % driver,
+    configs = ["//tests/contrib/configs:dockerfile_image.yaml"],
+    image = "@loaded_dockerfile_image_%s//image" % driver,
+) for driver in [
+    "docker",
+    "kaniko_latest",
+    "kaniko_debug",
+]]

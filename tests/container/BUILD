@@ -484,16 +484,6 @@ docker_push_all(
     bundle = ":three_images_bundle",
 )
 
-[container_test(
-    name = "test_dockerfile_image_%s" % driver,
-    configs = ["//tests/container/configs:dockerfile_image.yaml"],
-    image = "@loaded_dockerfile_image_%s//image" % driver,
-) for driver in [
-    "docker",
-    "kaniko_latest",
-    "kaniko_debug",
-]]
-
 py_test(
     name = "build_tar_test",
     srcs = ["build_tar_test.py"],
