@@ -158,6 +158,17 @@ not be able to use `container_repositories()` and will have to import
 directly in your `WORKSPACE` all the required dependencies (see the most up
 to date impl of `container_repositories()` for details).
 
+NEW: Starting with Bazel 0.27.0, you also need to add to your .bazelrc
+file the following:
+
+```python
+build --host_force_python=PY2
+test --host_force_python=PY2
+run --host_force_python=PY2
+```
+See https://github.com/bazelbuild/rules_docker/issues/842 for more
+details.
+
 ## Using with Docker locally.
 
 Suppose you have a `container_image` target `//my/image:helloworld`:
