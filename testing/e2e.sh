@@ -93,7 +93,7 @@ function test_war_image_with_custom_run_flags() {
 function test_rust_image() {
   cd "${ROOT}"
   clear_docker_full
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/rust:rust_image)" "Hello world"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/container/rust:rust_image)" "Hello world"
 }
 
 function test_d_image() {
@@ -106,7 +106,7 @@ function test_container_push() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  bazel build tests/docker:push_test
+  bazel build tests/container:push_test
   # run here file_test targets to verify test outputs of push_test
 
   docker stop -t 0 $cid
@@ -116,8 +116,8 @@ function test_container_push_tag_file() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  bazel build tests/docker:push_tag_file_test
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/docker/push_tag_file_test)" '--name=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/docker/test.tag)'
+  bazel build tests/container:push_tag_file_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_tag_file_test)" '--name=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
@@ -127,7 +127,7 @@ function test_new_container_push_oci() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/docker:new_push_test_oci 2>&1)" "Successfully pushed oci image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed oci image"
   docker stop -t 0 $cid
 }
 
@@ -135,7 +135,7 @@ function test_new_container_push_tar() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/docker:new_push_test_tar 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_tar 2>&1)" "Successfully pushed docker image"
 
   docker stop -t 0 $cid
 }
@@ -143,8 +143,8 @@ function test_new_container_push_tag_file() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  bazel build tests/docker:new_push_tag_file_test
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/docker/new_push_tag_file_test)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/docker/test.tag)'
+  bazel build tests/container:new_push_tag_file_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_tag_file_test)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
@@ -185,7 +185,7 @@ function test_container_push_with_auth() {
   cd "${ROOT}/testing/custom_toolchain_auth"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting authenticated container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test)" "localhost:5000/docker/test:test was published"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_test)" "localhost:5000/docker/test:test was published"
   bazel clean
 
   # Run the container_push test in the Bazel workspace that uses the default
@@ -194,7 +194,7 @@ function test_container_push_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting unauthenticated container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test  2>&1)" "Error publishing localhost:5000/docker/test:test"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_test  2>&1)" "Error publishing localhost:5000/docker/test:test"
   bazel clean
 }
 
@@ -211,7 +211,7 @@ function test_new_container_push_with_auth() {
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting authenticated new container_push..."
 
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:new_push_test_oci 2>&1)" "Successfully pushed oci image from"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed oci image from"
   bazel clean
 
   # Run the new_container_push test in the Bazel workspace that uses the default
@@ -220,7 +220,7 @@ function test_new_container_push_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting unauthenticated new container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:new_push_test_oci  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
   bazel clean
 }
 
@@ -233,7 +233,7 @@ function test_container_pull_with_auth() {
   # Remove the old image if it exists
   docker rmi bazel/image:image || true
   # Push the locally built container to the private repo
-  bazel run $bazel_opts @io_bazel_rules_docker//tests/docker:push_test
+  bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_test
   echo "Attempting authenticated container pull and push..."
   EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image)" "Loaded image"
 
@@ -250,7 +250,7 @@ function test_container_push_with_stamp() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  bazel run tests/docker:push_stamped_test
+  bazel run tests/container:push_stamped_test
   docker stop -t 0 $cid
 }
 
@@ -262,7 +262,7 @@ function test_container_push_all() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   # Use bundle push to push three images to the local registry.
-  bazel run tests/docker:test_docker_push_three_images_bundle
+  bazel run tests/container:test_docker_push_three_images_bundle
   # Pull the three images we just pushed to ensure uploaded manifests
   # are valid according to docker.
   EXPECT_CONTAINS "$(docker pull localhost:5000/image0:latest)" "Downloaded newer image"
@@ -284,11 +284,11 @@ function test_container_pull_cache() {
   mkdir -p $bazel_cache
 
   # Run container puller one with caching.
-  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=600 bazel --output_base=$bazel_cache test //tests/docker:distoless_fixed_id_digest_test
+  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=600 bazel --output_base=$bazel_cache test //tests/container:distoless_fixed_id_digest_test
 
   # Rerun the puller by changing the puller timeout to force a rerun of of the
   # target but now using the cache instead of downloading it again.
-  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=601 bazel --output_base=$bazel_cache test //tests/docker:distoless_fixed_id_digest_test
+  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=601 bazel --output_base=$bazel_cache test //tests/container:distoless_fixed_id_digest_test
 
   rm -rf $scratch_dir
 }

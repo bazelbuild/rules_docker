@@ -23,7 +23,7 @@ ROOT=$PWD
 function test_cc_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/cc:cc_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/container/cc:cc_image)" "Hello World"
 }
 
 function test_cc_binary_as_image() {

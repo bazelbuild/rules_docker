@@ -21,6 +21,7 @@ load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 load("//contrib:idd.bzl", "idd")
 load("//contrib:push-all.bzl", "docker_push")
 load("//contrib:rename_image.bzl", "rename_image")
+load("//contrib:test.bzl", "container_test")
 load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 
 sh_test(
@@ -154,3 +155,13 @@ docker_push(
     name = "test_docker_push_empty_bundle",
     bundle = ":create_empty_bundle",
 )
+
+[container_test(
+    name = "test_dockerfile_image_%s" % driver,
+    configs = ["//tests/contrib/configs:dockerfile_image.yaml"],
+    image = "@loaded_dockerfile_image_%s//image" % driver,
+) for driver in [
+    "docker",
+    "kaniko_latest",
+    "kaniko_debug",
+]]

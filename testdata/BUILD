@@ -670,7 +670,7 @@ py_image(
     ],
     data = [":BUILD"],
     layers = [
-        "//tests/docker/python:py_image_library",
+        "//tests/container/python:py_image_library",
     ],
 )
 
@@ -678,7 +678,7 @@ py_image(
     name = "py_image_with_main",
     srcs = ["py_image.py"],
     layers = [
-        "//tests/docker/python:py_image_library",
+        "//tests/container/python:py_image_library",
     ],
     main = "py_image.py",
 )
@@ -694,7 +694,7 @@ py_image(
         ":data_with_symlinks",
     ],
     layers = [
-        "//tests/docker/python:py_image_library",
+        "//tests/container/python:py_image_library",
     ],
     main = "py_image.py",
 )
@@ -748,7 +748,7 @@ py3_image(
     name = "py3_image_with_main",
     srcs = ["py3_image.py"],
     layers = [
-        "//tests/docker/python:py_image_library",
+        "//tests/container/python:py_image_library",
     ],
     main = "py3_image.py",
 )
@@ -766,7 +766,7 @@ py3_image(
     srcs = ["py3_image.py"],
     base = ":py3_image_base_with_custom_run_flags",
     layers = [
-        "//tests/docker/python:py_image_library",
+        "//tests/container/python:py_image_library",
     ],
     main = "py3_image.py",
 )
@@ -774,7 +774,7 @@ py3_image(
 cc_binary(
     name = "cc_binary",
     srcs = ["cc_image.cc"],
-    deps = ["//tests/docker/cc:cc_image_library"],
+    deps = ["//tests/container/cc:cc_image_library"],
 )
 
 cc_image(
@@ -786,8 +786,8 @@ cc_image(
 sh_binary(
     name = "cc_image_wrapper",
     srcs = ["cc_image_wrapper.sh"],
-    args = ["$(location //tests/docker/cc:cc_image)"],
-    data = ["//tests/docker/cc:cc_image"],
+    args = ["$(location //tests/container/cc:cc_image)"],
+    data = ["//tests/container/cc:cc_image"],
 )
 
 java_library(
@@ -822,7 +822,7 @@ java_image(
 java_image(
     name = "java_sandwich_image",
     srcs = ["Binary.java"],
-    layers = ["//tests/docker/scala:scala_image_library"],
+    layers = ["//tests/container/scala:scala_image_library"],
     main_class = "examples.images.Binary",
 )
 
@@ -838,7 +838,7 @@ java_image(
     name = "java_image_with_custom_run_flags",
     base = ":java_image_base_with_custom_run_flags",
     main_class = "examples.images.Binary",
-    runtime_deps = ["//tests/docker/java:java_bin_as_lib"],
+    runtime_deps = ["//tests/container/java:java_bin_as_lib"],
 )
 
 java_image(
@@ -886,7 +886,7 @@ scala_image(
 groovy_image(
     name = "groovy_scala_image",
     srcs = ["Binary.groovy"],
-    layers = ["//tests/docker/scala:scala_image_library"],
+    layers = ["//tests/container/scala:scala_image_library"],
     main_class = "examples.images.Binary",
 )
 
@@ -900,7 +900,7 @@ go_binary(
 
 container_image(
     name = "launcher_image",
-    base = "//tests/docker/go:go_image",
+    base = "//tests/container/go:go_image",
     launcher = ":launcher",
     launcher_args = ["-env=CUSTOM_MESSAGE=Launched via launcher!"],
     legacy_run_behavior = False,

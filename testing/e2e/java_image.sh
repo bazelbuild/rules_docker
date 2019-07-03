@@ -42,8 +42,8 @@ function test_java_sandwich_image() {
 function test_java_simple_image() {
   cd "${ROOT}"
   clear_docker
-  bazel run tests/docker/java:simple_java_image
-  docker run -d --rm bazel/tests/docker/java:simple_java_image
+  bazel run tests/container/java:simple_java_image
+  docker run -d --rm bazel/tests/container/java:simple_java_image
 }
 
 function test_java_image_arg_echo() {

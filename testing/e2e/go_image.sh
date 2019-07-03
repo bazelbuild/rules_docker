@@ -23,15 +23,15 @@ ROOT=$PWD
 function test_go_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/go:go_image)" "Hello, world!"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/container/go:go_image)" "Hello, world!"
 }
 
 function test_go_image_busybox() {
   cd "${ROOT}"
   clear_docker
-  bazel run -c dbg tests/docker/go:go_image -- --norun
+  bazel run -c dbg tests/container/go:go_image -- --norun
   local number=$RANDOM
-  id=$(docker run -d  --entrypoint=sh bazel/tests/docker/go:go_image -c "echo aa${number}bb")
+  id=$(docker run -d  --entrypoint=sh bazel/tests/container/go:go_image -c "echo aa${number}bb")
   docker wait $id
   logs=$(docker logs $id)
   EXPECT_CONTAINS $logs "aa${number}bb"
@@ -40,10 +40,10 @@ function test_go_image_busybox() {
 function test_go_image_with_tags() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel query //tests/docker/go:go_image)" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
-  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/docker/go:go_image)')" "//tests/docker/go:go_image"
+  EXPECT_CONTAINS "$(bazel query //tests/container/go:go_image)" "//tests/container/go:go_image"
+  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag1, //tests/container/go:go_image)')" "//tests/container/go:go_image"
+  EXPECT_CONTAINS "$(bazel query 'attr(tags, tag2, //tests/container/go:go_image)')" "//tests/container/go:go_image"
+  EXPECT_NOT_CONTAINS "$(bazel query 'attr(tags, other_tag, //tests/container/go:go_image)')" "//tests/container/go:go_image"
 }
 
 # Call functions above with either 3 or 1 parameter

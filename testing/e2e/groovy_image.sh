@@ -23,7 +23,7 @@ ROOT=$PWD
 function test_groovy_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/docker/groovy:groovy_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/container/groovy:groovy_image)" "Hello World"
 }
 
 function test_groovy_scala_image() {
