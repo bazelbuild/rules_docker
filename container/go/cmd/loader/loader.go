@@ -46,7 +46,7 @@ func load(tar, dir string) error {
 		return errors.Wrapf(err, "failed to read docker image tarball from %q", dir)
 	}
 
-	ociPath := path.Join(dir, "image-oci")
+	ociPath := path.Join(dir, compat.OCIImageDir)
 	if err = oci.Write(img, ociPath); err != nil {
 		return errors.Wrapf(err, "failed to write image to OCI layout at path %s", dir)
 	}
