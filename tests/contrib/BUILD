@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//contrib:test.bzl", "container_test")
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -22,6 +21,7 @@ load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 load("//contrib:idd.bzl", "idd")
 load("//contrib:push-all.bzl", "docker_push")
 load("//contrib:rename_image.bzl", "rename_image")
+load("//contrib:test.bzl", "container_test")
 load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 
 sh_test(
