@@ -161,7 +161,7 @@ to date impl of `container_repositories()` for details).
 NEW: Starting with Bazel 0.27.0, you also need to add to your .bazelrc
 file the following:
 
-```python
+```
 build --host_force_python=PY2
 test --host_force_python=PY2
 run --host_force_python=PY2
