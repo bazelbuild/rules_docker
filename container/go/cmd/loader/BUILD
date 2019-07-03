@@ -23,6 +23,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//container/go/pkg/oci:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
