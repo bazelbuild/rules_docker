@@ -455,7 +455,7 @@ file_test(
       }
    ]
 }""",
-    file = "@new_pause_tar//image:index.json",
+    file = "@new_pause_tar//image-oci:index.json",
 )
 
 file_test(
@@ -463,7 +463,25 @@ file_test(
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_pause_tar//image:oci-layout",
+    file = "@new_pause_tar//image-oci:oci-layout",
+)
+
+file_test(
+    name = "new_pause_tar_test_config_symlink",
+    file = "@new_pause_tar//image:config.json",
+    regexp = ".*",
+)
+
+file_test(
+    name = "new_pause_tar_test_0_tar_gz_symlink",
+    file = "@new_pause_tar//image:0.tar.gz",
+    regexp = ".*",
+)
+
+file_test(
+    name = "new_pause_tar_test_1_tar_gz_symlink",
+    file = "@new_pause_tar//image:1.tar.gz",
+    regexp = ".*",
 )
 
 create_banana_directory(

@@ -25,21 +25,24 @@ def _impl(repository_ctx):
 
     repository_ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
+load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
-# TODO(xwinxu): this will be changed to new_container_import once that is implemented later
-# similar to what we have in new_pull.bzl
-
-filegroup(
+container_import(
     name = "image",
-    srcs = glob(["image/**"]),
+    config = "config.json",
+    layers = glob(["*.tar.gz"]),
 )
-exports_files(glob(["**"]))
-""", executable = False)
+
+exports_files(glob(["**"]))""")
+
+    repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**"]))""")
 
     result = repository_ctx.execute([
         repository_ctx.path(repository_ctx.attr._loader),
         "-directory",
-        repository_ctx.path("image"),
+        repository_ctx.path("image-oci"),
         "-tarball",
         repository_ctx.path(repository_ctx.attr.file),
     ])
@@ -55,7 +58,8 @@ new_container_load = repository_rule(
         ),
         "_loader": attr.label(
             executable = True,
-            default = Label("@loader//file:downloaded"),
+            default = Label("@loader//:loader"),
+            # default = Label("@loader//file:downloaded"),
             cfg = "host",
         ),
     },
