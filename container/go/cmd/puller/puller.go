@@ -33,6 +33,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
+	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -60,16 +61,6 @@ var (
 // that the image was (probably) not tagged with this, but avoids
 // applying the ":latest" tag which might be misleading.
 const iWasADigestTag = "i-was-a-digest"
-
-// Where the pulled OCI image artifacts are stored in.
-const artifactsDir = "image-oci"
-
-// Where the alias to the correct config.json and layers.tar.gz are found
-const symlinksDir = "image"
-
-// Extension for layers and config files that are made symlinks
-const targz = ".tar.gz"
-const configExt = "config.json"
 
 // getTag parses the reference inside the name flag and returns the apt tag.
 // WriteToFile requires a tag to write to the tarball, but may have been given a digest,
@@ -133,73 +124,8 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 	}
 
 	if format != "docker" {
-		if err := generateSymlinks(img, dstPath); err != nil {
+		if err := compat.generateSymlinks(img, dstPath); err != nil {
 			return errors.Wrapf(err, "failed to generate symbolic links to pulled image at %s", dstPath)
-		}
-	}
-
-	return nil
-}
-
-// generateSym creates predictable symbolic links to the config.json and layer .tar.gz files
-// so that they may be easily consumed by container_import targets.
-// The dstPath is the top level directory in which the puller will create symlinks inside an image/ directory
-// pointing to actual pulled OCI image artifacts in image-oci/ directory.
-func generateSymlinks(img v1.Image, dstPath string) error {
-	targetDir := path.Join(dstPath, artifactsDir, "blobs/sha256")
-	symlinkDir := path.Join(dstPath, symlinksDir)
-
-	// symlink for config.json, which is an expected attribute of container_import
-	// so we must rename the OCI layout's config file (named as the sha256 digest) under blobs/sha256
-	var config v1.Hash
-	var err error
-	if config, err = img.ConfigName(); err != nil {
-		return errors.Wrapf(err, "failed to get the config file's hash information for image")
-	}
-	configPath := path.Join(targetDir, config.Hex)
-	if _, err = ospkg.Stat(configPath); ospkg.IsNotExist(err) {
-		return errors.Wrapf(err, "config file does not exist at %s", configPath)
-	}
-
-	dstLink := path.Join(symlinkDir, configExt)
-	if _, err := ospkg.Lstat(dstLink); err == nil {
-		if err = ospkg.Remove(dstLink); err != nil {
-			return errors.Wrapf(err, "failed to remove the file at %s", dstLink)
-		}
-	}
-	if err := ospkg.Symlink(configPath, dstLink); err != nil {
-		return errors.Wrapf(err, "failed to create symbolic link from %s to config.json at %s", dstLink, configPath)
-	}
-
-	// symlink for the layers.
-	layers, err := img.Layers()
-	if err != nil {
-		return errors.Wrapf(err, "failed to initialize layers array, image does not have any layers")
-	}
-	if layers, err = img.Layers(); err != nil {
-		return errors.Wrapf(err, "failed to get the layers for image")
-	}
-	var layerPath string
-	for i, layer := range layers {
-		layerDigest, err := layer.Digest()
-		if err != nil {
-			return errors.Wrapf(err, "failed to fetch the layer's digest")
-		}
-
-		layerPath = path.Join(targetDir, layerDigest.Hex)
-		if _, err = ospkg.Stat(layerPath); ospkg.IsNotExist(err) {
-			return errors.Wrapf(err, "layer file does not exist at %s", layerPath)
-		}
-
-		out := strconv.Itoa(i) + targz
-		dstLink = path.Join(symlinkDir, out)
-		if _, err := ospkg.Lstat(dstLink); err == nil {
-			if err = ospkg.Remove(dstLink); err != nil {
-				return errors.Wrapf(err, "failed to remove the file at %s", dstLink)
-			}
-		}
-		if err = ospkg.Symlink(layerPath, dstLink); err != nil {
-			return errors.Wrapf(err, "failed to create symbolic link from %s to layer at %s", dstLink, layerPath)
 		}
 	}
 
