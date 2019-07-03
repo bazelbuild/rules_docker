@@ -61,6 +61,16 @@ var (
 // applying the ":latest" tag which might be misleading.
 const iWasADigestTag = "i-was-a-digest"
 
+// Where the pulled OCI image artifacts are stored in.
+const artifactsDir = "image-oci"
+
+// Where the alias to the correct config.json and layers.tar.gz are found
+const symlinksDir = "image"
+
+// Extension for layers and config files that are made symlinks
+const targz = ".tar.gz"
+const configExt = "config.json"
+
 // getTag parses the reference inside the name flag and returns the apt tag.
 // WriteToFile requires a tag to write to the tarball, but may have been given a digest,
 // in which case we tag the image with :i-was-a-digest instead.
@@ -84,7 +94,7 @@ func getTag(ref name.Reference) name.Reference {
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
 // with slight modification to take in a platform argument.
 // Pull the image with given <imgName> to destination <dstPath> with optional cache files and required platform specifications.
-func pull(imgName, dstPath, format, cachePath, format string, platform v1.Platform) error {
+func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) error {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -101,28 +111,29 @@ func pull(imgName, dstPath, format, cachePath, format string, platform v1.Platfo
 	}
 
 	// Image file to write to disk, either a tarball, OCI layout, or both.
+	ociPath := path.Join(dstPath, "image-oci")
 	switch format {
 	case "docker":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
+		if err := tarball.WriteToFile(path.Join(ociPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", ociPath, err)
 		}
 	case "both":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
+		if err := tarball.WriteToFile(path.Join(ociPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", ociPath, err)
 		}
-		if err := oci.Write(img, dstPath); err != nil {
-			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		if err := oci.Write(img, ociPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", ociPath, err)
 		}
 	default:
-		if err := oci.Write(img, dstPath); err != nil {
-			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		if err := oci.Write(img, ociPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", ociPath, err)
 		}
 	}
 
 	if format != "docker" {
-		if err := generateSym(img, dstPath); err != nil {
+		if err := generateSymlinks(img, dstPath); err != nil {
 			return errors.Wrapf(err, "failed to generate symbolic links to pulled image at %s", dstPath)
 		}
 	}
@@ -130,48 +141,65 @@ func pull(imgName, dstPath, format, cachePath, format string, platform v1.Platfo
 	return nil
 }
 
-// generateSym creates symbolic links to the config.json and .tar.gz layers
-// for use with container_import rule.
+// generateSym creates predictable symbolic links to the config.json and layer .tar.gz files
+// so that they may be easily consumed by container_import targets.
 // The dstPath is the top level directory in which the puller will create symlinks inside an image/ directory
 // pointing to actual pulled OCI image artifacts in image-oci/ directory.
-func generateSym(img v1.Image, dstPath string) error {
-	targetDir := path.Join(dstPath, "image-oci", "blobs/sha256")
-	symlinkDir := path.Join(dstPath, "image")
+func generateSymlinks(img v1.Image, dstPath string) error {
+	targetDir := path.Join(dstPath, artifactsDir, "blobs/sha256")
+	symlinkDir := path.Join(dstPath, symlinksDir)
 
-	// symlink for config.json.
+	// symlink for config.json, which is an expected attribute of container_import
+	// so we must rename the OCI layout's config file (named as the sha256 digest) under blobs/sha256
 	var config v1.Hash
 	var err error
 	if config, err = img.ConfigName(); err != nil {
 		return errors.Wrapf(err, "failed to get the config file's hash information for image")
 	}
-	configDir := path.Join(targetDir, config.Hex)
-	dstLink := path.Join(symlinkDir, "config.json")
-	if _, err := ospkg.Lstat(dstLink); err == nil {
-		ospkg.Remove(dstLink)
+	configPath := path.Join(targetDir, config.Hex)
+	if _, err = ospkg.Stat(configPath); ospkg.IsNotExist(err) {
+		return errors.Wrapf(err, "config file does not exist at %s", configPath)
 	}
-	if err := ospkg.Symlink(configDir, dstLink); err != nil {
-		return errors.Wrapf(err, "failed to create symbolic link to config.json at %s", configDir)
+
+	dstLink := path.Join(symlinkDir, configExt)
+	if _, err := ospkg.Lstat(dstLink); err == nil {
+		if err = ospkg.Remove(dstLink); err != nil {
+			return errors.Wrapf(err, "failed to remove the file at %s", dstLink)
+		}
+	}
+	if err := ospkg.Symlink(configPath, dstLink); err != nil {
+		return errors.Wrapf(err, "failed to create symbolic link from %s to config.json at %s", dstLink, configPath)
 	}
 
 	// symlink for the layers.
-	var layers []v1.Layer
+	layers, err := img.Layers()
+	if err != nil {
+		return errors.Wrapf(err, "failed to initialize layers array, image does not have any layers")
+	}
 	if layers, err = img.Layers(); err != nil {
 		return errors.Wrapf(err, "failed to get the layers for image")
 	}
-	var layersDir string
+	var layerPath string
 	for i, layer := range layers {
-		var layerDigest v1.Hash
-		if layerDigest, err = layer.Digest(); err != nil {
-			return errors.Wrapf(err, "failed to get layer digest")
+		layerDigest, err := layer.Digest()
+		if err != nil {
+			return errors.Wrapf(err, "failed to fetch the layer's digest")
 		}
-		layersDir = path.Join(targetDir, layerDigest.Hex)
-		out := strconv.Itoa(i) + ".tar.gz"
+
+		layerPath = path.Join(targetDir, layerDigest.Hex)
+		if _, err = ospkg.Stat(layerPath); ospkg.IsNotExist(err) {
+			return errors.Wrapf(err, "layer file does not exist at %s", layerPath)
+		}
+
+		out := strconv.Itoa(i) + targz
 		dstLink = path.Join(symlinkDir, out)
 		if _, err := ospkg.Lstat(dstLink); err == nil {
-			ospkg.Remove(dstLink)
+			if err = ospkg.Remove(dstLink); err != nil {
+				return errors.Wrapf(err, "failed to remove the file at %s", dstLink)
+			}
 		}
-		if err = ospkg.Symlink(layersDir, dstLink); err != nil {
-			return errors.Wrapf(err, "failed to create symbolic link to layer")
+		if err = ospkg.Symlink(layerPath, dstLink); err != nil {
+			return errors.Wrapf(err, "failed to create symbolic link from %s to layer at %s", dstLink, layerPath)
 		}
 	}
 
@@ -214,7 +242,7 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	if err := pull(*imgName, *directory, *format, *cachePath, *format, platform); err != nil {
+	if err := pull(*imgName, *directory, *format, *cachePath, platform); err != nil {
 		log.Fatalf("Image pull was unsuccessful: %v", err)
 	}
 
