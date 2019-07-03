@@ -375,7 +375,7 @@ file_test(
       }
    ]
 }""",
-    file = "@new_alpine_linux_armv6//image:index.json",
+    file = "@new_alpine_linux_armv6//image-oci:index.json",
 )
 
 file_test(
@@ -390,7 +390,7 @@ file_test(
       }
    ]
 }""",
-    file = "@new_distroless_base//image:index.json",
+    file = "@new_distroless_base//image-oci:index.json",
 )
 
 file_test(
@@ -398,7 +398,7 @@ file_test(
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_alpine_linux_armv6//image:oci-layout",
+    file = "@new_alpine_linux_armv6//image-oci:oci-layout",
 )
 
 file_test(
@@ -406,19 +406,19 @@ file_test(
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_distroless_base//image:oci-layout",
+    file = "@new_distroless_base//image-oci:oci-layout",
 )
 
 # Merely testing for the presence of the pulled image.tar for now.
 file_test(
     name = "new_alpine_linux_armv6_tar_test_image_tar",
-    file = "@new_alpine_linux_armv6_tar//image:image.tar",
+    file = "@new_alpine_linux_armv6_tar//image-oci:image.tar",
     regexp = ".*",
 )
 
 file_test(
     name = "new_distroless_base_both_test_image_tar",
-    file = "@new_distroless_base_both//image:image.tar",
+    file = "@new_distroless_base_both//image-oci:image.tar",
     regexp = ".*",
 )
 
@@ -427,7 +427,7 @@ file_test(
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_distroless_base_both//image:oci-layout",
+    file = "@new_distroless_base_both//image-oci:oci-layout",
 )
 
 # To test the new container load binary
