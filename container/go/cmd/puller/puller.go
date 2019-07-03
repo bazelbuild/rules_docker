@@ -103,7 +103,7 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 
 	// Image file to write to disk, either a tarball, OCI layout, or both.
 	ociPath := path.Join(dstPath, compat.OCIImageDir)
-	tarPath := path.Join(dstPath, "image")
+	tarPath := path.Join(dstPath, compat.ImageDir)
 	switch format {
 	case "docker":
 		tag := getTag(ref)

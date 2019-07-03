@@ -27,11 +27,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Where the pulled OCI image artifacts are stored in.
+// Directory containing the pulled OCI image artifacts without modification.
 const OCIImageDir = "image-oci"
 
-// Where the alias to the correct config.json and layers.tar.gz are found
-const symlinksDir = "image"
+// Directory containing actual images (symlinks or image.tar) to be used by container_import as the image.
+const ImageDir = "image"
 
 // Extension for layers and config files that are made symlinks
 const targz = ".tar.gz"
@@ -43,7 +43,7 @@ const configExt = "config.json"
 // pointing to actual pulled OCI image artifacts in image-oci/ directory.
 func LegacyFromOCIImage(img v1.Image, dstPath string) error {
 	targetDir := path.Join(dstPath, OCIImageDir, "blobs/sha256")
-	symlinkDir := path.Join(dstPath, symlinksDir)
+	symlinkDir := path.Join(dstPath, ImageDir)
 
 	// symlink for config.json, which is an expected attribute of container_import
 	// so we must rename the OCI layout's config file (named as the sha256 digest) under blobs/sha256
@@ -52,7 +52,7 @@ func LegacyFromOCIImage(img v1.Image, dstPath string) error {
 		return errors.Wrap(err, "failed to get the config file's hash information for image")
 	}
 	configPath := path.Join(targetDir, config.Hex)
-	if _, err = ospkg.Stat(configPath); ospkg.IsNotExist(err) {
+	if _, err = ospkg.Stat(configPath); err != nil {
 		return errors.Wrapf(err, "config file does not exist at %s", configPath)
 	}
 
