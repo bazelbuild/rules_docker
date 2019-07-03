@@ -92,7 +92,7 @@ def _impl(repository_ctx):
     repository_ctx.file("BUILD", "")
 
     # Create symlinks to the appropriate config.json and layers in the pulled OCI image in the image-oci directory.
-    # Generates container_import rule which is able to comprehend OCI layout via the symlinks.
+    # Generates container_import target which is able to comprehend OCI layout via the symlinks.
     repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
@@ -107,12 +107,12 @@ exports_files(glob(["**"]))""")
     # Currently exports all files pulled by the binary and will not be depended on by other rules_docker rules.
     repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
 
-exports_files(glob(["**"]))""")
+exports_files([image.tar])""")
 
     args = [
         repository_ctx.path(repository_ctx.attr._puller),
         "-directory",
-        repository_ctx.path("image-oci"),
+        repository_ctx.path(""),
         "-format",
         repository_ctx.attr.format,
         "-os",

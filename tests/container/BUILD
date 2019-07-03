@@ -430,6 +430,18 @@ file_test(
     file = "@new_distroless_base_both//image-oci:oci-layout",
 )
 
+file_test(
+    name = "new_distroless_base_both_test_config_symlink",
+    file = "@new_distroless_base_both//image:config.json",
+    regexp = ".*",
+)
+
+file_test(
+    name = "new_distroless_base_both_test_targz_symlink",
+    file = "@new_distroless_base_both//image:0.tar.gz",
+    regexp = ".*"
+)
+
 # To test the new container load binary
 file_test(
     name = "new_pause_tar_test_index_json",
