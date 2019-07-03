@@ -27,6 +27,7 @@ import (
 	"log"
 	ospkg "os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -122,23 +123,26 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 	}
 
 	if err := generateSym(img, dstPath); err != nil {
-		return errors.Wrapf(err, "failed to generate symbolic links for pulled image")
+		return errors.Wrapf(err, "failed to generate symbolic links to pulled image at %s", dstPath)
 	}
 
 	return nil
 }
 
 // generateSym creates symbolic links to the config.json and .tar.gz layers
+// for use with container_import rule.
 func generateSym(img v1.Image, dstPath string) error {
 	targetDir := path.Join(dstPath, "blobs/sha256")
-	// symlink for config.json
+	symlinkDir := path.Join(filepath.Dir(dstPath), "image")
+
+	// symlink for config.json.
 	var config v1.Hash
 	var err error
 	if config, err = img.ConfigName(); err != nil {
-		return errors.Wrapf(err, "failed to get the config hex information for image")
+		return errors.Wrapf(err, "failed to get the config file's hash information for image")
 	}
 	configDir := path.Join(targetDir, config.Hex)
-	dstLink := path.Join(dstPath, "config.json")
+	dstLink := path.Join(symlinkDir, "config.json")
 	if _, err := ospkg.Lstat(dstLink); err == nil {
 		ospkg.Remove(dstLink)
 	}
@@ -146,7 +150,7 @@ func generateSym(img v1.Image, dstPath string) error {
 		return errors.Wrapf(err, "failed to create symbolic link to config.json at %s", configDir)
 	}
 
-	// symlink for the layers
+	// symlink for the layers.
 	var layers []v1.Layer
 	if layers, err = img.Layers(); err != nil {
 		return errors.Wrapf(err, "failed to get the layers for image")
@@ -159,12 +163,12 @@ func generateSym(img v1.Image, dstPath string) error {
 		}
 		layersDir = path.Join(targetDir, layerDigest.Hex)
 		out := strconv.Itoa(i) + ".tar.gz"
-		dstLink = path.Join(dstPath, out)
+		dstLink = path.Join(symlinkDir, out)
 		if _, err := ospkg.Lstat(dstLink); err == nil {
 			ospkg.Remove(dstLink)
 		}
 		if err = ospkg.Symlink(layersDir, dstLink); err != nil {
-			return errors.Wrapf(err, "failed to symbolic link to layer")
+			return errors.Wrapf(err, "failed to create symbolic link to layer")
 		}
 	}
 
@@ -183,7 +187,7 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config
+	// to use it to look for the docker client config.
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
