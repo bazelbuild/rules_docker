@@ -67,6 +67,11 @@ platforms:
     build_targets:
     - "--"
     - "..."
+    # These targets produce files and directories and it makes them fail to build on RBE.
+    # RBE fails to construct CAS files to upload the outputs because it's unable to
+    # calculate file hashes for the output directories.
+    - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"

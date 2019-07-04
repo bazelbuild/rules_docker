@@ -180,19 +180,6 @@ def _impl(ctx):
 
 container_repro_test = rule(
     attrs = dicts.add(_container.image.attrs, {
-        "test_image": attr.label(
-            doc = "A container_image target to test for reproducibility. " +
-                  "Must be a label relative to the root of the project and " +
-                  "cannot be relative to the container_repro_test target.",
-            mandatory = True,
-        ),
-        "src_project_files": attr.label(
-            allow_files = True,
-            mandatory = True,
-            doc = "Files of the source project where the test_image target " +
-                  "lives. The WORKSPACE file must be specified and is " +
-                  "assumed to be at the root of the project.",
-        ),
         "base": attr.label(
             allow_files = container_filetype,
             mandatory = True,
@@ -211,15 +198,28 @@ container_repro_test = rule(
                   "Check https://github.com/GoogleContainerTools/container-diff#container-diff " +
                   "for more info.",
         ),
+        "src_project_files": attr.label(
+            allow_files = True,
+            mandatory = True,
+            doc = "Files of the source project where the test_image target " +
+                  "lives. The WORKSPACE file must be specified and is " +
+                  "assumed to be at the root of the project.",
+        ),
+        "test_image": attr.label(
+            mandatory = True,
+            doc = "A container_image target to test for reproducibility. " +
+                  "Must be a label relative to the root of the project and " +
+                  "cannot be relative to the container_repro_test target.",
+        ),
         "_container_diff_tool": attr.label(
+            default = Label("@container_diff//file"),
             allow_single_file = True,
             cfg = "target",
-            default = Label("@container_diff//file"),
             executable = True,
         ),
         "_test_tpl": attr.label(
-            allow_single_file = True,
             default = Label("//contrib:cmp_images.sh.tpl"),
+            allow_single_file = True,
             doc = "A template to expand a bash script to run a complete " +
                   "image comparison test.",
         ),
@@ -228,8 +228,8 @@ container_repro_test = rule(
             allow_single_file = True,
         ),
         "_image_id_extractor": attr.label(
-            allow_single_file = True,
             default = "//contrib:extract_image_id.py",
+            allow_single_file = True,
         ),
     }),
     implementation = _impl,
