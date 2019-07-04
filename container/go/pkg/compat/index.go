@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-// Image index for intermediate format used in python containerregistry. 
+// Image index for intermediate format used in python containerregistry.
 // Uses the go-containerregistry API as backend.
 
 package compat
@@ -20,6 +20,8 @@ package compat
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
@@ -37,7 +39,7 @@ func ImageIndexFromPath(path string) (v1.ImageIndex, error) {
 }
 
 // FromPath reads an MM intermediate image index at path and constructs a layout.Path.
-// Naively validates this is a valid intermediate layout by checking digest, config.json, and manifest.json exist. 
+// Naively validates this is a valid intermediate layout by checking digest, config.json, and manifest.json exist.
 func FromPath(path string) (Path, error) {
 	var err error
 	_, err = os.Stat(filepath.Join(path, "manifest.json"))
@@ -60,9 +62,9 @@ func FromPath(path string) (Path, error) {
 
 // This intermediate layout implements v1.ImageIndex.
 type intermediateLayout struct {
-	// path of this layout, with helper functions for finding the full directory. 
-	path        Path
-	// rawManifest is the raw bytes of manifest.json file. 
+	// path of this layout, with helper functions for finding the full directory.
+	path Path
+	// rawManifest is the raw bytes of manifest.json file.
 	rawManifest []byte
 }
 
@@ -75,7 +77,7 @@ func (i *intermediateLayout) MediaType() (types.MediaType, error) {
 
 // Digest returns the sha256 hash of this index's manifest.json metadata, an entrypoint for the config and layers.
 func (i *intermediateLayout) Digest() (v1.Hash, error) {
-	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory. 
+	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
 	digest, err := ioutil.ReadFile(i.path.path("digest"))
 	if err != nil {
 		fmt.Errorf("Failed to locate SHA256 digest file for image manifest: %v", err)
@@ -97,7 +99,7 @@ func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
 	}
 
 	// We are missing index.json in this intermediate format.
-	// Since index.json is represented in IndexManifest structure, we will populate this struct with parsed info. 
+	// Since index.json is represented in IndexManifest structure, we will populate this struct with parsed info.
 	index := v1.IndexManifest{
 		SchemaVersion: manifest.SchemaVersion,
 		Manifests: []v1.Descriptor{
@@ -121,7 +123,7 @@ func (i *intermediateLayout) RawManifest() ([]byte, error) {
 		}
 		i.rawManifest = rawManifest
 	}
-	
+
 	return i.rawManifest, nil
 }
 
@@ -145,7 +147,7 @@ func (i *intermediateLayout) Image(h v1.Hash) (v1.Image, error) {
 	return partial.CompressedToImage(img)
 }
 
-// findDescriptor looks for the manifest with digest h in our "index.json" struct and returns its descriptor. 
+// findDescriptor looks for the manifest with digest h in our "index.json" struct and returns its descriptor.
 func (i *intermediateLayout) findDescriptor(h v1.Hash) (*v1.Descriptor, error) {
 	im, err := i.IndexManifest()
 	if err != nil {
@@ -179,7 +181,7 @@ func (i *intermediateLayout) ImageIndex(h v1.Hash) (v1.ImageIndex, error) {
 	}, nil
 }
 
-// isExpectedMediaType returns whether the given mediatype mt is allowed. 
+// isExpectedMediaType returns whether the given mediatype mt is allowed.
 func isExpectedMediaType(mt types.MediaType, expected ...types.MediaType) bool {
 	for _, allowed := range expected {
 		if mt == allowed {

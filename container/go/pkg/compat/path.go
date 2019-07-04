@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-// Path used for intermediate image index outputted by python containerregistry. 
+// Path used for intermediate image index outputted by python containerregistry.
 // Uses the go-containerregistry API as backend.
 
 package compat
@@ -20,7 +20,6 @@ package compat
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -29,7 +28,7 @@ import (
 // Path represents an MM intermediate image layout rooted in a file system path
 type Path string
 
-// path returns a full directory of this path concatenated with other <elem> paths. 
+// path returns a full directory of this path concatenated with other <elem> paths.
 func (l Path) path(elem ...string) string {
 	complete := []string{string(l)}
 	return filepath.Join(append(complete, elem...)...)
