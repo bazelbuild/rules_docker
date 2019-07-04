@@ -27,7 +27,6 @@ import (
 	"log"
 	ospkg "os"
 	"path"
-	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -61,6 +60,12 @@ var (
 // that the image was (probably) not tagged with this, but avoids
 // applying the ":latest" tag which might be misleading.
 const iWasADigestTag = "i-was-a-digest"
+
+// Directory containing the pulled OCI image artifacts without modification.
+const ociImageDir = "image-oci"
+
+// Directory containing actual images (symlinks or image.tar) to be used by container_import as the image.
+const imageDir = "image"
 
 // getTag parses the reference inside the name flag and returns the apt tag.
 // WriteToFile requires a tag to write to the tarball, but may have been given a digest,
@@ -102,8 +107,8 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 	}
 
 	// Image file to write to disk, either a tarball, OCI layout, or both.
-	ociPath := path.Join(dstPath, compat.OCIImageDir)
-	tarPath := path.Join(dstPath, compat.ImageDir)
+	ociPath := path.Join(dstPath, ociImageDir)
+	tarPath := path.Join(dstPath, imageDir)
 	switch format {
 	case "docker":
 		tag := getTag(ref)
@@ -125,7 +130,7 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 	}
 
 	if format != "docker" {
-		if err := compat.LegacyFromOCIImage(img, dstPath); err != nil {
+		if err := compat.LegacyFromOCIImage(img, ociPath, tarPath); err != nil {
 			return errors.Wrapf(err, "failed to generate symbolic links to pulled image at %s", dstPath)
 		}
 	}
