@@ -36,6 +36,8 @@ var readertests = []struct {
 	layerHashes []v1.Hash
 	// mediaType is the media type of this image.
 	mediaType types.MediaType
+	// format is the image layout format of this image, oci or legacy.
+	format string
 	// testPath is the relative path of this test case.
 	testPath string
 }{
@@ -65,6 +67,7 @@ var readertests = []struct {
 			},
 		},
 		types.DockerManifestSchema2,
+		"oci",
 		"testdata/test_index1",
 	},
 }
@@ -73,9 +76,13 @@ var readertests = []struct {
 func TestRead(t *testing.T) {
 	for _, rt := range readertests {
 		t.Run(rt.name, func(t *testing.T) {
-			img, err := Read(rt.testPath)
+			idx, err := ReadIndex(rt.testPath, rt.format)
 			if err != nil {
-				t.Fatalf("Read(%s): %v", rt.testPath, err)
+				t.Fatalf("ReadIndex(%s, %s): %v", rt.testPath, rt.format, err)
+			}
+			img, err := Read(idx)
+			if err != nil {
+				t.Fatalf("Read from idx at %s: %v", rt.testPath, err)
 			}
 
 			// Validates that img does not violate any invariants of the image format by validating the layers, manifests and config.
@@ -154,44 +161,55 @@ var readerErrorTests = []struct {
 	name string
 	// testPath is the relative path of this test case.
 	testPath string
+	// format is the image layout format of this image, oci or legacy.
+	format string
 }{
 	// Tests error handling for a non-existent index path.
 	{
 		"non-existent testPath",
 		"testdata/does_not_exist",
+		"oci",
 	},
 	// Tests error handling for an index missing index.json file.
 	{
 		"missing index.json",
 		"testdata/test_index2",
+		"oci",
 	},
 	// Tests error handling for an index missing manifest metadata file.
 	{
 		"missing manifest metadata",
 		"testdata/test_index3",
+		"oci",
 	},
 	// Tests error handling for an index missing config metadata file.
 	{
 		"missing config file",
 		"testdata/test_index4",
+		"oci",
 	},
 	// Tests error handling for an index missing the specified layer.
 	{
 		"missing layer",
 		"testdata/test_index5",
+		"oci",
 	},
 }
 
 // TestReadErrors checks if each error resulted from readerErrorTests is handled appropriately.
-// Tests will fail if Read does not report an error in these cases.
+// Tests will fail if both Read and ReadIndex does not report an error in these cases.
 func TestReadErrors(t *testing.T) {
 	for _, rt := range readerErrorTests {
 		t.Run(rt.name, func(t *testing.T) {
-			_, err := Read(rt.testPath)
+			idx, err := ReadIndex(rt.testPath, rt.format)
 
 			if err == nil {
-				t.Fatalf("got unexpected success when trying to read an OCI image index, want error")
+				_, err := Read(idx)
+				if err == nil {
+					t.Fatalf("got unexpected success when trying to read an OCI image index, want error")
+				}
 			}
+
 		})
 	}
 }

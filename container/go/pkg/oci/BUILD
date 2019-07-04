@@ -24,6 +24,7 @@ go_library(
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/oci",
     visibility = ["//visibility:public"],
     deps = [
+        "//container/go/pkg/compat:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/empty:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
@@ -34,18 +35,30 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["reader_test.go"],
+    srcs = [
+        "reader_test.go",
+        "write_test.go",
+    ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
     ],
 )
 
 filegroup(
     name = "oci_test_index1",
     srcs = glob(["testdata/test_index1/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "mm_test_index",
+    srcs = glob(["testdata/image/**"]),
     visibility = ["//visibility:public"],
 )

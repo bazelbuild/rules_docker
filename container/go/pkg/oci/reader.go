@@ -19,31 +19,23 @@ package oci
 import (
 	"fmt"
 
+	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 	"github.com/pkg/errors"
 )
 
-// Read returns a docker image from the given path. The docker image should have been written by "Write".
-// The image in the given path <src> follows the OCI Image Layout.
-// (https://github.com/opencontainers/image-spec/blob/master/image-layout.md#oci-image-layout-specification)
-// Specifically, <src> must contains "index.json" that servers as an entrypoint for the contained image.
-// The image content and configs must be non-empty and stored in <src>/blobs/<SHAxxx>/.
+// Read returns a docker image referenced by the given idx. The image index should have been written by "Write" or outputted by container_pull.
 // NOTE: this only reads index with a single image.
-func Read(src string) (v1.Image, error) {
-	idx, err := layout.ImageIndexFromPath(src)
+func Read(idx v1.ImageIndex) (v1.Image, error) {
+	manifest, err := idx.IndexManifest()
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to read image from %s", src)
+		return nil, errors.Wrapf(err, "unable to parse manifest metadata from the given image index")
 	}
 
 	// Read the contents of the layout -- we expect to find a single image.
-	// TODO (xiaohegong): handle case with multiple manifests.
-	manifest, err := idx.IndexManifest()
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to read image from %s", src)
-	}
-
+	// TODO (xiaohegong): We do not expect to push multiple manifests for now, e.g., a manifest list, since it will be resolved to a image for one platform. This case might need to be handled later.
 	if len(manifest.Manifests) > 1 {
 		return nil, fmt.Errorf("got %d manifests, want 1", len(manifest.Manifests))
 	}
@@ -57,8 +49,30 @@ func Read(src string) (v1.Image, error) {
 	}
 
 	if err := validate.Image(img); err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid OCI layout format", digest)
+		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid image index format", digest)
 	}
 
 	return img, nil
+}
+
+// ReadIndex reads a OCI image layout or legacy image index into a ImageIndex object.
+// The image in the given path <src> follows the OCI Image Layout or the legacy image layout (outputted by container_pull).
+// (https://github.com/opencontainers/image-spec/blob/master/image-layout.md#oci-image-layout-specification)
+// Specifically, <src> must contains "index.json" that servers as an entrypoint for the contained image for a OCI layout. <src> must contains manifest.json, config.json and a digest file for a legacy image layout.
+func ReadIndex(src, format string) (v1.ImageIndex, error) {
+	if format == "oci" {
+		idx, err := layout.ImageIndexFromPath(src)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to read OCI image index from %s", src)
+		}
+		return idx, nil
+	}
+
+	// Read a mm intermediate layout otherwise, expect manifest.json, config.json and digest at src.
+	idx, err := compat.ImageIndexFromPath(src)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to read MM image index from %s", src)
+	}
+
+	return idx, nil
 }

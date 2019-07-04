@@ -70,6 +70,12 @@ def _impl(ctx):
                 found = True
         if not found:
             fail("Did not find an index.json in the image attribute {} specified to {}".format(ctx.attr.image, ctx.label))
+    if ctx.attr.format == "legacy":
+      for f in ctx.files.image:
+          if f.basename == "manifest.json":
+            pusher_args += ["-src", "{index_dir}".format(
+                        index_dir = _get_runfile_path(ctx, f),
+                    )]
     if ctx.attr.format == "docker":
         if len(ctx.files.image) == 0:
             fail("Attribute image {} to {} did not contain an image tarball".format(ctx.attr.image, ctx.label))
@@ -119,6 +125,7 @@ new_container_push = rule(
             values = [
                 "oci",
                 "docker",
+                "legacy",
             ],
             doc = "The form to push: docker or oci, default to 'oci'.",
         ),
