@@ -61,7 +61,7 @@ func (li *layoutImage) RawManifest() ([]byte, error) {
 		return li.rawManifest, nil
 	}
 
-	b, err := ioutil.ReadFile(li.path.path("manifest.json"))
+	b, err := ioutil.ReadFile(li.path.path(manifestFile))
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (li *layoutImage) RawManifest() ([]byte, error) {
 
 // RawConfigFile returns the serialized bytes of config.json metadata.
 func (li *layoutImage) RawConfigFile() ([]byte, error) {
-	return ioutil.ReadFile(li.path.path("config.json"))
+	return ioutil.ReadFile(li.path.path(configFile))
 }
 
 // LayerByDigest returns a Layer for interacting with a particular layer of
@@ -132,7 +132,7 @@ func (b *compressedBlob) Digest() (v1.Hash, error) {
 // Return and open the config file if this compressedBlob is for a config.
 func (b *compressedBlob) Compressed() (io.ReadCloser, error) {
 	if b.index == -1 {
-		return os.Open(b.path.path("config.json"))
+		return os.Open(b.path.path(configFile))
 	}
 	return os.Open(b.path.path(layerFilename(b.index)))
 }

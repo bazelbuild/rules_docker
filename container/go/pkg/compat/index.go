@@ -42,17 +42,17 @@ func ImageIndexFromPath(path string) (v1.ImageIndex, error) {
 // Naively validates this is a valid intermediate layout by checking digest, config.json, and manifest.json exist.
 func FromPath(path string) (Path, error) {
 	var err error
-	_, err = os.Stat(filepath.Join(path, "manifest.json"))
+	_, err = os.Stat(filepath.Join(path, manifestFile))
 	if err != nil {
 		return "", err
 	}
 
-	_, err = os.Stat(filepath.Join(path, "config.json"))
+	_, err = os.Stat(filepath.Join(path, configFile))
 	if err != nil {
 		return "", err
 	}
 
-	_, err = os.Stat(filepath.Join(path, "digest"))
+	_, err = os.Stat(filepath.Join(path, digestFile))
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +78,7 @@ func (i *intermediateLayout) MediaType() (types.MediaType, error) {
 // Digest returns the sha256 hash of this index's manifest.json metadata, an entrypoint for the config and layers.
 func (i *intermediateLayout) Digest() (v1.Hash, error) {
 	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
-	digest, err := ioutil.ReadFile(i.path.path("digest"))
+	digest, err := ioutil.ReadFile(i.path.path(digestFile))
 	if err != nil {
 		fmt.Errorf("Failed to locate SHA256 digest file for image manifest: %v", err)
 	}
@@ -117,7 +117,7 @@ func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
 // RawManifest returns the serialized bytes of manifest.json metadata.
 func (i *intermediateLayout) RawManifest() ([]byte, error) {
 	if i.rawManifest == nil {
-		rawManifest, err := ioutil.ReadFile(i.path.path("manifest.json"))
+		rawManifest, err := ioutil.ReadFile(i.path.path(manifestFile))
 		if err != nil {
 			return nil, err
 		}

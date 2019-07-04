@@ -25,6 +25,11 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
+// Expected metadata files in legacy layout.
+const manifestFile string = "manifest.json"
+const configFile string = "config.json"
+const digestFile string = "digest"
+
 // Path represents an MM intermediate image layout rooted in a file system path
 type Path string
 
@@ -36,7 +41,7 @@ func (l Path) path(elem ...string) string {
 
 // ImageIndex returns a ImageIndex for the Path.
 func (l Path) ImageIndex() (v1.ImageIndex, error) {
-	rawManifest, err := ioutil.ReadFile(l.path("manifest.json"))
+	rawManifest, err := ioutil.ReadFile(l.path(manifestFile))
 	if err != nil {
 		return nil, err
 	}
