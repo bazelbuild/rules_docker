@@ -61,8 +61,8 @@ def repositories():
         http_file(
             name = "go_puller",
             executable = True,
-            sha256 = "facb3d0c81a1b0a524aebcce3e9d8343c239d75b50124ce72d8b07790a7a2e82",
-            urls = [("https://storage.googleapis.com/rules_docker/9e1d2fbd0a19a29383e0c2998d77e4e73c32a432/puller-linux-amd64")],
+            sha256 = "a8db53e1488cb51794be0be9a850310d307ed13eed9b3ed3a5abf78c3e6f6091",
+            urls = [("https://storage.googleapis.com/rules_docker/05fcf7fec410dccf866e0cb47afb332598539896/puller-linux-amd64")],
         )
 
     if "puller" not in excludes:
@@ -88,8 +88,8 @@ def repositories():
         http_file(
             name = "loader",
             executable = True,
-            sha256 = "30bbb44eae9651a55d07fb9d39f58936fe3d9817780e1887df07d7beb21ef5ad",
-            urls = [("https://storage.googleapis.com/rules_docker/a08df0ab2a345cd07359bb69672dcf21867e50e5/loader-linux-amd64")],
+            sha256 = "5903d2d278ebfde2466a736593defb25b40b4eccfc8d0949948a2d58de57d784",
+            urls = [("https://storage.googleapis.com/rules_docker/432706d99825d271ead68f9fb9b66a83c1f00cb9/loader-linux-amd64")],
         )
 
     if "containerregistry" not in excludes:

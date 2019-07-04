@@ -43,10 +43,9 @@ _container_pull_attrs = {
         values = [
             "oci",
             "docker",
-            "both",
         ],
-        doc = "(optional) The format of the image to be pulled, default to 'OCI' (OCI Layout Format), " +
-              "option for 'Docker' (tarball compatible with `docker load` command) or 'Both' (pulling both OCI format and a tarball).",
+        doc = "(optional) The format of the image to be pulled, default to 'OCI' (OCI Layout Format) " +
+              "or option for 'Docker' (tarball compatible with `docker load` command).",
     ),
     "os": attr.string(
         default = "linux",
@@ -101,17 +100,15 @@ container_import(
     name = "image",
     config = "config.json",
     layers = glob(["*.tar.gz"]),
-)
+)""")
 
-exports_files(["image.tar"])""")
+        # Currently exports all files pulled by the binary and will not be depended on by other rules_docker rules.
+        repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**"]))""")
     else:
         repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 exports_files(["image.tar"])""")
- 
-    # Currently exports all files pulled by the binary and will not be depended on by other rules_docker rules.
-    repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
-
-exports_files(glob(["**"]))""")
 
     args = [
         repository_ctx.path(repository_ctx.attr._puller),

@@ -73,13 +73,6 @@ new_container_pull(
     tag = "3.8",
 )
 
-new_container_pull(
-    name = "new_distroless_base_both",
-    format = "both",
-    registry = "gcr.io",
-    repository = "distroless/base",
-)
-
 load(
     "//container:container.bzl",
     "container_load",

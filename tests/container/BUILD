@@ -416,29 +416,33 @@ file_test(
     regexp = ".*",
 )
 
-file_test(
-    name = "new_distroless_base_both_test_image_tar",
-    file = "@new_distroless_base_both//image:image.tar",
-    regexp = ".*",
+container_image(
+    name = "new_alpine_linux_armv6_image_tar_test",
+    base = "@new_alpine_linux_armv6_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
 )
 
 file_test(
-    name = "new_distroless_base_both_test_oci_layout",
+    name = "new_alpine_linux_armv6_oci_test_oci_layout",
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_distroless_base_both//image-oci:oci-layout",
+    file = "@new_alpine_linux_armv6//image-oci:oci-layout",
 )
 
+# Testing for presence of symlinks
 file_test(
-    name = "new_distroless_base_both_test_config_symlink",
-    file = "@new_distroless_base_both//image:config.json",
+    name = "new_distroless_base_oci_test_config_symlink",
+    file = "@new_alpine_linux_armv6//image:config.json",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_distroless_base_both_test_targz_symlink",
-    file = "@new_distroless_base_both//image:0.tar.gz",
+    name = "new_distroless_base_oci_test_1targz_symlink",
+    file = "@new_alpine_linux_armv6//image:0.tar.gz",
     regexp = ".*",
 )
 

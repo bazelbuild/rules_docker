@@ -42,7 +42,7 @@ exports_files(glob(["**"]))""")
     result = repository_ctx.execute([
         repository_ctx.path(repository_ctx.attr._loader),
         "-directory",
-        repository_ctx.path("image-oci"),
+        repository_ctx.path(""),
         "-tarball",
         repository_ctx.path(repository_ctx.attr.file),
     ])
@@ -58,8 +58,7 @@ new_container_load = repository_rule(
         ),
         "_loader": attr.label(
             executable = True,
-            default = Label("@loader//:loader"),
-            # default = Label("@loader//file:downloaded"),
+            default = Label("@loader//file:downloaded"),
             cfg = "host",
         ),
     },
