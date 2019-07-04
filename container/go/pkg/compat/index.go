@@ -115,7 +115,7 @@ func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
 // RawManifest returns the serialized bytes of manifest.json metadata.
 func (i *intermediateLayout) RawManifest() ([]byte, error) {
 	if i.rawManifest == nil {
-		rawManifest, err := ioutil.ReadFile(i.path("manifest.json"))
+		rawManifest, err := ioutil.ReadFile(i.path.path("manifest.json"))
 		if err != nil {
 			return nil, err
 		}
