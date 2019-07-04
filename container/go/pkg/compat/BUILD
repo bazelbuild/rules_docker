@@ -15,3 +15,16 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
     ],
 )
+
+filegroup(
+    name = "legacy_test_index1",
+    srcs = [
+        "//container/go/pkg/compat/testdata/test_index1:000.tar.gz",
+        "//container/go/pkg/compat/testdata/test_index1:001.tar.gz",
+        "//container/go/pkg/compat/testdata/test_index1:002.tar.gz",
+        "//container/go/pkg/compat/testdata/test_index1:config.json",
+        "//container/go/pkg/compat/testdata/test_index1:digest",
+        "//container/go/pkg/compat/testdata/test_index1:manifest.json",
+    ],
+    visibility = ["//visibility:public"],
+)
