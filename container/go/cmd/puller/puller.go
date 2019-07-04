@@ -108,17 +108,17 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 
 	// Image file to write to disk, either a tarball, OCI layout, or both.
 	ociPath := path.Join(dstPath, ociImageDir)
-	tarPath := path.Join(dstPath, imageDir)
+	legacyPath := path.Join(dstPath, imageDir)
 	switch format {
 	case "docker":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(tarPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", tarPath, err)
+		if err := tarball.WriteToFile(path.Join(legacyPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", legacyPath, err)
 		}
 	case "both":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(tarPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", tarPath, err)
+		if err := tarball.WriteToFile(path.Join(legacyPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", legacyPath, err)
 		}
 		if err := oci.Write(img, ociPath); err != nil {
 			log.Fatalf("failed to write image to %q: %v", ociPath, err)
@@ -130,7 +130,7 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 	}
 
 	if format != "docker" {
-		if err := compat.LegacyFromOCIImage(img, ociPath, tarPath); err != nil {
+		if err := compat.LegacyFromOCIImage(img, ociPath, legacyPath); err != nil {
 			return errors.Wrapf(err, "failed to generate symbolic links to pulled image at %s", dstPath)
 		}
 	}
