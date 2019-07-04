@@ -412,13 +412,13 @@ file_test(
 # Merely testing for the presence of the pulled image.tar for now.
 file_test(
     name = "new_alpine_linux_armv6_tar_test_image_tar",
-    file = "@new_alpine_linux_armv6_tar//image-oci:image.tar",
+    file = "@new_alpine_linux_armv6_tar//image:image.tar",
     regexp = ".*",
 )
 
 file_test(
     name = "new_distroless_base_both_test_image_tar",
-    file = "@new_distroless_base_both//image-oci:image.tar",
+    file = "@new_distroless_base_both//image:image.tar",
     regexp = ".*",
 )
 
