@@ -27,23 +27,33 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Directory containing the pulled OCI image artifacts without modification.
-const OCIImageDir = "image-oci"
-
-// Directory containing actual images (symlinks or image.tar) to be used by container_import as the image.
-const ImageDir = "image"
-
 // Extension for layers and config files that are made symlinks
-const targz = ".tar.gz"
+const targzExt = ".tar.gz"
 const configExt = "config.json"
+
+func generateSymlinks(src, dst string) error {
+	if _, err := ospkg.Stat(dst); err != nil {
+		return errors.Wrapf(err, "layer file does not exist at %s", dst)
+	}
+
+	if _, err := ospkg.Lstat(src); err == nil {
+		if err = ospkg.Remove(src); err != nil {
+			return errors.Wrapf(err, "failed to remove the file at %s", src)
+		}
+	}
+	if err := ospkg.Symlink(dst, src); err != nil {
+		return errors.Wrapf(err, "failed to create symbolic link from %s to %s", src, dst)
+	}
+
+	return nil
+}
 
 // LegacyFromOCIImage creates predictable symbolic links to the config.json and layer .tar.gz files
 // so that they may be easily consumed by container_import targets.
 // The dstPath is the top level directory in which the puller will create symlinks inside an image/ directory
 // pointing to actual pulled OCI image artifacts in image-oci/ directory.
-func LegacyFromOCIImage(img v1.Image, dstPath string) error {
-	targetDir := path.Join(dstPath, OCIImageDir, "blobs/sha256")
-	symlinkDir := path.Join(dstPath, ImageDir)
+func LegacyFromOCIImage(img v1.Image, ociPath, symlinkDir string) error {
+	targetDir := path.Join(ociPath, "blobs/sha256")
 
 	// symlink for config.json, which is an expected attribute of container_import
 	// so we must rename the OCI layout's config file (named as the sha256 digest) under blobs/sha256
@@ -52,18 +62,9 @@ func LegacyFromOCIImage(img v1.Image, dstPath string) error {
 		return errors.Wrap(err, "failed to get the config file's hash information for image")
 	}
 	configPath := path.Join(targetDir, config.Hex)
-	if _, err = ospkg.Stat(configPath); err != nil {
-		return errors.Wrapf(err, "config file does not exist at %s", configPath)
-	}
-
 	dstLink := path.Join(symlinkDir, configExt)
-	if _, err := ospkg.Lstat(dstLink); err == nil {
-		if err = ospkg.Remove(dstLink); err != nil {
-			return errors.Wrapf(err, "failed to remove the file at %s", dstLink)
-		}
-	}
-	if err := ospkg.Symlink(configPath, dstLink); err != nil {
-		return errors.Wrapf(err, "failed to create symbolic link from %s to config.json at %s", dstLink, configPath)
+	if err = generateSymlinks(dstLink, configPath); err != nil {
+		return errors.Wrap(err, "failed to generate config.json symlinks")
 	}
 
 	// symlink for the layers.
@@ -79,19 +80,10 @@ func LegacyFromOCIImage(img v1.Image, dstPath string) error {
 		}
 
 		layerPath = path.Join(targetDir, layerDigest.Hex)
-		if _, err = ospkg.Stat(layerPath); err != nil {
-			return errors.Wrapf(err, "layer file does not exist at %s", layerPath)
-		}
-
-		out := strconv.Itoa(i) + targz
+		out := strconv.Itoa(i) + targzExt
 		dstLink = path.Join(symlinkDir, out)
-		if _, err := ospkg.Lstat(dstLink); err == nil {
-			if err = ospkg.Remove(dstLink); err != nil {
-				return errors.Wrapf(err, "failed to remove the file at %s", dstLink)
-			}
-		}
-		if err = ospkg.Symlink(layerPath, dstLink); err != nil {
-			return errors.Wrapf(err, "failed to create symbolic link from %s to layer at %s", dstLink, layerPath)
+		if err = generateSymlinks(dstLink, layerPath); err != nil {
+			return errors.Wrap(err, "failed to generate layers symlinks")
 		}
 	}
 
