@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////////////
 // This utility works with the new_container_pull and new_container_load targets
 // to generate the appropriate pseudo-intermediate format that is compatible
-// with container_import rule.
+// with the rules_docker container_import rule.
 
 package compat
 
@@ -31,6 +31,7 @@ import (
 const targzExt = ".tar.gz"
 const configExt = "config.json"
 
+// generateSymlinks safely generates a symbolic link from src to dst.
 func generateSymlinks(src, dst string) error {
 	if _, err := ospkg.Stat(dst); err != nil {
 		return errors.Wrapf(err, "layer file does not exist at %s", dst)
@@ -56,7 +57,7 @@ func LegacyFromOCIImage(img v1.Image, ociPath, symlinkDir string) error {
 	targetDir := path.Join(ociPath, "blobs/sha256")
 
 	// symlink for config.json, which is an expected attribute of container_import
-	// so we must rename the OCI layout's config file (named as the sha256 digest) under blobs/sha256
+	// so we must rename the OCI layout's config file (named as the sha256 digest) under blobs/sha256.
 	config, err := img.ConfigName()
 	if err != nil {
 		return errors.Wrap(err, "failed to get the config file's hash information for image")
@@ -67,7 +68,9 @@ func LegacyFromOCIImage(img v1.Image, ociPath, symlinkDir string) error {
 		return errors.Wrap(err, "failed to generate config.json symlinks")
 	}
 
-	// symlink for the layers.
+	// symlink for the tarred layers pulled into OCI layout to x.tar.gz, which is an expected
+	// attribute of container_import, so we must rename the layer current named after its sha256
+	// digest under blobs/sha256.
 	layers, err := img.Layers()
 	if err != nil {
 		return errors.Wrap(err, "unable to get layers from image")
