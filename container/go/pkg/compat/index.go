@@ -10,6 +10,7 @@ import (
 )
 
 // ImageIndexFromPath is a convenience function which constructs a Path and returns its v1.ImageIndex.
+// This expects a intermediate format with manifest.json, config.json and digest exist in the given <path>.
 func ImageIndexFromPath(path string) (v1.ImageIndex, error) {
 	lp, err := FromPath(path)
 	if err != nil {
@@ -18,19 +19,24 @@ func ImageIndexFromPath(path string) (v1.ImageIndex, error) {
 	return lp.ImageIndex()
 }
 
+// This intermediate layout implements v1.ImageIndex.
 type intermediateLayout struct {
+	// path of this layout, with helper functions for finding the full directory. 
 	path        Path
+	// rawManifest is the raw bytes of manifest.json file. 
 	rawManifest []byte
 }
 
-// MediaType of this image's manifest.
+// MediaType of this image index's manifest.
 func (i *intermediateLayout) MediaType() (types.MediaType, error) {
+	// TODO: This image index does not follow the OCI standards, but the contents are compatible indeed.
+	// We will have this image index as an OCIImageIndex type for now, since this is only a intermediate format.
 	return types.OCIImageIndex, nil
 }
 
-// Digest returns the sha256 of this index's manifest.
+// Digest returns the sha256 hash of this index's manifest.json metadata, an entrypoint for the config and layers.
 func (i *intermediateLayout) Digest() (v1.Hash, error) {
-	// Read and parse the manifest digest hash, expecting a file named digest.
+	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory. 
 	digest, err := ioutil.ReadFile(i.path.path("digest"))
 	if err != nil {
 		fmt.Errorf("Failed to locate SHA256 digest file for image manifest: %v", err)
@@ -41,6 +47,7 @@ func (i *intermediateLayout) Digest() (v1.Hash, error) {
 
 // IndexManifest returns this image index's manifest object.
 func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
+	// Parse raw manifest into a manifest struct.
 	manifest, err := partial.Manifest(i)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse raw manifest, please check if a correctly formatted manifest.json exists %v", err)
@@ -50,6 +57,8 @@ func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
 		return nil, fmt.Errorf("Failed to parse image manifest hash, please check if a digest file exists in the directory and it is formatted as {Algorithm}:{Hash} %v", err)
 	}
 
+	// We are missing index.json in this intermediate format.
+	// Since index.json is represented in IndexManifest structure, we will populate this struct with parsed info. 
 	index := v1.IndexManifest{
 		SchemaVersion: manifest.SchemaVersion,
 		Manifests: []v1.Descriptor{
@@ -64,14 +73,22 @@ func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
 	return &index, nil
 }
 
-// RawManifest returns the serialized bytes of IndexManifest().
+// RawManifest returns the serialized bytes of manifest.json metadata.
 func (i *intermediateLayout) RawManifest() ([]byte, error) {
+	if i.rawManifest == nil {
+		rawManifest, err := ioutil.ReadFile(i.path("manifest.json"))
+		if err != nil {
+			return nil, err
+		}
+		i.rawManifest = rawManifest
+	}
+	
 	return i.rawManifest, nil
 }
 
 // Image returns a v1.Image that this ImageIndex references.
 func (i *intermediateLayout) Image(h v1.Hash) (v1.Image, error) {
-	// Look up the digest in our manifest first to return a better error.
+	// Iterate through the list of manifests and get the manifest descriptor with digest h.
 	desc, err := i.findDescriptor(h)
 	if err != nil {
 		return nil, err
@@ -85,9 +102,11 @@ func (i *intermediateLayout) Image(h v1.Hash) (v1.Image, error) {
 		path: i.path,
 		desc: *desc,
 	}
+
 	return partial.CompressedToImage(img)
 }
 
+// findDescriptor looks for the manifest with digest h in our "index.json" struct and returns its descriptor. 
 func (i *intermediateLayout) findDescriptor(h v1.Hash) (*v1.Descriptor, error) {
 	im, err := i.IndexManifest()
 	if err != nil {
@@ -103,8 +122,9 @@ func (i *intermediateLayout) findDescriptor(h v1.Hash) (*v1.Descriptor, error) {
 	return nil, fmt.Errorf("could not find descriptor in index: %s", h)
 }
 
-// ImageIndex returns a v1.ImageIndex that this ImageIndex references.
+// ImageIndex constructs a v1.ImageIndex that this ImageIndex references.
 func (i *intermediateLayout) ImageIndex(h v1.Hash) (v1.ImageIndex, error) {
+	// Iterate through the list of manifests and get the manifest descriptor with digest h.
 	desc, err := i.findDescriptor(h)
 	if err != nil {
 		return nil, err
@@ -120,6 +140,7 @@ func (i *intermediateLayout) ImageIndex(h v1.Hash) (v1.ImageIndex, error) {
 	}, nil
 }
 
+// isExpectedMediaType returns whether the given mediatype mt is allowed. 
 func isExpectedMediaType(mt types.MediaType, expected ...types.MediaType) bool {
 	for _, allowed := range expected {
 		if mt == allowed {
