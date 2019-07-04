@@ -126,8 +126,8 @@ def _impl(ctx):
     ]
     docker_run_flags = ["--entrypoint", "''"]
 
-    img_outs = ctx.actions.declare_file(name + "_test_img_outs")
-    img_outs_repro = ctx.actions.declare_file(name + "_test_img_outs_repro")
+    img_outs = ctx.outputs.img_outs
+    img_outs_repro = ctx.outputs.img_outs_repro
 
     # Build and extract test_image inside a container.
     _extract.implementation(
@@ -188,17 +188,17 @@ container_repro_test = rule(
         ),
         "src_project_files": attr.label(
             allow_files = True,
+            mandatory = True,
             doc = "Files of the source project where the test_image target " +
                   "lives. The WORKSPACE file must be specified and is " +
                   "assumed to be at the root of the project.",
-            mandatory = True,
         ),
         "base": attr.label(
             allow_files = container_filetype,
+            mandatory = True,
             doc = "An image target compatible with the `base` attribute of " +
                   "the container_image rule to build and reproduce the " +
                   "test_image in.",
-            mandatory = True,
         ),
         "container_diff_args": attr.string_list(
             default = [
@@ -224,8 +224,8 @@ container_repro_test = rule(
                   "image comparison test.",
         ),
         "_extract_tpl": attr.label(
-            allow_single_file = True,
             default = Label("@base_images_docker//util:extract.sh.tpl"),
+            allow_single_file = True,
         ),
         "_image_id_extractor": attr.label(
             allow_single_file = True,
@@ -235,6 +235,8 @@ container_repro_test = rule(
     implementation = _impl,
     outputs = dicts.add(_container.image.outputs, {
         "test_script": "%{name}.test",
+        "img_outs": "%{name}_test_img_outs",
+        "img_outs_repro": "%{name}_test_img_outs_repro",
     }),
     test = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
