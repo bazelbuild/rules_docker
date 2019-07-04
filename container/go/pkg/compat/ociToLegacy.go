@@ -31,7 +31,7 @@ import (
 const targzExt = ".tar.gz"
 const configExt = "config.json"
 
-// generateSymlinks safely generates a symbolic link from src to dst.
+// generateSymlinks safely generates a symbolic link at dst pointing to src.
 func generateSymlinks(src, dst string) error {
 	if _, err := ospkg.Stat(src); err != nil {
 		return errors.Wrapf(err, "source file does not exist at %s", src)
@@ -43,7 +43,7 @@ func generateSymlinks(src, dst string) error {
 		}
 	}
 	if err := ospkg.Symlink(src, dst); err != nil {
-		return errors.Wrapf(err, "failed to create symbolic link from %s to %s", src, dst)
+		return errors.Wrapf(err, "failed to create symbolic link from %s to %s", dst, src)
 	}
 
 	return nil
@@ -86,7 +86,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		out := strconv.Itoa(i) + targzExt
 		dstLink = path.Join(dstDir, out)
 		if err = generateSymlinks(layerPath, dstLink); err != nil {
-			return errors.Wrap(err, "failed to generate layers symlinks")
+			return errors.Wrap(err, "failed to generate legacy symlink for layer %d with digest %s", i, layerDigest)
 		}
 	}
 
