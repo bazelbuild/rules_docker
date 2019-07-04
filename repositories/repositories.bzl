@@ -219,6 +219,14 @@ py_library(
             urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-darwin-amd64"],
         )
 
+    if "container_diff" not in excludes:
+        http_file(
+            name = "container_diff",
+            executable = True,
+            sha256 = "65b10a92ca1eb575037c012c6ab24ae6fe4a913ed86b38048781b17d7cf8021b",
+            urls = ["https://storage.googleapis.com/container-diff/v0.15.0/container-diff-linux-amd64"],
+        )
+
     # For bzl_library.
     if "bazel_skylib" not in excludes:
         http_archive(

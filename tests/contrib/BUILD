@@ -21,6 +21,7 @@ load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 load("//contrib:idd.bzl", "idd")
 load("//contrib:push-all.bzl", "docker_push")
 load("//contrib:rename_image.bzl", "rename_image")
+load("//contrib:repro_test.bzl", "container_repro_test")
 load("//contrib:test.bzl", "container_test")
 load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 
@@ -165,3 +166,26 @@ docker_push(
     "kaniko_latest",
     "kaniko_debug",
 ]]
+
+container_repro_test(
+    name = "set_cmd_repro_test",
+    base = "@bazel_latest//image",
+    src_project_files = "//:src_project",
+    test_image = "//tests/container:set_cmd",
+)
+
+container_repro_test(
+    name = "derivative_with_volume_repro_test",
+    base = "@bazel_latest//image",
+    container_diff_args = [
+        "--type=history",
+        "--type=file",
+        "--type=size",
+        "--type=rpm",
+        "--type=apt",
+        "--type=pip",
+        "--type=node",
+    ],
+    src_project_files = "//:src_project",
+    test_image = "//testdata:derivative_with_volume",
+)
