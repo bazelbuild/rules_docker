@@ -10,7 +10,6 @@ load("//docker/package_managers:install_pkgs.bzl", "install_pkgs")
 load("//docker/package_managers:apt_key.bzl", "add_apt_key")
 load("//contrib:test.bzl", "container_test")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
-load("//docker/package_managers:bootstrap_image.bzl", "bootstrap_image_macro")
 
 download_pkgs(
     name = "test_download_pkgs",
@@ -101,27 +100,6 @@ container_test(
     configs = [":gpg_test.yaml"],
     image = ":gpg_image",
 )
-
-#FAILING
-#bootstrap_image_macro(
-#    name = "bootstrap_ubuntu",
-#    date = "20190301",
-#    image_tar = "@ubuntu1604//:ubuntu1604_vanilla.tar",
-#    output_image_name = "ubuntu",
-#    packages = [
-#        "curl",
-#        "netbase",
-#    ],
-#    store_location = "ubuntu/16_0_4/builds",
-#)
-#NOT EXECUTED YET
-#rule_test(
-#    name = "test_bootstrap_ubuntu",
-#    generates = [
-#        "bootstrap_ubuntu.tar",
-#    ],
-#    rule = "bootstrap_ubuntu",
-#)
 
 # Testing reproducibility of install_pkgs
 
