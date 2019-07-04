@@ -217,12 +217,6 @@ container_repro_test = rule(
             cfg = "target",
             executable = True,
         ),
-        "_test_tpl": attr.label(
-            default = Label("//contrib:cmp_images.sh.tpl"),
-            allow_single_file = True,
-            doc = "A template to expand a bash script to run a complete " +
-                  "image comparison test.",
-        ),
         "_extract_tpl": attr.label(
             default = Label("@base_images_docker//util:extract.sh.tpl"),
             allow_single_file = True,
@@ -231,12 +225,18 @@ container_repro_test = rule(
             default = "//contrib:extract_image_id.py",
             allow_single_file = True,
         ),
+        "_test_tpl": attr.label(
+            default = Label("//contrib:cmp_images.sh.tpl"),
+            allow_single_file = True,
+            doc = "A template to expand a bash script to run a complete " +
+                  "image comparison test.",
+        ),
     }),
     implementation = _impl,
     outputs = dicts.add(_container.image.outputs, {
-        "test_script": "%{name}.test",
         "img_outs": "%{name}_test_img_outs",
         "img_outs_repro": "%{name}_test_img_outs_repro",
+        "test_script": "%{name}.test",
     }),
     test = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
