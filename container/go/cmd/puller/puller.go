@@ -45,7 +45,7 @@ import (
 var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
 	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify the directory to save the tarball. The tarball is named as image.tar.")
-	format          = flag.String("format", "", "Format to pull image from remote registry: If 'docker', image is pulled as tarball. If 'oci' (default), image will be pulled as a collection of files in OCI layout. Specify 'both' if both formats are needed.")
+	format          = flag.String("format", "", "Format to pull image from remote registry: If 'docker', image is pulled as tarball. If 'oci' (default), image will be pulled as a collection of files in OCI layout.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	cachePath       = flag.String("cache", "", "Image's files cache directory.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
@@ -106,7 +106,7 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
 
-	// Image file to write to disk, either a tarball, OCI layout, or both.
+	// Image file to write to disk, either a tarball or OCI layout.
 	ociPath := path.Join(dstPath, ociImageDir)
 	legacyPath := path.Join(dstPath, imageDir)
 	switch format {
@@ -114,14 +114,6 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 		tag := getTag(ref)
 		if err := tarball.WriteToFile(path.Join(legacyPath, "image.tar"), tag, img); err != nil {
 			log.Fatalf("failed to write image tarball to %q: %v", legacyPath, err)
-		}
-	case "both":
-		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(legacyPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", legacyPath, err)
-		}
-		if err := oci.Write(img, ociPath); err != nil {
-			log.Fatalf("failed to write image to %q: %v", ociPath, err)
 		}
 	default:
 		if err := oci.Write(img, ociPath); err != nil {
