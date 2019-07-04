@@ -80,13 +80,13 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		layerDigest, err := layer.Digest()
 		if err != nil {
 			return errors.Wrap(err, "failed to fetch the layer's digest")
-		}
+	}
 
 		layerPath = path.Join(targetDir, layerDigest.Hex)
 		out := strconv.Itoa(i) + targzExt
 		dstLink = path.Join(dstDir, out)
 		if err = generateSymlinks(layerPath, dstLink); err != nil {
-			return errors.Wrap(err, "failed to generate legacy symlink for layer %d with digest %s", i, layerDigest)
+			return errors.Wrapf(err, "failed to generate legacy symlink for layer %d with digest %s", i, layerDigest)
 		}
 	}
 
