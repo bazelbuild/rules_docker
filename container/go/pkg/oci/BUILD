@@ -56,9 +56,3 @@ filegroup(
     srcs = glob(["testdata/test_index1/**"]),
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "mm_test_index",
-    srcs = glob(["testdata/image/**"]),
-    visibility = ["//visibility:public"],
-)
