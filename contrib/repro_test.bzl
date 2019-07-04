@@ -159,11 +159,11 @@ def _impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._test_tpl,
         substitutions = {
+            "%{container_diff_args}": " ".join(ctx.attr.container_diff_args),
+            "%{container_diff_tool}": diff_tool_exec.short_path,
             "%{img1_path}": img_outs.short_path,
             "%{img2_path}": img_outs_repro.short_path,
             "%{img_name}": test_img_label.name,
-            "%{container_diff_tool}": diff_tool_exec.short_path,
-            "%{container_diff_args}": " ".join(ctx.attr.container_diff_args),
         },
         output = ctx.outputs.test_script,
         is_executable = True,
@@ -181,24 +181,24 @@ def _impl(ctx):
 container_repro_test = rule(
     attrs = dicts.add(_container.image.attrs, {
         "test_image": attr.label(
-            mandatory = True,
             doc = "A container_image target to test for reproducibility. " +
                   "Must be a label relative to the root of the project and " +
                   "cannot be relative to the container_repro_test target.",
+            mandatory = True,
         ),
         "src_project_files": attr.label(
             allow_files = True,
-            mandatory = True,
             doc = "Files of the source project where the test_image target " +
                   "lives. The WORKSPACE file must be specified and is " +
                   "assumed to be at the root of the project.",
+            mandatory = True,
         ),
         "base": attr.label(
             allow_files = container_filetype,
-            mandatory = True,
             doc = "An image target compatible with the `base` attribute of " +
                   "the container_image rule to build and reproduce the " +
                   "test_image in.",
+            mandatory = True,
         ),
         "container_diff_args": attr.string_list(
             default = [
@@ -212,24 +212,24 @@ container_repro_test = rule(
                   "for more info.",
         ),
         "_container_diff_tool": attr.label(
-            default = Label("@container_diff//file"),
             allow_single_file = True,
             cfg = "target",
+            default = Label("@container_diff//file"),
             executable = True,
         ),
         "_test_tpl": attr.label(
-            default = Label("//contrib:cmp_images.sh.tpl"),
             allow_single_file = True,
+            default = Label("//contrib:cmp_images.sh.tpl"),
             doc = "A template to expand a bash script to run a complete " +
                   "image comparison test.",
         ),
         "_extract_tpl": attr.label(
-            default = Label("@base_images_docker//util:extract.sh.tpl"),
             allow_single_file = True,
+            default = Label("@base_images_docker//util:extract.sh.tpl"),
         ),
         "_image_id_extractor": attr.label(
-            default = "//contrib:extract_image_id.py",
             allow_single_file = True,
+            default = "//contrib:extract_image_id.py",
         ),
     }),
     implementation = _impl,
