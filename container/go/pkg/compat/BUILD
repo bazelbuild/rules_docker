@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ###
+# Build file for new utility package that handles conversions between the new OCI image layout
+# and the old intermediate format.
 
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
@@ -19,6 +22,7 @@ go_library(
     srcs = [
         "image.go",
         "index.go",
+        "ociToLegacy.go",
         "path.go",
     ],
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/compat",
@@ -27,5 +31,6 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/partial:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
     ],
 )

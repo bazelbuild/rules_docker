@@ -32,6 +32,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
+	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -59,6 +60,12 @@ var (
 // that the image was (probably) not tagged with this, but avoids
 // applying the ":latest" tag which might be misleading.
 const iWasADigestTag = "i-was-a-digest"
+
+// Directory containing the pulled OCI image artifacts without modification.
+const ociImageDir = "image-oci"
+
+// Directory containing actual images (symlinks or image.tar) to be used by container_import as the image.
+const imageDir = "image"
 
 // getTag parses the reference inside the name flag and returns the apt tag.
 // WriteToFile requires a tag to write to the tarball, but may have been given a digest,
@@ -100,23 +107,31 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 	}
 
 	// Image file to write to disk, either a tarball, OCI layout, or both.
+	ociPath := path.Join(dstPath, ociImageDir)
+	legacyPath := path.Join(dstPath, imageDir)
 	switch format {
 	case "docker":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
+		if err := tarball.WriteToFile(path.Join(legacyPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", legacyPath, err)
 		}
 	case "both":
 		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(dstPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", dstPath, err)
+		if err := tarball.WriteToFile(path.Join(legacyPath, "image.tar"), tag, img); err != nil {
+			log.Fatalf("failed to write image tarball to %q: %v", legacyPath, err)
 		}
-		if err := oci.Write(img, dstPath); err != nil {
-			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		if err := oci.Write(img, ociPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", ociPath, err)
 		}
 	default:
-		if err := oci.Write(img, dstPath); err != nil {
-			log.Fatalf("failed to write image to %q: %v", dstPath, err)
+		if err := oci.Write(img, ociPath); err != nil {
+			log.Fatalf("failed to write image to %q: %v", ociPath, err)
+		}
+	}
+
+	if format != "docker" {
+		if err := compat.LegacyFromOCIImage(img, ociPath, legacyPath); err != nil {
+			return errors.Wrapf(err, "failed to generate symbolic links to pulled image at %s", dstPath)
 		}
 	}
 
@@ -135,7 +150,7 @@ func main() {
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config
+	// to use it to look for the docker client config.
 	if *clientConfigDir != "" {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
