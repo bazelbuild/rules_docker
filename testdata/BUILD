@@ -214,25 +214,6 @@ container_image(
     mode = "0o644",
 )
 
-# Test new_container_load
-container_image(
-    name = "new_docker_oci_base",
-    base = "@new_pause_tar//image",
-    files = ["foo"],
-    mode = "0o644",
-)
-
-container_image(
-    name = "new_layers_with_docker_oci_base",
-    base = "@new_ubuntu1604//image",
-    files = ["foo"],
-    layers = [
-        ":files_in_layer",
-        ":tars_in_layer",
-    ],
-    mode = "0o644",
-)
-
 # TODO(mattmoor): Test scalar entrypoint
 container_image(
     name = "base_with_entrypoint",

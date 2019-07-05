@@ -74,12 +74,6 @@ new_container_pull(
 )
 
 new_container_pull(
-    name = "distroless_cc",
-    registry = "gcr.io",
-    repository = "distroless/cc",
-)
-
-new_container_pull(
     name = "new_alpine_linux_amd64",
     registry = "index.docker.io",
     repository = "library/alpine",
@@ -109,28 +103,6 @@ new_container_pull(
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
-)
-
-new_container_pull(
-    name = "new_k8s_pause_arm64",
-    architecture = "arm64",
-    registry = "k8s.gcr.io",
-    repository = "pause",
-    tag = "3.1",
-)
-
-new_container_pull(
-    name = "new_distroless_fixed_id",
-    digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
-    registry = "gcr.io",
-    repository = "distroless/base",
-)
-
-new_container_pull(
-    name = "new_distroless_fixed_id_2",
-    digest = "sha256:0268d76902d552257aa68b5f5d55ba8a37db92b3fed9c1cb222158732231b513",
-    registry = "gcr.io",
-    repository = "distroless/base",
 )
 
 load(
@@ -166,22 +138,6 @@ load(
 new_container_load(
     name = "new_pause_tar",
     file = "//testdata:pause.tar",
-)
-
-# Images for testing new_container_load
-new_container_pull(
-    name = "new_ubuntu1604",
-    registry = "l.gcr.io",
-    repository = "google/ubuntu1604",
-    tag = "latest",
-)
-
-new_container_pull(
-    name = "new_ubuntu1604_tar",
-    format = "docker",
-    registry = "l.gcr.io",
-    repository = "google/ubuntu1604",
-    tag = "latest",
 )
 
 container_pull(

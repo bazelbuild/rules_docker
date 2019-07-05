@@ -607,7 +607,7 @@ file_test(
 file_test(
     name = "new_pause_tar_test_config_symlink",
     file = "@new_pause_tar//image:config.json",
-    regexp = ".*",
+    regexp = "{\"architecture\":\"amd64\",.*",
 )
 
 file_test(

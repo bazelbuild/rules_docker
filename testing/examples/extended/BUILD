@@ -17,7 +17,7 @@ load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
 container_image(
     name = "extended_alpine",
-    base = "@new_alpine_linux_amd64//image",
+    base = "@alpine_linux_amd64//image",
     cmd = ["World"],
     entrypoint = [
         "echo",

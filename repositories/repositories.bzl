@@ -61,8 +61,8 @@ def repositories():
         http_file(
             name = "go_puller",
             executable = True,
-            sha256 = "a8db53e1488cb51794be0be9a850310d307ed13eed9b3ed3a5abf78c3e6f6091",
-            urls = [("https://storage.googleapis.com/rules_docker/05fcf7fec410dccf866e0cb47afb332598539896/puller-linux-amd64")],
+            sha256 = "c845a96d91c10f1aea328f53c665825190512f84492bcb3a30d596f2090faf82",
+            urls = [("https://storage.googleapis.com/rules_docker/06d9bf4e7205a46ec9b72d2dfb28271baf8968af/puller-linux-amd64")],
         )
 
     if "puller" not in excludes:
