@@ -36,6 +36,7 @@ load(
 container_go_deps()
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+load("@io_bazel_rules_docker//container:new_pull.bzl", "new_container_pull")
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
 load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
 
@@ -59,6 +60,49 @@ pip_repositories()
 pip_import(
     name = "pip_deps",
     requirements = "@base_images_docker//package_managers:requirements-pip.txt",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_amd64",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_amd64_tar",
+    format = "docker",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_ubuntu1604",
+    registry = "l.gcr.io",
+    repository = "google/ubuntu1604",
+    tag = "latest",
+)
+
+new_container_pull(
+    name = "new_ubuntu1604_tar",
+    format = "docker",
+    registry = "l.gcr.io",
+    repository = "google/ubuntu1604",
+    tag = "latest",
+)
+
+new_container_pull(
+    name = "new_bazel_image",
+    registry = "launcher.gcr.io",
+    repository = "google/bazel",
+)
+
+new_container_pull(
+    name = "new_bazel_image_tar",
+    format = "docker",
+    registry = "launcher.gcr.io",
+    repository = "google/bazel",
 )
 
 container_pull(

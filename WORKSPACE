@@ -102,6 +102,7 @@ load(
     "new_container_load",
 )
 
+# To test the new_container_load rule.
 new_container_load(
     name = "new_pause_tar",
     file = "//testdata:pause.tar",
