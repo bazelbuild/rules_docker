@@ -21,9 +21,9 @@ go_library(
     name = "go_default_library",
     srcs = [
         "image.go",
-        "index.go",
         "ociToLegacy.go",
         "path.go",
+        "reader.go",
     ],
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/compat",
     visibility = ["//visibility:public"],
@@ -31,6 +31,7 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/partial:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
 )

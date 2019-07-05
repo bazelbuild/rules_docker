@@ -13,6 +13,7 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
 // Image for intermediate format used in python containerregistry.
+// Adopted from go-containerregistry's layout.image implementation with modification to understand rules_docker's legacy intermediate format.
 // Uses the go-containerregistry API as backend.
 
 package compat
@@ -30,38 +31,47 @@ import (
 )
 
 // This intermediate layout image implements v1.Image, its implementation is very similar to layout.layoutImage.
-type layoutImage struct {
-	// path is the path of this layout, with helper functions for finding the full directory.
-	path Path
-	// desc is the descriptor metadata for this image.
-	desc v1.Descriptor
+type legacyImage struct {
+	// path is the path to the directory containing the legacy image.
+	path string
+	// digest is the sha256 hash for this image.
+	digest v1.Hash
 	// manifestLock protects rawManifest.
 	manifestLock sync.Mutex
 	// rawManifest is the raw bytes of manifest.json file.
 	rawManifest []byte
 }
 
-var _ partial.CompressedImageCore = (*layoutImage)(nil)
+var _ partial.CompressedImageCore = (*legacyImage)(nil)
 
 // MediaType of this image's manifest.
-func (li *layoutImage) MediaType() (types.MediaType, error) {
-	return li.desc.MediaType, nil
+func (li *legacyImage) MediaType() (types.MediaType, error) {
+	manifest, err := li.Manifest()
+	if err != nil {
+		return "", err
+	}
+
+	if !isExpectedMediaType(manifest.MediaType, types.OCIManifestSchema1, types.DockerManifestSchema2) {
+		return "", fmt.Errorf("unexpected media type for %v: %s", li.digest, manifest.MediaType)
+	}
+
+	return manifest.MediaType, nil
 }
 
 // Parses manifest.json into Manifest object. Implements WithManifest for partial.Blobset.
-func (li *layoutImage) Manifest() (*v1.Manifest, error) {
+func (li *legacyImage) Manifest() (*v1.Manifest, error) {
 	return partial.Manifest(li)
 }
 
 // RawManifest returns the serialized bytes of manifest.json metadata.
-func (li *layoutImage) RawManifest() ([]byte, error) {
+func (li *legacyImage) RawManifest() ([]byte, error) {
 	li.manifestLock.Lock()
 	defer li.manifestLock.Unlock()
 	if li.rawManifest != nil {
 		return li.rawManifest, nil
 	}
 
-	b, err := ioutil.ReadFile(li.path.path(manifestFile))
+	b, err := ioutil.ReadFile(Path(li.path, manifestFile))
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +81,13 @@ func (li *layoutImage) RawManifest() ([]byte, error) {
 }
 
 // RawConfigFile returns the serialized bytes of config.json metadata.
-func (li *layoutImage) RawConfigFile() ([]byte, error) {
-	return ioutil.ReadFile(li.path.path(configFile))
+func (li *legacyImage) RawConfigFile() ([]byte, error) {
+	return ioutil.ReadFile(Path(li.path, configFile))
 }
 
 // LayerByDigest returns a Layer for interacting with a particular layer of the image, looking it up by "digest" (the compressed hash).
 // We assume the layer files are named in the format of e.g., 000.tar.gz in this path, following the order they appear in manifest.json.
-func (li *layoutImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error) {
+func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error) {
 	manifest, err := li.Manifest()
 	if err != nil {
 		return nil, err
@@ -86,9 +96,9 @@ func (li *layoutImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 	// The config is a layer in some cases.
 	if h == manifest.Config.Digest {
 		return partial.CompressedLayer(&compressedBlob{
-			path:  li.path,
-			desc:  manifest.Config,
-			index: -1,
+			path:     li.path,
+			desc:     manifest.Config,
+			filename: "config.json",
 		}), nil
 	}
 
@@ -97,10 +107,9 @@ func (li *layoutImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 			switch desc.MediaType {
 			case types.OCILayer, types.DockerLayer:
 				return partial.CompressedToLayer(&compressedBlob{
-					path: li.path,
-					desc: desc,
-					// Passed in index to look for the actual gzipped layer file due to intermediate format naming convention.
-					index: i,
+					path:     li.path,
+					desc:     desc,
+					filename: layerFilename(i),
 				})
 			default:
 				// TODO: We assume everything is a compressed blob, but that might not be true.
@@ -114,12 +123,12 @@ func (li *layoutImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 }
 
 type compressedBlob struct {
-	// path of this compressed blob with helper functions for finding the full directory.
-	path Path
+	// path of this compressed blob.
+	path string
 	// desc is the descriptor of this compressed blob.
 	desc v1.Descriptor
-	// index is the order this compressed layer appears in manifest.json, which will be used to identify its filename. Set to be -1 if this is a config layer.
-	index int
+	// filename is the filename of this blob at the directory.
+	filename string
 }
 
 // The digest of this compressedBlob.
@@ -130,10 +139,8 @@ func (b *compressedBlob) Digest() (v1.Hash, error) {
 // Return and open a layer file (based on its index, e.g., opens 000.tar.gz for layer with index 0) if this is a layer.
 // Return and open the config file if this compressedBlob is for a config.
 func (b *compressedBlob) Compressed() (io.ReadCloser, error) {
-	if b.index == -1 {
-		return os.Open(b.path.path(configFile))
-	}
-	return os.Open(b.path.path(layerFilename(b.index)))
+
+	return os.Open(Path(b.path, b.filename))
 }
 
 // The size of this compressedBlob.

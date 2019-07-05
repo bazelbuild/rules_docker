@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-// Path used for intermediate image index outputted by python containerregistry.
+// Path utils used for legacy image layout outputted by python containerregistry.
 // Uses the go-containerregistry API as backend.
 
 package compat
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
-
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 // Expected metadata files in legacy layout.
@@ -30,42 +28,31 @@ const manifestFile string = "manifest.json"
 const configFile string = "config.json"
 const digestFile string = "digest"
 
-// Path represents an MM intermediate image layout rooted in a file system path
-type Path string
-
-// path returns a full directory of this path concatenated with other <elem> paths.
-func (l Path) path(elem ...string) string {
-	complete := []string{string(l)}
+// Path returns a full directory of this path concatenated with other <elem> paths.
+func Path(path string, elem ...string) string {
+	complete := []string{string(path)}
 	return filepath.Join(append(complete, elem...)...)
-}
-
-// ImageIndex returns a ImageIndex for the Path.
-func (l Path) ImageIndex() (v1.ImageIndex, error) {
-	rawManifest, err := ioutil.ReadFile(l.path(manifestFile))
-	if err != nil {
-		return nil, err
-	}
-
-	idx := &intermediateLayout{
-		path:        l,
-		rawManifest: rawManifest,
-	}
-
-	return idx, nil
-}
-
-// Image returns the image with hash <h> in this Path.
-func (l Path) Image(h v1.Hash) (v1.Image, error) {
-	ii, err := l.ImageIndex()
-	if err != nil {
-		return nil, err
-	}
-
-	return ii.Image(h)
 }
 
 // Return the filename for layer at index i in the layers array in manifest.json.
 // Assume the layers are padded to three digits, e.g., the first layer is named 000.tar.gz.
 func layerFilename(i int) string {
 	return fmt.Sprintf("%03d.tar.gz", i)
+}
+
+// Naively validates a legacy intermediate layout at <path> by checking if digest, config.json, and manifest.json all exist.
+func isValidLegacylayout(path string) (bool, error) {
+	if _, err := os.Stat(filepath.Join(path, manifestFile)); err != nil {
+		return false, err
+	}
+
+	if _, err := os.Stat(filepath.Join(path, configFile)); err != nil {
+		return false, err
+	}
+
+	if _, err := os.Stat(filepath.Join(path, digestFile)); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
