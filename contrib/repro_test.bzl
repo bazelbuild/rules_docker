@@ -17,11 +17,10 @@
 
 This rule builds the given container_image twice in isolation to determine if
 the given image is deterministic.
-It does so by mounting the provided Bazel project files into the image to build
-and reproduce the test image in (being the `base` attribute). Next, it
-sequentially runs two containers and builds the supplied container_image target
-(being `test_image`). For each container run, the rule extracts the output
-files for the test image. Finally, both extracted images are compared.
+It does so by mounting the provided Bazel project files into the 'base' image.
+Next it starts two containers and builds the supplied container_image target
+(being 'image') inside each of the containers. The rule then extracts the
+output files for the test image. Finally, both extracted images are compared.
 A test image is considered to be reproducible when both instances of the same
 image have the same digest and ID. On a mismatch of one of those values, the
 test fails and the container_diff tool
@@ -29,11 +28,12 @@ test fails and the container_diff tool
 produces the summary of their differences.
 
 Args:
-    test_image: A container_image target relative to the project's root to test
-                for determinism.
+    image: A container_image target relative to the project's root to test
+           for determinism.
     src_project_files: A target that exposes the files of the Bazel project to
-                       build the test_image in (e.g. filegroup target).
-    base: An image target to build and reproduce the test_image in.
+                       build the 'image' in (e.g. filegroup target).
+    base: An image target to build and reproduce the 'image 'in.
+          This image must have Bazel and docker installed and available in the PATH.
     container_diff_args: (optional) Args to the container_diff tool as specified here:
                          https://github.com/GoogleContainerTools/container-diff#quickstart
 
@@ -41,19 +41,10 @@ Example:
 
 container_repro_test(
     name = "set_cmd_repro_test",
-    # Note that this target must always be relative to the project's root.
-    test_image = "//tests/container:set_cmd",
+    image = "//tests/container:set_cmd",
     base = "@bazel_latest//image",
     src_project_files = "//:src_project",
-    container_diff_args: [
-        "--type=history",
-        "--type=file",
-        "--type=size",
-        "--type=rpm",
-        "--type=apt",
-        "--type=pip",
-        "--type=node",
-    ],
+    container_diff_args: ["history", "file", "size", "rpm", "apt", "pip", "node"],
 )
 """
 
@@ -79,7 +70,7 @@ def _impl(ctx):
     name = ctx.attr.name
 
     # Record the absolute path to the provided WORKSPACE file and assume it to
-    # be the root of the Bazel project to build the test_image in.
+    # be the root of the Bazel project to build the 'image' in.
     proj_root = ctx.actions.declare_file(name + "_src_project_root.txt")
     ctx.actions.run_shell(
         command = "readlink -f %s | xargs dirname >> %s" % (workspace_file.path, proj_root.path),
@@ -91,7 +82,7 @@ def _impl(ctx):
     proj_tar = ctx.actions.declare_file(name + "_src_project.tar")
 
     # Tar the provided source project files to mount into the image that will
-    # be used to build and repro the test_image in.
+    # be used to build and repro the 'image' in.
     ctx.actions.run_shell(
         command = "readlink -f %s | xargs tar -cvf %s" % (" ".join(src_paths), proj_tar.path),
         inputs = src_project_files,
@@ -100,7 +91,7 @@ def _impl(ctx):
 
     image_tar = ctx.actions.declare_file(name + ".tar")
 
-    # Build the Bazel image to build and repro the test_image in.
+    # Build the Bazel image to build and repro the 'image' in.
     # Mount the source project and its path into this image.
     _container.image.implementation(
         ctx,
@@ -111,65 +102,68 @@ def _impl(ctx):
         workdir = "/",
     )
 
-    test_img_label = ctx.attr.test_image.label
+    img_label = ctx.attr.image.label
+    img_target_str = "//" + img_label.package + ":" + img_label.name
+
     build_targets = [
-        str(test_img_label),
-        str(test_img_label) + ".tar",
-        str(test_img_label) + ".digest",
-        str(test_img_label) + ".json",
+        img_target_str,
+        img_target_str + ".tar",
+        img_target_str + ".digest",
+        img_target_str + ".json",
     ]
     extract_path = "/img_outs"
     commands = [
         "cd \$(cat /%s)" % proj_root.basename,
         "bazel build " + " ".join(build_targets),
-        "cp -r bazel-bin/%s %s" % (test_img_label.package, extract_path),
+        "cp -r bazel-bin/%s %s" % (img_label.package, extract_path),
     ]
     docker_run_flags = ["--entrypoint", "''"]
 
-    img_outs = ctx.outputs.img_outs
-    img_outs_repro = ctx.outputs.img_outs_repro
+    img1_outs = ctx.outputs.img1_outs
+    img2_outs = ctx.outputs.img2_outs
 
-    # Build and extract test_image inside a container.
+    # Build and extract 'image' inside a container.
     _extract.implementation(
         ctx,
-        name = "build_test_image_and_extract",
+        name = "build_image_and_extract",
         commands = commands,
         extract_file = extract_path,
         image = image_tar,
         docker_run_flags = docker_run_flags,
-        output_file = img_outs,
+        output_file = img1_outs,
         script_file = ctx.actions.declare_file(name + ".build"),
     )
 
-    # Build and extract test_image again in a different container to try and
-    # repro previously built test_image.
+    # Build and extract 'image' again in a different container to try and
+    # repro previously built 'image'.
     _extract.implementation(
         ctx,
-        name = "build_test_image_and_extract_repro",
+        name = "build_image_and_extract_repro",
         commands = commands,
         extract_file = extract_path,
         image = image_tar,
         docker_run_flags = docker_run_flags,
-        output_file = img_outs_repro,
+        output_file = img2_outs,
         script_file = ctx.actions.declare_file(name + "_repro.build"),
     )
 
     # Expand template to run the image comparison test.
+    type_args = ["--type=" + type_arg for type_arg in ctx.attr.container_diff_args]
     diff_tool_exec = ctx.executable._container_diff_tool
     ctx.actions.expand_template(
         template = ctx.file._test_tpl,
         substitutions = {
-            "%{container_diff_args}": " ".join(ctx.attr.container_diff_args),
+            "%{container_diff_args}": " ".join(type_args),
             "%{container_diff_tool}": diff_tool_exec.short_path,
-            "%{img1_path}": img_outs.short_path,
-            "%{img2_path}": img_outs_repro.short_path,
-            "%{img_name}": test_img_label.name,
+            "%{img1_path}": img1_outs.short_path,
+            "%{img2_path}": img2_outs.short_path,
+            "%{img_name}": img_label.name,
         },
         output = ctx.outputs.test_script,
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [img_outs, img_outs_repro, diff_tool_exec])
+    runfiles = ctx.runfiles(files = [img1_outs, img2_outs, diff_tool_exec])
 
     return [
         DefaultInfo(
@@ -185,31 +179,27 @@ container_repro_test = rule(
             mandatory = True,
             doc = "An image target compatible with the `base` attribute of " +
                   "the container_image rule to build and reproduce the " +
-                  "test_image in.",
+                  "'image' in. This image must have Bazel and docker " +
+                  "installed and available in the PATH.",
         ),
         "container_diff_args": attr.string_list(
-            default = [
-                "--type=file",
-                "--type=size",
-                "--type=apt",
-                "--type=pip",
-            ],
-            doc = "List of arguments to pass to the container_diff tool. " +
+            default = ["file", "size", "apt", "pip"],
+            doc = "List of the --type flag values to pass to the container_diff tool. " +
                   "Check https://github.com/GoogleContainerTools/container-diff#container-diff " +
                   "for more info.",
         ),
+        "image": attr.label(
+            mandatory = True,
+            doc = "A container_image target to test for reproducibility.",
+        ),
+        # TODO(alex1545): Remove this attribute once able to get the project's
+        # root differently (possibly via a new repo rule).
         "src_project_files": attr.label(
             allow_files = True,
             mandatory = True,
-            doc = "Files of the source project where the test_image target " +
+            doc = "Files of the source project where the 'image' target " +
                   "lives. The WORKSPACE file must be specified and is " +
                   "assumed to be at the root of the project.",
-        ),
-        "test_image": attr.label(
-            mandatory = True,
-            doc = "A container_image target to test for reproducibility. " +
-                  "Must be a label relative to the root of the project and " +
-                  "cannot be relative to the container_repro_test target.",
         ),
         "_container_diff_tool": attr.label(
             default = Label("@container_diff//file"),
@@ -234,8 +224,8 @@ container_repro_test = rule(
     }),
     implementation = _impl,
     outputs = dicts.add(_container.image.outputs, {
-        "img_outs": "%{name}_test_img_outs",
-        "img_outs_repro": "%{name}_test_img_outs_repro",
+        "img1_outs": "%{name}_test_img1_outs",
+        "img2_outs": "%{name}_test_img2_outs",
         "test_script": "%{name}.test",
     }),
     test = True,

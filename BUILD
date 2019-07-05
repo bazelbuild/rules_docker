@@ -52,6 +52,8 @@ container_test(
     image = "//testdata:link_with_files_base",
 )
 
+# TODO(alex1545): remove this target once the container_repro_test (in
+# contrib/repro_test.bzl) has a different way to access the project it's in.
 filegroup(
     name = "src_project",
     srcs = [

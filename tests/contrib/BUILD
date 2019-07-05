@@ -169,23 +169,15 @@ docker_push(
 
 container_repro_test(
     name = "set_cmd_repro_test",
+    image = "//tests/container:set_cmd",
     base = "@bazel_latest//image",
     src_project_files = "//:src_project",
-    test_image = "//tests/container:set_cmd",
 )
 
 container_repro_test(
     name = "derivative_with_volume_repro_test",
+    image = "//testdata:derivative_with_volume",
     base = "@bazel_latest//image",
-    container_diff_args = [
-        "--type=history",
-        "--type=file",
-        "--type=size",
-        "--type=rpm",
-        "--type=apt",
-        "--type=pip",
-        "--type=node",
-    ],
     src_project_files = "//:src_project",
-    test_image = "//testdata:derivative_with_volume",
+    container_diff_args = ["history", "file", "size", "rpm", "apt", "pip", "node"],
 )

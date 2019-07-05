@@ -382,10 +382,3 @@ rbe_autoconfig(
 )
 
 # gazelle:repo bazel_gazelle
-
-http_archive(
-    name = "base_images_docker",
-    sha256 = "a6862114a02723e6d2cede1b0d3e99840a86d9c8fd3ae09f0fc238d542f60637",
-    strip_prefix = "base-images-docker-88c5cd81fb4a801680f42b19e23aea5249e1b851",
-    urls = ["https://github.com/GoogleCloudPlatform/base-images-docker/archive/88c5cd81fb4a801680f42b19e23aea5249e1b851.tar.gz"],
-)
