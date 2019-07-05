@@ -33,12 +33,14 @@ load(
 
 container_repositories()
 
-load(
-    "//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
+load("//repositories:deps.bzl", "container_deps")
 
-container_go_deps()
+container_deps()
+
+# pip deps are only needed for running  tests.
+load("//repositories:pip_repositories.bzl", "pip_deps")
+
+pip_deps()
 
 load(
     "//container:new_pull.bzl",
@@ -99,6 +101,7 @@ container_pull(
     repository = "distroless/cc",
 )
 
+# These are for package_manager testing.
 http_file(
     name = "bazel_gpg",
     sha256 = "30af2ca7abfb65987cd61802ca6e352aadc6129dfb5bfc9c81f16617bc3a4416",
@@ -182,6 +185,7 @@ container_pull(
     repository = "distroless/base",
 )
 
+# This image is used by docker/util tests.
 container_pull(
     name = "debian_base",
     digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
@@ -197,35 +201,7 @@ load(
 
 _py_image_repos()
 
-http_archive(
-    name = "io_bazel_rules_python",
-    sha256 = "9a3d71e348da504a9c4c5e8abd4cb822f7afb32c613dc6ee8b8535333a81a938",
-    strip_prefix = "rules_python-fdbb17a4118a1728d19e638a5291b4c4266ea5b8",
-    urls = ["https://github.com/bazelbuild/rules_python/archive/fdbb17a4118a1728d19e638a5291b4c4266ea5b8.tar.gz"],
-)
-
-load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
-
-pip_repositories()
-
-pip_import(
-    name = "pip_deps",
-    requirements = "//testdata:requirements-pip.txt",
-)
-
-load("@pip_deps//:requirements.bzl", "pip_install")
-
-pip_install()
-
-#pip_import(
-#    name = "pip_deps_package_manager",
-#    requirements = "//docker/package_managers:requirements-pip.txt",
-#)
-
-#load("@pip_deps_package_manager//:requirements.bzl", pip_package_manager_install = "pip_install")
-
-#pip_package_manager_install()
-
+# base_images_docker is needed as ubuntu1604/debian9 is used in package_manager tests
 http_archive(
     name = "base_images_docker",
     strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c",

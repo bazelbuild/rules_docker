@@ -69,6 +69,18 @@ https://github.com/bazelbuild/rules_d#d_binary))
 It is notable that: `cc_image`, `go_image`, `rust_image`, and `d_image`
 also allow you to specify an external binary target.
 
+## Docker Rules
+
+This repo now includes rules that provide additional functionality
+to install packages and run commands inside docker containers. These
+rules, however, require a docker binary is present and properly
+configured. These rules include:
+
+* [Package manager rules](docker/package_managers/README.md): rules to install
+  apt-get packages.
+* [Docker run rules](docker/util/README.md): rules to run commands inside docker
+  containers.
+
 ### Overview
 
 In addition to low-level rules for building containers, this repository

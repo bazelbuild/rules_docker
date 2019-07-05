@@ -32,6 +32,8 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
         commands: String list, overrides ctx.attr.commands
         docker_run_flags: String list, overrides ctx.attr.docker_run_flags
         extract_file: File, overrides ctx.outputs.out
+        output_file: File, overrides ctx.outputs.output_file
+        script_file: File, overrides ctx.output.script_file
     """
     name = name or ctx.label.name
     image = image or ctx.file.image
@@ -67,21 +69,22 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
 _extract_attrs = {
     "image": attr.label(
         executable = True,
+        doc = "The image to run the commands in.",
         mandatory = True,
         allow_single_file = True,
         cfg = "target",
     ),
     "commands": attr.string_list(
-        doc = "commands to run",
+        doc = "A list of commands to run (sequentially) in the container.",
         mandatory = True,
         allow_empty = False,
     ),
     "docker_run_flags": attr.string_list(
-        doc = "Extra flags to pass to the docker run command",
+        doc = "Extra flags to pass to the docker run command.",
         mandatory = False,
     ),
     "extract_file": attr.string(
-        doc = "path to file to extract from container",
+        doc = "Path to file to extract from container.",
         mandatory = True,
     ),
     "_extract_tpl": attr.label(
@@ -106,18 +109,11 @@ extract = struct(
     implementation = _extract_impl,
 )
 
-"""
-This rule runs a set of commands in a given image, waits for the commands
-    to finish, and then extracts a given file from the container to the
-    bazel-out directory.
-
-    name: A unique name for this rule.
-    image: The image to run the commands in.
-    commands: A list of commands to run (sequentially) in the container.
-    extract_file: The file to extract from the container.
-"""
 container_run_and_extract = rule(
     attrs = _extract_attrs,
+    doc = ("This rule runs a set of commands in a given image, waits" +
+           "for the commands to finish, and then extracts a given file" +
+           " from the container to the bazel-out directory."),
     outputs = _extract_outputs,
     implementation = _extract_impl,
 )
@@ -135,9 +131,8 @@ def _commit_impl(
 
     Args:
         ctx: The bazel rule context
+        name: A unique name for this rule.
         image: The input image tarball
-        image_runfiles: Any runfiles that were generated along with the input
-                        image
         commands: The commands to run in the input imnage container
         output_image_tar: The output image obtained as a result of running
                           the commands on the input image
@@ -179,12 +174,13 @@ def _commit_impl(
 
 _commit_attrs = {
     "image": attr.label(
+        doc = "The image to run the commands in.",
         mandatory = True,
         allow_single_file = True,
         cfg = "target",
     ),
     "commands": attr.string_list(
-        doc = "commands to run",
+        doc = "A list of commands to run (sequentially) in the container.",
         mandatory = True,
         allow_empty = False,
     ),
@@ -205,20 +201,11 @@ _commit_outputs = {
     "out": "%{name}_commit.tar",
 }
 
-"""Runs commands in a container and commits the container to a new image.
-
-This rule runs a set of commands in a given image, waits for the commands
-to finish, and then commits the container to a new image.
-
-
-Args:
-    image: Tarball of image to run commands on.
-    commands: A list of commands to run (sequentially) in the container.
-    _run_tpl: Template for generated script to run docker commands.
-    _image_id_extractor: A script to extract a tarball's image's id
-"""
 container_run_and_commit = rule(
     attrs = _commit_attrs,
+    doc = ("This rule runs a set of commands in a given image, waits" +
+           "for the commands to finish, and then commits the" +
+           "container to a new image."),
     executable = False,
     outputs = _commit_outputs,
     implementation = _commit_impl,

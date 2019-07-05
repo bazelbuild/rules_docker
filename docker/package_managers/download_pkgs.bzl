@@ -76,6 +76,7 @@ def _run_download_script(
         image_id_extractor):
     contents = build_contents.replace(image_tar.short_path, image_tar.path)
     contents = contents.replace(output_tar.short_path, output_tar.path)
+    contents = contents.replace(output_metadata.short_path, output_metadata.path)
 
     # The paths for running within bazel build are different and hence replace short_path
     # by full path
@@ -136,7 +137,7 @@ docker rm $cid
         installables = ctx.attr.name,
         download_commands = _generate_download_commands(ctx, packages, additional_repos),
         output = output_tar.short_path,
-        output_metadata = output_metadata.path,
+        output_metadata = output_metadata.short_path,
         image_id_extractor_path = ctx.file._image_id_extractor.path,
     )
     _run_download_script(
@@ -159,13 +160,18 @@ docker rm $cid
 
 _attrs = {
     "image_tar": attr.label(
+        doc = "The image tar for the container used to download packages.",
         allow_single_file = True,
         mandatory = True,
     ),
     "packages": attr.string_list(
+        doc = "list of packages to download. e.g. ['curl', 'netbase']",
         mandatory = True,
     ),
-    "additional_repos": attr.string_list(),
+    "additional_repos": attr.string_list(
+        doc = ("list of additional debian package repos to use, in " +
+               "sources.list format"),
+    ),
     "_image_id_extractor": attr.label(
         default = "//contrib:extract_image_id.py",
         allow_single_file = True,
@@ -185,20 +191,11 @@ download = struct(
     implementation = _impl,
 )
 
-"""Downloads packages within a container.
-
-This rule creates a script to download packages within a container.
-The script bunldes all the packages in a tarball.
-
-Args:
-  name: A unique name for this rule.
-  image_tar: The image tar for the container used to download packages.
-  packages: list of packages to download. e.g. ['curl', 'netbase']
-  additional_repos: list of additional debian package repos to use, in sources.list format
-"""
-
 download_pkgs = rule(
     attrs = _attrs,
+    doc = ("This rule creates a script to download packages " +
+           "within a container. The script bunldes all the " +
+           "packages in a tarball."),
     executable = True,
     outputs = _outputs,
     implementation = _impl,

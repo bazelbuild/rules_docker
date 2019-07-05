@@ -120,15 +120,25 @@ _attrs.update(_extract.attrs)
 _attrs.update({
     "keys": attr.label_list(
         allow_files = True,
+        doc = "List of keys (each, a file target) to be installed in the container.",
         mandatory = True,
     ),
     "gpg_image": attr.label(
+        doc = ("If set, keys will be pulled and installed in the given image," +
+               "the result of this installation will then be transfered to" +
+               "the image passed as base"),
         allow_single_file = True,
     ),
     # Redeclare following attributes of _extract to be non-mandatory.
-    "commands": attr.string_list(doc = "commands to run"),
-    "extract_file": attr.string(doc = "path to file to extract from container"),
-    "output_file": attr.string(),
+    "commands": attr.string_list(
+        doc = "Redeclared from _extract to be non-mandatory, do not set.",
+    ),
+    "extract_file": attr.string(
+        doc = "Redeclared from _extract to be non-mandatory, do not set.",
+    ),
+    "output_file": attr.string(
+        doc = "Redeclared from _extract to be non-mandatory, do not set.",
+    ),
 })
 
 _outputs = _container.image.outputs

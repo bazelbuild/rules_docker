@@ -135,16 +135,22 @@ docker rm $cid""".format(
 _attrs = {
     "image_tar": attr.label(
         allow_single_file = True,
+        doc = "The image tar for the container used to install packages.",
         mandatory = True,
     ),
     "installables_tar": attr.label(
-        allow_single_file = True,
+        allow_single_file = [".tar"],
+        doc = ("Tar with deb installables, should be a tar produced by a " +
+               " download_pkgs rule."),
         mandatory = True,
     ),
     "installation_cleanup_commands": attr.string(
+        doc = ("Commands to run after installation, to e.g., remove or " +
+               "otherwise modify files created during installation."),
         default = "",
     ),
     "output_image_name": attr.string(
+        doc = ("Name of container_image produced with the packages installed."),
         mandatory = True,
     ),
     "_installer_tpl": attr.label(
@@ -179,6 +185,8 @@ install = struct(
 
 install_pkgs = rule(
     attrs = _attrs,
+    doc = ("This rule install deb packages, obtained via " +
+           "a download_pkgs rule, within a container. "),
     outputs = _outputs,
     implementation = _impl,
 )
