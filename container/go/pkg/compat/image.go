@@ -30,7 +30,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
-// This intermediate layout image implements v1.Image, its implementation is very similar to layout.layoutImage.
+// legacyImage is the image in legacy intermediate format. Implements v1.Image, and its implementation is very similar to layout.layoutImage.
 type legacyImage struct {
 	// path is the path to the directory containing the legacy image.
 	path string
@@ -44,7 +44,7 @@ type legacyImage struct {
 
 var _ partial.CompressedImageCore = (*legacyImage)(nil)
 
-// MediaType of this image's manifest.
+// MediaType of this image's manifest from manifest.json.
 func (li *legacyImage) MediaType() (types.MediaType, error) {
 	manifest, err := li.Manifest()
 	if err != nil {
@@ -67,10 +67,12 @@ func (li *legacyImage) Manifest() (*v1.Manifest, error) {
 func (li *legacyImage) RawManifest() ([]byte, error) {
 	li.manifestLock.Lock()
 	defer li.manifestLock.Unlock()
+
 	if li.rawManifest != nil {
 		return li.rawManifest, nil
 	}
 
+	// Read and store raw manifest.json file from src directory.
 	b, err := ioutil.ReadFile(Path(li.path, manifestFile))
 	if err != nil {
 		return nil, err
@@ -136,10 +138,8 @@ func (b *compressedBlob) Digest() (v1.Hash, error) {
 	return b.desc.Digest, nil
 }
 
-// Return and open a layer file (based on its index, e.g., opens 000.tar.gz for layer with index 0) if this is a layer.
-// Return and open the config file if this compressedBlob is for a config.
+// Return and open a the layer file at path.
 func (b *compressedBlob) Compressed() (io.ReadCloser, error) {
-
 	return os.Open(Path(b.path, b.filename))
 }
 
