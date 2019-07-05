@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-// Reads an OCI image layout on disk.
-// https://github.com/opencontainers/image-spec/blob/master/image-layout.md
+// Reads an legacy image layout on disk.
 package compat
 
 import (
@@ -40,6 +39,7 @@ func Read(src string) (v1.Image, error) {
 		return nil, errors.Wrapf(err, "Invalid sha256 hash in digest file at %s. Should have format sha256:{digest}", src)
 	}
 
+	// Constructs and validates a v1.Image object.
 	legacyImg := &legacyImage{
 		path:   src,
 		digest: digest,
@@ -51,17 +51,18 @@ func Read(src string) (v1.Image, error) {
 	}
 
 	if err := validate.Image(img); err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid OCI layout format", digest)
+		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid legacy layout format", digest)
 	}
 
 	return img, nil
 }
 
+// Get the hash of the image to read at <path> from digest file.
 func getManifestDigest(path string) (v1.Hash, error) {
 	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
 	digest, err := ioutil.ReadFile(Path(path, digestFile))
 	if err != nil {
-		fmt.Errorf("Failed to locate SHA256 digest file for image manifest: %v", err)
+		return v1.Hash{}, fmt.Errorf("Failed to locate SHA256 digest file for image manifest: %v", err)
 	}
 
 	return v1.NewHash(string(digest))
