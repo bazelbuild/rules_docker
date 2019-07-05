@@ -75,8 +75,7 @@ func (li *layoutImage) RawConfigFile() ([]byte, error) {
 	return ioutil.ReadFile(li.path.path(configFile))
 }
 
-// LayerByDigest returns a Layer for interacting with a particular layer of
-// the image, looking it up by "digest" (the compressed hash).
+// LayerByDigest returns a Layer for interacting with a particular layer of the image, looking it up by "digest" (the compressed hash).
 // We assume the layer files are named in the format of e.g., 000.tar.gz in this path, following the order they appear in manifest.json.
 func (li *layoutImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error) {
 	manifest, err := li.Manifest()

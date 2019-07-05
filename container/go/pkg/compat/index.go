@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
@@ -29,7 +30,7 @@ import (
 )
 
 // ImageIndexFromPath is a convenience function which constructs a Path and returns its v1.ImageIndex.
-// This expects a intermediate format with manifest.json, config.json and digest exist in the given <path>.
+// This expects a legacy intermediate format with manifest.json, config.json and digest in the given <path>.
 func ImageIndexFromPath(path string) (v1.ImageIndex, error) {
 	lp, err := FromPath(path)
 	if err != nil {
@@ -38,8 +39,8 @@ func ImageIndexFromPath(path string) (v1.ImageIndex, error) {
 	return lp.ImageIndex()
 }
 
-// FromPath reads an MM intermediate image index at path and constructs a layout.Path.
-// Naively validates this is a valid intermediate layout by checking digest, config.json, and manifest.json exist.
+// FromPath reads an legacy intermediate image index at path and constructs a layout.Path object.
+// Naively validates a legacy intermediate layout at <path> by checking if digest, config.json, and manifest.json all exist.
 func FromPath(path string) (Path, error) {
 	var err error
 	_, err = os.Stat(filepath.Join(path, manifestFile))
@@ -64,6 +65,8 @@ func FromPath(path string) (Path, error) {
 type intermediateLayout struct {
 	// path of this layout, with helper functions for finding the full directory.
 	path Path
+	// manifestLock protects raw manifest.
+	manifestLock sync.Mutex
 	// rawManifest is the raw bytes of manifest.json file.
 	rawManifest []byte
 }
@@ -86,7 +89,7 @@ func (i *intermediateLayout) Digest() (v1.Hash, error) {
 	return v1.NewHash(string(digest))
 }
 
-// IndexManifest returns this image index's manifest object.
+// IndexManifest returns this image index's manifest object, simulates index.json in OCI layout.
 func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
 	// Parse raw manifest into a manifest struct.
 	manifest, err := partial.Manifest(i)
@@ -116,6 +119,9 @@ func (i *intermediateLayout) IndexManifest() (*v1.IndexManifest, error) {
 
 // RawManifest returns the serialized bytes of manifest.json metadata.
 func (i *intermediateLayout) RawManifest() ([]byte, error) {
+	i.manifestLock.Lock()
+	defer i.manifestLock.Unlock()
+
 	if i.rawManifest == nil {
 		rawManifest, err := ioutil.ReadFile(i.path.path(manifestFile))
 		if err != nil {
