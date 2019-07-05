@@ -12,25 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ###
-# Build file for new puller binary based on go-containerregistry backend.
+# Build file for new utility package that handles conversions between the new OCI image layout
+# and the old intermediate format.
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["loader.go"],
-    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/loader",
-    visibility = ["//visibility:private"],
+    srcs = ["ociToLegacy.go"],
+    importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/compat",
+    visibility = ["//visibility:public"],
     deps = [
-        "//container/go/pkg/compat:go_default_library",
-        "//container/go/pkg/oci:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
-)
-
-go_binary(
-    name = "loader",
-    embed = [":go_default_library"],
-    visibility = ["//visibility:public"],
 )
