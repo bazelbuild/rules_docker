@@ -150,10 +150,9 @@ func main() {
 	formatOptions := map[string]bool{
 		"oci":    true,
 		"docker": true,
-		"both":   true,
 	}
 	if *format != "" && !formatOptions[*format] {
-		log.Fatalln("Invalid option -format. Must be one of 'oci', 'docker', or 'both'.")
+		log.Fatalln("Invalid option -format. Must be one of 'oci' or 'docker'.")
 	}
 
 	// Create a Platform struct with given arguments.
