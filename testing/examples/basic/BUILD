@@ -17,7 +17,7 @@ load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
 container_image(
     name = "basic_alpine",
-    base = "@alpine_linux_amd64//image",
+    base = "@new_alpine_linux_amd64//image",
     cmd = ["Hello World!"],
     entrypoint = ["echo"],
 )
@@ -35,44 +35,4 @@ container_test(
     configs = ["//basic/test_configs:basic_alpine.yaml"],
     driver = "tar",
     image = "@basic_alpine_dockerfile//image:dockerfile_image",
-)
-
-# Tests for new_container_pull
-container_image(
-    name = "new_basic_alpine",
-    base = "@new_alpine_linux_amd64//image:image.tar",
-    cmd = ["Hello World!"],
-    entrypoint = ["echo"],
-)
-
-container_test(
-    name = "new_basic_alpine_bazel_test",
-    configs = ["//basic/test_configs:basic_alpine.yaml"],
-    image = ":new_basic_alpine",
-)
-
-container_image(
-    name = "new_tar_basic_alpine",
-    base = "@new_alpine_linux_amd64_tar//image:image.tar",
-    cmd = ["Hello World!"],
-    entrypoint = ["echo"],
-)
-
-container_test(
-    name = "new_basic_alpine_bazel_test_tar",
-    configs = ["//basic/test_configs:basic_alpine.yaml"],
-    image = ":new_tar_basic_alpine",
-)
-
-container_image(
-    name = "new_tar_ubuntu1604",
-    base = "@new_ubuntu1604_tar//image:image.tar",
-    cmd = ["Hello World!"],
-    entrypoint = ["echo"],
-)
-
-container_test(
-    name = "new_ubuntu1604_bazel_test_tar",
-    configs = ["//basic/test_configs:basic_alpine.yaml"],
-    image = ":new_tar_ubuntu1604",
 )

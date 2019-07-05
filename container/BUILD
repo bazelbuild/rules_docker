@@ -110,8 +110,8 @@ TEST_TARGETS = [
     ":tars_in_layer_with_tar_base",
     ":docker_tarball_base",
     ":layers_with_docker_tarball_base",
-    ":new_docker_tarball_base",
-    ":new_layers_with_docker_tarball_base",
+    ":new_docker_oci_base",
+    ":new_layers_with_docker_oci_base",
     # TODO(mattmoor): Re-enable once archive is visible
     # "generated_tarball",
     ":with_unix_epoch_creation_time",

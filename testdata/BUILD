@@ -216,15 +216,15 @@ container_image(
 
 # Test new_container_load
 container_image(
-    name = "new_docker_tarball_base",
+    name = "new_docker_oci_base",
     base = "@new_pause_tar//image",
     files = ["foo"],
     mode = "0o644",
 )
 
 container_image(
-    name = "new_layers_with_docker_tarball_base",
-    base = "@new_pause_tar//image",
+    name = "new_layers_with_docker_oci_base",
+    base = "@new_ubuntu1604//image",
     files = ["foo"],
     layers = [
         ":files_in_layer",

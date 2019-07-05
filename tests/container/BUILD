@@ -416,15 +416,6 @@ file_test(
     regexp = ".*",
 )
 
-container_image(
-    name = "new_alpine_linux_armv6_image_tar_test",
-    base = "@new_alpine_linux_armv6_tar//image:image.tar",
-    files = [
-        "//testdata:bar",
-        "//testdata:foo",
-    ],
-)
-
 file_test(
     name = "new_alpine_linux_armv6_oci_test_oci_layout",
     content = """{
@@ -433,17 +424,160 @@ file_test(
     file = "@new_alpine_linux_armv6//image-oci:oci-layout",
 )
 
-# Testing for presence of symlinks
+# Testing for content of symlinks
 file_test(
     name = "new_distroless_base_oci_test_config_symlink",
     file = "@new_alpine_linux_armv6//image:config.json",
-    regexp = ".*",
+    regexp = "{\"architecture\":\"arm\",.*",
 )
 
 file_test(
-    name = "new_distroless_base_oci_test_1targz_symlink",
+    name = "new_distroless_base_oci_test_0_tar_gz_symlink",
     file = "@new_alpine_linux_armv6//image:0.tar.gz",
     regexp = ".*",
+)
+
+# Testing all new_container_pull invocations with container_tests
+# We are testing for 3 cases: 1) Presence of OCI image format only
+#                             2) Presence of image.tar via container_import target
+#                             3) Presence of image.tar via "docker" format option
+#
+# Three cases for alpine armv6 distro
+container_image(
+    name = "new_alpine_linux_armv6_image_tar",
+    base = "@new_alpine_linux_armv6_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_armv6_image_oci_tar",
+    base = "@new_alpine_linux_armv6//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_armv6_image_oci",
+    base = "@new_alpine_linux_armv6//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_tar_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_oci_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_oci",
+)
+
+# Three cases for alpine amd64 distro
+container_image(
+    name = "new_alpine_linux_amd64_image_tar",
+    base = "@new_alpine_linux_amd64_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_amd64_image_oci_tar",
+    base = "@new_alpine_linux_amd64//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_amd64_image_oci",
+    base = "@new_alpine_linux_amd64//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_amd64_image_tar_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":new_alpine_linux_amd64_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_amd64_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":new_alpine_linux_amd64_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_amd64_image_oci_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":new_alpine_linux_amd64_image_oci",
+)
+
+# Three cases for alpine ppc64le distro
+container_image(
+    name = "new_alpine_linux_ppc64le_image_tar",
+    base = "@new_alpine_linux_ppc64le_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci_tar",
+    base = "@new_alpine_linux_ppc64le//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci",
+    base = "@new_alpine_linux_ppc64le//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_tar_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_oci",
 )
 
 # To test the new container load binary

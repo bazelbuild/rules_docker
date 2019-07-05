@@ -31,9 +31,7 @@ container_import(
     name = "image",
     config = "config.json",
     layers = glob(["*.tar.gz"]),
-)
-
-exports_files(glob(["**"]))""")
+)""")
 
     repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
 

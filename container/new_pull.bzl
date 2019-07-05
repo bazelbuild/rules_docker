@@ -90,9 +90,13 @@ def _impl(repository_ctx):
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
 
-    # Create symlinks to the appropriate config.json and layers in the pulled OCI image in the image-oci directory.
-    # Generates container_import rule which is able to comprehend OCI layout via the symlinks.
-    if repository_ctx.attr.format != "docker":
+    if repository_ctx.attr.format == "docker":
+        repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
+exports_files(["image.tar"])""")
+        # Create symlinks to the appropriate config.json and layers in the pulled OCI image in the image-oci directory.
+        # Generates container_import rule which is able to comprehend OCI layout via the symlinks.
+
+    else:
         repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
@@ -106,9 +110,6 @@ container_import(
         repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))""")
-    else:
-        repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
-exports_files(["image.tar"])""")
 
     args = [
         repository_ctx.path(repository_ctx.attr._puller),
