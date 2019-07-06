@@ -18,6 +18,7 @@ package compat
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
@@ -60,7 +61,7 @@ func Read(src string) (v1.Image, error) {
 // Get the hash of the image to read at <path> from digest file.
 func getManifestDigest(path string) (v1.Hash, error) {
 	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
-	digest, err := ioutil.ReadFile(Path(path, digestFile))
+	digest, err := ioutil.ReadFile(filepath.Join(path, digestFile))
 	if err != nil {
 		return v1.Hash{}, fmt.Errorf("Failed to locate SHA256 digest file for image manifest: %v", err)
 	}

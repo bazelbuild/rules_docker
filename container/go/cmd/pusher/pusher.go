@@ -93,7 +93,7 @@ func push(dst string, img v1.Image) error {
 	return nil
 }
 
-// readImage returns a v1.Image after reading an OCI index or a Docker tarball from src.
+// readImage returns a v1.Image after reading an legacy layout, an OCI layout or a Docker tarball from src.
 func readImage(src, format string) (v1.Image, error) {
 	if format == "oci" {
 		return oci.Read(src)
