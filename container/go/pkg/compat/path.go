@@ -24,15 +24,11 @@ import (
 )
 
 // Expected metadata files in legacy layout.
-const manifestFile string = "manifest.json"
-const configFile string = "config.json"
-const digestFile string = "digest"
-
-// Path returns a full directory of this path concatenated with other <elem> paths.
-func Path(path string, elem ...string) string {
-	complete := []string{string(path)}
-	return filepath.Join(append(complete, elem...)...)
-}
+const (
+	manifestFile = "manifest.json"
+	configFile   = "config.json"
+	digestFile   = "digest"
+)
 
 // Return the filename for layer at index i in the layers array in manifest.json.
 // Assume the layers are padded to three digits, e.g., the first layer is named 000.tar.gz.

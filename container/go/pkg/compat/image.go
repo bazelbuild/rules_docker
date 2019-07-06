@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sync"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -73,7 +74,7 @@ func (li *legacyImage) RawManifest() ([]byte, error) {
 	}
 
 	// Read and store raw manifest.json file from src directory.
-	b, err := ioutil.ReadFile(Path(li.path, manifestFile))
+	b, err := ioutil.ReadFile(filepath.Join(li.path, manifestFile))
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +85,7 @@ func (li *legacyImage) RawManifest() ([]byte, error) {
 
 // RawConfigFile returns the serialized bytes of config.json metadata.
 func (li *legacyImage) RawConfigFile() ([]byte, error) {
-	return ioutil.ReadFile(Path(li.path, configFile))
+	return ioutil.ReadFile(filepath.Join(li.path, configFile))
 }
 
 // LayerByDigest returns a Layer for interacting with a particular layer of the image, looking it up by "digest" (the compressed hash).
@@ -140,7 +141,7 @@ func (b *compressedBlob) Digest() (v1.Hash, error) {
 
 // Return and open a the layer file at path.
 func (b *compressedBlob) Compressed() (io.ReadCloser, error) {
-	return os.Open(Path(b.path, b.filename))
+	return os.Open(filepath.Join(b.path, b.filename))
 }
 
 // The size of this compressedBlob.
