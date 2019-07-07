@@ -30,10 +30,10 @@ produces the summary of their differences.
 Args:
     image: A container_image target relative to the project's root to test
            for determinism.
-    src_project_files: A target that exposes the files of the Bazel project to
-                       build the 'image' in (e.g. filegroup target).
     base: An image target to build and reproduce the 'image 'in.
           This image must have Bazel and docker installed and available in the PATH.
+    workspace_file: The WORKSPACE file of the project containing the 'image'
+                    target to help detect project's root path.
     container_diff_args: (optional) Args to the container_diff tool as specified here:
                          https://github.com/GoogleContainerTools/container-diff#quickstart
 
@@ -43,7 +43,7 @@ container_repro_test(
     name = "set_cmd_repro_test",
     image = "//tests/container:set_cmd",
     base = "@bazel_latest//image",
-    src_project_files = "//:src_project",
+    workspace_file = "//:WORKSPACE",
     container_diff_args: ["history", "file", "size", "rpm", "apt", "pip", "node"],
 )
 """
@@ -56,36 +56,24 @@ load("//skylib:filetype.bzl", container_filetype = "container")
 def _impl(ctx):
     """Core implementation of container_repro_test"""
 
-    # Check for existence of the WORKSPACE file in the files provided.
-    src_project_files = ctx.files.src_project_files
-    workspace_file = None
-    for f in src_project_files:
-        if f.basename == "WORKSPACE":
-            workspace_file = f
-            break
-
-    if not workspace_file:
-        fail("A WORKSPACE file must be among the src_project_files provided files.")
-
     name = ctx.attr.name
+    workspace_file = ctx.file.workspace_file
+    proj_root = ctx.actions.declare_file(name + "_src_project_root.txt")
 
     # Record the absolute path to the provided WORKSPACE file and assume it to
     # be the root of the Bazel project to build the 'image' in.
-    proj_root = ctx.actions.declare_file(name + "_src_project_root.txt")
     ctx.actions.run_shell(
         command = "readlink -f %s | xargs dirname >> %s" % (workspace_file.path, proj_root.path),
         inputs = [workspace_file],
         outputs = [proj_root],
     )
 
-    src_paths = [f.path for f in src_project_files]
-    proj_tar = ctx.actions.declare_file(name + "_src_project.tar")
-
-    # Tar the provided source project files to mount into the image that will
+    # Tar the current source project files to mount into the image that will
     # be used to build and repro the 'image' in.
+    proj_tar = ctx.actions.declare_file(name + "_src_project.tar")
     ctx.actions.run_shell(
-        command = "readlink -f %s | xargs tar -cvf %s" % (" ".join(src_paths), proj_tar.path),
-        inputs = src_project_files,
+        command = "tar -cvf %s \"$(cat %s)\"" % (proj_tar.path, proj_root.path),
+        inputs = [proj_root],
         outputs = [proj_tar],
     )
 
@@ -175,8 +163,8 @@ def _impl(ctx):
 container_repro_test = rule(
     attrs = dicts.add(_container.image.attrs, {
         "base": attr.label(
+            default = "@bazel_latest//image",
             allow_files = container_filetype,
-            mandatory = True,
             doc = "An image target compatible with the `base` attribute of " +
                   "the container_image rule to build and reproduce the " +
                   "'image' in. This image must have Bazel and docker " +
@@ -189,17 +177,15 @@ container_repro_test = rule(
                   "for more info.",
         ),
         "image": attr.label(
+            allow_rules = ["container_image_"],
             mandatory = True,
             doc = "A container_image target to test for reproducibility.",
         ),
-        # TODO(alex1545): Remove this attribute once able to get the project's
-        # root differently (possibly via a new repo rule).
-        "src_project_files": attr.label(
-            allow_files = True,
+        "workspace_file": attr.label(
+            allow_single_file = True,
             mandatory = True,
-            doc = "Files of the source project where the 'image' target " +
-                  "lives. The WORKSPACE file must be specified and is " +
-                  "assumed to be at the root of the project.",
+            doc = "The WORKSPACE file of the project containing the 'image' " +
+                  "target to help detect project's root path.",
         ),
         "_container_diff_tool": attr.label(
             default = Label("@container_diff//file"),

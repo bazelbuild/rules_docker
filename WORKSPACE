@@ -41,6 +41,13 @@ load(
 container_go_deps()
 
 load(
+    "//repositories:images.bzl",
+    rules_docker_images = "images",
+)
+
+rules_docker_images()
+
+load(
     "//container:new_pull.bzl",
     "new_container_pull",
 )
@@ -97,13 +104,6 @@ container_pull(
     name = "distroless_cc",
     registry = "gcr.io",
     repository = "distroless/cc",
-)
-
-container_pull(
-    name = "bazel_latest",
-    registry = "l.gcr.io",
-    repository = "google/bazel",
-    tag = "latest",
 )
 
 container_load(

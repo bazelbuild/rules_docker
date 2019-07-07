@@ -20,6 +20,7 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
+exports_files(["WORKSPACE"])
 
 gazelle(
     name = "gazelle",
@@ -50,37 +51,4 @@ container_test(
     name = "structure_test_at_workspace_root",
     configs = ["//tests/container/configs:test.yaml"],
     image = "//testdata:link_with_files_base",
-)
-
-# TODO(alex1545): remove this target once the container_repro_test (in
-# contrib/repro_test.bzl) has a different way to access the project it's in.
-filegroup(
-    name = "src_project",
-    srcs = [
-        "//:.bazelrc",
-        "//:BUILD",
-        "//:WORKSPACE",
-        "//:cc",
-        "//:container",
-        "//:contrib",
-        "//:d",
-        "//:docker",
-        "//:go",
-        "//:groovy",
-        "//:java",
-        "//:lang",
-        "//:nodejs",
-        "//:oci",
-        "//:python",
-        "//:python3",
-        "//:repositories",
-        "//:rust",
-        "//:scala",
-        "//:skylib",
-        "//:testdata",
-        "//:testing",
-        "//:tests",
-        "//:toolchains",
-        "//:tools",
-    ],
 )
