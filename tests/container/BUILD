@@ -186,6 +186,9 @@ container_test(
     image = ":basic_windows_image",
 )
 
+# The following targets are not imported.
+# These images are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 container_test(
     name = "alpine_amd64_image_test",
     configs = ["//tests/container/configs:alpine_amd64.yaml"],
@@ -203,7 +206,11 @@ container_test(
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = "@alpine_linux_ppc64le//image",
 )
+# END_DO_NOT_IMPORT
 
+# The following targets are not imported.
+# Digest outputs are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
     content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
@@ -215,6 +222,7 @@ file_test(
     content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
+# END_DO_NOT_IMPORT
 
 container_image(
     name = "set_env_csv",
@@ -247,6 +255,9 @@ container_test(
     image = ":set_env_make_vars",
 )
 
+# The following targets are not imported.
+# Targets using special characters are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 genrule(
     name = "special_characters_file",
     outs = ["gen= foo.out"],
@@ -262,6 +273,7 @@ container_image(
     files = [":special_characters_file"],
     symlinks = {"foo= symlink": "root= dir/gen= foo.out"},
 )
+# END_DO_NOT_IMPORT
 
 container_test(
     name = "special_characters_test",
@@ -308,6 +320,46 @@ container_push(
     tags = ["manual"],
 )
 
+create_banana_directory(
+    name = "banana_directory",
+)
+
+container_image(
+    name = "stripped_directory_name",
+    data_path = "banana",
+    files = [":banana_directory"],
+)
+
+container_test(
+    name = "stripped_directory_name_test",
+    configs = ["//tests/container/configs:stripped_directory_name.yaml"],
+    image = ":stripped_directory_name",
+)
+
+container_bundle(
+    name = "three_images_bundle",
+    images = {
+        "localhost:5000/image0:latest": "//testdata:base_with_entrypoint",
+        "localhost:5000/image1:latest": "//testdata:link_with_files_base",
+        "localhost:5000/image2:latest": "//testdata:with_double_env",
+    },
+)
+
+docker_push_all(
+    name = "test_docker_push_three_images_bundle",
+    bundle = ":three_images_bundle",
+)
+
+py_test(
+    name = "build_tar_test",
+    srcs = ["build_tar_test.py"],
+    python_version = "PY2",
+    deps = ["//container:build_tar_lib"],
+)
+
+# The following targets are not imported.
+# new_container_push targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 new_container_push(
     name = "new_push_test_oci",
     format = "oci",
@@ -337,7 +389,11 @@ new_container_push(
     tag_file = ":test.tag",
     tags = ["manual"],
 )
+# END_DO_NOT_IMPORT
 
+# The following targets are not imported.
+# Digest outputs are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_push_digest_output",
     content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
@@ -361,8 +417,11 @@ file_test(
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",
 )
+# END_DO_NOT_IMPORT
 
-# For testing the new container pull rule
+# The following targets are not imported.
+# new_container_pull targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 file_test(
     name = "new_alpine_linux_armv6_test_index_json",
     content = """{
@@ -579,8 +638,11 @@ container_test(
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = ":new_alpine_linux_ppc64le_image_oci",
 )
+# END_DO_NOT_IMPORT
 
-# To test the new container load binary
+# The following targets are not imported.
+# new_container_load targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 file_test(
     name = "new_pause_tar_test_index_json",
     content = """{
@@ -621,40 +683,4 @@ file_test(
     file = "@new_pause_tar//image:1.tar.gz",
     regexp = ".*",
 )
-
-create_banana_directory(
-    name = "banana_directory",
-)
-
-container_image(
-    name = "stripped_directory_name",
-    data_path = "banana",
-    files = [":banana_directory"],
-)
-
-container_test(
-    name = "stripped_directory_name_test",
-    configs = ["//tests/container/configs:stripped_directory_name.yaml"],
-    image = ":stripped_directory_name",
-)
-
-container_bundle(
-    name = "three_images_bundle",
-    images = {
-        "localhost:5000/image0:latest": "//testdata:base_with_entrypoint",
-        "localhost:5000/image1:latest": "//testdata:link_with_files_base",
-        "localhost:5000/image2:latest": "//testdata:with_double_env",
-    },
-)
-
-docker_push_all(
-    name = "test_docker_push_three_images_bundle",
-    bundle = ":three_images_bundle",
-)
-
-py_test(
-    name = "build_tar_test",
-    srcs = ["build_tar_test.py"],
-    python_version = "PY2",
-    deps = ["//container:build_tar_lib"],
-)
+# END_DO_NOT_IMPORT
