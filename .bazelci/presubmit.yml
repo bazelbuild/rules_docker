@@ -29,6 +29,7 @@ platforms:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
+    - "--cache_test_results=no"
   ubuntu1804:
     test_targets:
     # We are running the skipped targets remotely only.
@@ -50,6 +51,7 @@ platforms:
     - "--action_env=PATH"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
+    - "--cache_test_results=no"
   macos:
     build_targets:
     - "//tests/container:test_digest_output1"
