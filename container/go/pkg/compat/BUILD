@@ -36,7 +36,7 @@ go_library(
     ],
 )
 
-# This is a three-layer legacy image layout pulled by container_pull. This is a very small image created for testing purposes.
+# This is a three-layer legacy image layout pulled by container_pull from gcr.io/asci-toolchain-sandbox/small_img@sha256:4817a495758a70edcaa9ed6723cd927f21c44e2061313b03aaf5d5ae2c1bff46. This is a very small image created for testing purposes.
 filegroup(
     name = "legacy_test_index1",
     srcs = [
