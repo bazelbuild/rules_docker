@@ -186,6 +186,7 @@ container_test(
     image = ":basic_windows_image",
 )
 
+# BEGIN_DO_NOT_IMPORT
 container_test(
     name = "alpine_amd64_image_test",
     configs = ["//tests/container/configs:alpine_amd64.yaml"],
@@ -215,6 +216,7 @@ file_test(
     content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
+# END_DO_NOT_IMPORT
 
 container_image(
     name = "set_env_csv",
@@ -247,6 +249,7 @@ container_test(
     image = ":set_env_make_vars",
 )
 
+# BEGIN_DO_NOT_IMPORT
 genrule(
     name = "special_characters_file",
     outs = ["gen= foo.out"],
@@ -262,6 +265,7 @@ container_image(
     files = [":special_characters_file"],
     symlinks = {"foo= symlink": "root= dir/gen= foo.out"},
 )
+# END_DO_NOT_IMPORT
 
 container_test(
     name = "special_characters_test",
@@ -308,6 +312,7 @@ container_push(
     tags = ["manual"],
 )
 
+# BEGIN_DO_NOT_IMPORT
 new_container_push(
     name = "new_push_test_oci",
     format = "oci",
@@ -621,6 +626,7 @@ file_test(
     file = "@new_pause_tar//image:1.tar.gz",
     regexp = ".*",
 )
+# END_DO_NOT_IMPORT
 
 create_banana_directory(
     name = "banana_directory",
