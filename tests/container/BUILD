@@ -391,7 +391,7 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_oci_tag_file_test",
+    name = "new_push_test_oci_tag_file",
     format = "oci",
     image = "//container/go/pkg/oci:oci_test_index1",
     registry = "localhost:5000",
@@ -401,7 +401,7 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_legacy_tag_file_test",
+    name = "new_push_test_legacy_tag_file",
     format = "legacy",
     image = "//container/go/pkg/compat:legacy_test_index1",
     registry = "localhost:5000",
