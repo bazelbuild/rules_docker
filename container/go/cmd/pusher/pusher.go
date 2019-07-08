@@ -58,18 +58,23 @@ func main() {
 		os.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	// Ensure src is a directory, trim basename index.json if not.
-	if filepath.Base(*src) == "index.json" || filepath.Base(*src) == "manifest.json" {
+	// Ensure src is a directory, trim basename index.json or manifest.json if not.
+	fi, err := os.Stat(*src)
+	if err != nil {
+		log.Fatalf("src %s is not a valid path", *src)
+	}
+	if !fi.Mode().IsDir() {
+		log.Printf("Switching src from %s to directory %s...", *src, filepath.Dir(*src))
 		*src = filepath.Dir(*src)
 	}
 
 	img, err := readImage(*src, *format)
 	if err != nil {
-		log.Fatalf("Error reading from %s: %v", *src, err)
+		log.Fatalf("error reading from %s: %v", *src, err)
 	}
 
 	if err := push(*dst, img); err != nil {
-		log.Fatalf("Error pushing image to %s: %v", *dst, err)
+		log.Fatalf("error pushing image to %s: %v", *dst, err)
 	}
 
 	log.Printf("Successfully pushed %s image from %s to %s", *format, *src, *dst)
@@ -104,5 +109,6 @@ func readImage(src, format string) (v1.Image, error) {
 	if format == "docker" {
 		return tarball.ImageFromPath(src, nil)
 	}
+
 	return nil, errors.Errorf("unknown image format %q", format)
 }

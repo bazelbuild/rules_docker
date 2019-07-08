@@ -51,7 +51,7 @@ func (li *legacyImage) MediaType() (types.MediaType, error) {
 		return "", err
 	}
 
-	if !isExpectedMediaType(manifest.MediaType, types.OCIManifestSchema1, types.DockerManifestSchema2) {
+	if manifest.MediaType != types.OCIManifestSchema1 && manifest.MediaType != types.DockerManifestSchema2 {
 		return "", fmt.Errorf("unexpected media type for %v: %s", li.digest, manifest.MediaType)
 	}
 

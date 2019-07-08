@@ -21,7 +21,6 @@ import (
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
-	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 	"github.com/pkg/errors"
 )
@@ -31,12 +30,12 @@ import (
 func Read(src string) (v1.Image, error) {
 	_, err := isValidLegacylayout(src)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Invalid legacy layout at %s, requires manifest.json, config.json and digest files.", src)
+		return nil, errors.Wrapf(err, "invalid legacy layout at %s, requires manifest.json, config.json and digest files", src)
 	}
 
 	digest, err := getManifestDigest(src)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Invalid sha256 hash in digest file at %s. Should have format sha256:{digest}", src)
+		return nil, errors.Wrapf(err, "unable to get manifest digest from %s", src)
 	}
 
 	// Constructs and validates a v1.Image object.
@@ -47,11 +46,11 @@ func Read(src string) (v1.Image, error) {
 
 	img, err := partial.CompressedToImage(legacyImg)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s obtained from the manifest", digest)
+		return nil, errors.Wrapf(err, "unable to load image with digest %s obtained from the manifest at %s", digest, src)
 	}
 
 	if err := validate.Image(img); err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid legacy layout format", digest)
+		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid legacy layout format from %s", digest, src)
 	}
 
 	return img, nil
@@ -62,18 +61,8 @@ func getManifestDigest(path string) (v1.Hash, error) {
 	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
 	digest, err := ioutil.ReadFile(Path(path, digestFile))
 	if err != nil {
-		return v1.Hash{}, fmt.Errorf("Failed to locate SHA256 digest file for image manifest: %v", err)
+		return v1.Hash{}, fmt.Errorf("failed to locate SHA256 digest file for image manifest: %v", err)
 	}
 
 	return v1.NewHash(string(digest))
-}
-
-// isExpectedMediaType returns whether the given mediatype mt is allowed.
-func isExpectedMediaType(mt types.MediaType, expected ...types.MediaType) bool {
-	for _, allowed := range expected {
-		if mt == allowed {
-			return true
-		}
-	}
-	return false
 }
