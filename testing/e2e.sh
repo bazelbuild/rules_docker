@@ -150,6 +150,29 @@ function test_new_container_push_legacy_tag_file() {
   docker stop -t 0 $cid
 }
 
+function test_new_container_push_legacy_with_auth() {
+  clear_docker_full
+  launch_private_registry_with_auth
+
+  # Run the new_container_push test in the Bazel workspace that configured
+  # the docker toolchain rule to use authentication.
+  cd "${ROOT}/testing/custom_toolchain_auth"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting authenticated new container_push..."
+
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy 2>&1)" "Successfully pushed legacy image"
+  bazel clean
+
+  # Run the new_container_push test in the Bazel workspace that uses the default
+  # configured docker toolchain. The default configuration doesn't setup
+  # authentication and this should fail.
+  cd "${ROOT}/testing/default_toolchain"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting unauthenticated new container_push..."
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
+  bazel clean
+}
+
 function test_new_container_push_tar() {
   cd "${ROOT}"
   clear_docker_full
@@ -240,29 +263,6 @@ function test_new_container_push_oci_with_auth() {
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting unauthenticated new container_push..."
   EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
-  bazel clean
-}
-
-function test_new_container_push_legacy_with_auth() {
-  clear_docker_full
-  launch_private_registry_with_auth
-
-  # Run the new_container_push test in the Bazel workspace that configured
-  # the docker toolchain rule to use authentication.
-  cd "${ROOT}/testing/custom_toolchain_auth"
-  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
-  echo "Attempting authenticated new container_push..."
-
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy 2>&1)" "Successfully pushed legacy image"
-  bazel clean
-
-  # Run the new_container_push test in the Bazel workspace that uses the default
-  # configured docker toolchain. The default configuration doesn't setup
-  # authentication and this should fail.
-  cd "${ROOT}/testing/default_toolchain"
-  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
-  echo "Attempting unauthenticated new container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
   bazel clean
 }
 

@@ -36,6 +36,7 @@ go_library(
     ],
 )
 
+# This is a three-layer legacy image layout pulled by container_pull. This is a very small image created for testing purposes.
 filegroup(
     name = "legacy_test_index1",
     srcs = [
