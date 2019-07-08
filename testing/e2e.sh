@@ -145,7 +145,7 @@ function test_new_container_push_legacy_tag_file() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/container:new_push_test_legacy_tag_file
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_legacy_tag_file_test)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_legacy_tag_file)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
@@ -186,7 +186,7 @@ function test_new_container_push_oci_tag_file() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/container:new_push_test_oci_tag_file
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_oci_tag_file_test)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_oci_tag_file)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
