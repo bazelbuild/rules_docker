@@ -71,7 +71,6 @@ def _impl(ctx):
         if not found:
             fail("Did not find an index.json in the image attribute {} specified to {}".format(ctx.attr.image, ctx.label))
     if ctx.attr.format == "legacy":
-        print(ctx.files.image)
         for f in ctx.files.image:
             if f.basename == "manifest.json":
                 pusher_args += ["-src", "{index_dir}".format(
