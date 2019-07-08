@@ -177,7 +177,10 @@ container_repro_test = rule(
                   "for more info.",
         ),
         "image": attr.label(
-            allow_rules = ["container_image_"],
+            allow_rules = [
+                "container_image_",
+                "toolchain_container_",
+            ],
             mandatory = True,
             doc = "A container_image target to test for reproducibility.",
         ),
