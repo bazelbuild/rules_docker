@@ -58,12 +58,10 @@ func main() {
 		os.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	// Ensure src is a directory, trim basename index.json or manifest.json if not.
-	fi, err := os.Stat(*src)
-	if err != nil {
-		log.Fatalf("src %s is not a valid path", *src)
-	}
-	if !fi.Mode().IsDir() {
+	// Check if src is a tarball when pushing a docker image. Trim basename index.json or manifest.json if src is a directory, since we are pushing a OCI/legacy index.
+	if *format == "docker" && filepath.Ext(*src) != ".tar" {
+		log.Fatalf("pushing a docker image requires input file to be a tarball, got %s", filepath.Base(*src))
+	} else if filepath.Base(*src) == "index.json" || filepath.Base(*src) == "manifest.json" {
 		log.Printf("Switching src from %s to directory %s...", *src, filepath.Dir(*src))
 		*src = filepath.Dir(*src)
 	}
