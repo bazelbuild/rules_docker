@@ -29,11 +29,11 @@ def _extract_layers(ctx, name, artifact):
     ctx.actions.run(
         executable = ctx.executable.extract_config,
         arguments = [
-            "--tarball",
+            "-imageTar",
             artifact.path,
-            "--output",
+            "-outputConfig",
             config_file.path,
-            "--manifestoutput",
+            "-outputManifest",
             manifest_file.path,
         ],
         tools = [artifact],
@@ -235,7 +235,7 @@ def incremental_load(
 
 tools = {
     "extract_config": attr.label(
-        default = Label("//container:extract_config"),
+        default = Label("//container/go/cmd/extract_config:extract_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
