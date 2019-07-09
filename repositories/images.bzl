@@ -11,13 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Provides functions to pull the images used in this repository."""
+"""Provides functions to pull the images required by rules_docker."""
 
 load("//container:container.bzl", "container_pull")
 
 _REGISTRY = "l.gcr.io"
 
 def images():
+    """Pull containers used in rules_docker.
+
+    In your WORKSPACE file, load the dependencies as follows:
+
+    load(
+        "@io_bazel_rules_docker//repositories:repositories.bzl",
+        container_repositories = "repositories",
+    )
+
+    container_repositories()
+
+    load(
+        "@io_bazel_rules_docker//repositories:images.bzl",
+        rules_docker_images = "images",
+    )
+
+    rules_docker_images()
+
+    ...
+
+    """
+
     excludes = native.existing_rules().keys()
 
     if "bazel_latest" not in excludes:
@@ -26,12 +48,4 @@ def images():
             registry = _REGISTRY,
             repository = "google/bazel",
             tag = "latest",
-        )
-
-    if "bazel_0271" not in excludes:
-        container_pull(
-            name = "bazel_0271",
-            registry = _REGISTRY,
-            repository = "google/bazel",
-            digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
         )

@@ -28,23 +28,36 @@ test fails and the container_diff tool
 produces the summary of their differences.
 
 Args:
-    image: A container_image target relative to the project's root to test
-           for determinism.
-    base: An image target to build and reproduce the 'image 'in.
-          This image must have Bazel and docker installed and available in the PATH.
+    image: A container_image target to test for determinism.
     workspace_file: The WORKSPACE file of the project containing the 'image'
                     target to help detect project's root path.
+    base: (optional) An image target to build and reproduce the 'image 'in.
+          This image must have Bazel and docker installed and available in the PATH.
     container_diff_args: (optional) Args to the container_diff tool as specified here:
                          https://github.com/GoogleContainerTools/container-diff#quickstart
 
-Example:
+Examples:
 
 container_repro_test(
     name = "set_cmd_repro_test",
     image = "//tests/container:set_cmd",
-    base = "@bazel_latest//image",
     workspace_file = "//:WORKSPACE",
-    container_diff_args: ["history", "file", "size", "rpm", "apt", "pip", "node"],
+)
+
+container_repro_test(
+    name = "derivative_with_volume_repro_test",
+    image = "//testdata:derivative_with_volume",
+    workspace_file = "//:WORKSPACE",
+    base = "@bazel_0271//image",
+    container_diff_args = [
+        "history",
+        "file",
+        "size",
+        "rpm",
+        "apt",
+        "pip",
+        "node",
+    ],
 )
 """
 
@@ -77,9 +90,13 @@ def _impl(ctx):
         outputs = [proj_tar],
     )
 
+    # TODO(alex1545): It's a good idea to remove this big file after the test
+    # is executed, especially that it's only needed as an intermediate step.
+    # Try to find out if there is a way to remove a declared file.
+    # Simply running ctx.actions.run_shell with the 'rm' commond doesn't work.
     image_tar = ctx.actions.declare_file(name + ".tar")
 
-    # Build the Bazel image to build and repro the 'image' in.
+    # Build the base image to build and repro the 'image' in.
     # Mount the source project and its path into this image.
     _container.image.implementation(
         ctx,
@@ -105,7 +122,12 @@ def _impl(ctx):
         "bazel build " + " ".join(build_targets),
         "cp -r bazel-bin/%s %s" % (img_label.package, extract_path),
     ]
-    docker_run_flags = ["--entrypoint", "''"]
+    docker_run_flags = [
+        "--entrypoint",
+        "''",
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+    ]
 
     img1_outs = ctx.outputs.img1_outs
     img2_outs = ctx.outputs.img2_outs
@@ -119,7 +141,7 @@ def _impl(ctx):
         image = image_tar,
         docker_run_flags = docker_run_flags,
         output_file = img1_outs,
-        script_file = ctx.actions.declare_file(name + ".build"),
+        script_file = ctx.actions.declare_file(name + ".build1"),
     )
 
     # Build and extract 'image' again in a different container to try and
@@ -132,7 +154,7 @@ def _impl(ctx):
         image = image_tar,
         docker_run_flags = docker_run_flags,
         output_file = img2_outs,
-        script_file = ctx.actions.declare_file(name + "_repro.build"),
+        script_file = ctx.actions.declare_file(name + ".build2"),
     )
 
     # Expand template to run the image comparison test.
@@ -164,7 +186,11 @@ container_repro_test = rule(
     attrs = dicts.add(_container.image.attrs, {
         "base": attr.label(
             default = "@bazel_latest//image",
-            allow_files = container_filetype,
+            allow_rules = [
+                "container_image_",
+                "container_import",
+                "toolchain_container_",
+            ],
             doc = "An image target compatible with the `base` attribute of " +
                   "the container_image rule to build and reproduce the " +
                   "'image' in. This image must have Bazel and docker " +

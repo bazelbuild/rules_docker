@@ -14,6 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Testing script consumed by the container_repro_test rule that compares
+# two images.
+# Two images are considered to be identical when they both have the same
+# digest and ID. On a mismatch of one of those values, the test fails
+# and produces the summary of the images' differences.
+
 set -e
 
 imgs_differ=false
