@@ -179,9 +179,9 @@ container_pull(
 
 container_pull(
     name = "bazel_0271",
+    digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
     registry = "l.gcr.io",
     repository = "google/bazel",
-    digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
 )
 
 # Have the py_image dependencies for testing.

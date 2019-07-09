@@ -46,8 +46,6 @@ container_repro_test(
 
 container_repro_test(
     name = "derivative_with_volume_repro_test",
-    image = "//testdata:derivative_with_volume",
-    workspace_file = "//:WORKSPACE",
     base = "@bazel_0271//image",
     container_diff_args = [
         "history",
@@ -58,13 +56,14 @@ container_repro_test(
         "pip",
         "node",
     ],
+    image = "//testdata:derivative_with_volume",
+    workspace_file = "//:WORKSPACE",
 )
 """
 
 load("@base_images_docker//util:run.bzl", _extract = "extract")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//container:container.bzl", _container = "container")
-load("//skylib:filetype.bzl", container_filetype = "container")
 
 def _impl(ctx):
     """Core implementation of container_repro_test"""
