@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -279,11 +278,4 @@ bzl_library(
         ":providers",
         "//skylib:path",
     ],
-)
-
-go_library(
-    name = "go_default_library",
-    srcs = ["extractConfig.go"],
-    importpath = "github.com/bazelbuild/rules_docker/container",
-    deps = ["@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library"],
 )
