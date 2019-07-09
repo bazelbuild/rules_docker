@@ -61,7 +61,7 @@ func main() {
 	// Validates provided format and src path. Check if src is a tarball when pushing a docker image. Trim basename index.json or manifest.json if src is a directory, since we are pushing a OCI/legacy index.
 	var imgSrc string
 	if *format == "docker" && filepath.Ext(*src) != ".tar" {
-		log.Fatalf("Invalid value for argument -src for -format=docker, got %q, want path to tarball file with extension .tar.", src)
+		log.Fatalf("Invalid value for argument -src for -format=docker, got %q, want path to tarball file with extension .tar.", *src)
 	}
 	if *format == "legacy" && filepath.Base(*src) != "manifest.json" {
 		log.Fatalf("Invalid value for argument -src for -format=legacy, got %q, want path to manifest.json", *src)
