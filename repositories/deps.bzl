@@ -22,10 +22,10 @@ repository.
 load(":go_repositories.bzl", "go_deps")
 load(":py_repositories.bzl", "py_deps")
 
-def container_deps():
-    """Pull in external Go packages needed by Go binaries in this repo.
+def deps():
+    """Pull in external dependencies needed by rules in this repo.
 
-    Pull in all dependencies needed to build the Go binaries in this
+    Pull in all dependencies needed to run rules in this
     repository. This function assumes the repositories imported by the macro
     'repositories' in //repositories:repositories.bzl have been imported
     already.

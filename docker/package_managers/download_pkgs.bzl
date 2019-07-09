@@ -76,7 +76,17 @@ def _run_download_script(
         image_id_extractor):
     contents = build_contents.replace(image_tar.short_path, image_tar.path)
     contents = contents.replace(output_tar.short_path, output_tar.path)
-    contents = contents.replace(output_metadata.short_path, output_metadata.path)
+
+    # Replace only in the following line:
+    # 'docker cp $cid:{output_metadata.name} {output_metadata.short_path}'
+    # for 'docker cp $cid:{output_metadata.name} {output_metadata.path}'
+    # We cant replace {output_metadata.short_path} everywhere, because if
+    # target is at root of repo then
+    # {output_metadata.basename} == {output_metadata.short_path}
+    contents = contents.replace(
+        output_metadata.basename + " " + output_metadata.short_path,
+        output_metadata.basename + " " + output_metadata.path,
+    )
 
     # The paths for running within bazel build are different and hence replace short_path
     # by full path

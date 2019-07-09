@@ -33,7 +33,7 @@ load(
 
 container_repositories()
 
-load("//repositories:deps.bzl", "container_deps")
+load("//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
 
