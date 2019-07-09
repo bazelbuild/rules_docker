@@ -72,12 +72,12 @@ FROM bazel:ubuntu1604_vanilla
 RUN apt-get update && \
   apt-get install --no-install-recommends -y curl netbase ca-certificates
 EOM
-
-    cid=$(docker build -q - < $TEST_DOCKER_FILE)
+    docker rmi rules_docker/test:test
+    cid=$(docker build -q -t rules_docker/test:test - < $TEST_DOCKER_FILE)
 
     # Compare it with the tar file built with install_pkgs using container diff
     # TODO(selgamal): actually parse out container-diff output once it's fixed
-    ./container-diff diff tests/docker/package_managers/test_complex_install_pkgs.tar daemon://"$cid" -j
+    ./container-diff diff tests/docker/package_managers/test_complex_install_pkgs.tar daemon://rules_docker/test:test -j
 }
 
 # Call functions above. 1st parameter must be a function defined above
