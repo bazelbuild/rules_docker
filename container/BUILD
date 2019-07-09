@@ -1,3 +1,5 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -278,4 +280,11 @@ bzl_library(
         ":providers",
         "//skylib:path",
     ],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["extractConfig.go"],
+    importpath = "github.com/bazelbuild/rules_docker/container",
+    deps = ["@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library"],
 )
