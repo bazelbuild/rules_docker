@@ -158,12 +158,12 @@ _attrs = {
         executable = True,
         cfg = "host",
     ),
-    "_image_utils": attr.label(
-        default = "//docker/util:image_util.sh",
-        allow_single_file = True,
-    ),
     "_image_id_extractor": attr.label(
         default = "//contrib:extract_image_id.py",
+        allow_single_file = True,
+    ),
+    "_image_utils": attr.label(
+        default = "//docker/util:image_util.sh",
         allow_single_file = True,
     ),
     "_installer_tpl": attr.label(

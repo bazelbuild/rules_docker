@@ -48,12 +48,12 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
         template = ctx.file._extract_tpl,
         output = script,
         substitutions = {
-            "%{image_tar}": image.path,
             "%{commands}": _process_commands(commands),
             "%{docker_run_flags}": " ".join(docker_run_flags),
             "%{extract_file}": extract_file,
-            "%{output}": output_file.path,
             "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_tar}": image.path,
+            "%{output}": output_file.path,
         },
         is_executable = True,
     )
@@ -173,7 +173,6 @@ def _commit_impl(
     return struct()
 
 _commit_attrs = {
-
     "commands": attr.string_list(
         doc = "A list of commands to run (sequentially) in the container.",
         mandatory = True,

@@ -189,9 +189,9 @@ _attrs = {
 }
 
 _outputs = {
-    "pkg_tar": "%{name}.tar",
     "build_script": "%{name}.sh",
     "metadata_csv": "%{name}_metadata.csv",
+    "pkg_tar": "%{name}.tar",
 }
 
 # Export download_pkgs rule for other bazel rules to depend on.
