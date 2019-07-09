@@ -116,7 +116,7 @@ container_import(
   layers = glob(["*.tar.gz"]),
 )
 
-exports_files(["image.digest", "digest"])
+exports_files(glob(["**"]))
 """)
 
     args = [

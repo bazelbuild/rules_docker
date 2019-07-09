@@ -35,27 +35,27 @@ load(
 
 container_go_deps()
 
-load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+load("@io_bazel_rules_docker//container:new_pull.bzl", "new_container_pull")
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
 load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
 
 _java_image_repos()
 
-container_pull(
+new_container_pull(
     name = "alpine_linux_amd64",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
 )
 
-container_pull(
+new_container_pull(
     name = "ubuntu1604",
     registry = "l.gcr.io",
     repository = "google/ubuntu1604",
     tag = "latest",
 )
 
-container_pull(
+new_container_pull(
     name = "bazel_image",
     registry = "launcher.gcr.io",
     repository = "google/bazel",
