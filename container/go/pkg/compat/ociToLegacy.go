@@ -30,6 +30,7 @@ import (
 // Extension for layers and config files that are made symlinks
 const targzExt = ".tar.gz"
 const configExt = "config.json"
+const manifestExt = "manifest.json"
 
 // generateSymlinks safely generates a symbolic link at dst pointing to src.
 func generateSymlinks(src, dst string) error {
@@ -80,7 +81,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		layerDigest, err := layer.Digest()
 		if err != nil {
 			return errors.Wrap(err, "failed to fetch the layer's digest")
-	}
+		}
 
 		layerPath = path.Join(targetDir, layerDigest.Hex)
 		out := strconv.Itoa(i) + targzExt
