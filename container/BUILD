@@ -1,5 +1,3 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +13,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 package(default_visibility = ["//visibility:public"])
 
