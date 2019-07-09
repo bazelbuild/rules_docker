@@ -57,12 +57,6 @@ new_container_pull(
 )
 
 new_container_pull(
-    name = "new_distroless_base",
-    registry = "gcr.io",
-    repository = "distroless/base",
-)
-
-new_container_pull(
     name = "new_alpine_linux_armv6_tar",
     architecture = "arm",
     cpu_variant = "v6",
@@ -74,10 +68,41 @@ new_container_pull(
 )
 
 new_container_pull(
-    name = "new_distroless_base_both",
-    format = "both",
+    name = "new_distroless_base",
     registry = "gcr.io",
     repository = "distroless/base",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_amd64",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_amd64_tar",
+    format = "docker",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_ppc64le",
+    architecture = "ppc64le",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_ppc64le_tar",
+    architecture = "ppc64le",
+    format = "docker",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
 )
 
 load(
@@ -109,6 +134,7 @@ load(
     "new_container_load",
 )
 
+# To test the new_container_load rule.
 new_container_load(
     name = "new_pause_tar",
     file = "//testdata:pause.tar",
@@ -360,11 +386,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "4598bf5a8b4f5ced82c782899438a7ba695165d47b3bf783ce774e89a8c6e617",
-    strip_prefix = "bazel-toolchains-0.27.0",
+    sha256 = "28cb3666da80fbc62d4c46814f5468dd5d0b59f9064c0b933eee3140d706d330",
+    strip_prefix = "bazel-toolchains-0.27.1",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.27.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.27.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.27.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.27.1.tar.gz",
     ],
 )
 

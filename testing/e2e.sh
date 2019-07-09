@@ -131,6 +131,48 @@ function test_new_container_push_oci() {
   docker stop -t 0 $cid
 }
 
+function test_new_container_push_legacy() {
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy 2>&1)" "Successfully pushed legacy image"
+  docker stop -t 0 $cid
+}
+
+function test_new_container_push_legacy_tag_file() {
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  bazel build tests/container:new_push_test_legacy_tag_file
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_legacy_tag_file)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
+
+  docker stop -t 0 $cid
+}
+
+function test_new_container_push_legacy_with_auth() {
+  clear_docker_full
+  launch_private_registry_with_auth
+
+  # Run the new_container_push test in the Bazel workspace that configured
+  # the docker toolchain rule to use authentication.
+  cd "${ROOT}/testing/custom_toolchain_auth"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting authenticated new container_push..."
+
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy 2>&1)" "Successfully pushed legacy image"
+  bazel clean
+
+  # Run the new_container_push test in the Bazel workspace that uses the default
+  # configured docker toolchain. The default configuration doesn't setup
+  # authentication and this should fail.
+  cd "${ROOT}/testing/default_toolchain"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+  echo "Attempting unauthenticated new container_push..."
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
+  bazel clean
+}
+
 function test_new_container_push_tar() {
   cd "${ROOT}"
   clear_docker_full
@@ -139,12 +181,12 @@ function test_new_container_push_tar() {
 
   docker stop -t 0 $cid
 }
-function test_new_container_push_tag_file() {
+function test_new_container_push_oci_tag_file() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  bazel build tests/container:new_push_tag_file_test
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_tag_file_test)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
+  bazel build tests/container:new_push_test_oci_tag_file
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_oci_tag_file)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
@@ -199,7 +241,7 @@ function test_container_push_with_auth() {
 }
 
 # Test container push where the local registry requires htpsswd authentication
-function test_new_container_push_with_auth() {
+function test_new_container_push_oci_with_auth() {
   clear_docker_full
   launch_private_registry_with_auth
 
@@ -211,7 +253,7 @@ function test_new_container_push_with_auth() {
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting authenticated new container_push..."
 
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed oci image from"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed oci image"
   bazel clean
 
   # Run the new_container_push test in the Bazel workspace that uses the default
@@ -301,8 +343,11 @@ test_container_push_with_auth
 test_container_push_with_stamp
 test_new_container_push_oci
 test_new_container_push_tar
-test_new_container_push_tag_file
-test_new_container_push_with_auth
+test_new_container_push_oci_tag_file
+test_new_container_push_oci_with_auth
+test_new_container_push_legacy
+test_new_container_push_legacy_tag_file
+test_new_container_push_legacy_with_auth
 test_container_pull_with_auth
 test_container_pull_cache
 

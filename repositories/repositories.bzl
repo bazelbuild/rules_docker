@@ -61,8 +61,8 @@ def repositories():
         http_file(
             name = "go_puller",
             executable = True,
-            sha256 = "facb3d0c81a1b0a524aebcce3e9d8343c239d75b50124ce72d8b07790a7a2e82",
-            urls = [("https://storage.googleapis.com/rules_docker/9e1d2fbd0a19a29383e0c2998d77e4e73c32a432/puller-linux-amd64")],
+            sha256 = "c845a96d91c10f1aea328f53c665825190512f84492bcb3a30d596f2090faf82",
+            urls = [("https://storage.googleapis.com/rules_docker/06d9bf4e7205a46ec9b72d2dfb28271baf8968af/puller-linux-amd64")],
         )
 
     if "puller" not in excludes:
@@ -88,8 +88,8 @@ def repositories():
         http_file(
             name = "loader",
             executable = True,
-            sha256 = "30bbb44eae9651a55d07fb9d39f58936fe3d9817780e1887df07d7beb21ef5ad",
-            urls = [("https://storage.googleapis.com/rules_docker/a08df0ab2a345cd07359bb69672dcf21867e50e5/loader-linux-amd64")],
+            sha256 = "5903d2d278ebfde2466a736593defb25b40b4eccfc8d0949948a2d58de57d784",
+            urls = [("https://storage.googleapis.com/rules_docker/432706d99825d271ead68f9fb9b66a83c1f00cb9/loader-linux-amd64")],
         )
 
     if "containerregistry" not in excludes:
@@ -105,12 +105,14 @@ def repositories():
     # once transitive workspace instantiation lands.
 
     if "io_bazel_rules_go" not in excludes:
+        # TODO(xingao): Change back to a release version once fix for
+        # https://github.com/bazelbuild/rules_go/issues/2089 is released.
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "f04d2373bcaf8aa09bccb08a98a57e721306c8f6043a2a0ee610fd6853dcde3d",
+            sha256 = "ec1ed4b629ed686b7dae089236919984f80741dc1a5204b15ae71e0ef733283f",
+            strip_prefix = "rules_go-3f29dcb26c9e22ae513321ec9096e776c353ebce",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
-                "https://github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
+                "https://github.com/bazelbuild/rules_go/archive/3f29dcb26c9e22ae513321ec9096e776c353ebce.tar.gz",
             ],
         )
 
