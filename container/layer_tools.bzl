@@ -235,7 +235,7 @@ def incremental_load(
 
 tools = {
     "extract_config": attr.label(
-        default = Label("//container:extract_config"),
+        default = Label("//container/go/cmd/extract_config:extract_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
