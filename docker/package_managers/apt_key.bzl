@@ -118,10 +118,12 @@ def _impl(
 _attrs = dict(_container.image.attrs)
 _attrs.update(_extract.attrs)
 _attrs.update({
-    "keys": attr.label_list(
-        allow_files = True,
-        doc = "List of keys (each, a file target) to be installed in the container.",
-        mandatory = True,
+    # Redeclare following attributes of _extract to be non-mandatory.
+    "commands": attr.string_list(
+        doc = "Redeclared from _extract to be non-mandatory, do not set.",
+    ),
+    "extract_file": attr.string(
+        doc = "Redeclared from _extract to be non-mandatory, do not set.",
     ),
     "gpg_image": attr.label(
         doc = ("If set, keys will be pulled and installed in the given image," +
@@ -129,12 +131,10 @@ _attrs.update({
                "the image passed as base"),
         allow_single_file = True,
     ),
-    # Redeclare following attributes of _extract to be non-mandatory.
-    "commands": attr.string_list(
-        doc = "Redeclared from _extract to be non-mandatory, do not set.",
-    ),
-    "extract_file": attr.string(
-        doc = "Redeclared from _extract to be non-mandatory, do not set.",
+    "keys": attr.label_list(
+        allow_files = True,
+        doc = "List of keys (each, a file target) to be installed in the container.",
+        mandatory = True,
     ),
     "output_file": attr.string(
         doc = "Redeclared from _extract to be non-mandatory, do not set.",

@@ -153,10 +153,6 @@ _attrs = {
         doc = ("Name of container_image produced with the packages installed."),
         mandatory = True,
     ),
-    "_installer_tpl": attr.label(
-        default = Label("//docker/package_managers:installer.sh.tpl"),
-        allow_single_file = True,
-    ),
     "_config_stripper": attr.label(
         default = "//docker/util:config_stripper",
         executable = True,
@@ -168,6 +164,10 @@ _attrs = {
     ),
     "_image_id_extractor": attr.label(
         default = "//contrib:extract_image_id.py",
+        allow_single_file = True,
+    ),
+    "_installer_tpl": attr.label(
+        default = Label("//docker/package_managers:installer.sh.tpl"),
         allow_single_file = True,
     ),
 }

@@ -169,6 +169,10 @@ docker rm $cid
     )
 
 _attrs = {
+    "additional_repos": attr.string_list(
+        doc = ("list of additional debian package repos to use, in " +
+               "sources.list format"),
+    ),
     "image_tar": attr.label(
         doc = "The image tar for the container used to download packages.",
         allow_single_file = True,
@@ -177,10 +181,6 @@ _attrs = {
     "packages": attr.string_list(
         doc = "list of packages to download. e.g. ['curl', 'netbase']",
         mandatory = True,
-    ),
-    "additional_repos": attr.string_list(
-        doc = ("list of additional debian package repos to use, in " +
-               "sources.list format"),
     ),
     "_image_id_extractor": attr.label(
         default = "//contrib:extract_image_id.py",

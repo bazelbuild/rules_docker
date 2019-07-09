@@ -5,11 +5,11 @@ load(
     "file_test",
     "rule_test",
 )
+load("//contrib:compare_ids_test.bzl", "compare_ids_test")
+load("//contrib:test.bzl", "container_test")
+load("//docker/package_managers:apt_key.bzl", "add_apt_key")
 load("//docker/package_managers:download_pkgs.bzl", "download_pkgs")
 load("//docker/package_managers:install_pkgs.bzl", "install_pkgs")
-load("//docker/package_managers:apt_key.bzl", "add_apt_key")
-load("//contrib:test.bzl", "container_test")
-load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 
 download_pkgs(
     name = "test_download_pkgs",

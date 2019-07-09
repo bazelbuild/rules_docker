@@ -67,13 +67,6 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
     return struct()
 
 _extract_attrs = {
-    "image": attr.label(
-        executable = True,
-        doc = "The image to run the commands in.",
-        mandatory = True,
-        allow_single_file = True,
-        cfg = "target",
-    ),
     "commands": attr.string_list(
         doc = "A list of commands to run (sequentially) in the container.",
         mandatory = True,
@@ -86,6 +79,13 @@ _extract_attrs = {
     "extract_file": attr.string(
         doc = "Path to file to extract from container.",
         mandatory = True,
+    ),
+    "image": attr.label(
+        executable = True,
+        doc = "The image to run the commands in.",
+        mandatory = True,
+        allow_single_file = True,
+        cfg = "target",
     ),
     "_extract_tpl": attr.label(
         default = Label("//docker/util:extract.sh.tpl"),
@@ -149,15 +149,15 @@ def _commit_impl(
         template = ctx.file._run_tpl,
         output = script,
         substitutions = {
-            "%{util_script}": ctx.file._image_utils.path,
+            "%{commands}": _process_commands(commands),
+            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_tar}": image.path,
             "%{output_image}": "bazel/%s:%s" % (
                 ctx.label.package or "default",
                 name,
             ),
-            "%{image_tar}": image.path,
-            "%{commands}": _process_commands(commands),
             "%{output_tar}": output_image_tar.path,
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{util_script}": ctx.file._image_utils.path,
         },
         is_executable = True,
     )
@@ -173,27 +173,28 @@ def _commit_impl(
     return struct()
 
 _commit_attrs = {
+
+    "commands": attr.string_list(
+        doc = "A list of commands to run (sequentially) in the container.",
+        mandatory = True,
+        allow_empty = False,
+    ),
     "image": attr.label(
         doc = "The image to run the commands in.",
         mandatory = True,
         allow_single_file = True,
         cfg = "target",
     ),
-    "commands": attr.string_list(
-        doc = "A list of commands to run (sequentially) in the container.",
-        mandatory = True,
-        allow_empty = False,
-    ),
-    "_run_tpl": attr.label(
-        default = Label("//docker/util:commit.sh.tpl"),
+    "_image_id_extractor": attr.label(
+        default = "//contrib:extract_image_id.py",
         allow_single_file = True,
     ),
     "_image_utils": attr.label(
         default = "//docker/util:image_util.sh",
         allow_single_file = True,
     ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
+    "_run_tpl": attr.label(
+        default = Label("//docker/util:commit.sh.tpl"),
         allow_single_file = True,
     ),
 }
