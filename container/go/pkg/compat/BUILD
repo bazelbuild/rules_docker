@@ -19,11 +19,33 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["ociToLegacy.go"],
+    srcs = [
+        "image.go",
+        "ociToLegacy.go",
+        "path.go",
+        "reader.go",
+    ],
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/compat",
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/partial:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
+)
+
+# This is a three-layer legacy image layout pulled by container_pull from gcr.io/asci-toolchain-sandbox/small_img@sha256:4817a495758a70edcaa9ed6723cd927f21c44e2061313b03aaf5d5ae2c1bff46. This is a very small image created for testing purposes.
+filegroup(
+    name = "legacy_test_index1",
+    srcs = [
+        "//container/go/pkg/compat/testdata/test_index1:000.tar.gz",
+        "//container/go/pkg/compat/testdata/test_index1:001.tar.gz",
+        "//container/go/pkg/compat/testdata/test_index1:002.tar.gz",
+        "//container/go/pkg/compat/testdata/test_index1:config.json",
+        "//container/go/pkg/compat/testdata/test_index1:digest",
+        "//container/go/pkg/compat/testdata/test_index1:manifest.json",
+    ],
+    visibility = ["//visibility:public"],
 )
