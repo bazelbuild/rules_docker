@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules for load all dependencies of rules_docker."""
+"""Rules to load all dependencies of rules_docker."""
 
 load(
     "@bazel_tools//tools/build_defs/repo:http.bzl",
@@ -243,6 +243,14 @@ py_library(
             executable = True,
             sha256 = "14e94f75112a8e1b08a2d10f2467d27db0b94232a276ddd1e1512593a7b7cf5a",
             urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-darwin-amd64"],
+        )
+
+    if "container_diff" not in excludes:
+        http_file(
+            name = "container_diff",
+            executable = True,
+            sha256 = "65b10a92ca1eb575037c012c6ab24ae6fe4a913ed86b38048781b17d7cf8021b",
+            urls = ["https://storage.googleapis.com/container-diff/v0.15.0/container-diff-linux-amd64"],
         )
 
     # For bzl_library.

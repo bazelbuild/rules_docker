@@ -21,6 +21,8 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
+exports_files(["WORKSPACE"])
+
 gazelle(
     name = "gazelle",
     prefix = "github.com/bazelbuild/rules_docker",
