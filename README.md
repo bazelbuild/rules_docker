@@ -145,13 +145,6 @@ load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
 container_deps()
 
 load(
-    "//repositories:images.bzl",
-    rules_docker_images = "images",
-)
-
-rules_docker_images()
-
-load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
 )

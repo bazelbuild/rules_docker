@@ -129,6 +129,9 @@ def _impl(ctx):
     extract_path = "/img_outs"
     img_tar = img_name + ".tar"
     img_digest = img_name + ".digest"
+
+    # Commands to build the image targets and copy the files required for image
+    # comparison to a known location in the container (being 'extract_path').
     commands = [
         "cd \$(cat /%s)" % proj_root.basename,
         "bazel build " + " ".join(build_targets),
@@ -137,6 +140,10 @@ def _impl(ctx):
         "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_digest, extract_path, img_digest),
         "cp \$(readlink -f bazel-bin/%s/%s).sha256 %s/%s" % (img_pkg, img_name + ".json", extract_path, img_name + ".id"),
     ]
+
+    # Mount the docker.sock inside the running container to enable docker
+    # sibling, which is needed when builing the test image itself requires
+    # running another container.
     docker_run_flags = [
         "--entrypoint",
         "''",
@@ -248,8 +255,6 @@ container_repro_test = rule(
         "_test_tpl": attr.label(
             default = Label("//contrib:cmp_images.sh.tpl"),
             allow_single_file = True,
-            doc = "A template to expand a bash script to run a complete " +
-                  "image comparison test.",
         ),
     }),
     implementation = _impl,

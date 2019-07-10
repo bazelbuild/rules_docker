@@ -43,13 +43,6 @@ load("//repositories:pip_repositories.bzl", "pip_deps")
 pip_deps()
 
 load(
-    "//repositories:images.bzl",
-    rules_docker_images = "images",
-)
-
-rules_docker_images()
-
-load(
     "//container:new_pull.bzl",
     "new_container_pull",
 )
