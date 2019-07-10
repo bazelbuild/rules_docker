@@ -43,10 +43,9 @@ _container_pull_attrs = {
         values = [
             "oci",
             "docker",
-            "both",
         ],
-        doc = "(optional) The format of the image to be pulled, default to 'OCI' (OCI Layout Format), " +
-              "option for 'Docker' (tarball compatible with `docker load` command) or 'Both' (pulling both OCI format and a tarball).",
+        doc = "(optional) The format of the image to be pulled, default to 'OCI' (OCI Layout Format) " +
+              "or option for 'Docker' (tarball compatible with `docker load` command).",
     ),
     "os": attr.string(
         default = "linux",
@@ -78,9 +77,14 @@ _container_pull_attrs = {
         doc = "(optional) The tag of the image, default to 'latest' " +
               "if this and 'digest' remain unspecified.",
     ),
-    "_puller": attr.label(
+    "_puller_darwin": attr.label(
         executable = True,
-        default = Label("@go_puller//file:downloaded"),
+        default = Label("@go_puller_darwin//file:downloaded"),
+        cfg = "host",
+    ),
+    "_puller_linux": attr.label(
+        executable = True,
+        default = Label("@go_puller_linux//file:downloaded"),
         cfg = "host",
     ),
 }
@@ -91,21 +95,35 @@ def _impl(repository_ctx):
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
 
-    # Currently exports all files pulled by the binary and cannot be depended on by other rules_docker rules.
-    # We will implement a new_container_import rule to comprehend this oci layout.
-    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
+    if repository_ctx.attr.format == "docker":
+        repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
+exports_files(["image.tar"])""")
+        # Create symlinks to the appropriate config.json and layers in the pulled OCI image in the image-oci directory.
+        # Generates container_import rule which is able to comprehend OCI layout via the symlinks.
 
-filegroup(
+    else:
+        repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
+load("@io_bazel_rules_docker//container:import.bzl", "container_import")
+
+container_import(
     name = "image",
-    srcs = glob(["image/**"]),
-)
+    config = "config.json",
+    layers = glob(["*.tar.gz"]),
+)""")
+
+        # Currently exports all files pulled by the binary and will not be depended on by other rules_docker rules.
+        repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))""")
 
+    puller = repository_ctx.attr._puller_linux
+    if repository_ctx.os.name.lower().startswith("mac os"):
+        puller = repository_ctx.attr._puller_darwin
+
     args = [
-        repository_ctx.path(repository_ctx.attr._puller),
+        repository_ctx.path(puller),
         "-directory",
-        repository_ctx.path("image"),
+        repository_ctx.path(""),
         "-format",
         repository_ctx.attr.format,
         "-os",

@@ -107,9 +107,9 @@ def _impl(ctx):
     )
 
     img_label = ctx.attr.image.label
-    img_target_str = "//" + img_label.package + ":" + img_label.name
-
     img_name = img_label.name
+    img_pkg = img_label.package
+    img_target_str = "//" + img_pkg + ":" + img_name
 
     build_targets = [
         img_target_str,
@@ -118,23 +118,15 @@ def _impl(ctx):
         img_target_str + ".json",
     ]
     extract_path = "/img_outs"
-    commands1 = [
+    img_tar = img_name + ".tar"
+    img_digest = img_name + ".digest"
+    commands = [
         "cd \$(cat /%s)" % proj_root.basename,
         "bazel build " + " ".join(build_targets),
-        "cp -r bazel-bin/%s %s" % (img_label.package, extract_path),
-
-        "mkdir /final_files1",
-        "cp %s %s" % (extract_path + "/" + img_name + ".tar", "/final_files1/" + img_name + ".tar"),
-        "cp %s %s" % (extract_path + "/" + img_name + ".digest", "/final_files1/" + img_name + ".digest"),
-    ]
-    commands2 = [
-        "cd \$(cat /%s)" % proj_root.basename,
-        "bazel build " + " ".join(build_targets),
-        "cp -r bazel-bin/%s %s" % (img_label.package, extract_path),
-
-        "mkdir /final_files2",
-        "cp %s %s" % (extract_path + "/" + img_name + ".tar", "/final_files2/" + img_name + ".tar"),
-        "cp %s %s" % (extract_path + "/" + img_name + ".digest", "/final_files2/" + img_name + ".digest"),
+        "mkdir %s" % extract_path,
+        "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_tar, extract_path, img_tar),
+        "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_digest, extract_path, img_digest),
+        "cp \$(readlink -f bazel-bin/%s/%s).sha256 %s/%s" % (img_pkg, img_name + ".json", extract_path, img_name + ".id"),
     ]
     docker_run_flags = [
         "--entrypoint",
@@ -150,9 +142,8 @@ def _impl(ctx):
     _extract.implementation(
         ctx,
         name = "build_image_and_extract",
-        commands = commands1,
-        # extract_file = extract_path,
-        extract_file = "/final_files1",
+        commands = commands,
+        extract_file = extract_path,
         image = image_tar,
         docker_run_flags = docker_run_flags,
         output_file = img1_outs,
@@ -164,9 +155,8 @@ def _impl(ctx):
     _extract.implementation(
         ctx,
         name = "build_image_and_extract_repro",
-        commands = commands2,
-        # extract_file = extract_path,
-        extract_file = "/final_files2",
+        commands = commands,
+        extract_file = extract_path,
         image = image_tar,
         docker_run_flags = docker_run_flags,
         output_file = img2_outs,
@@ -181,8 +171,8 @@ def _impl(ctx):
         substitutions = {
             "%{container_diff_args}": " ".join(type_args),
             "%{container_diff_tool}": diff_tool_exec.short_path,
-            "%{img1_path}": img1_outs.short_path,
-            "%{img2_path}": img2_outs.short_path,
+            "%{img1_path}": img1_outs.short_path + extract_path,
+            "%{img2_path}": img2_outs.short_path + extract_path,
             "%{img_name}": img_label.name,
         },
         output = ctx.outputs.test_script,
@@ -255,8 +245,6 @@ container_repro_test = rule(
     }),
     implementation = _impl,
     outputs = dicts.add(_container.image.outputs, {
-        # "img1_outs": "%{name}_test_img1_outs",
-        # "img2_outs": "%{name}_test_img2_outs",
         "test_script": "%{name}.test",
     }),
     test = True,

@@ -13,7 +13,7 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_docker")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load(
     "//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
@@ -33,12 +33,14 @@ load(
 
 container_repositories()
 
-load(
-    "//repositories:go_repositories.bzl",
-    container_go_deps = "go_deps",
-)
+load("//repositories:deps.bzl", container_deps = "deps")
 
-container_go_deps()
+container_deps()
+
+# pip deps are only needed for running  tests.
+load("//repositories:pip_repositories.bzl", "pip_deps")
+
+pip_deps()
 
 load(
     "//repositories:images.bzl",
@@ -64,12 +66,6 @@ new_container_pull(
 )
 
 new_container_pull(
-    name = "new_distroless_base",
-    registry = "gcr.io",
-    repository = "distroless/base",
-)
-
-new_container_pull(
     name = "new_alpine_linux_armv6_tar",
     architecture = "arm",
     cpu_variant = "v6",
@@ -81,10 +77,41 @@ new_container_pull(
 )
 
 new_container_pull(
-    name = "new_distroless_base_both",
-    format = "both",
+    name = "new_distroless_base",
     registry = "gcr.io",
     repository = "distroless/base",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_amd64",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_amd64_tar",
+    format = "docker",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_ppc64le",
+    architecture = "ppc64le",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)
+
+new_container_pull(
+    name = "new_alpine_linux_ppc64le_tar",
+    architecture = "ppc64le",
+    format = "docker",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
 )
 
 load(
@@ -106,6 +133,19 @@ container_pull(
     repository = "distroless/cc",
 )
 
+# These are for package_manager testing.
+http_file(
+    name = "bazel_gpg",
+    sha256 = "30af2ca7abfb65987cd61802ca6e352aadc6129dfb5bfc9c81f16617bc3a4416",
+    urls = ["https://bazel.build/bazel-release.pub.gpg"],
+)
+
+http_file(
+    name = "launchpad_openjdk_gpg",
+    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
+    urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
+)
+
 container_load(
     name = "pause_tar",
     file = "//testdata:pause.tar",
@@ -116,6 +156,7 @@ load(
     "new_container_load",
 )
 
+# To test the new_container_load rule.
 new_container_load(
     name = "new_pause_tar",
     file = "//testdata:pause.tar",
@@ -177,11 +218,12 @@ container_pull(
     repository = "distroless/base",
 )
 
+# This image is used by docker/util tests.
 container_pull(
-    name = "bazel_0271",
-    digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
-    registry = "l.gcr.io",
-    repository = "google/bazel",
+    name = "debian_base",
+    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
+    registry = "gcr.io",
+    repository = "google-appengine/debian9",
 )
 
 # Have the py_image dependencies for testing.
@@ -192,25 +234,32 @@ load(
 
 _py_image_repos()
 
+# base_images_docker is needed as ubuntu1604/debian9 is used in package_manager tests
 http_archive(
-    name = "io_bazel_rules_python",
-    sha256 = "9a3d71e348da504a9c4c5e8abd4cb822f7afb32c613dc6ee8b8535333a81a938",
-    strip_prefix = "rules_python-fdbb17a4118a1728d19e638a5291b4c4266ea5b8",
-    urls = ["https://github.com/bazelbuild/rules_python/archive/fdbb17a4118a1728d19e638a5291b4c4266ea5b8.tar.gz"],
+    name = "base_images_docker",
+    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
 )
 
-load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
-
-pip_repositories()
-
-pip_import(
-    name = "pip_deps",
-    requirements = "//testdata:requirements-pip.txt",
+http_archive(
+    name = "ubuntu1604",
+    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/ubuntu1604",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
 )
 
-load("@pip_deps//:requirements.bzl", "pip_install")
+http_archive(
+    name = "debian9",
+    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/debian9",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+)
 
-pip_install()
+load("@ubuntu1604//:deps.bzl", ubuntu1604_deps = "deps")
+
+ubuntu1604_deps()
+
+load("@debian9//:deps.bzl", debian9_deps = "deps")
+
+debian9_deps()
 
 load(
     "//python3:image.bzl",
@@ -265,9 +314,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "f5eceb2fb2339747c0d9e5a869d4e03f420e533de1562823109c2e93ea651638",
-    strip_prefix = "rules_groovy-1c39931457a04665fccecce78f953691b52187fc",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/1c39931457a04665fccecce78f953691b52187fc.tar.gz"],
+    sha256 = "1b6b21d24e641b166ccfeeedc70c2a211796ab91853304b1d80e032914b3bf05",
+    strip_prefix = "rules_groovy-d3b1b862046513a50d1cde266f1443e888c92790",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/d3b1b862046513a50d1cde266f1443e888c92790.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -285,9 +334,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "299108772020c103eefacb4de30873d45224e8e0e6c11df7b56ffd11d959e212",
-    strip_prefix = "rules_rust-3fac9fe0001d2a829d8ddaf3033b5171c049abdb",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/3fac9fe0001d2a829d8ddaf3033b5171c049abdb.tar.gz"],
+    sha256 = "eab3d241d445219909ad8434cc37da3ebd78adc44fc2281de2ecb59c4499f116",
+    strip_prefix = "rules_rust-3cd4c637289a8e0a3b45ea799c29e13a53154970",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/3cd4c637289a8e0a3b45ea799c29e13a53154970.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -374,11 +423,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "4598bf5a8b4f5ced82c782899438a7ba695165d47b3bf783ce774e89a8c6e617",
-    strip_prefix = "bazel-toolchains-0.27.0",
+    sha256 = "28cb3666da80fbc62d4c46814f5468dd5d0b59f9064c0b933eee3140d706d330",
+    strip_prefix = "bazel-toolchains-0.27.1",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.27.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.27.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.27.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.27.1.tar.gz",
     ],
 )
 

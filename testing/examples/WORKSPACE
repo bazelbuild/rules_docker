@@ -14,7 +14,7 @@
 
 workspace(name = "dockerfile_examples")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 local_repository(
     name = "io_bazel_rules_docker",
@@ -35,47 +35,27 @@ load(
 
 container_go_deps()
 
-load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+load("@io_bazel_rules_docker//container:new_pull.bzl", "new_container_pull")
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
 load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
 
 _java_image_repos()
 
-http_archive(
-    name = "base_images_docker",
-    sha256 = "2c421ca558d043c4da34ddfbee0868c23f10022ee647106dad5f37849e3b0f2f",
-    strip_prefix = "base-images-docker-ed6a6f01d92d8ea3ffd01eac3bc9aa009e168c16",
-    urls = ["https://github.com/GoogleCloudPlatform/base-images-docker/archive/ed6a6f01d92d8ea3ffd01eac3bc9aa009e168c16.tar.gz"],
-)
-
-load("@base_images_docker//package_managers:repositories.bzl", package_manager_deps = "deps")
-
-package_manager_deps()
-
-load("@io_bazel_rules_python//python:pip.bzl", "pip_import", "pip_repositories")
-
-pip_repositories()
-
-pip_import(
-    name = "pip_deps",
-    requirements = "@base_images_docker//package_managers:requirements-pip.txt",
-)
-
-container_pull(
+new_container_pull(
     name = "alpine_linux_amd64",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
 )
 
-container_pull(
+new_container_pull(
     name = "ubuntu1604",
     registry = "l.gcr.io",
     repository = "google/ubuntu1604",
     tag = "latest",
 )
 
-container_pull(
+new_container_pull(
     name = "bazel_image",
     registry = "launcher.gcr.io",
     repository = "google/bazel",

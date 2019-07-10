@@ -52,9 +52,12 @@ platforms:
     - "--incompatible_disallow_legacy_javainfo=false"
   macos:
     build_targets:
-    - "//tests/container:test_digest_output1"
+    - "//tests/container/..."
     build_flags:
     - "--action_env=PATH"
+    # For tests/container:set_env_make_vars_test
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
     # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
     - "--incompatible_disallow_legacy_javainfo=false"
     test_targets:
@@ -87,8 +90,8 @@ platforms:
     - "--"
     - "//:structure_test_at_workspace_root"
     - "//tests/..."
-    - "-//tests/contrib:derivative_with_volume_repro_test"
-    - "-//tests/contrib:set_cmd_repro_test"
+    # - "-//tests/contrib:derivative_with_volume_repro_test"
+    # - "-//tests/contrib:set_cmd_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"

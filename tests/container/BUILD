@@ -186,6 +186,9 @@ container_test(
     image = ":basic_windows_image",
 )
 
+# The following targets are not imported.
+# These images are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 container_test(
     name = "alpine_amd64_image_test",
     configs = ["//tests/container/configs:alpine_amd64.yaml"],
@@ -203,7 +206,11 @@ container_test(
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = "@alpine_linux_ppc64le//image",
 )
+# END_DO_NOT_IMPORT
 
+# The following targets are not imported.
+# Digest outputs are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
     content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
@@ -215,6 +222,7 @@ file_test(
     content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
+# END_DO_NOT_IMPORT
 
 container_image(
     name = "set_env_csv",
@@ -247,6 +255,9 @@ container_test(
     image = ":set_env_make_vars",
 )
 
+# The following targets are not imported.
+# Targets using special characters are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
 genrule(
     name = "special_characters_file",
     outs = ["gen= foo.out"],
@@ -262,6 +273,7 @@ container_image(
     files = [":special_characters_file"],
     symlinks = {"foo= symlink": "root= dir/gen= foo.out"},
 )
+# END_DO_NOT_IMPORT
 
 container_test(
     name = "special_characters_test",
@@ -308,152 +320,6 @@ container_push(
     tags = ["manual"],
 )
 
-new_container_push(
-    name = "new_push_test_oci",
-    format = "oci",
-    image = "//container/go/pkg/oci:oci_test_index1",
-    registry = "localhost:5000",
-    repository = "docker/test",
-    tag = "test",
-    tags = ["manual"],
-)
-
-new_container_push(
-    name = "new_push_test_tar",
-    format = "docker",
-    image = "//testdata:go_pusher_test.tar",
-    registry = "localhost:5000",
-    repository = "docker/test",
-    tag = "test",
-    tags = ["manual"],
-)
-
-new_container_push(
-    name = "new_push_tag_file_test",
-    format = "oci",
-    image = "//container/go/pkg/oci:oci_test_index1",
-    registry = "localhost:5000",
-    repository = "docker/test",
-    tag_file = ":test.tag",
-    tags = ["manual"],
-)
-
-file_test(
-    name = "test_push_digest_output",
-    content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
-    file = ":push_test.digest",
-)
-
-file_test(
-    name = "distoless_fixed_id_digest_test",
-    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
-    file = "@distroless_fixed_id//image:digest",
-)
-
-file_test(
-    name = "distroless_fixed_id_image_digest_test",
-    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
-    file = "@distroless_fixed_id//image:image.digest",
-)
-
-file_test(
-    name = "k8s_pause_arm64_digest_test",
-    content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
-    file = "@k8s_pause_arm64//image:digest",
-)
-
-# For testing the new container pull rule
-file_test(
-    name = "new_alpine_linux_armv6_test_index_json",
-    content = """{
-   "schemaVersion": 2,
-   "manifests": [
-      {
-         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 528,
-         "digest": "sha256:f29c3d10359dd0e6d0c11e4f715735b678c0ab03a7ac4565b4b6c08980f6213b"
-      }
-   ]
-}""",
-    file = "@new_alpine_linux_armv6//image:index.json",
-)
-
-file_test(
-    name = "new_distroless_base_test_index_json",
-    content = """{
-   "schemaVersion": 2,
-   "manifests": [
-      {
-         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 737,
-         "digest": "sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77"
-      }
-   ]
-}""",
-    file = "@new_distroless_base//image:index.json",
-)
-
-file_test(
-    name = "new_alpine_linux_armv6_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_alpine_linux_armv6//image:oci-layout",
-)
-
-file_test(
-    name = "new_distroless_base_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_distroless_base//image:oci-layout",
-)
-
-# Merely testing for the presence of the pulled image.tar for now.
-file_test(
-    name = "new_alpine_linux_armv6_tar_test_image_tar",
-    file = "@new_alpine_linux_armv6_tar//image:image.tar",
-    regexp = ".*",
-)
-
-file_test(
-    name = "new_distroless_base_both_test_image_tar",
-    file = "@new_distroless_base_both//image:image.tar",
-    regexp = ".*",
-)
-
-file_test(
-    name = "new_distroless_base_both_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_distroless_base_both//image:oci-layout",
-)
-
-# To test the new container load binary
-file_test(
-    name = "new_pause_tar_test_index_json",
-    content = """{
-   "schemaVersion": 2,
-   "manifests": [
-      {
-         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 586,
-         "digest": "sha256:22e0bb47f6dd1938d7c30febe82ac37e99907fd8c76421ab87829ad6a3636bf9"
-      }
-   ]
-}""",
-    file = "@new_pause_tar//image:index.json",
-)
-
-file_test(
-    name = "new_pause_tar_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_pause_tar//image:oci-layout",
-)
-
 create_banana_directory(
     name = "banana_directory",
 )
@@ -490,3 +356,351 @@ py_test(
     python_version = "PY2",
     deps = ["//container:build_tar_lib"],
 )
+
+# The following targets are not imported.
+# new_container_push targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+new_container_push(
+    name = "new_push_test_oci",
+    format = "oci",
+    image = "//container/go/pkg/oci:oci_test_index1",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy",
+    format = "legacy",
+    image = "//container/go/pkg/compat:legacy_test_index1",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_tar",
+    format = "docker",
+    image = "//testdata:go_pusher_test.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_oci_tag_file",
+    format = "oci",
+    image = "//container/go/pkg/oci:oci_test_index1",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_tag_file",
+    format = "legacy",
+    image = "//container/go/pkg/compat:legacy_test_index1",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+# END_DO_NOT_IMPORT
+
+# The following targets are not imported.
+# Digest outputs are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+file_test(
+    name = "test_push_digest_output",
+    content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
+    file = ":push_test.digest",
+)
+
+file_test(
+    name = "distoless_fixed_id_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@distroless_fixed_id//image:digest",
+)
+
+file_test(
+    name = "distroless_fixed_id_image_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@distroless_fixed_id//image:image.digest",
+)
+
+file_test(
+    name = "k8s_pause_arm64_digest_test",
+    content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
+    file = "@k8s_pause_arm64//image:digest",
+)
+# END_DO_NOT_IMPORT
+
+# The following targets are not imported.
+# new_container_pull targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+file_test(
+    name = "new_alpine_linux_armv6_test_index_json",
+    content = """{
+   "schemaVersion": 2,
+   "manifests": [
+      {
+         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+         "size": 528,
+         "digest": "sha256:f29c3d10359dd0e6d0c11e4f715735b678c0ab03a7ac4565b4b6c08980f6213b"
+      }
+   ]
+}""",
+    file = "@new_alpine_linux_armv6//image-oci:index.json",
+)
+
+file_test(
+    name = "new_distroless_base_test_index_json",
+    content = """{
+   "schemaVersion": 2,
+   "manifests": [
+      {
+         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+         "size": 737,
+         "digest": "sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77"
+      }
+   ]
+}""",
+    file = "@new_distroless_base//image-oci:index.json",
+)
+
+file_test(
+    name = "new_alpine_linux_armv6_test_oci_layout",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
+    file = "@new_alpine_linux_armv6//image-oci:oci-layout",
+)
+
+file_test(
+    name = "new_distroless_base_test_oci_layout",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
+    file = "@new_distroless_base//image-oci:oci-layout",
+)
+
+# Merely testing for the presence of the pulled image.tar for now.
+file_test(
+    name = "new_alpine_linux_armv6_tar_test_image_tar",
+    file = "@new_alpine_linux_armv6_tar//image:image.tar",
+    regexp = ".*",
+)
+
+file_test(
+    name = "new_alpine_linux_armv6_oci_test_oci_layout",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
+    file = "@new_alpine_linux_armv6//image-oci:oci-layout",
+)
+
+# Testing for content of symlinks
+file_test(
+    name = "new_distroless_base_oci_test_config_symlink",
+    file = "@new_alpine_linux_armv6//image:config.json",
+    regexp = "{\"architecture\":\"arm\",.*",
+)
+
+file_test(
+    name = "new_distroless_base_oci_test_0_tar_gz_symlink",
+    file = "@new_alpine_linux_armv6//image:0.tar.gz",
+    regexp = ".*",
+)
+
+# Testing all new_container_pull invocations with container_tests
+# We are testing for 3 cases: 1) Presence of OCI image format only
+#                             2) Presence of image.tar via container_import target
+#                             3) Presence of image.tar via "docker" format option
+#
+# Three cases for alpine armv6 distro
+container_image(
+    name = "new_alpine_linux_armv6_image_tar",
+    base = "@new_alpine_linux_armv6_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_armv6_image_oci_tar",
+    base = "@new_alpine_linux_armv6//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_armv6_image_oci",
+    base = "@new_alpine_linux_armv6//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_tar_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_oci_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_oci",
+)
+
+# Three cases for alpine amd64 distro
+container_image(
+    name = "new_alpine_linux_amd64_image_tar",
+    base = "@new_alpine_linux_amd64_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_amd64_image_oci_tar",
+    base = "@new_alpine_linux_amd64//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_amd64_image_oci",
+    base = "@new_alpine_linux_amd64//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_amd64_image_tar_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":new_alpine_linux_amd64_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_amd64_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":new_alpine_linux_amd64_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_amd64_image_oci_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":new_alpine_linux_amd64_image_oci",
+)
+
+# Three cases for alpine ppc64le distro
+container_image(
+    name = "new_alpine_linux_ppc64le_image_tar",
+    base = "@new_alpine_linux_ppc64le_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci_tar",
+    base = "@new_alpine_linux_ppc64le//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci",
+    base = "@new_alpine_linux_ppc64le//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_tar_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_oci",
+)
+# END_DO_NOT_IMPORT
+
+# The following targets are not imported.
+# new_container_load targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+file_test(
+    name = "new_pause_tar_test_index_json",
+    content = """{
+   "schemaVersion": 2,
+   "manifests": [
+      {
+         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+         "size": 586,
+         "digest": "sha256:22e0bb47f6dd1938d7c30febe82ac37e99907fd8c76421ab87829ad6a3636bf9"
+      }
+   ]
+}""",
+    file = "@new_pause_tar//image-oci:index.json",
+)
+
+file_test(
+    name = "new_pause_tar_test_oci_layout",
+    content = """{
+    "imageLayoutVersion": "1.0.0"
+}""",
+    file = "@new_pause_tar//image-oci:oci-layout",
+)
+
+file_test(
+    name = "new_pause_tar_test_config_symlink",
+    file = "@new_pause_tar//image:config.json",
+    regexp = "{\"architecture\":\"amd64\",.*",
+)
+
+file_test(
+    name = "new_pause_tar_test_0_tar_gz_symlink",
+    file = "@new_pause_tar//image:0.tar.gz",
+    regexp = ".*",
+)
+
+file_test(
+    name = "new_pause_tar_test_1_tar_gz_symlink",
+    file = "@new_pause_tar//image:1.tar.gz",
+    regexp = ".*",
+)
+# END_DO_NOT_IMPORT
