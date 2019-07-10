@@ -36,6 +36,15 @@ Args:
     container_diff_args: (optional) Args to the container_diff tool as specified here:
                          https://github.com/GoogleContainerTools/container-diff#quickstart
 
+NOTE:
+
+Since every container_repro_test target requires specifying the WORKSPACE file
+(in the 'workspace_file' attribute) of the current project (as shown in the
+examples below), it is required to have a top level BUILD file exporting the
+WORKSPACE file like so:
+
+exports_files(["WORKSPACE"])
+
 Examples:
 
 container_repro_test(
@@ -61,7 +70,7 @@ container_repro_test(
 )
 """
 
-load("@base_images_docker//util:run.bzl", _extract = "extract")
+load("//docker/util:run.bzl", _extract = "extract")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//container:container.bzl", _container = "container")
 
@@ -217,7 +226,7 @@ container_repro_test = rule(
             doc = "A container_image target to test for reproducibility.",
         ),
         "workspace_file": attr.label(
-            allow_single_file = True,
+            allow_single_file = ["WORKSPACE"],
             mandatory = True,
             doc = "The WORKSPACE file of the project containing the 'image' " +
                   "target to help detect project's root path.",
@@ -229,7 +238,7 @@ container_repro_test = rule(
             executable = True,
         ),
         "_extract_tpl": attr.label(
-            default = Label("@base_images_docker//util:extract.sh.tpl"),
+            default = Label("//docker/util:extract.sh.tpl"),
             allow_single_file = True,
         ),
         "_image_id_extractor": attr.label(

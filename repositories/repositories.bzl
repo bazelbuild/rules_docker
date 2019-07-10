@@ -253,14 +253,6 @@ py_library(
             urls = ["https://storage.googleapis.com/container-diff/v0.15.0/container-diff-linux-amd64"],
         )
 
-    if "base_images_docker" not in excludes:
-        http_archive(
-            name = "base_images_docker",
-            sha256 = "a6862114a02723e6d2cede1b0d3e99840a86d9c8fd3ae09f0fc238d542f60637",
-            strip_prefix = "base-images-docker-88c5cd81fb4a801680f42b19e23aea5249e1b851",
-            urls = ["https://github.com/GoogleCloudPlatform/base-images-docker/archive/88c5cd81fb4a801680f42b19e23aea5249e1b851.tar.gz"],
-        )
-
     # For bzl_library.
     if "bazel_skylib" not in excludes:
         http_archive(

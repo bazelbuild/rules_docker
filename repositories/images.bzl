@@ -20,24 +20,7 @@ _REGISTRY = "l.gcr.io"
 def images():
     """Pull containers used in rules_docker.
 
-    In your WORKSPACE file, load the dependencies as follows:
-
-    load(
-        "@io_bazel_rules_docker//repositories:repositories.bzl",
-        container_repositories = "repositories",
-    )
-
-    container_repositories()
-
-    load(
-        "@io_bazel_rules_docker//repositories:images.bzl",
-        rules_docker_images = "images",
-    )
-
-    rules_docker_images()
-
-    ...
-
+    Pull in all container images that custom rules depend on by default.
     """
 
     excludes = native.existing_rules().keys()

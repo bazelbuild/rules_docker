@@ -37,7 +37,7 @@ load("//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
 
-# pip deps are only needed for running  tests.
+# pip deps are only needed for running tests.
 load("//repositories:pip_repositories.bzl", "pip_deps")
 
 pip_deps()
@@ -224,6 +224,14 @@ container_pull(
     digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
     registry = "gcr.io",
     repository = "google-appengine/debian9",
+)
+
+# This image is used by tests/contrib tests.
+container_pull(
+    name = "bazel_0271",
+    digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
+    registry = "l.gcr.io",
+    repository = "google/bazel",
 )
 
 # Have the py_image dependencies for testing.

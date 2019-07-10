@@ -16,8 +16,6 @@ platforms:
     - "-//tests/container/..."
     - "-//:structure_test_at_workspace_root"
     # Disabled tests that do not run in BuildKite CI.
-    # - "-//tests/contrib:derivative_with_volume_repro_test"
-    # - "-//tests/contrib:set_cmd_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
@@ -37,8 +35,6 @@ platforms:
     - "-//tests/container/..."
     - "-//:structure_test_at_workspace_root"
     # Disabled tests that do not run in BuildKite CI.
-    # - "-//tests/contrib:derivative_with_volume_repro_test"
-    # - "-//tests/contrib:set_cmd_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
@@ -70,11 +66,8 @@ platforms:
     build_targets:
     - "--"
     - "..."
-    # These targets produce files and directories and it makes them fail to build on RBE.
-    # RBE fails to construct CAS files to upload the outputs because it's unable to
-    # calculate file hashes for the output directories.
-    # - "-//tests/contrib:derivative_with_volume_repro_test"
-    # - "-//tests/contrib:set_cmd_repro_test"
+    - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
@@ -90,8 +83,8 @@ platforms:
     - "--"
     - "//:structure_test_at_workspace_root"
     - "//tests/..."
-    # - "-//tests/contrib:derivative_with_volume_repro_test"
-    # - "-//tests/contrib:set_cmd_repro_test"
+    - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
