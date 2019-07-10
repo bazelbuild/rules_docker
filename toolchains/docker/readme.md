@@ -19,7 +19,15 @@ First read the official Bazel toolchain docs [here](https://docs.bazel.build/ver
 rules work. After that read [How to use the Docker Toolchain](#how-to-use-the-docker-toolchain)
 
 ## How to use the Docker Toolchain
-Register the toolchains exported by this repository in your WORKSPACE
+If you call `container_repositories()` in your `WORKSPACE` file, the
+default docker toolchain is configured.
+The below explains in more detail what this configuration entails.
+Depending on your use case you will need replicate this in your repo
+(e.g., if you are extending these rules) / change this default
+behavior (e.g., if you need to add more constraints) in different ways.
+
+
+`container_repositories()` registers the toolchains exported by this repository:
 ```python
 register_toolchains(
     "@io_bazel_rules_docker//toolchains/docker:default_linux_toolchain",
@@ -30,9 +38,11 @@ register_toolchains(
 
 These rules by default use the docker binary in your system path. To override
 this behavior, you need to explicitly call the toolchain configuration function
-described [here](../../README.md#setup)
+described [here](../../README.md#setup).
 
-Declare the docker toolchain as a requirement in your rule
+
+If you are extending these rules,
+declare the docker toolchain as a requirement in your rule:
 ```python
 your_rule = rule(
     attrs=...,
@@ -42,7 +52,7 @@ your_rule = rule(
 )
 ```
 
-Use the rule as follows in the rule implementation method
+Use the rule as follows in the rule implementation method:
 ```python
 def _impl(ctx):
     # Get the DockerToolchainInfo provider

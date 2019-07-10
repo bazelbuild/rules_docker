@@ -182,6 +182,7 @@ bzl_library(
         ":layer_tools",
         ":providers",
         "//skylib:label",
+        "@bazel_skylib//lib:dicts",
     ],
 )
 
@@ -194,6 +195,7 @@ bzl_library(
         ":image",
         ":import",
         ":layer",
+        ":load",
         ":push",
     ],
 )
