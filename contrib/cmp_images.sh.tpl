@@ -29,8 +29,10 @@ function cmp_sha_files() {
   local file2="${2}"
   local content_type="${3}"
 
+  local diff_ret=0
+  diff $file1 $file2 || diff_ret=$?
   echo === Comparing image "${content_type}"s ===
-  if [ "$(diff $file1 $file2)" = "" ]; then
+  if [ $diff_ret = 0 ]; then
   	echo Both images have the same SHA256 "${content_type}": "$(<$file1)"
   else
   	echo Images have different SHA256 "${content_type}"s

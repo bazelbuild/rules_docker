@@ -70,9 +70,9 @@ container_repro_test(
 )
 """
 
-load("//docker/util:run.bzl", _extract = "extract")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//container:container.bzl", _container = "container")
+load("//docker/util:run.bzl", _extract = "extract")
 
 def _impl(ctx):
     """Core implementation of container_repro_test"""
