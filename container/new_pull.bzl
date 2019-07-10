@@ -77,9 +77,14 @@ _container_pull_attrs = {
         doc = "(optional) The tag of the image, default to 'latest' " +
               "if this and 'digest' remain unspecified.",
     ),
-    "_puller": attr.label(
+    "_puller_darwin": attr.label(
         executable = True,
-        default = Label("@go_puller//file:downloaded"),
+        default = Label("@go_puller_darwin//file:downloaded"),
+        cfg = "host",
+    ),
+    "_puller_linux": attr.label(
+        executable = True,
+        default = Label("@go_puller_linux//file:downloaded"),
         cfg = "host",
     ),
 }
@@ -111,8 +116,12 @@ container_import(
 
 exports_files(glob(["**"]))""")
 
+    puller = repository_ctx.attr._puller_linux
+    if repository_ctx.os.name.lower().startswith("mac os"):
+        puller = repository_ctx.attr._puller_darwin
+
     args = [
-        repository_ctx.path(repository_ctx.attr._puller),
+        repository_ctx.path(puller),
         "-directory",
         repository_ctx.path(""),
         "-format",

@@ -29,9 +29,6 @@ steps:
 # TODO(xingao): Once we have tests for the go binary, run the tests before
 # pushing the binaries to GCS.
 
-# TODO(xingao): Once https://github.com/bazelbuild/rules_go/issues/2089 is fixed,
-# Release go binary built for darwin_amd64.
-
 # Step: build the puller release binary for Linux
   - name: "l.gcr.io/google/bazel"
     args:
@@ -48,7 +45,7 @@ steps:
       - "cp"
       - "-a"
       - "public-read"
-      - "bazel-bin/container/go/cmd/puller/linux_amd64_stripped/puller"
+      - "bazel-bin/container/go/cmd/puller/linux_amd64_pure_stripped/puller"
       - "gs://rules_docker/$COMMIT_SHA/puller-linux-amd64"
     waitFor: ["build-linux"]
 
@@ -58,6 +55,36 @@ steps:
       - "cp"
       - "-a"
       - "public-read"
-      - "bazel-bin/container/go/cmd/loader/linux_amd64_stripped/loader"
+      - "bazel-bin/container/go/cmd/loader/linux_amd64_pure_stripped/loader"
       - "gs://rules_docker/$COMMIT_SHA/loader-linux-amd64"
     waitFor: ["build-linux"]
+
+# Step: build the puller release binary for Darwin
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "build"
+      - "--platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64"
+      - "//container/go/cmd/puller:puller"
+      - "//container/go/cmd/loader:loader"
+    id: "build-darwin"
+    waitFor: ["build-linux"]
+
+# Step: push the puller release binary for Darwin
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/puller/darwin_amd64_pure_stripped/puller"
+      - "gs://rules_docker/$COMMIT_SHA/puller-darwin-amd64"
+    waitFor: ["build-darwin"]
+
+# Step: push the loader release binary for Darwin
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/loader/darwin_amd64_pure_stripped/loader"
+      - "gs://rules_docker/$COMMIT_SHA/loader-darwin-amd64"
+    waitFor: ["build-darwin"]
