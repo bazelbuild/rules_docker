@@ -17,7 +17,7 @@
 # simple repo using java_image.
 
 steps:
-  # Test the java_image example.
+  # Test the download_pkgs examples.
   - name: "l.gcr.io/google/bazel"
     args: ["test", "//..."]
     dir: "testing/download_pkgs_at_root"

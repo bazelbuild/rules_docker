@@ -72,7 +72,7 @@ FROM bazel:ubuntu1604_vanilla
 RUN apt-get update && \
   apt-get install --no-install-recommends -y curl netbase ca-certificates
 EOM
-    docker rmi rules_docker/test:test
+    docker rmi rules_docker/test:test || true
     cid=$(docker build -q -t rules_docker/test:test - < $TEST_DOCKER_FILE)
 
     # Compare it with the tar file built with install_pkgs using container diff
