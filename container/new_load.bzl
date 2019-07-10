@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for loading an image from 'docker save' tarball or the current 
+"""Rule for loading an image from 'docker save' tarball or the current
    container_pull tarball format into OCI intermediate layout.
 
 This extracts the tarball amd creates a filegroup of the untarred objects in OCI layout.
@@ -37,8 +37,12 @@ container_import(
 
 exports_files(glob(["**"]))""")
 
+    loader = repository_ctx.attr._loader_linux
+    if repository_ctx.os.name.lower().startswith("mac os"):
+        loader = repository_ctx.attr._loader_darwin
+
     result = repository_ctx.execute([
-        repository_ctx.path(repository_ctx.attr._loader),
+        repository_ctx.path(loader),
         "-directory",
         repository_ctx.path(""),
         "-tarball",
@@ -54,9 +58,14 @@ new_container_load = repository_rule(
             allow_single_file = True,
             mandatory = True,
         ),
-        "_loader": attr.label(
+        "_loader_darwin": attr.label(
             executable = True,
-            default = Label("@loader//file:downloaded"),
+            default = Label("@loader_darwin//file:downloaded"),
+            cfg = "host",
+        ),
+        "_loader_linux": attr.label(
+            executable = True,
+            default = Label("@loader_linux//file:downloaded"),
             cfg = "host",
         ),
     },
