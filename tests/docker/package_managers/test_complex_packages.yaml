@@ -1,0 +1,20 @@
+steps:
+- name: 'l.gcr.io/google/bazel'
+  entrypoint: ./tests/docker/package_managers/test_complex_packages.sh
+  args: [setup]
+
+- name: 'l.gcr.io/google/bazel'
+  entrypoint: ./tests/docker/package_managers/test_complex_packages.sh
+  args: [run_download_pkgs]
+  dir: 'rules_docker'
+
+- name: 'l.gcr.io/google/bazel'
+  entrypoint: ./tests/docker/package_managers/test_complex_packages.sh
+  args: [run_install_pkgs]
+  dir: 'rules_docker'
+
+- name: 'l.gcr.io/google/bazel'
+  entrypoint: ./tests/docker/package_managers/test_complex_packages.sh
+  args: [run_build_dockerfile_and_compare]
+  dir: 'rules_docker'
+

@@ -12,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_docker//java:image.bzl", "java_image")
+# Tests that verify the java_image example of rules_docker.
+# This basic test verifies dependencies can be resolved correctly for a
+# simple repo using java_image.
 
-package(default_visibility = ["//visibility:public"])
-
-java_image(
-    name = "java_image",
-    srcs = [":Runfiles.java"],
-    data = [
-        ":foo",
-    ],
-    main_class = "examples.images.Runfiles",
-    deps = [
-        "@bazel_tools//tools/java/runfiles",
-    ],
-)
+steps:
+  # Test the download_pkgs examples.
+  - name: "l.gcr.io/google/bazel"
+    args: ["test", "//..."]
+    dir: "testing/download_pkgs_at_root"

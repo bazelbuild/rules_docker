@@ -132,6 +132,13 @@ def repositories():
                 "https://github.com/bazelbuild/rules_go/archive/3f29dcb26c9e22ae513321ec9096e776c353ebce.tar.gz",
             ],
         )
+    if "io_bazel_rules_python" not in excludes:
+        http_archive(
+            name = "io_bazel_rules_python",
+            sha256 = "9a3d71e348da504a9c4c5e8abd4cb822f7afb32c613dc6ee8b8535333a81a938",
+            strip_prefix = "rules_python-fdbb17a4118a1728d19e638a5291b4c4266ea5b8",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/fdbb17a4118a1728d19e638a5291b4c4266ea5b8.tar.gz"],
+        )
 
     if "httplib2" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?

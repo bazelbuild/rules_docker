@@ -1,0 +1,7 @@
+schemaVersion: '2.0.0'
+commandTests:
+- name: 'gpg'
+  setup: [["apt-get", "update"], ["apt-get", "install", "-y", "-q", "gnupg"]]
+  command: 'apt-key'
+  args: ['list']
+  expectedOutput: ['Bazel APT repository key']
