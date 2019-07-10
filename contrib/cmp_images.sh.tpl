@@ -41,14 +41,14 @@ function cmp_sha_files() {
 }
 
 # Compare image digests.
-img1_digest_file=%{img1_path}/%{img_name}.digest
-img2_digest_file=%{img2_path}/%{img_name}.digest
+img1_digest_file=%{img1_path}/final_files1/%{img_name}.digest
+img2_digest_file=%{img2_path}/final_files2/%{img_name}.digest
 cmp_sha_files $img1_digest_file $img2_digest_file "digest"
 
-# Compare image IDs
-img1_id_file="$(readlink -f %{img1_path}/%{img_name}.json)"
-img2_id_file="$(readlink -f %{img2_path}/%{img_name}.json)"
-cmp_sha_files "$img1_id_file".sha256 "$img2_id_file".sha256 "ID"
+# # Compare image IDs
+# img1_id_file="$(readlink -f %{img1_path}/%{img_name}.json)"
+# img2_id_file="$(readlink -f %{img2_path}/%{img_name}.json)"
+# cmp_sha_files "$img1_id_file".sha256 "$img2_id_file".sha256 "ID"
 
 # Run the container_diff tool if images differ.
 if [ "$imgs_differ" = true ]; then
