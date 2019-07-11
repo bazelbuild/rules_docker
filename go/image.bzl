@@ -34,7 +34,8 @@ load(
 )
 
 # Load the resolved digests.
-load(":go.bzl", "DIGESTS")
+load(":go.bzl", BASE_DIGESTS = "DIGESTS")
+load(":static.bzl", STATIC_DIGESTS = "DIGESTS")
 
 def repositories():
     """Import the dependencies of the go_image rule.
@@ -50,14 +51,28 @@ def repositories():
             name = "go_image_base",
             registry = "gcr.io",
             repository = "distroless/base",
-            digest = DIGESTS["latest"],
+            digest = BASE_DIGESTS["latest"],
         )
     if "go_debug_image_base" not in excludes:
         container_pull(
             name = "go_debug_image_base",
             registry = "gcr.io",
             repository = "distroless/base",
-            digest = DIGESTS["debug"],
+            digest = BASE_DIGESTS["debug"],
+        )
+    if "go_image_static" not in excludes:
+        container_pull(
+            name = "go_image_static",
+            registry = "gcr.io",
+            repository = "distroless/static",
+            digest = STATIC_DIGESTS["latest"],
+        )
+    if "go_debug_image_static" not in excludes:
+        container_pull(
+            name = "go_debug_image_static",
+            registry = "gcr.io",
+            repository = "distroless/static",
+            digest = STATIC_DIGESTS["debug"],
         )
 
 DEFAULT_BASE = select({
@@ -65,6 +80,13 @@ DEFAULT_BASE = select({
     "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
     "//conditions:default": "@go_image_base//image",
+})
+
+STATIC_DEFAULT_BASE = select({
+    "@io_bazel_rules_docker//:debug": "@go_debug_image_static//image",
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_static//image",
+    "@io_bazel_rules_docker//:optimized": "@go_image_static//image",
+    "//conditions:default": "@go_image_static//image",
 })
 
 def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
@@ -87,7 +109,9 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     elif deps:
         fail("kwarg does nothing when binary is specified", "deps")
 
-    base = base or DEFAULT_BASE
+    if not base:
+        base = STATIC_DEFAULT_BASE if kwargs.get("pure") == "on" else DEFAULT_BASE
+
     for index, dep in enumerate(layers):
         base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
         base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
