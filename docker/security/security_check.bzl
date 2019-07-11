@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Rule for checking vulnerabilities in a given image. """
+
 def _impl(ctx):
     _security_check = ctx.executable._security_check
     output_yaml = ctx.outputs.yaml

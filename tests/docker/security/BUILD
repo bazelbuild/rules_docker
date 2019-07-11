@@ -16,7 +16,6 @@ load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
-
 load("//docker/security:security_check.bzl", "security_check")
 
 security_check(
@@ -26,8 +25,8 @@ security_check(
 
 file_test(
     name = "security_check_test",
-    regexp = "tags:",
     file = ":security_check.yaml",
+    regexp = "tags:",
 )
 
 security_check(
@@ -40,7 +39,6 @@ security_check(
 # @nlopezgi to fix.
 file_test(
     name = "security_check_expect_cve_test",
-    regexp = "cveMedium",
     file = ":security_check_expect_cve.yaml",
+    regexp = "cveMedium",
 )
-

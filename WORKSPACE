@@ -424,11 +424,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "28cb3666da80fbc62d4c46814f5468dd5d0b59f9064c0b933eee3140d706d330",
-    strip_prefix = "bazel-toolchains-0.27.1",
+    sha256 = "68e7678473090542e679ce7e6aa8a3ba5669577dede2b404f9865d556bd99f10",
+    strip_prefix = "bazel-toolchains-0.28.0",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.27.1.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.27.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
     ],
 )
 
@@ -436,6 +436,10 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "buildkite_config",
+    base_container_digest = "sha256:94d7d8552902d228c32c8c148cc13f0effc2b4837757a6e95b73fdc5c5e4b07b",
+    digest = "sha256: 8e1d298811a616c33eda221044bfc00c44c8ab48589cef5d206aa630d95c769f",
+    registry = "gcr.io",
+    repository = "asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud",
 )
 
 # gazelle:repo bazel_gazelle
