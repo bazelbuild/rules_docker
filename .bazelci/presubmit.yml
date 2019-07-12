@@ -24,8 +24,9 @@ platforms:
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"
-    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
-    - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/container:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
   ubuntu1804:
     test_targets:
     - "--"
@@ -42,8 +43,9 @@ platforms:
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"
-    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
-    - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/container:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
   macos:
     build_targets:
     - "//tests/container/..."
@@ -52,14 +54,13 @@ platforms:
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
-    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
-    - "--incompatible_disallow_legacy_javainfo=false"
     test_targets:
     - "//tests/container:test_digest_output1"
     test_flags:
     - "--action_env=PATH"
-    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
-    - "--incompatible_disallow_legacy_javainfo=false"
+    # For tests/container:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
   rbe_ubuntu1604:
     build_targets:
     - "--"
@@ -75,8 +76,6 @@ platforms:
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
     - "--keep_going"
-    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
-    - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
@@ -101,8 +100,6 @@ platforms:
     - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
     - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
     - "--keep_going"
-    # TODO(xingao): Remove after https://github.com/bazelbuild/rules_scala/issues/644 is addressed.
-    - "--incompatible_disallow_legacy_javainfo=false"
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
