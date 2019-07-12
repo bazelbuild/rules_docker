@@ -135,6 +135,7 @@ def _impl(ctx):
     # Commands to build the image targets and copy the files required for image
     # comparison to a known location in the container (being 'extract_path').
     cd_cmd = ["cd \$(cat /%s)" % proj_root.basename]
+
     # Output base needs to be specified in order for Bazel to be able to access
     # produced files stored in the host and mount into other container within a
     # running container if needed (e.g. installing debian packages with
