@@ -12,11 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Tests that verify that download_pkgs targets can be declared
-# in the top level BUILD file.
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@pip_deps//:requirements.bzl", "requirement")
+load("@subpar//:subpar.bzl", "par_binary")
 
-steps:
-  # Test the download_pkgs examples.
-  - name: "l.gcr.io/google/bazel"
-    args: ["test", "//..."]
-    dir: "testing/download_pkgs_at_root"
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "security_check_whitelist.json",
+])
+
+par_binary(
+    name = "security_check",
+    srcs = ["security_check.py"],
+    main = "security_check.py",
+    python_version = "PY2",
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("PyYaml"),
+    ],
+)
+
+bzl_library(
+    name = "security_check_lib",
+    srcs = [
+        "security_check.bzl",
+    ],
+)
