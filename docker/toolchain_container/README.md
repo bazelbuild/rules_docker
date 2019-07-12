@@ -1,10 +1,10 @@
 # Bazel toolchain container rules
 
-Rules in this directory provide functionality to build 'toolchain_containers'.
-These are containers made up of 'lanugage_tool_layers'. Each 'lanugage_tool_layer'
-produces a container_image with a set of debian packages installed.
-A lanugage_tool_layer can define any attributes of a container_image.
-Note these rules depend on docker/package_managers rules which in turn 
+Rules in this directory provide functionality to build `toolchain_container`s.
+These are containers made up of `lanugage_tool_layer`s. Each `lanugage_tool_layer`
+produces a `container_image` with a set of debian packages installed.
+A `lanugage_tool_layer` can define any attributes of a `container_image`.
+Note these rules depend on `docker/package_managers` rules which in turn 
 require a docker binary to be present and configured properly via
 [docker toolchain rules](https://github.com/nlopezgi/rules_docker/blob/master/toolchains/docker/readme.md#how-to-use-the-docker-toolchain).
 
