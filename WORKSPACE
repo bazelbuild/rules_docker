@@ -191,6 +191,13 @@ container_pull(
     tag = "3.1",
 )
 
+container_pull(
+    name = "official_xenial",
+    registry = "index.docker.io",
+    repository = "library/ubuntu",
+    tag = "16.04",
+)
+
 # For testing, don't change the sha on these ones
 container_pull(
     name = "distroless_fixed_id",

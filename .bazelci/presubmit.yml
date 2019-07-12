@@ -10,11 +10,8 @@ buildifier:
 platforms:
   ubuntu1604:
     test_targets:
-    # We are running the skipped targets remotely only.
     - "--"
     - "..."
-    - "-//tests/container/..."
-    - "-//:structure_test_at_workspace_root"
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/docker/security/..."
     # tests/docker/security require gcloud
@@ -31,11 +28,8 @@ platforms:
     - "--incompatible_disallow_legacy_javainfo=false"
   ubuntu1804:
     test_targets:
-    # We are running the skipped targets remotely only.
     - "--"
     - "..."
-    - "-//tests/container/..."
-    - "-//:structure_test_at_workspace_root"
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/docker/security/..."
     # tests/docker/security require gcloud
