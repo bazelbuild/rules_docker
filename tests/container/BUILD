@@ -454,7 +454,7 @@ file_test(
       }
    ]
 }""",
-    file = "@new_alpine_linux_armv6//image-oci:index.json",
+    file = "@new_alpine_linux_armv6_fixed_id//image-oci:index.json",
 )
 
 file_test(
@@ -464,12 +464,12 @@ file_test(
    "manifests": [
       {
          "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 737,
-         "digest": "sha256:edc3643ddf96d75032a55e240900b68b335186f1e5fea0a95af3b4cc96020b77"
+         "size": 444,
+         "digest": "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c"
       }
    ]
 }""",
-    file = "@new_distroless_base//image-oci:index.json",
+    file = "@new_distroless_base_fixed_id//image-oci:index.json",
 )
 
 file_test(
@@ -477,7 +477,7 @@ file_test(
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_alpine_linux_armv6//image-oci:oci-layout",
+    file = "@new_alpine_linux_armv6_fixed_id//image-oci:oci-layout",
 )
 
 file_test(
@@ -485,7 +485,7 @@ file_test(
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_distroless_base//image-oci:oci-layout",
+    file = "@new_distroless_base_fixed_id//image-oci:oci-layout",
 )
 
 # Merely testing for the presence of the pulled image.tar for now.
@@ -500,19 +500,19 @@ file_test(
     content = """{
     "imageLayoutVersion": "1.0.0"
 }""",
-    file = "@new_alpine_linux_armv6//image-oci:oci-layout",
+    file = "@new_alpine_linux_armv6_fixed_id//image-oci:oci-layout",
 )
 
 # Testing for content of symlinks
 file_test(
     name = "new_distroless_base_oci_test_config_symlink",
-    file = "@new_alpine_linux_armv6//image:config.json",
+    file = "@new_alpine_linux_armv6_fixed_id//image:config.json",
     regexp = "{\"architecture\":\"arm\",.*",
 )
 
 file_test(
     name = "new_distroless_base_oci_test_0_tar_gz_symlink",
-    file = "@new_alpine_linux_armv6//image:0.tar.gz",
+    file = "@new_alpine_linux_armv6_fixed_id//image:0.tar.gz",
     regexp = ".*",
 )
 
@@ -533,7 +533,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_armv6_image_oci_tar",
-    base = "@new_alpine_linux_armv6//image:image.tar",
+    base = "@new_alpine_linux_armv6_fixed_id//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -542,7 +542,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_armv6_image_oci",
-    base = "@new_alpine_linux_armv6//image:image",
+    base = "@new_alpine_linux_armv6_fixed_id//image:image",
     files = [
         "//testdata:bar",
         "//testdata:foo",
