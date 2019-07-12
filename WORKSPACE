@@ -436,10 +436,6 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "buildkite_config",
-    base_container_digest = "sha256:94d7d8552902d228c32c8c148cc13f0effc2b4837757a6e95b73fdc5c5e4b07b",
-    digest = "sha256: 8e1d298811a616c33eda221044bfc00c44c8ab48589cef5d206aa630d95c769f",
-    registry = "gcr.io",
-    repository = "asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud",
 )
 
 # gazelle:repo bazel_gazelle

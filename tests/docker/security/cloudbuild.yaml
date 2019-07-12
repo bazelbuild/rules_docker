@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Tests that verify that download_pkgs targets can be declared
-# in the top level BUILD file.
+# Tests that verify the security_check examples of rules_docker.
+# Needs to run on GCB as requires access to asci-toolchains images
 
 steps:
-  # Test the download_pkgs examples.
-  - name: "l.gcr.io/google/bazel"
-    args: ["test", "//..."]
-    dir: "testing/download_pkgs_at_root"
+  # Test the security_check examples.
+  - name: "gcr.io/asci-toolchain/nosla-ubuntu16_04-bazel-docker-gcloud"
+    args: ["bazel","test", "//tests/docker/security/..."]
