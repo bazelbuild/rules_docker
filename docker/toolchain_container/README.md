@@ -1,6 +1,6 @@
 # Bazel toolchain container rules
 
-Rules in this directory provide functionality to build 'toolchainc_containers'.
+Rules in this directory provide functionality to build 'toolchain_containers'.
 These are containers made up of 'lanugage_tool_layers'. Each 'lanugage_tool_layer'
 produces a container_image with a set of debian packages installed.
 A lanugage_tool_layer can define any attributes of a container_image.
