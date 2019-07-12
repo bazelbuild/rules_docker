@@ -21,7 +21,7 @@ require a docker binary to be present and configured properly via
 language_tool_layer(<a href="#language_tool_layer-kwargs">kwargs</a>)
 </pre>
 
-A wrapper around attrs in container_image, download_pkgs and install_pkgs rules.
+A wrapper around attrs in `container_image`, `download_pkgs` and `install_pkgs` rules.
 
 Downloads and installs debian packages using
 https://github.com/GoogleCloudPlatform/base-images-docker/tree/master/package_managers,
@@ -69,14 +69,14 @@ and configures the rest using https://github.com/bazelbuild/rules_docker#contain
 toolchain_container(<a href="#toolchain_container-kwargs">kwargs</a>)
 </pre>
 
-Composes multiple language_tool_layers into a single resulting image.
+Composes multiple `language_tool_layer`s into a single resulting image.
 
-A toolchain_container is a container_image composed from multiple language_tool_layer
-targets. Each language_tool_layer target can install a list of debian packages.
+A `toolchain_container` is a `container_image` composed from multiple `language_tool_layer`
+targets. Each `language_tool_layer` target can install a list of debian packages.
 
-If 'installables_tar' is specified in the 'toolchain_container' rule, then
-'packages' or 'installables_tar' specified in any of the 'language_layers'
-passed to this 'toolchain_container' rule will be ignored.
+If `installables_tar` is specified in the `toolchain_container` rule, then
+`packages` or `installables_tar` specified in any of the `language_layers`
+passed to this `toolchain_container` rule will be ignored.
 
 
 ### Parameters
@@ -94,8 +94,8 @@ passed to this 'toolchain_container' rule will be ignored.
         <p>
           Same args as https://github.com/bazelbuild/rules_docker#container_image-1
       minus:
-          debs: debian packages should be listed in 'packages', or be included in
-              'installables_tar' as .deb files.
+          debs: debian packages should be listed in `packages`, or be included in
+              `installables_tar` as .deb files.
       plus:
           language_layers: a list of language_tool_layer.
           installables_tar: a tar of debian packages to install in the base image.

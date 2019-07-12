@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//docker/toolchain_container:toolchain_container.bzl", "language_tool_layer", "toolchain_container")
 load("//contrib:test.bzl", "container_test")
+load(
+    "//docker/toolchain_container:toolchain_container.bzl",
+    "language_tool_layer",
+    "toolchain_container",
+)
 
 licenses(["notice"])  # Apache 2.0
 
