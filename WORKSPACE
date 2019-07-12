@@ -142,6 +142,13 @@ http_file(
     urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
 )
 
+http_file(
+    name = "gcloud_gpg",
+    downloaded_file_path = "gcloud_gpg",
+    sha256 = "1fe629470162c72777c1ed5e5b0f392acf403cf6a374cb229cf76109b5c90ed5",
+    urls = ["https://packages.cloud.google.com/apt/doc/apt-key.gpg"],
+)
+
 container_load(
     name = "pause_tar",
     file = "//testdata:pause.tar",

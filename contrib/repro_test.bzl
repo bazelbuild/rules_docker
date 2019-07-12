@@ -129,12 +129,23 @@ def _impl(ctx):
     extract_path = "/img_outs"
     img_tar = img_name + ".tar"
     img_digest = img_name + ".digest"
+    host_outs_path1 = "/tmp/" + name + "/bazel_out1"
+    host_outs_path2 = "/tmp/" + name + "/bazel_out2"
 
     # Commands to build the image targets and copy the files required for image
     # comparison to a known location in the container (being 'extract_path').
-    commands = [
-        "cd \$(cat /%s)" % proj_root.basename,
-        "bazel build " + " ".join(build_targets),
+    cd_cmd = ["cd \$(cat /%s)" % proj_root.basename]
+    # Output base needs to be specified in order for Bazel to be able to access
+    # produced files stored in the host and mount into other container within a
+    # running container if needed (e.g. installing debian packages with
+    # toolchain_container).
+    build_cmd1 = [
+        ("bazel --output_base=%s build " % host_outs_path1) + " ".join(build_targets),
+    ]
+    build_cmd2 = [
+        ("bazel --output_base=%s build " % host_outs_path2) + " ".join(build_targets),
+    ]
+    cp_cmds = [
         "mkdir %s" % extract_path,
         "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_tar, extract_path, img_tar),
         "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_digest, extract_path, img_digest),
@@ -158,10 +169,10 @@ def _impl(ctx):
     _extract.implementation(
         ctx,
         name = "build_image_and_extract",
-        commands = commands,
+        commands = cd_cmd + build_cmd1 + cp_cmds,
         extract_file = extract_path,
         image = image_tar,
-        docker_run_flags = docker_run_flags,
+        docker_run_flags = docker_run_flags + ["-v", "%s:%s" % (host_outs_path1, host_outs_path1)],
         output_file = img1_outs,
         script_file = ctx.actions.declare_file(name + ".build1"),
     )
@@ -171,10 +182,10 @@ def _impl(ctx):
     _extract.implementation(
         ctx,
         name = "build_image_and_extract_repro",
-        commands = commands,
+        commands = cd_cmd + build_cmd2 + cp_cmds,
         extract_file = extract_path,
         image = image_tar,
-        docker_run_flags = docker_run_flags,
+        docker_run_flags = docker_run_flags + ["-v", "%s:%s" % (host_outs_path2, host_outs_path2)],
         output_file = img2_outs,
         script_file = ctx.actions.declare_file(name + ".build2"),
     )

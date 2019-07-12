@@ -23,6 +23,7 @@ load("//contrib:push-all.bzl", "docker_push")
 load("//contrib:rename_image.bzl", "rename_image")
 load("//contrib:repro_test.bzl", "container_repro_test")
 load("//contrib:test.bzl", "container_test")
+load("//docker/toolchain_container:toolchain_container.bzl", "toolchain_container")
 load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 
 sh_test(
@@ -167,6 +168,26 @@ docker_push(
     "kaniko_debug",
 ]]
 
+toolchain_container(
+    name = "gcloud_img",
+    additional_repos = [
+        "deb http://packages.cloud.google.com/apt cloud-sdk-xenial main",
+    ],
+    base = "@official_xenial//image",
+    keys = ["@gcloud_gpg//file"],
+    packages = [
+        "curl",
+        "g++",
+        "gcc",
+        "google-cloud-sdk",
+        "git",
+        "python-dev",
+        "unzip",
+        "wget",
+        "zip",
+    ],
+)
+
 container_repro_test(
     name = "set_cmd_repro_test",
     image = "//tests/container:set_cmd",
@@ -186,5 +207,11 @@ container_repro_test(
         "node",
     ],
     image = "//testdata:derivative_with_volume",
+    workspace_file = "//:WORKSPACE",
+)
+
+container_repro_test(
+    name = "gcloud_img_repro_test",
+    image = ":gcloud_img",
     workspace_file = "//:WORKSPACE",
 )
