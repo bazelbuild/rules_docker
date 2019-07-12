@@ -47,15 +47,16 @@ load(
     "new_container_pull",
 )
 
-# These are for testing the new container pull
+# These are for testing the new container pull.
+# For testing, don't change the sha.
 new_container_pull(
-    name = "new_alpine_linux_armv6",
+    name = "new_alpine_linux_armv6_fixed_id",
     architecture = "arm",
     cpu_variant = "v6",
+    digest = "sha256:f29c3d10359dd0e6d0c11e4f715735b678c0ab03a7ac4565b4b6c08980f6213b",
     os = "linux",
     registry = "index.docker.io",
     repository = "library/alpine",
-    tag = "3.8",
 )
 
 new_container_pull(
@@ -69,8 +70,10 @@ new_container_pull(
     tag = "3.8",
 )
 
+# For testing, don't change the sha.
 new_container_pull(
-    name = "new_distroless_base",
+    name = "new_distroless_base_fixed_id",
+    digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
     registry = "gcr.io",
     repository = "distroless/base",
 )
