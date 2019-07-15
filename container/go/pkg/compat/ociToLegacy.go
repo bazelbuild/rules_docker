@@ -24,6 +24,7 @@ import (
 	"strconv"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/pkg/errors"
 )
 
@@ -89,6 +90,23 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		if err = generateSymlinks(layerPath, dstLink); err != nil {
 			return errors.Wrapf(err, "failed to generate legacy symlink for layer %d with digest %s", i, layerDigest)
 		}
+	}
+
+	// symlink for the image manifest pulled into OCI layout to .json, so must rename the file from being
+	// named after its sha256 digest under blobs/sha256 to manifest.json
+	imgIndex, err := layout.ImageIndexFromPath(srcDir)
+	if err != nil {
+		return errors.Wrapf(err, "unable to open image as index from %s", srcDir)
+	}
+	manifest, err := imgIndex.IndexManifest()
+	if err != nil {
+		return errors.Wrap(err, "unable to get manifest from image index")
+	}
+	manifestHex := manifest.Manifests[0].Digest.Hex
+	dstLink = path.Join(dstDir, manifestExt)
+	manifestPath := path.Join(targetDir, manifestHex)
+	if err = generateSymlinks(manifestPath, dstLink); err != nil {
+		return errors.Wrapf(err, "failed to generate manifest.json symlink")
 	}
 
 	return nil
