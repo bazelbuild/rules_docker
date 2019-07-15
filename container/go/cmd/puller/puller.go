@@ -16,7 +16,6 @@
 // For the format specification, if the format is:
 // 		1. 'docker': image is pulled as tarball and may be used with `docker load -i`.
 // 		2. 'oci' (default): image will be pulled as a collection of files in OCI layout to directory.
-// 		3. 'both': both formats of image are pulled.
 // Unlike regular docker pull, the format this package uses is proprietary.
 
 package main
@@ -31,8 +30,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
+	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"

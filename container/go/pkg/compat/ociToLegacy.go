@@ -19,17 +19,20 @@
 package compat
 
 import (
+	"log"
 	ospkg "os"
 	"path"
 	"strconv"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/pkg/errors"
 )
 
 // Extension for layers and config files that are made symlinks
-const targzExt = ".tar.gz"
-const configExt = "config.json"
+const compressedLayerExt = ".tar.gz"
+const legacyConfigFile = "config.json"
+const legacyManifestFile = "manifest.json"
 
 // generateSymlinks safely generates a symbolic link at dst pointing to src.
 func generateSymlinks(src, dst string) error {
@@ -63,7 +66,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		return errors.Wrap(err, "failed to get the config file's hash information for image")
 	}
 	configPath := path.Join(targetDir, config.Hex)
-	dstLink := path.Join(dstDir, configExt)
+	dstLink := path.Join(dstDir, legacyConfigFile)
 	if err = generateSymlinks(configPath, dstLink); err != nil {
 		return errors.Wrap(err, "failed to generate config.json symlink")
 	}
@@ -80,14 +83,34 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		layerDigest, err := layer.Digest()
 		if err != nil {
 			return errors.Wrap(err, "failed to fetch the layer's digest")
-	}
+		}
 
 		layerPath = path.Join(targetDir, layerDigest.Hex)
-		out := strconv.Itoa(i) + targzExt
+		out := strconv.Itoa(i) + compressedLayerExt
 		dstLink = path.Join(dstDir, out)
 		if err = generateSymlinks(layerPath, dstLink); err != nil {
 			return errors.Wrapf(err, "failed to generate legacy symlink for layer %d with digest %s", i, layerDigest)
 		}
+	}
+
+	// symlink for the image manifest pulled into OCI layout to .json, so must rename the file from being
+	// named after its sha256 digest under blobs/sha256 to manifest.json
+	imgIndex, err := layout.ImageIndexFromPath(srcDir)
+	if err != nil {
+		return errors.Wrapf(err, "unable to open image as index from %s", srcDir)
+	}
+	manifest, err := imgIndex.IndexManifest()
+	if err != nil {
+		return errors.Wrap(err, "unable to get manifest from image index")
+	}
+	if len(manifest.Manifests) != 1 {
+		log.Fatalf("Image index read from %s had unexpected number of manifests: got %d, want 1", srcDir, len(manifest.Manifests))
+	}
+	manifestHex := manifest.Manifests[0].Digest.Hex
+	dstLink = path.Join(dstDir, legacyManifestFile)
+	manifestPath := path.Join(targetDir, manifestHex)
+	if err = generateSymlinks(manifestPath, dstLink); err != nil {
+		return errors.Wrapf(err, "failed to generate %s symlink", legacyManifestFile)
 	}
 
 	return nil
