@@ -67,7 +67,7 @@ def _container_bundle_impl(ctx):
         ctx.outputs.executable,
         stamp = stamp,
     )
-    _assemble_image(ctx, images, ctx.outputs.out, stamp = stamp)
+    _assemble_image(ctx, images, ctx.outputs.tar_output, stamp = stamp)
 
     stamp_files = [ctx.info_file, ctx.version_file] if stamp else []
 
@@ -81,6 +81,9 @@ def _container_bundle_impl(ctx):
             files = depset(),
             runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
         ),
+        OutputGroupInfo(
+            tar = depset([ctx.outputs.tar_output]),
+        ),
     ]
 
 container_bundle_ = rule(
@@ -93,11 +96,9 @@ container_bundle_ = rule(
             default = False,
             mandatory = False,
         ),
+        "tar_output": attr.output(),
     }, _layer_tools),
     executable = True,
-    outputs = {
-        "out": "%{name}.tar",
-    },
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _container_bundle_impl,
 )
@@ -128,4 +129,7 @@ def container_bundle(**kwargs):
         kwargs["image_targets"] = values
         kwargs["image_target_strings"] = values
 
+    name = kwargs["name"]
+    tar_output = kwargs.pop("tar_output", name + ".tar")
+    kwargs["tar_output"] = tar_output
     container_bundle_(**kwargs)
