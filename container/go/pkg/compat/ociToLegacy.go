@@ -103,7 +103,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to get manifest from image index")
 	}
-	if len(manifest.Manifests) > 1 {
+	if len(manifest.Manifests) != 1 {
 		log.Fatal("error: image contains more than one manifest")
 	}
 	manifestHex := manifest.Manifests[0].Digest.Hex
