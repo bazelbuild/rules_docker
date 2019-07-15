@@ -126,10 +126,10 @@ def repositories():
         # https://github.com/bazelbuild/rules_go/issues/2089 is released.
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "ec1ed4b629ed686b7dae089236919984f80741dc1a5204b15ae71e0ef733283f",
-            strip_prefix = "rules_go-3f29dcb26c9e22ae513321ec9096e776c353ebce",
+            sha256 = "95347fc028896a7a8ffb46e43e23d509c16a20eef8280c1aae9f6146305c84c1",
+            strip_prefix = "rules_go-0303b3a69695e35940b09ddbf7a444bcc7fbefd4",
             urls = [
-                "https://github.com/bazelbuild/rules_go/archive/3f29dcb26c9e22ae513321ec9096e776c353ebce.tar.gz",
+                "https://github.com/bazelbuild/rules_go/archive/0303b3a69695e35940b09ddbf7a444bcc7fbefd4.tar.gz",
             ],
         )
     if "io_bazel_rules_python" not in excludes:
