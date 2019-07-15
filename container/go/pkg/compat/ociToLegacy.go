@@ -104,7 +104,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		return errors.Wrap(err, "unable to get manifest from image index")
 	}
 	if len(manifest.Manifests) != 1 {
-		log.Fatalf("Image index read from %s had unexpected number of manifests: got %d want 1.", srcDir, len(manifest.Manifests))
+		log.Fatalf("Image index read from %s had unexpected number of manifests: got %d, want 1", srcDir, len(manifest.Manifests))
 	}
 	manifestHex := manifest.Manifests[0].Digest.Hex
 	dstLink = path.Join(dstDir, legacyManifestFile)
