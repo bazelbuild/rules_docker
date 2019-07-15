@@ -40,5 +40,5 @@ security_check(
 file_test(
     name = "security_check_expect_cve_test",
     file = ":security_check_expect_cve.yaml",
-    regexp = "cveMedium",
+    regexp = "cveHigh",
 )
