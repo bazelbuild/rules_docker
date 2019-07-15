@@ -114,7 +114,6 @@ def _check_for_vulnz(image, severity, whitelist):
     return unpatched
 
   base_image = _find_base_image(image)
-  base_image = None
   base_unpatched = {}
   if base_image:
     base_unpatched = _check_image(base_image, severity, whitelist)
@@ -282,7 +281,7 @@ def _generate_yaml_output(output_yaml, vulnerabilities):
     # LOW -> cveLow
     # MEDIUM -> sveMedium
     # and so on...
-    sev = str(details['effectiveSeverity'])
+    sev = str(details['severity'])
     tags.add("cve{}".format(sev.lower().capitalize()))
   result = {"tags": list(tags)}
   logging.info("Creating YAML output {}".format(output_yaml))
