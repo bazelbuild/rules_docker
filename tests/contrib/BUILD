@@ -170,21 +170,21 @@ docker_push(
 
 toolchain_container(
     name = "gcloud_img",
-    # additional_repos = [
-    #     "deb http://packages.cloud.google.com/apt cloud-sdk-xenial main",
-    # ],
+    additional_repos = [
+        "deb http://packages.cloud.google.com/apt cloud-sdk-xenial main",
+    ],
     base = "@official_xenial//image",
-    # keys = ["@gcloud_gpg//file"],
+    keys = ["@gcloud_gpg//file"],
     packages = [
         "curl",
-        # "g++",
-        # "gcc",
-        # "git",
-        # "google-cloud-sdk",
-        # "python-dev",
-        # "unzip",
-        # "wget",
-        # "zip",
+        "g++",
+        "gcc",
+        "git",
+        "google-cloud-sdk",
+        "python-dev",
+        "unzip",
+        "wget",
+        "zip",
     ],
 )
 
