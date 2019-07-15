@@ -19,6 +19,7 @@
 package compat
 
 import (
+	"log"
 	ospkg "os"
 	"path"
 	"strconv"
@@ -29,9 +30,9 @@ import (
 )
 
 // Extension for layers and config files that are made symlinks
-const targzExt = ".tar.gz"
-const configExt = "config.json"
-const manifestExt = "manifest.json"
+const compressedLayerExt = ".tar.gz"
+const legacyConfigFile = "config.json"
+const legacyManifestFile = "manifest.json"
 
 // generateSymlinks safely generates a symbolic link at dst pointing to src.
 func generateSymlinks(src, dst string) error {
@@ -65,7 +66,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		return errors.Wrap(err, "failed to get the config file's hash information for image")
 	}
 	configPath := path.Join(targetDir, config.Hex)
-	dstLink := path.Join(dstDir, configExt)
+	dstLink := path.Join(dstDir, legacyConfigFile)
 	if err = generateSymlinks(configPath, dstLink); err != nil {
 		return errors.Wrap(err, "failed to generate config.json symlink")
 	}
@@ -85,7 +86,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		}
 
 		layerPath = path.Join(targetDir, layerDigest.Hex)
-		out := strconv.Itoa(i) + targzExt
+		out := strconv.Itoa(i) + compressedLayerExt
 		dstLink = path.Join(dstDir, out)
 		if err = generateSymlinks(layerPath, dstLink); err != nil {
 			return errors.Wrapf(err, "failed to generate legacy symlink for layer %d with digest %s", i, layerDigest)
@@ -102,11 +103,14 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to get manifest from image index")
 	}
+	if len(manifest.Manifests) > 1 {
+		log.Fatal("error: image contains more than one manifest")
+	}
 	manifestHex := manifest.Manifests[0].Digest.Hex
-	dstLink = path.Join(dstDir, manifestExt)
+	dstLink = path.Join(dstDir, legacyManifestFile)
 	manifestPath := path.Join(targetDir, manifestHex)
 	if err = generateSymlinks(manifestPath, dstLink); err != nil {
-		return errors.Wrapf(err, "failed to generate manifest.json symlink")
+		return errors.Wrapf(err, "failed to generate %s symlink", legacyManifestFile)
 	}
 
 	return nil
