@@ -100,7 +100,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image_tar.path,
             "%{installables}": ctx.attr.name,
             "%{output_metadata}": output_metadata.path,
@@ -112,7 +112,8 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
     ctx.actions.run(
         outputs = [output_tar, output_metadata],
         executable = output_script,
-        inputs = [image_tar, ctx.file._image_id_extractor],
+        inputs = [image_tar],
+        tools = [ctx.executable._extract_image_id],
     )
 
     # Generate a very similar one as output executable, but with short paths
@@ -123,7 +124,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image_tar.short_path,
             "%{installables}": ctx.attr.name,
             "%{output_metadata}": output_metadata.short_path,
@@ -133,7 +134,14 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
     )
 
     return struct(
-        runfiles = ctx.runfiles(files = [image_tar, output_script, output_metadata, ctx.file._image_id_extractor]),
+        runfiles = ctx.runfiles(
+            files = [
+                image_tar,
+                output_script,
+                output_metadata,
+                ctx.executable._extract_image_id,
+            ],
+        ),
         files = depset([output_executable]),
     )
 
@@ -151,9 +159,11 @@ _attrs = {
         doc = "list of packages to download. e.g. ['curl', 'netbase']",
         mandatory = True,
     ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
-        allow_single_file = True,
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
     "_run_download_tpl": attr.label(
         default = Label("//docker/package_managers:run_download.sh.tpl"),

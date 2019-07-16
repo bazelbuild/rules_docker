@@ -13,7 +13,7 @@ fi
 source %{util_script}
 
 # Load the image and remember its name
-image_id=$(python %{image_id_extractor_path} %{base_image_tar})
+image_id=$(%{image_id_extractor_path} %{base_image_tar})
 $DOCKER load -i %{base_image_tar}
 
 

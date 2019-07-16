@@ -54,7 +54,7 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
             "%{docker_run_flags}": " ".join(docker_run_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{extract_file}": extract_file,
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
             "%{output}": output_file.path,
         },
@@ -63,7 +63,7 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
 
     ctx.actions.run(
         outputs = [output_file],
-        tools = [image, ctx.file._image_id_extractor],
+        tools = [image, ctx.executable._extract_image_id],
         executable = script,
     )
 
@@ -90,12 +90,14 @@ _extract_attrs = {
         allow_single_file = True,
         cfg = "target",
     ),
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
     "_extract_tpl": attr.label(
         default = Label("//docker/util:extract.sh.tpl"),
-        allow_single_file = True,
-    ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
         allow_single_file = True,
     ),
 }
@@ -157,7 +159,7 @@ def _commit_impl(
         substitutions = {
             "%{commands}": _process_commands(commands),
             "%{docker_tool_path}": toolchain_info.tool_path,
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
             "%{output_image}": "bazel/%s:%s" % (
                 ctx.label.package or "default",
@@ -169,12 +171,13 @@ def _commit_impl(
         is_executable = True,
     )
 
-    runfiles = [image, ctx.file._image_utils, ctx.file._image_id_extractor]
+    runfiles = [image, ctx.file._image_utils]
 
     ctx.actions.run(
         outputs = [output_image_tar],
         inputs = runfiles,
         executable = script,
+        tools = [ctx.executable._extract_image_id],
     )
 
     return struct()
@@ -191,9 +194,11 @@ _commit_attrs = {
         allow_single_file = True,
         cfg = "target",
     ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
-        allow_single_file = True,
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
     "_image_utils": attr.label(
         default = "//docker/util:image_util.sh",
