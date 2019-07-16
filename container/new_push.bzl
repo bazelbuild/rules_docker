@@ -60,6 +60,7 @@ def _impl(ctx):
         tag = tag,
     )]
 
+    image_files = []
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
         found = False
@@ -95,10 +96,10 @@ def _impl(ctx):
         image_files = blobs + blobsums
         if tarball:
             print("Pushing an image based on a tarball can be very " +
-                "expensive.  If the image is the output of a " +
-                "docker_build, consider dropping the '.tar' extension. " +
-                "If the image is checked in, consider using " +
-                "docker_import instead.")
+                  "expensive.  If the image is the output of a " +
+                  "docker_build, consider dropping the '.tar' extension. " +
+                  "If the image is checked in, consider using " +
+                  "docker_import instead.")
             image_files += [tarball]
         if config:
             image_files += [config]

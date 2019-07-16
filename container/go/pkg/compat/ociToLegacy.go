@@ -35,7 +35,7 @@ const legacyConfigFile = "config.json"
 const legacyManifestFile = "manifest.json"
 
 // generateSymlinks safely generates a symbolic link at dst pointing to src.
-func generateSymlinks(src, dst string) error {
+func GenerateSymlinks(src, dst string) error {
 	if _, err := ospkg.Stat(src); err != nil {
 		return errors.Wrapf(err, "source file does not exist at %s", src)
 	}
@@ -67,7 +67,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 	}
 	configPath := path.Join(targetDir, config.Hex)
 	dstLink := path.Join(dstDir, legacyConfigFile)
-	if err = generateSymlinks(configPath, dstLink); err != nil {
+	if err = GenerateSymlinks(configPath, dstLink); err != nil {
 		return errors.Wrap(err, "failed to generate config.json symlink")
 	}
 
@@ -88,7 +88,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 		layerPath = path.Join(targetDir, layerDigest.Hex)
 		out := strconv.Itoa(i) + compressedLayerExt
 		dstLink = path.Join(dstDir, out)
-		if err = generateSymlinks(layerPath, dstLink); err != nil {
+		if err = GenerateSymlinks(layerPath, dstLink); err != nil {
 			return errors.Wrapf(err, "failed to generate legacy symlink for layer %d with digest %s", i, layerDigest)
 		}
 	}
@@ -109,7 +109,7 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 	manifestHex := manifest.Manifests[0].Digest.Hex
 	dstLink = path.Join(dstDir, legacyManifestFile)
 	manifestPath := path.Join(targetDir, manifestHex)
-	if err = generateSymlinks(manifestPath, dstLink); err != nil {
+	if err = GenerateSymlinks(manifestPath, dstLink); err != nil {
 		return errors.Wrapf(err, "failed to generate %s symlink", legacyManifestFile)
 	}
 
