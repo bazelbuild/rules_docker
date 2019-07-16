@@ -129,8 +129,13 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files +
-                                    runfiles_tag_file + ctx.files.image + temp_files)
+    if ctx.attr.format == "legacy":
+        pusher_runfiles = [ctx.executable._pusher, runfiles_temp_dir]
+
+    else:
+        pusher_runfiles = [ctx.executable._pusher] + ctx.files.image
+
+    runfiles = ctx.runfiles(files = pusher_runfiles + image_files + runfiles_tag_file)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
