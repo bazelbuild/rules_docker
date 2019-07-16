@@ -21,6 +21,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo")
 load(
     "//container:layer_tools.bzl",
+    _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
 load(
@@ -41,6 +42,39 @@ def _impl(ctx):
     # 3) Use and implementation of attr.stamp.
 
     pusher_args = []
+    # digester_args = ctx.actions.args()
+
+    # Leverage our efficient intermediate representation to push.
+    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
+    blobsums = []
+    blobs = image.get("zipped_layer", [])
+    config = image["config"]
+    manifest = image["manifest"]
+    tarball = image.get("legacy")
+    image_files = blobs + blobsums
+    if tarball:
+        print("Pushing an image based on a tarball can be very " +
+              "expensive.  If the image is the output of a " +
+              "docker_build, consider dropping the '.tar' extension. " +
+              "If the image is checked in, consider using " +
+              "docker_import instead.")
+        # pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
+        # digester_args.add("--tarball", tarball)
+        image_files += [tarball]
+    if config:
+        # pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
+        # digester_args.add("--config", config)
+        image_files += [config]
+    if manifest:
+        # pusher_args += ["--manifest=%s" % _get_runfile_path(ctx, manifest)]
+        # digester_args.add("--manifest", manifest)
+        image_files += [manifest]
+    # for f in blobsums:
+        # pusher_args += ["--digest=%s" % _get_runfile_path(ctx, f)]
+        # digester_args.add("--digest", f)
+    # for f in blobs:
+        # pusher_args += ["--layer=%s" % _get_runfile_path(ctx, f)]
+        # digester_args.add("--layer", f)
 
     # Parse and get destination registry to be pushed to
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
@@ -101,8 +135,28 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] +
-                                    runfiles_tag_file + ctx.files.image)
+    temp_files = []
+    counter = 0
+    for i in image_files:
+        if ".tar.gz" in f.basename:
+            out_files = ctx.actions.declare_file("image_files/" + "00" + str(counter) + ".tar.gz")
+            counter += 1
+        elif "config" in f.basename:
+            out_files = ctx.actions.declare_file("image_files/" + "config.json")
+        elif "manifest" in f.basename:
+            out_files = ctx.actions.declare_file("image_files/" + "manifest.json")
+        temp_files.append(out_files)
+        ctx.actions.run_shell(
+        outputs = [out_files],
+        inputs = [f],
+        command = "ln {src} {dst}".format(
+            src = f.path,
+            dst = out_files.path,
+        ),
+        )
+
+    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files +
+                                    runfiles_tag_file + ctx.files.image + temp_files)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
