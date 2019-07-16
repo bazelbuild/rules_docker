@@ -95,7 +95,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         substitutions = {
             "%{base_image_tar}": image_tar.path,
             "%{docker_tool_path}": toolchain_info.tool_path,
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{installables_tar}": installables_tar_path,
             "%{installer_script}": install_script.path,
             "%{output_file_name}": unstripped_tar.path,
@@ -112,8 +112,8 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
             install_script,
             installables_tar,
             ctx.file._image_utils,
-            ctx.file._image_id_extractor,
         ],
+        tools = [ctx.executable._extract_image_id],
         executable = script,
     )
 
@@ -152,9 +152,11 @@ _attrs = {
         executable = True,
         cfg = "host",
     ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
-        allow_single_file = True,
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
     "_image_utils": attr.label(
         default = "//docker/util:image_util.sh",

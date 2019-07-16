@@ -14,7 +14,7 @@ if [[ -z "$DOCKER" ]]; then
 fi
 
 # Load the image and remember its name
-image_id=$(python %{image_id_extractor_path} %{image_tar})
+image_id=$(%{image_id_extractor_path} %{image_tar})
 $DOCKER load -i %{image_tar}
 
 id=$($DOCKER run -d $image_id %{commands})
