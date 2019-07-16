@@ -169,10 +169,6 @@ _attrs = {
         default = Label("//docker/package_managers:run_download.sh.tpl"),
         allow_single_file = True,
     ),
-    "_run_download_tpl": attr.label(
-        default = Label("//docker/package_managers:run_download.sh.tpl"),
-        allow_single_file = True,
-    ),
 }
 
 _outputs = {
