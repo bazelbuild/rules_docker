@@ -66,41 +66,6 @@ tar -cpf {installables}_packages.tar --mtime='1970-01-01' --directory /tmp/insta
         add_additional_repo_commands = _generate_add_additional_repo_commands(ctx, additional_repos),
     )
 
-def _run_download_script(
-        ctx,
-        build_contents,
-        image_tar,
-        output_tar,
-        output_script,
-        output_metadata,
-        image_id_extractor):
-    contents = build_contents.replace(image_tar.short_path, image_tar.path)
-    contents = contents.replace(output_tar.short_path, output_tar.path)
-
-    # Replace only in the following line:
-    # 'docker cp $cid:{output_metadata.name} {output_metadata.short_path}'
-    # for 'docker cp $cid:{output_metadata.name} {output_metadata.path}'
-    # We cant replace {output_metadata.short_path} everywhere, because if
-    # target is at root of repo then
-    # {output_metadata.basename} == {output_metadata.short_path}
-    contents = contents.replace(
-        output_metadata.basename + " " + output_metadata.short_path,
-        output_metadata.basename + " " + output_metadata.path,
-    )
-
-    # The paths for running within bazel build are different and hence replace short_path
-    # by full path
-    ctx.actions.write(
-        output = output_script,
-        content = contents,
-    )
-
-    ctx.actions.run(
-        outputs = [output_tar, output_metadata],
-        executable = output_script,
-        inputs = [image_tar, image_id_extractor],
-    )
-
 def _impl(ctx, image_tar = None, packages = None, additional_repos = None, output_executable = None, output_tar = None, output_script = None, output_metadata = None):
     """Implementation for the download_pkgs rule.
 
@@ -125,44 +90,48 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
     if len(packages) == 0:
         fail("attribute 'packages' given to download_pkgs rule by {} was empty.".format(attr.label))
 
-    # Generate a shell script to run apt_get inside this docker image.
-    # TODO(tejaldesai): Replace this by docker_run rule
-    build_contents = """\
-#!/bin/bash
-set -ex
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
-# Load the image and remember its name
-image_id=$(python {image_id_extractor_path} {image_tar})
-docker load -i {image_tar}
+    # Generate a shell script to execute the apt_get inside this docker image.
+    # We use full paths here.
+    ctx.actions.expand_template(
+        template = ctx.file._run_download_tpl,
+        output = output_script,
+        substitutions = {
+            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
+            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_tar}": image_tar.path,
+            "%{installables}": ctx.attr.name,
+            "%{output_metadata}": output_metadata.path,
+            "%{output}": output_tar.path,
+        },
+        is_executable = True,
+    )
 
-# Run the builder image.
-cid=$(docker run -w="/" -d --privileged $image_id sh -c $'{download_commands}')
-docker attach $cid
-docker cp $cid:{installables}_packages.tar {output}
-docker cp $cid:{installables}_metadata.csv {output_metadata}
-# Cleanup
-docker rm $cid
- """.format(
-        image_tar = image_tar.short_path,
-        installables = ctx.attr.name,
-        download_commands = _generate_download_commands(ctx, packages, additional_repos),
-        output = output_tar.short_path,
-        output_metadata = output_metadata.short_path,
-        image_id_extractor_path = ctx.file._image_id_extractor.path,
+    ctx.actions.run(
+        outputs = [output_tar, output_metadata],
+        executable = output_script,
+        inputs = [image_tar, ctx.file._image_id_extractor],
     )
-    _run_download_script(
-        ctx,
-        build_contents,
-        image_tar,
-        output_tar,
-        output_script,
-        output_metadata,
-        ctx.file._image_id_extractor,
-    )
-    ctx.actions.write(
+
+    # Generate a very similar one as output executable, but with short paths
+    # This is because the paths for running within bazel build are different.
+    ctx.actions.expand_template(
+        template = ctx.file._run_download_tpl,
         output = output_executable,
-        content = build_contents,
+        substitutions = {
+            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
+            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_tar}": image_tar.short_path,
+            "%{installables}": ctx.attr.name,
+            "%{output_metadata}": output_metadata.short_path,
+            "%{output}": output_tar.short_path,
+        },
+        is_executable = True,
     )
+
     return struct(
         runfiles = ctx.runfiles(files = [image_tar, output_script, output_metadata, ctx.file._image_id_extractor]),
         files = depset([output_executable]),
@@ -184,6 +153,10 @@ _attrs = {
     ),
     "_image_id_extractor": attr.label(
         default = "//contrib:extract_image_id.py",
+        allow_single_file = True,
+    ),
+    "_run_download_tpl": attr.label(
+        default = Label("//docker/package_managers:run_download.sh.tpl"),
         allow_single_file = True,
     ),
 }
@@ -208,5 +181,6 @@ download_pkgs = rule(
            "packages in a tarball."),
     executable = True,
     outputs = _outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
 )

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -ex
 
 # Resolve the docker tool path
@@ -14,8 +13,10 @@ fi
 image_id=$(python %{image_id_extractor_path} %{image_tar})
 $DOCKER load -i %{image_tar}
 
-id=$($DOCKER run -d %{docker_run_flags} $image_id %{commands})
-
-$DOCKER wait $id
-$DOCKER cp $id:%{extract_file} %{output}
-$DOCKER rm $id
+# Run the builder image.
+cid=$($DOCKER run -w="/" -d --privileged $image_id sh -c $'%{download_commands}')
+$DOCKER attach $cid
+$DOCKER cp $cid:%{installables}_packages.tar %{output}
+$DOCKER cp $cid:%{installables}_metadata.csv %{output_metadata}
+# Cleanup
+$DOCKER rm $cid
