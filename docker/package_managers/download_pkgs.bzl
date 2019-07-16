@@ -124,7 +124,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
-            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
+            "%{image_id_extractor_path}": "./" + ctx.executable._extract_image_id.short_path,
             "%{image_tar}": image_tar.short_path,
             "%{installables}": ctx.attr.name,
             "%{output_metadata}": output_metadata.short_path,
@@ -140,7 +140,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
                 output_script,
                 output_metadata,
                 ctx.executable._extract_image_id,
-            ],
+            ] + ctx.attr._extract_image_id.files.to_list(),
         ),
         files = depset([output_executable]),
     )
