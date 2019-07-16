@@ -99,12 +99,12 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         output = output_script,
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
             "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
             "%{image_tar}": image_tar.path,
             "%{installables}": ctx.attr.name,
-            "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
-            "%{output}": output_tar.path,
             "%{output_metadata}": output_metadata.path,
+            "%{output}": output_tar.path,
         },
         is_executable = True,
     )
@@ -122,12 +122,12 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         output = output_executable,
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
             "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
             "%{image_tar}": image_tar.short_path,
             "%{installables}": ctx.attr.name,
-            "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
-            "%{output}": output_tar.short_path,
             "%{output_metadata}": output_metadata.short_path,
+            "%{output}": output_tar.short_path,
         },
         is_executable = True,
     )
