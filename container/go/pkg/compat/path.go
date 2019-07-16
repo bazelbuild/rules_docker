@@ -32,7 +32,7 @@ const (
 
 // Return the filename for layer at index i in the layers array in manifest.json.
 // Assume the layers are padded to three digits, e.g., the first layer is named 000.tar.gz.
-func layerFilename(i int) string {
+func LayerFilename(i int) string {
 	return fmt.Sprintf("%03d.tar.gz", i)
 }
 

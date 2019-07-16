@@ -42,39 +42,6 @@ def _impl(ctx):
     # 3) Use and implementation of attr.stamp.
 
     pusher_args = []
-    # digester_args = ctx.actions.args()
-
-    # Leverage our efficient intermediate representation to push.
-    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-    blobsums = []
-    blobs = image.get("zipped_layer", [])
-    config = image["config"]
-    manifest = image["manifest"]
-    tarball = image.get("legacy")
-    image_files = blobs + blobsums
-    if tarball:
-        print("Pushing an image based on a tarball can be very " +
-              "expensive.  If the image is the output of a " +
-              "docker_build, consider dropping the '.tar' extension. " +
-              "If the image is checked in, consider using " +
-              "docker_import instead.")
-        # pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
-        # digester_args.add("--tarball", tarball)
-        image_files += [tarball]
-    if config:
-        # pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
-        # digester_args.add("--config", config)
-        image_files += [config]
-    if manifest:
-        # pusher_args += ["--manifest=%s" % _get_runfile_path(ctx, manifest)]
-        # digester_args.add("--manifest", manifest)
-        image_files += [manifest]
-    # for f in blobsums:
-        # pusher_args += ["--digest=%s" % _get_runfile_path(ctx, f)]
-        # digester_args.add("--digest", f)
-    # for f in blobs:
-        # pusher_args += ["--layer=%s" % _get_runfile_path(ctx, f)]
-        # digester_args.add("--layer", f)
 
     # Parse and get destination registry to be pushed to
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
@@ -104,18 +71,45 @@ def _impl(ctx):
                 found = True
         if not found:
             fail("Did not find an index.json in the image attribute {} specified to {}".format(ctx.attr.image, ctx.label))
-    if ctx.attr.format == "legacy":
-        for f in ctx.files.image:
-            if f.basename == "manifest.json":
-                pusher_args += ["-src", "{index_dir}".format(
-                    index_dir = _get_runfile_path(ctx, f),
-                )]
     if ctx.attr.format == "docker":
         if len(ctx.files.image) == 0:
             fail("Attribute image {} to {} did not contain an image tarball".format(ctx.attr.image, ctx.label))
         if len(ctx.files.image) > 1:
             fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
         pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
+    if ctx.attr.format == "legacy":
+        # TODO: Change the src to be the dir of image_runfiles
+        for f in ctx.files.image:
+            if f.basename == "manifest.json":
+                pusher_args += ["-src", "{index_dir}".format(
+                    index_dir = _get_runfile_path(ctx, f),
+                )]
+
+        # Leverage our efficient intermediate representation to push.
+        image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
+        blobsums = []
+        blobs = image.get("zipped_layer", [])
+        config = image["config"]
+        manifest = image["manifest"]
+        tarball = image.get("legacy")
+        image_files = blobs + blobsums
+        if tarball:
+            print("Pushing an image based on a tarball can be very " +
+                "expensive.  If the image is the output of a " +
+                "docker_build, consider dropping the '.tar' extension. " +
+                "If the image is checked in, consider using " +
+                "docker_import instead.")
+            image_files += [tarball]
+        if config:
+            image_files += [config]
+        if manifest:
+            image_files += [manifest]
+        runfiles_temp_dir = ctx.actions.declare_directory("image_runfiles")
+
+        image_files_path = []
+        for f in image_files:
+            image_files_path.append(_get_runfile_path(ctx, f))
+        manifest_builder_args = ["-dst", _get_runfile_path(ctx, runfiles_temp_dir), "-files", " ".join(image_files_path)]
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
@@ -134,26 +128,6 @@ def _impl(ctx):
         output = ctx.outputs.executable,
         is_executable = True,
     )
-
-    temp_files = []
-    counter = 0
-    for i in image_files:
-        if ".tar.gz" in f.basename:
-            out_files = ctx.actions.declare_file("image_files/" + "00" + str(counter) + ".tar.gz")
-            counter += 1
-        elif "config" in f.basename:
-            out_files = ctx.actions.declare_file("image_files/" + "config.json")
-        elif "manifest" in f.basename:
-            out_files = ctx.actions.declare_file("image_files/" + "manifest.json")
-        temp_files.append(out_files)
-        ctx.actions.run_shell(
-        outputs = [out_files],
-        inputs = [f],
-        command = "ln {src} {dst}".format(
-            src = f.path,
-            dst = out_files.path,
-        ),
-        )
 
     runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files +
                                     runfiles_tag_file + ctx.files.image + temp_files)
