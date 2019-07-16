@@ -20,7 +20,7 @@
 # digest and ID. On a mismatch of one of those values, the test fails
 # and produces the summary of the images' differences.
 
-set -e
+set -ex
 
 imgs_differ=false
 
@@ -30,15 +30,18 @@ function cmp_sha_files() {
   local content_type="${3}"
 
   local diff_ret=0
-  diff $file1 $file2 || diff_ret=$?
+  diff $file1 $file2 &>/dev/null || diff_ret=$?
   echo === Comparing image "${content_type}"s ===
   if [ $diff_ret = 0 ]; then
   	echo Both images have the same SHA256 "${content_type}": "$(<$file1)"
-  else
+  elif [ $diff_ret = 1 ]; then
   	echo Images have different SHA256 "${content_type}"s
   	echo First image "${content_type}": "$(<$file1)"
   	echo Reproduced image "${content_type}": "$(<$file2)"
     imgs_differ=true
+  else
+    echo diff command exited with error.
+    exit 1
   fi
 }
 
@@ -57,6 +60,7 @@ if [ "$imgs_differ" = true ]; then
   echo === Images are different. Running container_diff tool ===
   img1_tar=%{img1_path}/%{img_name}.tar
   img2_tar=%{img2_path}/%{img_name}.tar
+  echo $(pwd)
   %{container_diff_tool} diff $img1_tar $img2_tar %{container_diff_args}
   exit 1
 fi
