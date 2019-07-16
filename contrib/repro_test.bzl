@@ -130,32 +130,39 @@ def _impl(ctx):
     img_tar = img_name + ".tar"
     img_digest = img_name + ".digest"
 
-    # Create directories for temporary storing of output_base of each of the 
+    # Create directories for temporary storing of output_base of each of the
     # Bazel executions inside a container.
     # These directories will be mounted, with using their absolute paths
     # in the containers.
     # This is necessary as the Bazel executions inside each container can
     # in turn bring up a docker container and attempt to mount contents
-    # from their respective output_bases
+    # from their respective output_bases.
     bazel_out1 = ctx.actions.declare_directory("bazel_out1")
     bazel_out2 = ctx.actions.declare_directory("bazel_out2")
-    # dummy action to declare directories as outputs
+
+    # dummy action to declare directories as outputs.
     ctx.actions.run_shell(
         command = "exit 0",
         outputs = [bazel_out1, bazel_out2],
     )
     cd_cmd = ["cd \$(cat /%s)" % proj_root.basename]
+
+    # Commands to copy the files required for image
+    # comparison to a known location in the container.
     cp_cmds = [
         "mkdir %s" % extract_path,
         "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_tar, extract_path, img_tar),
         "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_digest, extract_path, img_digest),
         "cp \$(readlink -f bazel-bin/%s/%s).sha256 %s/%s" % (img_pkg, img_name + ".json", extract_path, img_name + ".id"),
     ]
+
     # We need to use absolute paths to the directory being mounted
     # in order for containers spawned from inside the build to be able
-    # to access the output_base
+    # to access the output_base.
     host_outs_path1 = "$(pwd)/" + bazel_out1.path
     host_outs_path2 = "$(pwd)/" + bazel_out2.path
+
+    # Commands to build the image targets and copy files.
     commands_image1 = cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path1) + " ".join(build_targets),
     ] + cp_cmds + ["rm -rdf %s" % host_outs_path1]
@@ -217,7 +224,15 @@ def _impl(ctx):
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [img1_outs, img2_outs, diff_tool_exec, bazel_out1, bazel_out2])
+    runfiles = ctx.runfiles(
+        files = [
+            bazel_out1,
+            bazel_out2,
+            diff_tool_exec,
+            img1_outs,
+            img2_outs,
+        ],
+    )
 
     return [
         DefaultInfo(

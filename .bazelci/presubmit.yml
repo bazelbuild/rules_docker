@@ -15,6 +15,7 @@ platforms:
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/docker/security/..."
     # tests/docker/security require gcloud
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
@@ -34,6 +35,7 @@ platforms:
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/docker/security/..."
     # tests/docker/security require gcloud
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
@@ -93,6 +95,7 @@ platforms:
     # contrib targets are not compatible with remote exec
     - "-//tests/contrib:derivative_with_volume_repro_test"
     - "-//tests/contrib:set_cmd_repro_test"
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
@@ -108,6 +111,7 @@ platforms:
     - "//tests/..."
     # tests/docker/security require gcloud setup to access asci-toolchains images
     - "-//tests/docker/security/..."
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
     # contrib tests are not compatible with remote exec
     - "-//tests/contrib:derivative_with_volume_repro_test"
     - "-//tests/contrib:set_cmd_repro_test"

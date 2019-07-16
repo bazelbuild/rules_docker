@@ -37,9 +37,9 @@ JAVA_CLEANUP_COMMANDS = (
     "/tmp/hsperfdata_root/* " +
     "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server/classes.jsa " +
     # A dangling symlink created by installing `openjdk-8-jdk-headless`.
-    "/usr/lib/jvm/java-8-openjdk-amd64/src.zip"
+    "/usr/lib/jvm/java-8-openjdk-amd64/src.zip " +
+    "/var/cache/fontconfig/*"
 )
-
 
 # Use "rbe-test-" prefix for easy identification of images to remove after the tests.
 toolchain_container(

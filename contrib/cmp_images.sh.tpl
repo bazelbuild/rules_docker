@@ -60,7 +60,6 @@ if [ "$imgs_differ" = true ]; then
   echo === Images are different. Running container_diff tool ===
   img1_tar=%{img1_path}/%{img_name}.tar
   img2_tar=%{img2_path}/%{img_name}.tar
-  echo $(pwd)
   %{container_diff_tool} diff $img1_tar $img2_tar %{container_diff_args}
   exit 1
 fi
