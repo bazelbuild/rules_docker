@@ -188,3 +188,9 @@ container_repro_test(
     image = "//testdata:derivative_with_volume",
     workspace_file = "//:WORKSPACE",
 )
+
+container_repro_test(
+    name = "rbe-test-xenial_repro_test",
+    image = "//tests/docker/toolchain_container:rbe-test-xenial-with-pkgs",
+    workspace_file = "//:WORKSPACE",
+)
