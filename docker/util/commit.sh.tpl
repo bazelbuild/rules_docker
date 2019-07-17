@@ -5,18 +5,26 @@ set -ex
 # Load utils
 source %{util_script}
 
-# Load the image and remember its name
-image_id=$(python %{image_id_extractor_path} %{image_tar})
-docker load -i %{image_tar}
+# Resolve the docker tool path
+DOCKER="%{docker_tool_path}"
 
-id=$(docker run -d $image_id %{commands})
+if [[ -z "$DOCKER" ]]; then
+    echo >&2 "error: docker not found; do you need to manually configure the docker toolchain?"
+    exit 1
+fi
+
+# Load the image and remember its name
+image_id=$(%{image_id_extractor_path} %{image_tar})
+$DOCKER load -i %{image_tar}
+
+id=$($DOCKER run -d $image_id %{commands})
 # Actually wait for the container to finish running its commands
-retcode=$(docker wait $id)
+retcode=$($DOCKER wait $id)
 # Trigger a failure if the run had a non-zero exit status
 if [ $retcode != 0 ]; then
-  docker logs $id && false
+  $DOCKER logs $id && false
 fi
 
 reset_cmd $image_id $id %{output_image}
-docker save %{output_image} -o %{output_tar}
-docker rm $id
+$DOCKER save %{output_image} -o %{output_tar}
+$DOCKER rm $id

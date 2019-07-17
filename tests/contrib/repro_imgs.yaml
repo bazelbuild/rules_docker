@@ -12,27 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+# Tests that verify image reproducibility.
 
-package(default_visibility = ["//visibility:public"])
+timeout: 1200s
+options:
+    machineType: "N1_HIGHCPU_32"
 
-licenses(["notice"])  # Apache 2.0
+steps:
+  # move the sources to a subdirectory
+- name: 'gcr.io/gcp-runtimes/ubuntu_16_0_4'
+  args:
+  - ./tests/contrib/mv_project_root.sh
 
-exports_files([
-    "installer.sh.tpl",
-    "run_download.sh.tpl",
-    "run_install.sh.tpl",
-])
 
-bzl_library(
-    name = "package_managers",
-    srcs = [
-        "apt_key.bzl",
-        "download_pkgs.bzl",
-        "install_pkgs.bzl",
-    ],
-    deps = [
-        "//container",
-        "//docker/util",
-    ],
-)
+- name: "l.gcr.io/google/bazel"
+  args:
+  - --output_base=/workspace/output_base
+  - test
+  - --test_output=errors
+  - --spawn_strategy=standalone
+  - --verbose_failures
+  - //tests/contrib:rbe-test-xenial_repro_test
+  dir: 'rules_docker'

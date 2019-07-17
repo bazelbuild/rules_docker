@@ -93,7 +93,6 @@ def nodejs_image(
         base = None,
         data = [],
         layers = [],
-        node_modules = "//:node_modules",
         binary = None,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
@@ -104,22 +103,14 @@ def nodejs_image(
     data: Runtime dependencies of the nodejs_image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
-    node_modules: The list of Node modules to include in the nodejs image.
     binary: An alternative binary target to use instead of generating one.
     **kwargs: See nodejs_binary.
   """
-    layers = [
-        # Put the Node binary into its own layer.
-        "@nodejs//:node",
-        # node_modules can get large, it should be in its own layer.
-        node_modules,
-    ] + layers
 
     if not binary:
         binary = name + ".binary"
         nodejs_binary(
             name = binary,
-            node_modules = node_modules,
             data = data + layers,
             **kwargs
         )
