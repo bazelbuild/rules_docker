@@ -19,64 +19,66 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
-	"path"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 
-	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
 var (
-	dstDir    = flag.String("dst", "", "The path to the output file where the layers, config and manifest will be written to.")
-	files     = flag.String("files", "", "The path to the input files.")
-	configDir string
-	layersDir []string
+	manifestPath = flag.String("manifest", "", "The path to the manifest.json for the docker image.")
+	dst          = flag.String("dst", "", "The path to the output file where the layers, config are in.")
 )
 
-// Extension for layers and config files that are made symlinks
 const (
-	compressedLayerExt = ".tar.gz"
-	legacyConfigFile   = "config.json"
-	legacyManifestFile = "manifest.json"
-	schemaVersion      = 2
+	schemaVersion = 2
 )
 
 func main() {
 	flag.Parse()
-
-	if *dstDir == "" {
-		fmt.Errorf("required option -dst was not specified")
+	if *manifestPath == "" {
+		log.Fatalf("required option -dst was not specified")
 	}
-	if *files == "" {
-		fmt.Errorf("required option -files was not specified")
+	if *dst == "" {
+		log.Fatalf("required option -files was not specified")
 	}
 
-	counter := 0
-	imageRunfiles := strings.Split(*files, " ")
+	path := filepath.Dir(*dst)
 
+	imageRunfiles, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print(imageRunfiles)
+
+	var configDir string
+	var layersDir []string
 	for _, f := range imageRunfiles {
-		if strings.Contains(f, "config") {
-			configDir := path.Join(*dstDir, legacyConfigFile)
-			if err := compat.GenerateSymlinks(f, configDir); err != nil {
-				fmt.Errorf("failed to generate %s symlink: %v", legacyConfigFile, err)
-			}
-		} else if strings.Contains(f, compressedLayerExt) {
-			layerBasename := compat.LayerFilename(counter) + compressedLayerExt
-			dstLink := path.Join(*dstDir, layerBasename)
-			if err := compat.GenerateSymlinks(f, dstLink); err != nil {
-				fmt.Errorf("failed to generate legacy symlink for layer %d at %s: %v", counter, f, err)
-			}
-			layersDir = append(layersDir, dstLink)
+		log.Print(f.Name())
+		if strings.Contains(f.Name(), "config") {
+			configDir = filepath.Join(path, f.Name())
+		} else if strings.Contains(f.Name(), ".tar.gz") {
+			layersDir = append(layersDir, filepath.Join(path, f.Name()))
 		}
 	}
 
-	//TODO: write a manifest.json to dst directory
+	log.Print(configDir)
+	log.Print(layersDir)
 
+	m, err := buildManifest(configDir, layersDir)
+	if err != nil {
+		log.Fatalf("unable to construct manifest: %v", err)
+	}
+
+	//TODO: write a manifest.json to dst directory
+	writeManifest(m, *manifestPath)
 }
 
 func buildManifest(configDir string, layersDir []string) (v1.Manifest, error) {
@@ -126,6 +128,15 @@ func buildManifest(configDir string, layersDir []string) (v1.Manifest, error) {
 	return manifest, nil
 }
 
-func writeManifest(m v1.Manifest) {
+func writeManifest(m v1.Manifest, path string) error {
+	rawManifest, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path, rawManifest, os.ModePerm)
+	if err != nil {
+		return err
+	}
 
+	return nil
 }

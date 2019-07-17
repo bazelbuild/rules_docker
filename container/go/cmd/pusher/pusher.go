@@ -71,11 +71,11 @@ func main() {
 	}
 	if *format == "oci" || *format == "legacy" {
 		imgSrc = filepath.Dir(*src)
+		log.Printf("Determined image source path to be %q based on -format=%q, -src=%q.", imgSrc, *format, *src)
 	}
 	if *format == "docker" {
 		imgSrc = *src
 	}
-	log.Printf("Determined image source path to be %q based on -format=%q, -src=%q.", imgSrc, *format, *src)
 
 	img, err := readImage(imgSrc, *format)
 	if err != nil {
