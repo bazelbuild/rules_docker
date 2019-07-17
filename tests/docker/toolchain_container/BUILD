@@ -27,6 +27,20 @@ package(default_visibility = ["//visibility:public"])
 # We just keep these as examples that should not break (unless indicated)
 # with changes.
 
+# Clean up commands to run at the end of container generation to remove any
+# build specific files.
+JAVA_CLEANUP_COMMANDS = (
+    "rm -rf " +
+    # Still need to remove the nondeterministic cacerts which is generated when
+    # `ca-certificates-java` is installed.
+    "/etc/ssl/certs/java/cacerts " +
+    "/tmp/hsperfdata_root/* " +
+    "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server/classes.jsa " +
+    # A dangling symlink created by installing `openjdk-8-jdk-headless`.
+    "/usr/lib/jvm/java-8-openjdk-amd64/src.zip " +
+    "/var/cache/fontconfig/*"
+)
+
 # Use "rbe-test-" prefix for easy identification of images to remove after the tests.
 toolchain_container(
     name = "rbe-test-xenial-with-pkgs",
@@ -34,6 +48,7 @@ toolchain_container(
         "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8",
     ],
     base = "@official_xenial//image",
+    installation_cleanup_commands = JAVA_CLEANUP_COMMANDS,
     keys = [
         "@bazel_gpg//file",
     ],
