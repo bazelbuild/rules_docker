@@ -45,7 +45,10 @@ func GenerateManifest(src, dst string) (v1.Manifest, error) {
 	}
 
 	for _, f := range imageRunfiles {
-		if strings.Contains(f.Name(), "config") {
+		if strings.Contains(f.Name(), "manifest.json") {
+			// The manifest already exist
+			return v1.Manifest{}, nil
+		} else if strings.Contains(f.Name(), "config") {
 			configDir = filepath.Join(src, f.Name())
 		} else if strings.Contains(f.Name(), ".tar.gz") {
 			layersDir = append(layersDir, filepath.Join(src, f.Name()))
