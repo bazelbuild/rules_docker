@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-// Path utils used for legacy image layout outputted by python containerregistry.
-// Uses the go-containerregistry API as backend.
+// Generates manifest based on config and layers.
 
 package compat
 

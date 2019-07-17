@@ -38,7 +38,7 @@ var (
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 )
 
-const manifestPath = "manifest.json"
+const manifestPath = "/manifest.json"
 
 func main() {
 	flag.Parse()

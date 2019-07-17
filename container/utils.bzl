@@ -15,6 +15,13 @@
 
 def generate_legacy_dir(ctx, image_files):
     """Generate a legacy directory from the list of image_files to /image_runfiles.
+
+    Args:
+      ctx: the execution context
+      image_files: the list of input files for the docker image
+
+    Returns:
+      The config file and a list of directories for the generated files.
     """
     path = "image_runfiles/"
 
