@@ -20,6 +20,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "generateManifest.go",
         "image.go",
         "ociToLegacy.go",
         "path.go",
@@ -31,6 +32,7 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/partial:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
         "@com_github_pkg_errors//:go_default_library",

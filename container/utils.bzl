@@ -16,8 +16,6 @@
 def generate_legacy_dir(ctx, image_files):
     path = "image_runfiles/"
 
-    # manifest = ctx.actions.declare_file(path + "manifest.json")
-    manifest = None
     temp_files = []
 
     # Generate symlinks for legacy formatted layers and config.json
@@ -28,10 +26,10 @@ def generate_legacy_dir(ctx, image_files):
             layer_counter += 1
         elif "config" in f.basename:
             out_files = ctx.actions.declare_file(path + "config.json")
+            config = out_files
 
         if out_files:
             temp_files.append(out_files)
-
         ctx.actions.run_shell(
             outputs = [out_files],
             inputs = [f],
@@ -43,5 +41,5 @@ def generate_legacy_dir(ctx, image_files):
 
     return {
         "temp_files": temp_files,
-        "manifest": manifest,
+        "config": config,
     }

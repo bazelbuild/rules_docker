@@ -16,14 +16,10 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -32,7 +28,6 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
-	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
 
@@ -43,9 +38,7 @@ var (
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 )
 
-const (
-	schemaVersion = 2
-)
+const manifestPath = "manifest.json"
 
 func main() {
 	flag.Parse()
@@ -72,9 +65,9 @@ func main() {
 	if *format == "docker" && filepath.Ext(*src) != ".tar" {
 		log.Fatalf("Invalid value for argument -src for -format=docker, got %q, want path to tarball file with extension .tar.", *src)
 	}
-	// if *format == "legacy" && filepath.Base(*src) != "config.json" {
-	// 	log.Fatalf("Invalid value for argument -src for -format=legacy, got %q, want path to manifest.json", *src)
-	// }
+	if *format == "legacy" && filepath.Base(*src) != "config.json" {
+		log.Fatalf("Invalid value for argument -src for -format=legacy, got %q, want path to config.json", *src)
+	}
 	if *format == "oci" && filepath.Base(*src) != "index.json" {
 		log.Fatalf("Invalid value for argument -src for -format=oci, got %q, want path to index.json", *src)
 	}
@@ -85,37 +78,12 @@ func main() {
 	if *format == "docker" {
 		imgSrc = *src
 	}
-
-	// wd, _ := os.Getwd()
-	// log.Printf("Working directory: %s", wd)
-
-	imageRunfiles, err := ioutil.ReadDir(imgSrc)
-	if err != nil {
-		log.Fatalf("Error reading legacy image files from %s: %v", imgSrc, err)
-	}
-	log.Print(imageRunfiles)
-
-	var configDir string
-	var layersDir []string
-	for _, f := range imageRunfiles {
-		log.Print(f.Name())
-		if strings.Contains(f.Name(), "config") {
-			configDir = filepath.Join(imgSrc, f.Name())
-		} else if strings.Contains(f.Name(), ".tar.gz") {
-			layersDir = append(layersDir, filepath.Join(imgSrc, f.Name()))
+	if *format == "legacy" {
+		_, err := compat.GenerateManifest(imgSrc, imgSrc+manifestPath)
+		if err != nil {
+			log.Fatalf("error generating %s from %s: %v", manifestPath, imgSrc, err)
 		}
 	}
-
-	log.Print(configDir)
-	log.Print(layersDir)
-
-	m, err := buildManifest(configDir, layersDir)
-	if err != nil {
-		log.Fatalf("unable to construct manifest: %v", err)
-	}
-
-	//TODO: write a manifest.json to dst directory
-	writeManifest(m, imgSrc)
 
 	img, err := readImage(imgSrc, *format)
 	if err != nil {
@@ -161,86 +129,3 @@ func readImage(src, format string) (v1.Image, error) {
 
 	return nil, errors.Errorf("unknown image format %q", format)
 }
-
-func buildManifest(configDir string, layersDir []string) (v1.Manifest, error) {
-	rawConfig, err := ioutil.ReadFile(configDir)
-	if err != nil {
-		return v1.Manifest{}, err
-	}
-	cfgHash, cfgSize, err := v1.SHA256(bytes.NewReader(rawConfig))
-	if err != nil {
-		return v1.Manifest{}, err
-	}
-
-	manifest := v1.Manifest{
-		SchemaVersion: schemaVersion,
-		MediaType:     types.DockerManifestSchema2,
-		Config: v1.Descriptor{
-			MediaType: types.DockerConfigJSON,
-			Size:      cfgSize,
-			Digest:    cfgHash,
-		},
-	}
-
-	// TODO: errors
-	manifest.Layers = make([]v1.Descriptor, len(layersDir))
-	for i, l := range layersDir {
-		layer, err := tarball.LayerFromFile(l)
-		if err != nil {
-			return v1.Manifest{}, err
-		}
-
-		layerSize, err := layer.Size()
-		if err != nil {
-			return v1.Manifest{}, err
-		}
-		layerHash, err := layer.Digest()
-		if err != nil {
-			return v1.Manifest{}, err
-		}
-
-		manifest.Layers[i] = v1.Descriptor{
-			MediaType: types.DockerLayer,
-			Size:      layerSize,
-			Digest:    layerHash,
-		}
-	}
-
-	return manifest, nil
-}
-
-func writeManifest(m v1.Manifest, path string) error {
-	dst := path + "/manifest.json"
-	// digestPath := path + "/digest"
-	// log.Fatalf("%s", dst)
-	rawManifest, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(dst, rawManifest, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	// outputDigest(rawManifest, digestPath)
-
-	return nil
-}
-
-// func outputDigest(rawManifest []byte, dst string) error {
-// 	h, _, err := v1.SHA256(bytes.NewReader(rawManifest))
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	log.Printf("dst:%s", dst)
-// 	rawDigest, err := json.Marshal(h.Hex())
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	err = ioutil.WriteFile(dst, rawDigest, os.ModePerm)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }

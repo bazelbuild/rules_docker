@@ -101,49 +101,11 @@ def _impl(ctx):
         if config:
             image_files += [config]
 
-        # dst = ctx.actions.declare_directory("image_runfiles")
         legacy_dir = generate_legacy_dir(ctx, image_files)
-        temp_files, manifest = legacy_dir["temp_files"], legacy_dir["manifest"]
+        temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
 
-        # gen_manifest_args = ctx.actions.args().add_all([
-        #   "-dst", _get_runfile_path(ctx, manifest)
-        #   ])
+        pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
 
-        # runfiles = ctx.runfiles(files = [ctx.executable._manifest_generator, manifest] + temp_files + image_files)
-        # runfiles = runfiles.merge(ctx.attr._manifest_generator[DefaultInfo].default_runfiles)
-
-        # print("first manifest.path: {}".format(manifest.path))
-        # ctx.actions.run(
-        #     outputs = [manifest],
-        #     inputs = temp_files + image_files,
-        #     executable = ctx.executable._manifest_generator,
-        #     arguments = ["-dst", manifest.path],
-        #     tools = ctx.attr._manifest_generator[DefaultInfo].default_runfiles.files,
-        #     mnemonic = "NewContainerPushManifestGenerator",
-        # )
-        # print("ctx.bin_dir: {}".format(ctx.bin_dir.path))
-        # print("manifest.path: {}".format(manifest.path))
-        # print("manifest.short_path: {}".format(manifest.short_path))
-
-        # print(manifest)
-
-        #     digester_args.add("--output-digest", ctx.outputs.digest)
-        # ctx.actions.run(
-        #     inputs = image_files,
-        #     outputs = [ctx.outputs.digest],
-        #     executable = ctx.executable._digester,
-        #     arguments = [digester_args],
-        #     tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
-        #     mnemonic = "ContainerPushDigest",
-        # )
-
-        pusher_args += ["-src", "{index_dir}".format(
-            index_dir = _get_runfile_path(ctx, temp_files[0]),
-            # index_dir = manifest.dirname + "/manifest.json",
-            # index_dir = "/usr/local/google/home/xiaohegong/.cache/bazel/_bazel_xiaohegong/d662824fcf5f187bff40a317308ccf4a/execroot/io_bazel_rules_docker/bazel-out/k8-fastbuild/bin/tests/container/image_runfiles/manifest.json",
-        )]
-
-        print(_get_runfile_path(ctx, temp_files[0]))
     pusher_args += ["-format", str(ctx.attr.format)]
     print(pusher_args)
 
@@ -226,12 +188,6 @@ new_container_push = rule(
         ),
         "_pusher": attr.label(
             default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "_manifest_generator": attr.label(
-            default = Label("@io_bazel_rules_docker//container/go/cmd/extract_manifest:extract_manifest"),
             cfg = "host",
             executable = True,
             allow_files = True,
