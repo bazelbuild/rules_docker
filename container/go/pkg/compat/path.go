@@ -46,9 +46,5 @@ func isValidLegacylayout(path string) (bool, error) {
 		return false, err
 	}
 
-	if _, err := os.Stat(filepath.Join(path, digestFile)); err != nil {
-		return false, err
-	}
-
 	return true, nil
 }

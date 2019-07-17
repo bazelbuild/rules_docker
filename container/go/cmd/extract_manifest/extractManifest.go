@@ -33,8 +33,7 @@ import (
 )
 
 var (
-	manifestPath = flag.String("manifest", "", "The path to the manifest.json for the docker image.")
-	dst          = flag.String("dst", "", "The path to the output file where the layers, config are in.")
+	dst = flag.String("dst", "", "The path to the output file where the layers and config are in.")
 )
 
 const (
@@ -43,25 +42,20 @@ const (
 
 func main() {
 	flag.Parse()
-	if *manifestPath == "" {
-		log.Fatalf("required option -dst was not specified")
-	}
 	if *dst == "" {
-		log.Fatalf("required option -files was not specified")
+		log.Fatalf("required option -dst was not specified")
 	}
 
 	path := filepath.Dir(*dst)
 
 	imageRunfiles, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error reading legacy image files from %s: %v", path, err)
 	}
-	log.Print(imageRunfiles)
 
 	var configDir string
 	var layersDir []string
 	for _, f := range imageRunfiles {
-		log.Print(f.Name())
 		if strings.Contains(f.Name(), "config") {
 			configDir = filepath.Join(path, f.Name())
 		} else if strings.Contains(f.Name(), ".tar.gz") {
@@ -69,16 +63,13 @@ func main() {
 		}
 	}
 
-	log.Print(configDir)
-	log.Print(layersDir)
-
 	m, err := buildManifest(configDir, layersDir)
 	if err != nil {
 		log.Fatalf("unable to construct manifest: %v", err)
 	}
 
 	//TODO: write a manifest.json to dst directory
-	writeManifest(m, *manifestPath)
+	writeManifest(m, *dst)
 }
 
 func buildManifest(configDir string, layersDir []string) (v1.Manifest, error) {

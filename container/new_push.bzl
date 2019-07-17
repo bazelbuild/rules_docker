@@ -28,6 +28,10 @@ load(
     "//skylib:path.bzl",
     "runfile",
 )
+load(
+    "//container:utils.bzl",
+    "generate_legacy_dir",
+)
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
@@ -61,6 +65,7 @@ def _impl(ctx):
     )]
 
     image_files = []
+
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
         found = False
@@ -79,21 +84,13 @@ def _impl(ctx):
             fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
         pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
     if ctx.attr.format == "legacy":
-        # TODO: Change the src to be the dir of image_runfiles
-        for f in ctx.files.image:
-            if f.basename == "manifest.json":
-                pusher_args += ["-src", "{index_dir}".format(
-                    index_dir = _get_runfile_path(ctx, f),
-                )]
-
         # Leverage our efficient intermediate representation to push.
         image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-        blobsums = []
         blobs = image.get("zipped_layer", [])
         config = image["config"]
-        manifest = image["manifest"]
         tarball = image.get("legacy")
-        image_files = blobs + blobsums
+        image_files = blobs + []
+
         if tarball:
             print("Pushing an image based on a tarball can be very " +
                   "expensive.  If the image is the output of a " +
@@ -103,22 +100,65 @@ def _impl(ctx):
             image_files += [tarball]
         if config:
             image_files += [config]
-        if manifest:
-            image_files += [manifest]
-        runfiles_temp_dir = ctx.actions.declare_directory("image_runfiles")
 
-        image_files_path = []
-        for f in image_files:
-            image_files_path.append(_get_runfile_path(ctx, f))
-        manifest_builder_args = ["-dst", _get_runfile_path(ctx, runfiles_temp_dir), "-files", " ".join(image_files_path)]
+        # dst = ctx.actions.declare_directory("image_runfiles")
+        legacy_dir = generate_legacy_dir(ctx, image_files)
+        temp_files, manifest = legacy_dir["temp_files"], legacy_dir["manifest"]
 
+        # gen_manifest_args = ctx.actions.args().add_all([
+        #   "-dst", _get_runfile_path(ctx, manifest)
+        #   ])
+
+        # runfiles = ctx.runfiles(files = [ctx.executable._manifest_generator, manifest] + temp_files + image_files)
+        # runfiles = runfiles.merge(ctx.attr._manifest_generator[DefaultInfo].default_runfiles)
+
+        # print("first manifest.path: {}".format(manifest.path))
+        # ctx.actions.run(
+        #     outputs = [manifest],
+        #     inputs = temp_files + image_files,
+        #     executable = ctx.executable._manifest_generator,
+        #     arguments = ["-dst", manifest.path],
+        #     tools = ctx.attr._manifest_generator[DefaultInfo].default_runfiles.files,
+        #     mnemonic = "NewContainerPushManifestGenerator",
+        # )
+        # print("ctx.bin_dir: {}".format(ctx.bin_dir.path))
+        # print("manifest.path: {}".format(manifest.path))
+        # print("manifest.short_path: {}".format(manifest.short_path))
+
+        # print(manifest)
+
+        #     digester_args.add("--output-digest", ctx.outputs.digest)
+        # ctx.actions.run(
+        #     inputs = image_files,
+        #     outputs = [ctx.outputs.digest],
+        #     executable = ctx.executable._digester,
+        #     arguments = [digester_args],
+        #     tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
+        #     mnemonic = "ContainerPushDigest",
+        # )
+
+        pusher_args += ["-src", "{index_dir}".format(
+            index_dir = _get_runfile_path(ctx, temp_files[0]),
+            # index_dir = manifest.dirname + "/manifest.json",
+            # index_dir = "/usr/local/google/home/xiaohegong/.cache/bazel/_bazel_xiaohegong/d662824fcf5f187bff40a317308ccf4a/execroot/io_bazel_rules_docker/bazel-out/k8-fastbuild/bin/tests/container/image_runfiles/manifest.json",
+        )]
+
+        print(_get_runfile_path(ctx, temp_files[0]))
     pusher_args += ["-format", str(ctx.attr.format)]
+    print(pusher_args)
 
     # If the docker toolchain is configured to use a custom client config
     # directory, use that instead
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
+
+    if ctx.attr.format == "legacy":
+        pusher_runfiles = [ctx.executable._pusher] + temp_files
+    else:
+        pusher_runfiles = [ctx.executable._pusher] + ctx.files.image
+    runfiles = ctx.runfiles(files = pusher_runfiles + image_files + runfiles_tag_file)
+    runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     ctx.actions.expand_template(
         template = ctx.file._tag_tpl,
@@ -129,15 +169,6 @@ def _impl(ctx):
         output = ctx.outputs.executable,
         is_executable = True,
     )
-
-    if ctx.attr.format == "legacy":
-        pusher_runfiles = [ctx.executable._pusher, runfiles_temp_dir]
-
-    else:
-        pusher_runfiles = [ctx.executable._pusher] + ctx.files.image
-
-    runfiles = ctx.runfiles(files = pusher_runfiles + image_files + runfiles_tag_file)
-    runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
         DefaultInfo(
@@ -195,6 +226,12 @@ new_container_push = rule(
         ),
         "_pusher": attr.label(
             default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
+        "_manifest_generator": attr.label(
+            default = Label("@io_bazel_rules_docker//container/go/cmd/extract_manifest:extract_manifest"),
             cfg = "host",
             executable = True,
             allow_files = True,
