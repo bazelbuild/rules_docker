@@ -25,12 +25,11 @@ load(
     _layer_tools = "tools",
 )
 load(
-    "//skylib:path.bzl",
-    "runfile",
+    "//container:utils.bzl", "generate_legacy_dir",
 )
 load(
-    "//container:utils.bzl",
-    "generate_legacy_dir",
+    "//skylib:path.bzl",
+    "runfile",
 )
 
 def _get_runfile_path(ctx, f):

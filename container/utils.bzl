@@ -13,6 +13,8 @@
 # limitations under the License.
 """Utility tools for container rules."""
 
+"""Generate a legacy directory from the list of image_files to /image_runfiles.
+"""
 def generate_legacy_dir(ctx, image_files):
     path = "image_runfiles/"
 
@@ -27,7 +29,6 @@ def generate_legacy_dir(ctx, image_files):
         elif "config" in f.basename:
             out_files = ctx.actions.declare_file(path + "config.json")
             config = out_files
-
         if out_files:
             temp_files.append(out_files)
         ctx.actions.run_shell(
@@ -40,6 +41,6 @@ def generate_legacy_dir(ctx, image_files):
         )
 
     return {
-        "temp_files": temp_files,
         "config": config,
+        "temp_files": temp_files,
     }
