@@ -85,41 +85,35 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
     )
     unstripped_tar = ctx.actions.declare_file(output_tar.basename + ".unstripped")
 
-    build_contents = """\
-#!/bin/bash
-set -ex
-# Load utils
-source {util_script}
-
-# Load the image and remember its name
-image_id=$(python {image_id_extractor_path} {base_image_tar})
-docker load -i {base_image_tar}
-
-
-cid=$(docker run -d -v $(pwd)/{installables_tar}:/tmp/{installables_tar} -v $(pwd)/{installer_script}:/tmp/installer.sh --privileged $image_id /tmp/installer.sh)
-
-docker attach $cid || true
-
-reset_cmd $image_id $cid {output_image_name}
-docker save {output_image_name} > {output_file_name}
-docker rm $cid""".format(
-        util_script = ctx.file._image_utils.path,
-        base_image_tar = image_tar.path,
-        installables_tar = installables_tar_path,
-        installer_script = install_script.path,
-        image_id_extractor_path = ctx.file._image_id_extractor.path,
-        output_file_name = unstripped_tar.path,
-        output_image_name = output_image_name,
-    )
-
     script = ctx.actions.declare_file(ctx.label.name + ".build")
-    ctx.actions.write(
+
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+
+    ctx.actions.expand_template(
+        template = ctx.file._run_install_tpl,
         output = script,
-        content = build_contents,
+        substitutions = {
+            "%{base_image_tar}": image_tar.path,
+            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
+            "%{installables_tar}": installables_tar_path,
+            "%{installer_script}": install_script.path,
+            "%{output_file_name}": unstripped_tar.path,
+            "%{output_image_name}": output_image_name,
+            "%{util_script}": ctx.file._image_utils.path,
+        },
+        is_executable = True,
     )
+
     ctx.actions.run(
         outputs = [unstripped_tar],
-        inputs = [image_tar, install_script, installables_tar, ctx.file._image_utils, ctx.file._image_id_extractor],
+        inputs = [
+            image_tar,
+            install_script,
+            installables_tar,
+            ctx.file._image_utils,
+        ],
+        tools = [ctx.executable._extract_image_id],
         executable = script,
     )
 
@@ -158,9 +152,11 @@ _attrs = {
         executable = True,
         cfg = "host",
     ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
-        allow_single_file = True,
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
     "_image_utils": attr.label(
         default = "//docker/util:image_util.sh",
@@ -168,6 +164,10 @@ _attrs = {
     ),
     "_installer_tpl": attr.label(
         default = Label("//docker/package_managers:installer.sh.tpl"),
+        allow_single_file = True,
+    ),
+    "_run_install_tpl": attr.label(
+        default = Label("//docker/package_managers:run_install.sh.tpl"),
         allow_single_file = True,
     ),
 }
@@ -188,5 +188,6 @@ install_pkgs = rule(
     doc = ("This rule install deb packages, obtained via " +
            "a download_pkgs rule, within a container. "),
     outputs = _outputs,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
 )

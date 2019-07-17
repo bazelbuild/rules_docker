@@ -51,7 +51,7 @@ file_test(
 file_test(
     name = "test_download_pkgs_docker_cp",
     file = ":test_download_pkgs",
-    regexp = ".*docker cp .*:test_download_pkgs_packages.tar tests/docker/package_managers/test_download_pkgs.tar.*",
+    regexp = "cid:test_download_pkgs_packages.tar tests/docker/package_managers/test_download_pkgs.tar.*",
 )
 
 sh_test(

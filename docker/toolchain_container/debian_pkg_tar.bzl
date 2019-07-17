@@ -48,9 +48,11 @@ aggregate_debian_pkgs_attrs = {
     "additional_repos": attr.string_list(),
     "base": attr.label(allow_files = container),
     "language_layers": attr.label_list(),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
-        allow_single_file = True,
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
 }
 

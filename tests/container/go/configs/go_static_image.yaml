@@ -1,7 +1,7 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  entrypoint: ['/app/tests/container/go/go_image.binary']
+  entrypoint: ['/app/tests/container/go/go_static_image.binary']
   cmd: [
     'arg0',
     'arg1',
@@ -13,5 +13,5 @@ metadataTest:
 fileExistenceTests:
   - name: "openssl"
     path: "/usr/bin/openssl"
-    shouldExist: true
+    shouldExist: false
 
