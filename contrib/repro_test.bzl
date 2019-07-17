@@ -165,10 +165,10 @@ def _impl(ctx):
     # Commands to build the image targets and copy files.
     commands_image1 = cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path1) + " ".join(build_targets),
-    ] + cp_cmds + ["rm -rdf %s" % host_outs_path1]
+    ] + cp_cmds + ["rm -rf %s" % host_outs_path1]
     commands_image2 = cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path2) + " ".join(build_targets),
-    ] + cp_cmds + ["rm -rdf %s" % host_outs_path2]
+    ] + cp_cmds + ["rm -rf %s" % host_outs_path2]
 
     # Mount the docker.sock inside the running container to enable docker
     # sibling, which is needed when builing the test image itself requires
