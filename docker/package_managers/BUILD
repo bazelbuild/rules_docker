@@ -18,7 +18,11 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files(["installer.sh.tpl"])
+exports_files([
+    "installer.sh.tpl",
+    "run_download.sh.tpl",
+    "run_install.sh.tpl",
+])
 
 bzl_library(
     name = "package_managers",

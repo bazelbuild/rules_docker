@@ -43,6 +43,8 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
     output_file = output_file or ctx.outputs.out
     script = script_file or ctx.outputs.script
 
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+
     # Generate a shell script to execute the run statement
     ctx.actions.expand_template(
         template = ctx.file._extract_tpl,
@@ -50,8 +52,9 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
         substitutions = {
             "%{commands}": _process_commands(commands),
             "%{docker_run_flags}": " ".join(docker_run_flags),
+            "%{docker_tool_path}": toolchain_info.tool_path,
             "%{extract_file}": extract_file,
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
             "%{output}": output_file.path,
         },
@@ -60,7 +63,7 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
 
     ctx.actions.run(
         outputs = [output_file],
-        tools = [image, ctx.file._image_id_extractor],
+        tools = [image, ctx.executable._extract_image_id],
         executable = script,
     )
 
@@ -87,12 +90,14 @@ _extract_attrs = {
         allow_single_file = True,
         cfg = "target",
     ),
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
     "_extract_tpl": attr.label(
         default = Label("//docker/util:extract.sh.tpl"),
-        allow_single_file = True,
-    ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
         allow_single_file = True,
     ),
 }
@@ -116,6 +121,7 @@ container_run_and_extract = rule(
            " from the container to the bazel-out directory."),
     outputs = _extract_outputs,
     implementation = _extract_impl,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
 )
 
 def _commit_impl(
@@ -144,13 +150,16 @@ def _commit_impl(
     script = ctx.actions.declare_file(name + ".build")
     output_image_tar = output_image_tar or ctx.outputs.out
 
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+
     # Generate a shell script to execute the run statement
     ctx.actions.expand_template(
         template = ctx.file._run_tpl,
         output = script,
         substitutions = {
             "%{commands}": _process_commands(commands),
-            "%{image_id_extractor_path}": ctx.file._image_id_extractor.path,
+            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
             "%{output_image}": "bazel/%s:%s" % (
                 ctx.label.package or "default",
@@ -162,12 +171,13 @@ def _commit_impl(
         is_executable = True,
     )
 
-    runfiles = [image, ctx.file._image_utils, ctx.file._image_id_extractor]
+    runfiles = [image, ctx.file._image_utils]
 
     ctx.actions.run(
         outputs = [output_image_tar],
         inputs = runfiles,
         executable = script,
+        tools = [ctx.executable._extract_image_id],
     )
 
     return struct()
@@ -184,9 +194,11 @@ _commit_attrs = {
         allow_single_file = True,
         cfg = "target",
     ),
-    "_image_id_extractor": attr.label(
-        default = "//contrib:extract_image_id.py",
-        allow_single_file = True,
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
     "_image_utils": attr.label(
         default = "//docker/util:image_util.sh",
@@ -209,6 +221,7 @@ container_run_and_commit = rule(
     executable = False,
     outputs = _commit_outputs,
     implementation = _commit_impl,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
 )
 
 # Export container_run_and_commit rule for other bazel rules to depend on.
