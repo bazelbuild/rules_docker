@@ -13,9 +13,9 @@
 # limitations under the License.
 """Utility tools for container rules."""
 
-"""Generate a legacy directory from the list of image_files to /image_runfiles.
-"""
 def generate_legacy_dir(ctx, image_files):
+    """Generate a legacy directory from the list of image_files to /image_runfiles.
+    """
     path = "image_runfiles/"
 
     temp_files = []

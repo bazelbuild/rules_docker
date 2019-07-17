@@ -25,7 +25,8 @@ load(
     _layer_tools = "tools",
 )
 load(
-    "//container:utils.bzl", "generate_legacy_dir",
+    "//container:utils.bzl",
+    "generate_legacy_dir",
 )
 load(
     "//skylib:path.bzl",
