@@ -18,7 +18,16 @@ to new container image, or extract specified targets to a directory on
 the host machine.
 """
 
-def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flags = None, extract_file = "", output_file = "", script_file = ""):
+def _extract_impl(
+        ctx,
+        name = "",
+        image = None,
+        commands = None,
+        docker_run_flags = None,
+        extract_file = "",
+        output_file = "",
+        script_file = "",
+        extra_deps = None):
     """Implementation for the container_run_and_extract rule.
 
     This rule runs a set of commands in a given image, waits for the commands
@@ -34,6 +43,10 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
         extract_file: File, overrides ctx.outputs.out
         output_file: File, overrides ctx.outputs.output_file
         script_file: File, overrides ctx.output.script_file
+        extra_deps: Label list, if not None these are passed as inputs
+                    to the action running the container. This can be used if
+                    e.g., you need to mount a directory that is produced
+                    by another action.
     """
     name = name or ctx.label.name
     image = image or ctx.file.image
@@ -62,6 +75,7 @@ def _extract_impl(ctx, name = "", image = None, commands = None, docker_run_flag
     )
 
     ctx.actions.run(
+        inputs = extra_deps if extra_deps else [],
         outputs = [output_file],
         tools = [image, ctx.executable._extract_image_id],
         executable = script,
