@@ -21,8 +21,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
@@ -33,50 +31,30 @@ import (
 // schemaVersion is the schema version of the docker image manifest to generate.
 const schemaVersion = 2
 
-// GenerateManifest generate a manifest.json metadata by reading a config.json file and layer tarballs from src to dst.
-func GenerateManifest(src, dst string) (v1.Manifest, error) {
-	var configDir string
-	var layersDir []string
-
-	imageRunfiles, err := ioutil.ReadDir(src)
-	if err != nil {
-		return v1.Manifest{}, errors.Wrapf(err, "Error reading legacy image files from %s", src)
-	}
-
-	for _, f := range imageRunfiles {
-		if strings.Contains(f.Name(), "manifest.json") {
-			// The manifest already exist
-			return v1.Manifest{}, nil
-		} else if strings.Contains(f.Name(), "config") {
-			configDir = filepath.Join(src, f.Name())
-		} else if strings.Contains(f.Name(), ".tar.gz") {
-			layersDir = append(layersDir, filepath.Join(src, f.Name()))
-		}
-	}
-
-	m, err := buildManifest(configDir, layersDir)
+// GenerateManifest generates a manifest at the path given by 'dst' for the legacy image in the directory 'src'.
+func GenerateManifest(src, dst, configPath string, layersPath []string) (v1.Manifest, error) {
+	m, err := buildManifest(configPath, layersPath)
 	if err != nil {
 		return v1.Manifest{}, errors.Wrapf(err, "unable to construct manifest from %s", src)
 	}
 
-	err = writeManifest(m, dst)
-	if err != nil {
+	if err := writeManifest(m, dst); err != nil {
 		return v1.Manifest{}, errors.Wrapf(err, "unable to write manifest to %s", dst)
 	}
 
 	return m, nil
 }
 
-// buildManifest takes the directory to config.json and an array of directories to the layers and build a manifest object based on the given config and layers.
-func buildManifest(configDir string, layersDir []string) (v1.Manifest, error) {
-	rawConfig, err := ioutil.ReadFile(configDir)
+// buildManifest takes the directory to image config and an array of directories to the layers and build a manifest object based on the given config and layers.
+func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) {
+	rawConfig, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return v1.Manifest{}, errors.Wrapf(err, "Unable to read config.json file from %s", configDir)
+		return v1.Manifest{}, errors.Wrapf(err, "Unable to read image config file from %s", configPath)
 	}
 
 	cfgHash, cfgSize, err := v1.SHA256(bytes.NewReader(rawConfig))
 	if err != nil {
-		return v1.Manifest{}, errors.Wrap(err, "Unable to hash config.json file")
+		return v1.Manifest{}, errors.Wrap(err, "unable to hash image config file")
 	}
 
 	manifest := v1.Manifest{
@@ -89,11 +67,11 @@ func buildManifest(configDir string, layersDir []string) (v1.Manifest, error) {
 		},
 	}
 
-	manifest.Layers = make([]v1.Descriptor, len(layersDir))
-	for i, l := range layersDir {
+	manifest.Layers = make([]v1.Descriptor, len(layersPath))
+	for i, l := range layersPath {
 		layer, err := tarball.LayerFromFile(l)
 		if err != nil {
-			return v1.Manifest{}, errors.Wrapf(err, "Unable to get layer %d from %s", i, l)
+			return v1.Manifest{}, errors.Wrapf(err, "unable to get layer %d from %s", i, l)
 		}
 
 		layerSize, err := layer.Size()
@@ -119,12 +97,12 @@ func buildManifest(configDir string, layersDir []string) (v1.Manifest, error) {
 func writeManifest(m v1.Manifest, path string) error {
 	rawManifest, err := json.Marshal(m)
 	if err != nil {
-		return errors.Wrap(err, "Unable to get the JSON encoding of manifest")
+		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
 	}
 
 	err = ioutil.WriteFile(path, rawManifest, os.ModePerm)
 	if err != nil {
-		return errors.Wrapf(err, "Unable to write manifest to path %s", path)
+		return errors.Wrapf(err, "unable to write manifest to path %s", path)
 	}
 
 	return nil

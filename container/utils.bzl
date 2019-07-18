@@ -13,41 +13,50 @@
 # limitations under the License.
 """Utility tools for container rules."""
 
-def generate_legacy_dir(ctx, image_files):
-    """Generate a legacy directory from the list of image_files to /image_runfiles.
+def generate_legacy_dir(ctx, layers, config):
+    """Generate a legacy directory from the image represented by the given layers
+    and config to /image_runfiles.
 
     Args:
       ctx: the execution context
-      image_files: the list of input files for the docker image
+      layers: the list of layer blobs for a docker image
+      config: the config file for the image
 
     Returns:
-      The config file and a list of directories for the generated files.
+      The config file path and a list of directories for the generated symlinked files.
     """
     path = "image_runfiles/"
-
     temp_files = []
+    layer_paths = []
 
-    # Generate symlinks for legacy formatted layers and config.json
-    layer_counter = 0
-    for f in image_files:
-        if ".tar.gz" in f.basename:
-            out_files = ctx.actions.declare_file(path + str(layer_counter) + ".tar.gz")
-            layer_counter += 1
-        elif "config" in f.basename:
-            out_files = ctx.actions.declare_file(path + "config.json")
-            config = out_files
-        if out_files:
-            temp_files.append(out_files)
+    # Symlink layers to ./image_runfiles/<i>.tar.gz
+    for i in range(len(layers)):
+        layer_symlink = ctx.actions.declare_file(path + str(i) + ".tar.gz")
+        temp_files.append(layer_symlink)
+        layer_paths.append(layer_symlink)
         ctx.actions.run_shell(
-            outputs = [out_files],
-            inputs = [f],
+            outputs = [layer_symlink],
+            inputs = [layers[i]],
             command = "ln {src} {dst}".format(
-                src = f.path,
-                dst = out_files.path,
+                src = layers[i].path,
+                dst = layer_symlink.path,
             ),
         )
 
+    # Symlink config to ./image_runfiles/config.json
+    config_symlink = ctx.actions.declare_file(path + "config.json")
+    temp_files.append(config_symlink)
+    ctx.actions.run_shell(
+        outputs = [config_symlink],
+        inputs = [config],
+        command = "ln {src} {dst}".format(
+            src = config.path,
+            dst = config_symlink.path,
+        ),
+    )
+
     return {
-        "config": config,
+        "config": config_symlink,
+        "layers": layer_paths,
         "temp_files": temp_files,
     }

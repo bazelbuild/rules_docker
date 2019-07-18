@@ -84,19 +84,14 @@ def _impl(ctx):
             fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
         pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
     if ctx.attr.format == "legacy":
-        for f in ctx.files.image:
-            if f.basename == "config.json":
-                pusher_args += ["-src", "{index_dir}".format(
-                    index_dir = _get_runfile_path(ctx, f),
-                )]
-    if ctx.attr.format == "image":
-        # Leverage our efficient intermediate representation to push.
+        # Construct container_parts for input to pusher.
         image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
+        blobsums = image.get("blobsum", [])
         blobs = image.get("zipped_layer", [])
         config = image["config"]
+        manifest = image["manifest"]
         tarball = image.get("legacy")
-        image_files = blobs + []
-
+        image_files = blobs + blobsums
         if tarball:
             print("Pushing an image based on a tarball can be very " +
                   "expensive.  If the image is the output of a " +
@@ -106,17 +101,18 @@ def _impl(ctx):
             image_files += [tarball]
         if config:
             image_files += [config]
+        if manifest:
+            image_files += [manifest]
 
-        legacy_dir = generate_legacy_dir(ctx, image_files)
+        legacy_dir = generate_legacy_dir(ctx, blobs, config)
         temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
 
         pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
+        pusher_args += ["-layers", "{}".format(" ".join([_get_runfile_path(ctx, l) for l in legacy_dir["layers"]]))]
 
-    format = ctx.attr.format
-    if ctx.attr.format == "image":
-        format = "legacy"
-    pusher_args += ["-format", str(format)]
-    print(pusher_args)
+
+
+    pusher_args += ["-format", str(ctx.attr.format)]
 
     # If the docker toolchain is configured to use a custom client config
     # directory, use that instead
@@ -124,7 +120,7 @@ def _impl(ctx):
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
 
-    if ctx.attr.format == "image":
+    if ctx.attr.format == "legacy":
         pusher_runfiles = [ctx.executable._pusher] + temp_files
     else:
         pusher_runfiles = [ctx.executable._pusher] + ctx.files.image
@@ -162,9 +158,8 @@ new_container_push = rule(
                 "oci",
                 "docker",
                 "legacy",
-                "image",
             ],
-            doc = "The form to push: docker or oci, default to 'oci'.",
+            doc = "The form to push: docker, legacy or oci, default to 'oci'.",
         ),
         "image": attr.label(
             allow_files = True,

@@ -371,9 +371,9 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_test_legacy",
+    name = "new_push_test_legacy_from_container_img",
     format = "legacy",
-    image = "//container/go/pkg/compat:legacy_test_index1",
+    image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -403,7 +403,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_legacy_tag_file",
     format = "legacy",
-    image = "//container/go/pkg/compat:legacy_test_index1",
+    image = ":set_cmd",
     registry = "localhost:5000",
     repository = "docker/test",
     tag_file = ":test.tag",
