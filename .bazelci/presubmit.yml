@@ -15,6 +15,8 @@ platforms:
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/docker/security/..."
     # tests/docker/security require gcloud
+    - "-//tests/contrib:java_pkg_want_failure"
+    - "-//tests/contrib:python3_pkg_want_failure"
     - "-//tests/contrib:rbe-test-xenial_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
@@ -35,6 +37,8 @@ platforms:
     # Disabled tests that do not run in BuildKite CI.
     - "-//tests/docker/security/..."
     # tests/docker/security require gcloud
+    - "-//tests/contrib:java_pkg_want_failure"
+    - "-//tests/contrib:python3_pkg_want_failure"
     - "-//tests/contrib:rbe-test-xenial_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
@@ -94,8 +98,10 @@ platforms:
     - "-//tests/docker/security/..."
     # contrib targets are not compatible with remote exec
     - "-//tests/contrib:derivative_with_volume_repro_test"
-    - "-//tests/contrib:set_cmd_repro_test"
+    - "-//tests/contrib:java_pkg_want_failure"
+    - "-//tests/contrib:python3_pkg_want_failure"
     - "-//tests/contrib:rbe-test-xenial_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
     build_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
@@ -111,9 +117,11 @@ platforms:
     - "//tests/..."
     # tests/docker/security require gcloud setup to access asci-toolchains images
     - "-//tests/docker/security/..."
-    - "-//tests/contrib:rbe-test-xenial_repro_test"
     # contrib tests are not compatible with remote exec
     - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:java_pkg_want_failure"
+    - "-//tests/contrib:python3_pkg_want_failure"
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
     - "-//tests/contrib:set_cmd_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
