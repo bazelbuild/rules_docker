@@ -180,6 +180,7 @@ def _commit_impl(
                 name,
             ),
             "%{output_tar}": output_image_tar.path,
+            "%{to_json_tool}": ctx.executable._to_json_tool.path,
             "%{util_script}": ctx.file._image_utils.path,
         },
         is_executable = True,
@@ -191,7 +192,7 @@ def _commit_impl(
         outputs = [output_image_tar],
         inputs = runfiles,
         executable = script,
-        tools = [ctx.executable._extract_image_id],
+        tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
     )
 
     return struct()
@@ -221,6 +222,12 @@ _commit_attrs = {
     "_run_tpl": attr.label(
         default = Label("//docker/util:commit.sh.tpl"),
         allow_single_file = True,
+    ),
+    "_to_json_tool": attr.label(
+        default = Label("//docker/util:to_json"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
 }
 _commit_outputs = {

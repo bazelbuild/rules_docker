@@ -9,7 +9,8 @@ if [[ -z "$DOCKER" ]]; then
     exit 1
 fi
 
-# Load utils
+# Setup tools and load utils
+TO_JSON_TOOL="%{to_json_tool}"
 source %{util_script}
 
 # Load the image and remember its name

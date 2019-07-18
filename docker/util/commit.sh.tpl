@@ -2,7 +2,8 @@
 
 set -ex
 
-# Load utils
+# Setup tools and load utils
+TO_JSON_TOOL="%{to_json_tool}"
 source %{util_script}
 
 # Resolve the docker tool path

@@ -100,6 +100,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
             "%{installer_script}": install_script.path,
             "%{output_file_name}": unstripped_tar.path,
             "%{output_image_name}": output_image_name,
+            "%{to_json_tool}": ctx.executable._to_json_tool.path,
             "%{util_script}": ctx.file._image_utils.path,
         },
         is_executable = True,
@@ -113,7 +114,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
             installables_tar,
             ctx.file._image_utils,
         ],
-        tools = [ctx.executable._extract_image_id],
+        tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         executable = script,
     )
 
@@ -169,6 +170,12 @@ _attrs = {
     "_run_install_tpl": attr.label(
         default = Label("//docker/package_managers:run_install.sh.tpl"),
         allow_single_file = True,
+    ),
+    "_to_json_tool": attr.label(
+        default = Label("//docker/util:to_json"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
 }
 
