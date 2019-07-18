@@ -23,7 +23,7 @@ Next it starts two containers and builds the supplied container_image target
 output files for the test image. Finally, both extracted images are compared.
 A test image is considered to be reproducible when both instances of the same
 image have the same digest and ID. On a mismatch of one of those values, the
-test fails and the container_diff tool
+test fails (unless want_reproducibility is False) and the container_diff tool
 (https://github.com/GoogleContainerTools/container-diff#container-diff)
 produces the summary of their differences.
 
@@ -35,6 +35,8 @@ Args:
           This image must have Bazel and docker installed and available in the PATH.
     container_diff_args: (optional) Args to the container_diff tool as specified here:
                          https://github.com/GoogleContainerTools/container-diff#quickstart
+    want_reproducibility: (optional) Flag to indicate whether the test 'image'
+                          is expected to be reproducible.
 
 NOTE:
 
@@ -66,6 +68,7 @@ container_repro_test(
         "node",
     ],
     image = "//testdata:derivative_with_volume",
+    want_reproducibility = False,
     workspace_file = "//:WORKSPACE",
 )
 """
@@ -166,7 +169,11 @@ def _impl(ctx):
     commands_image1 = cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path1) + " ".join(build_targets),
     ] + cp_cmds + ["rm -rf %s" % host_outs_path1]
-    commands_image2 = cd_cmd + [
+
+    # Some deb package installations (e.g. openjdk-8-jdk) use timestamps
+    # during installation. Avoid bulding and reproducing a container at the
+    # same start time by sleeping 10 secs before rebuilding.
+    commands_image2 = ["sleep 10"] + cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path2) + " ".join(build_targets),
     ] + cp_cmds + ["rm -rf %s" % host_outs_path2]
 
@@ -213,6 +220,9 @@ def _impl(ctx):
     # Expand template to run the image comparison test.
     type_args = ["--type=" + type_arg for type_arg in ctx.attr.container_diff_args]
     diff_tool_exec = ctx.executable._container_diff_tool
+    success_exit = 0
+    if not ctx.attr.want_reproducibility:
+        success_exit = 1
     ctx.actions.expand_template(
         template = ctx.file._test_tpl,
         substitutions = {
@@ -221,6 +231,7 @@ def _impl(ctx):
             "%{img1_path}": img1_outs.short_path + extract_path,
             "%{img2_path}": img2_outs.short_path + extract_path,
             "%{img_name}": img_label.name,
+            "%{success_exit}": str(success_exit),
         },
         output = ctx.outputs.test_script,
         is_executable = True,
@@ -269,7 +280,11 @@ container_repro_test = rule(
                 "toolchain_container_",
             ],
             mandatory = True,
-            doc = "A container_image target to test for reproducibility.",
+            doc = "A container_image or toolchain_container target to test for reproducibility.",
+        ),
+        "want_reproducibility": attr.bool(
+            default = True,
+            doc = "Flag to indicate whether the test 'image' is expected to be reproducible.",
         ),
         "workspace_file": attr.label(
             allow_single_file = ["WORKSPACE"],
