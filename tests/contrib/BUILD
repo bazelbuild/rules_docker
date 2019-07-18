@@ -23,7 +23,7 @@ load("//contrib:push-all.bzl", "docker_push")
 load("//contrib:rename_image.bzl", "rename_image")
 load("//contrib:repro_test.bzl", "container_repro_test")
 load("//contrib:test.bzl", "container_test")
-load('//docker/toolchain_container:toolchain_container.bzl', "toolchain_container")
+load("//docker/toolchain_container:toolchain_container.bzl", "toolchain_container")
 load("//tests/contrib:compare_ids_fail_test.bzl", "compare_ids_fail_test")
 
 sh_test(

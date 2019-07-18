@@ -169,6 +169,7 @@ def _impl(ctx):
     commands_image1 = cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path1) + " ".join(build_targets),
     ] + cp_cmds + ["rm -rf %s" % host_outs_path1]
+
     # Some deb package installations (e.g. openjdk-8-jdk) use timestamps
     # during installation. Avoid bulding and reproducing a container at the
     # same start time by sleeping 10 secs before rebuilding.
