@@ -14,8 +14,7 @@
 """Utility tools for container rules."""
 
 def generate_legacy_dir(ctx, layers, config):
-    """Generate a legacy directory from the image represented by the given layers
-    and config to /image_runfiles.
+    """Generate a legacy directory from the image represented by the given layers and config to /image_runfiles.
 
     Args:
       ctx: the execution context

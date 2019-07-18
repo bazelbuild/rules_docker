@@ -108,11 +108,13 @@ def _impl(ctx):
         temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
 
         pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
-        pusher_args += ["-layers", "{}".format(" ".join([_get_runfile_path(ctx, l) for l in legacy_dir["layers"]]))]
 
-
+        for layer_path in legacy_dir["layers"]:
+            pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_path))]
 
     pusher_args += ["-format", str(ctx.attr.format)]
+
+    print(pusher_args)
 
     # If the docker toolchain is configured to use a custom client config
     # directory, use that instead
