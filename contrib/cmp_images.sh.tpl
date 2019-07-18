@@ -61,7 +61,7 @@ if [ "$imgs_differ" = true ]; then
   img1_tar=%{img1_path}/%{img_name}.tar
   img2_tar=%{img2_path}/%{img_name}.tar
   %{container_diff_tool} diff $img1_tar $img2_tar %{container_diff_args}
-  exit 1
+  exit $((1-%{success_exit}))
 fi
 
-exit 0
+exit %{success_exit}
