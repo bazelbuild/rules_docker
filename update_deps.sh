@@ -17,6 +17,7 @@ set -eu
 set -o pipefail
 
 bazel run tools:update_deps -- --repository=gcr.io/distroless/base --output=$PWD/go/go.bzl
+bazel run tools:update_deps -- --repository=gcr.io/distroless/static --output=$PWD/go/static.bzl
 bazel run tools:update_deps -- --repository=gcr.io/distroless/cc --output=$PWD/cc/cc.bzl
 bazel run tools:update_deps -- --repository=gcr.io/distroless/python2.7 --output=$PWD/python/python.bzl
 bazel run tools:update_deps -- --repository=gcr.io/distroless/python3 --output=$PWD/python3/python3.bzl
