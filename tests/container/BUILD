@@ -320,6 +320,20 @@ container_push(
     tags = ["manual"],
 )
 
+container_image(
+    name = "alpine_with_custom_attr",
+    base = "@distroless_fixed_id//image",
+    cmd = ["Hello World!"],
+    entrypoint = ["echo"],
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+    layers = [
+      "//testdata:env_layer",
+      "//testdata:files_in_layer"]
+)
+
 create_banana_directory(
     name = "banana_directory",
 )
@@ -371,9 +385,39 @@ new_container_push(
 )
 
 new_container_push(
+    name = "new_push_test_pulled_oci",
+    format = "oci",
+    image = "@new_alpine_linux_amd64//image-oci",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
     name = "new_push_test_legacy_from_container_img",
     format = "legacy",
-    image = ":set_cmd_and_entrypoint",
+    image = ":alpine_with_custom_attr",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_pulled_legacy",
+    format = "legacy",
+    image = "@new_alpine_linux_ppc64le//image",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_old_puller_compat",
+    format = "legacy",
+    image = "@alpine_linux_armv6//image",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -383,7 +427,17 @@ new_container_push(
 new_container_push(
     name = "new_push_test_tar",
     format = "docker",
-    image = "//testdata:go_pusher_test.tar",
+    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_old_puller_tar",
+    format = "docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",

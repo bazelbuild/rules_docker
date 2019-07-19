@@ -131,6 +131,40 @@ function test_new_container_push_oci() {
   docker stop -t 0 $cid
 }
 
+function test_new_container_push_compat() {
+  # OCI image pulled by new puller, target: new_push_test_pulled_oci
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_pulled_oci 2>&1)" "Successfully pushed oci image"
+  docker stop -t 0 $cid
+
+  # Legacy image pulled by new puller, target: new_push_test_pulled_legacy
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_pulled_legacy 2>&1)" "Successfully pushed legacy image"
+  docker stop -t 0 $cid
+
+  # Legacy image pulled by old puller, target: new_push_test_old_puller_compat
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_old_puller_compat 2>&1)" "Successfully pushed legacy image"
+  docker stop -t 0 $cid
+
+  # Docker image tarball pulled by new puller, target: new_push_test_old_puller_tar
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_old_puller_tar 2>&1)" "Successfully pushed docker image"
+  docker stop -t 0 $cid
+}
+
 function test_new_container_push_legacy() {
   cd "${ROOT}"
   clear_docker_full
@@ -341,6 +375,7 @@ test_container_push_all
 test_container_push_tag_file
 test_container_push_with_auth
 test_container_push_with_stamp
+test_new_container_push_compat
 test_new_container_push_oci
 test_new_container_push_tar
 test_new_container_push_oci_tag_file
