@@ -330,8 +330,9 @@ container_image(
         "//testdata:foo",
     ],
     layers = [
-      "//testdata:env_layer",
-      "//testdata:files_in_layer"]
+        "//testdata:env_layer",
+        "//testdata:files_in_layer",
+    ],
 )
 
 create_banana_directory(
@@ -398,6 +399,16 @@ new_container_push(
     name = "new_push_test_legacy_from_container_img",
     format = "legacy",
     image = ":alpine_with_custom_attr",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_auth",
+    format = "legacy",
+    image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",

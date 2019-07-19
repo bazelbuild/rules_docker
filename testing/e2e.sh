@@ -194,7 +194,7 @@ function test_new_container_push_legacy_with_auth() {
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting authenticated new container_push..."
 
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_auth 2>&1)" "Successfully pushed legacy image"
   bazel clean
 
   # Run the new_container_push test in the Bazel workspace that uses the default
@@ -203,7 +203,7 @@ function test_new_container_push_legacy_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting unauthenticated new container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_auth  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
   bazel clean
 }
 
