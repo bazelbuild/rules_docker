@@ -42,6 +42,10 @@ function guess_runfiles() {
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
-%{docker_path} run %{docker_run_args} \
-    -v %{spec_file}:/%{spec_file_mount_path} -w="/" %{docker_image} %{cmd_args}
+# Load the checker image and remember its id.
+image_id=$(%{image_id_loader} %{image_tar})
+%{docker_path} load -i %{image_tar}
+
+# Run the checker image.
+%{docker_path} run %{docker_run_args} $image_id %{cmd_args}
 
