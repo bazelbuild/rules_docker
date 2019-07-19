@@ -30,9 +30,6 @@ import (
 
 // TODO (xiaohegong): Move these functions to createImageConfig.go and change pusher logic
 
-// schemaVersion is the schema version of the docker image manifest to generate.
-const schemaVersion = 2
-
 // GenerateManifest generates a manifest at the path given by 'dst' for the legacy image in the directory 'src'.
 func GenerateManifest(src, dst, configPath string, layersPath []string) (v1.Manifest, error) {
 	m, err := buildManifest(configPath, layersPath)
@@ -60,7 +57,7 @@ func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) 
 	}
 
 	manifest := v1.Manifest{
-		SchemaVersion: schemaVersion,
+		SchemaVersion: 2,
 		MediaType:     types.DockerManifestSchema2,
 		Config: v1.Descriptor{
 			MediaType: types.DockerConfigJSON,

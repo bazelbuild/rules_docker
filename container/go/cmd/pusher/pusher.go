@@ -41,10 +41,12 @@ var (
 )
 
 const (
-	// manifestFile is the filename of image manifest
+	// manifestFile is the filename of image manifest.
 	manifestFile = "manifest.json"
-	// configFile is the filename of image config
+	// configFile is the filename of image config.
 	configFile = "config.json"
+	// indexManifestFile is the filename of image manifest config in OCI format.
+	indexManifestFile = "index.json"
 )
 
 // arrayFlags are defined for flags that may have multiple values.
