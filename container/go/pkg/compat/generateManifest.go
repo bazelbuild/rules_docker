@@ -49,7 +49,7 @@ func GenerateManifest(src, dst, configPath string, layersPath []string) (v1.Mani
 func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) {
 	rawConfig, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return v1.Manifest{}, errors.Wrapf(err, "Unable to read image config file from %s", configPath)
+		return v1.Manifest{}, errors.Wrapf(err, "unable to read image config file from %s", configPath)
 	}
 
 	cfgHash, cfgSize, err := v1.SHA256(bytes.NewReader(rawConfig))
