@@ -36,12 +36,12 @@ def _impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._tpl,
         substitutions = {
-            "%{spec_file}": _get_runfile_path(ctx, ctx.file.spec),
+            "%{cmd_args}": " ".join(cmd_args),
+            "%{docker_image}": ctx.attr._checker,
             "%{docker_path}": toolchain_info.tool_path,
             "%{docker_run_args}": "",
-            "%{docker_image}": ctx.attr._checker,
             "%{spec_file_mount_path}": mount_path,
-            "%{cmd_args}": " ".join(cmd_args),
+            "%{spec_file}": _get_runfile_path(ctx, ctx.file.spec),
         },
         output = ctx.outputs.executable,
         is_executable = True,
