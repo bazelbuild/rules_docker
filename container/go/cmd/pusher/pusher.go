@@ -17,10 +17,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -41,15 +41,17 @@ var (
 )
 
 const (
-	manifestPath = "manifest.json"
-	configPath   = "config.json"
+	// manifestFile is the filename of image manifest
+	manifestFile = "manifest.json"
+	// configFile is the filename of image config
+	configFile = "config.json"
 )
 
 // arrayFlags are defined for flags that may have multiple values.
 type arrayFlags []string
 
 func (f *arrayFlags) String() string {
-	return strings.Join(*f, "")
+	return fmt.Sprintf("%v", *f)
 }
 
 func (f *arrayFlags) Set(value string) error {
@@ -83,8 +85,8 @@ func main() {
 	if *format == "docker" && filepath.Ext(*src) != ".tar" {
 		log.Fatalf("Invalid value for argument -src for -format=docker, got %q, want path to tarball file with extension .tar.", *src)
 	}
-	if *format == "legacy" && filepath.Base(*src) != "config.json" {
-		log.Fatalf("Invalid value for argument -src for -format=legacy, got %q, want path to config.json", *src)
+	if *format == "legacy" && filepath.Base(*src) != configFile {
+		log.Fatalf("Invalid value for argument -src for -format=legacy, got %q, want path to %s", *src, configFile)
 	}
 	if *format == "oci" && filepath.Base(*src) != "index.json" {
 		log.Fatalf("Invalid value for argument -src for -format=oci, got %q, want path to index.json", *src)
@@ -97,13 +99,13 @@ func main() {
 		imgSrc = *src
 	}
 	if *format == "legacy" {
-		if _, err := os.Stat(filepath.Join(imgSrc, manifestPath)); err != nil {
-			log.Printf("Since manifest.json file does not exist in src directory, generating manifest to %s...", filepath.Join(imgSrc, manifestPath))
+		manifestPath := filepath.Join(imgSrc, manifestFile)
 
-			_, err := compat.GenerateManifest(imgSrc, filepath.Join(imgSrc, manifestPath), filepath.Join(imgSrc, configPath), layers)
-			if err != nil {
-				log.Fatalf("Error generating %s from %s: %v", manifestPath, imgSrc, err)
-			}
+		// TODO (xiaohegong): remove generate manifest after createImageConfig is merged.
+		log.Printf("Generating image manifest to %s...", manifestPath)
+		_, err := compat.GenerateManifest(imgSrc, manifestPath, filepath.Join(imgSrc, configFile), layers)
+		if err != nil {
+			log.Fatalf("Error generating %s from %s: %v", manifestFile, imgSrc, err)
 		}
 	}
 
