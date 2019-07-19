@@ -62,7 +62,7 @@ func getManifestDigest(path string) (v1.Hash, error) {
 	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
 	digest, err := ioutil.ReadFile(filepath.Join(path, digestFile))
 
-	// We get the manifest digest here if the digest file does not exist
+	// We compute the manifest digest here if the digest file does not exist.
 	if err != nil {
 		rawManifest, err := ioutil.ReadFile(filepath.Join(path, manifestFile))
 		if err != nil {

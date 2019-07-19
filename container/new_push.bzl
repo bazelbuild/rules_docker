@@ -82,27 +82,7 @@ def _impl(ctx):
             fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
         pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
     if ctx.attr.format == "legacy":
-        # Construct container_parts for input to pusher.
-        image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-        blobsums = image.get("blobsum", [])
-        blobs = image.get("zipped_layer", [])
-        config = image["config"]
-        manifest = image["manifest"]
-        tarball = image.get("legacy")
-        image_files = blobs + blobsums
-        if tarball:
-            print("Pushing an image based on a tarball can be very " +
-                  "expensive.  If the image is the output of a " +
-                  "docker_build, consider dropping the '.tar' extension. " +
-                  "If the image is checked in, consider using " +
-                  "docker_import instead.")
-            image_files += [tarball]
-        if config:
-            image_files += [config]
-        if manifest:
-            image_files += [manifest]
-
-        legacy_dir = generate_legacy_dir(ctx, blobs, config)
+        legacy_dir = generate_legacy_dir(ctx)
         temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
 
         pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
@@ -120,7 +100,7 @@ def _impl(ctx):
 
     pusher_runfiles = [ctx.executable._pusher] + runfiles_tag_file
     if ctx.attr.format == "legacy":
-        pusher_runfiles += temp_files + image_files
+        pusher_runfiles += temp_files
     else:
         pusher_runfiles += ctx.files.image
     runfiles = ctx.runfiles(files = pusher_runfiles)

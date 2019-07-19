@@ -28,6 +28,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// TODO (xiaohegong): Move these functions to createImageConfig.go and change pusher logic
+
 // schemaVersion is the schema version of the docker image manifest to generate.
 const schemaVersion = 2
 
