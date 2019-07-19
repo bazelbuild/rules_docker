@@ -15,12 +15,12 @@
 licenses(["notice"])  # Apache 2.0
 
 load(
-    "//contrib/automatic_container_release/syntax:file_update.bzl",
-    file_update_syntax_test = "file_update_test",
-)
-load(
     "//contrib/automatic_container_release/syntax:dependency_update.bzl",
     dependency_update_syntax_test = "dependency_update_test",
+)
+load(
+    "//contrib/automatic_container_release/syntax:file_update.bzl",
+    file_update_syntax_test = "file_update_test",
 )
 
 file_update_syntax_test(
