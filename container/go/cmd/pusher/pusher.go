@@ -90,8 +90,8 @@ func main() {
 	if *format == "legacy" && filepath.Base(*src) != configFile {
 		log.Fatalf("Invalid value for argument -src for -format=legacy, got %q, want path to %s", *src, configFile)
 	}
-	if *format == "oci" && filepath.Base(*src) != "index.json" {
-		log.Fatalf("Invalid value for argument -src for -format=oci, got %q, want path to index.json", *src)
+	if *format == "oci" && filepath.Base(*src) != indexManifestFile {
+		log.Fatalf("Invalid value for argument -src for -format=oci, got %q, want path to %s", *src, indexManifestFile)
 	}
 	if *format == "oci" || *format == "legacy" {
 		imgSrc = filepath.Dir(*src)
