@@ -11,30 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+""" Generated file with dependencies for language rule."""
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+# !!!! THIS IS A GENERATED FILE TO NOT EDIT IT BY HAND !!!!
+#
+# To regenerate this file, run ./update_deps.sh from the root of the
+# git repository.
 
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])  # Apache 2.0
-
-py_binary(
-    name = "config_stripper",
-    srcs = ["config_stripper.py"],
-)
-
-py_binary(
-    name = "to_json",
-    srcs = ["to_json.py"],
-)
-
-exports_files([
-    "commit.sh.tpl",
-    "extract.sh.tpl",
-    "image_util.sh",
-])
-
-bzl_library(
-    name = "util",
-    srcs = ["run.bzl"],
-)
+DIGESTS = {
+    # "gcr.io/distroless/static:debug" circa 2019-07-11 16:50 +0100
+    "debug": "sha256:48e0d165f07d499c02732d924e84efbc73df8021b12c24940e18a9306589430e",
+    # "gcr.io/distroless/static:latest" circa 2019-07-11 16:50 +0100
+    "latest": "sha256:48e0d165f07d499c02732d924e84efbc73df8021b12c24940e18a9306589430e",
+}
