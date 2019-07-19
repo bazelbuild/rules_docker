@@ -24,6 +24,10 @@ load(
     _layer_tools = "tools",
 )
 load(
+    "//container:utils.bzl",
+    "generate_legacy_dir",
+)
+load(
     "//skylib:path.bzl",
     "runfile",
 )
@@ -70,18 +74,20 @@ def _impl(ctx):
                 found = True
         if not found:
             fail("Did not find an index.json in the image attribute {} specified to {}".format(ctx.attr.image, ctx.label))
-    if ctx.attr.format == "legacy":
-        for f in ctx.files.image:
-            if f.basename == "manifest.json":
-                pusher_args += ["-src", "{index_dir}".format(
-                    index_dir = _get_runfile_path(ctx, f),
-                )]
     if ctx.attr.format == "docker":
         if len(ctx.files.image) == 0:
             fail("Attribute image {} to {} did not contain an image tarball".format(ctx.attr.image, ctx.label))
         if len(ctx.files.image) > 1:
             fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
         pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
+    if ctx.attr.format == "legacy":
+        legacy_dir = generate_legacy_dir(ctx)
+        temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
+
+        pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
+
+        for layer_path in legacy_dir["layers"]:
+            pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_path))]
 
     pusher_args += ["-format", str(ctx.attr.format)]
 
@@ -90,6 +96,14 @@ def _impl(ctx):
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
+
+    pusher_runfiles = [ctx.executable._pusher] + runfiles_tag_file
+    if ctx.attr.format == "legacy":
+        pusher_runfiles += temp_files
+    else:
+        pusher_runfiles += ctx.files.image
+    runfiles = ctx.runfiles(files = pusher_runfiles)
+    runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     ctx.actions.expand_template(
         template = ctx.file._tag_tpl,
@@ -100,10 +114,6 @@ def _impl(ctx):
         output = ctx.outputs.executable,
         is_executable = True,
     )
-
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] +
-                                    runfiles_tag_file + ctx.files.image)
-    runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     return [
         DefaultInfo(
@@ -127,7 +137,7 @@ new_container_push = rule(
                 "docker",
                 "legacy",
             ],
-            doc = "The form to push: docker or oci, default to 'oci'.",
+            doc = "The form to push: docker, legacy or oci, default to 'oci'.",
         ),
         "image": attr.label(
             allow_files = True,

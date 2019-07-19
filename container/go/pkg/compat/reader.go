@@ -16,7 +16,7 @@
 package compat
 
 import (
-	"fmt"
+	"bytes"
 	"io/ioutil"
 	"path/filepath"
 
@@ -61,8 +61,19 @@ func Read(src string) (v1.Image, error) {
 func getManifestDigest(path string) (v1.Hash, error) {
 	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
 	digest, err := ioutil.ReadFile(filepath.Join(path, digestFile))
+
+	// We compute the manifest digest here if the digest file does not exist.
 	if err != nil {
-		return v1.Hash{}, fmt.Errorf("failed to locate SHA256 digest file for image manifest: %v", err)
+		rawManifest, err := ioutil.ReadFile(filepath.Join(path, manifestFile))
+		if err != nil {
+			return v1.Hash{}, err
+		}
+
+		digest, _, err := v1.SHA256(bytes.NewReader(rawManifest))
+		if err != nil {
+			return v1.Hash{}, errors.Wrapf(err, "unable to generate digest file from manifest at %s", path)
+		}
+		return digest, nil
 	}
 
 	return v1.NewHash(string(digest))
