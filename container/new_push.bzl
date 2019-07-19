@@ -118,9 +118,9 @@ def _impl(ctx):
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
 
-    pusher_runfiles = [ctx.executable._pusher] + image_files + runfiles_tag_file
+    pusher_runfiles = [ctx.executable._pusher] + runfiles_tag_file
     if ctx.attr.format == "legacy":
-        pusher_runfiles += temp_files
+        pusher_runfiles += temp_files + image_files
     else:
         pusher_runfiles += ctx.files.image
     runfiles = ctx.runfiles(files = pusher_runfiles)

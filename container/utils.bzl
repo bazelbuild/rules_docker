@@ -22,10 +22,10 @@ def generate_legacy_dir(ctx, layers, config):
       config: the config file for the image
 
     Returns:
-      The filepaths generated and runfiles to be made available. 
+      The filepaths generated and runfiles to be made available.
       config: the generated config file.
-      layers: the generated layer tarball files. 
-      temp_files: all the files generated to be made available at runtime. 
+      layers: the generated layer tarball files.
+      temp_files: all the files generated to be made available at runtime.
     """
     path = "image_runfiles/"
     layer_files = []
