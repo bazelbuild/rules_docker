@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eu
+set -exu
 
 # Generates a docker run command to run a automatic container release config
 # validator released as a Docker image. Argument list:

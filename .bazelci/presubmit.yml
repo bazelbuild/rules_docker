@@ -24,7 +24,6 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
-    #- "-//tests/contrib/automatic_container_release/..."
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"
@@ -48,7 +47,6 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
-    - "-//tests/contrib/automatic_container_release/..."
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"
@@ -134,7 +132,6 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
-    - "-//tests/contrib/automatic_container_release/..."
     test_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
