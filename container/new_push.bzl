@@ -64,8 +64,6 @@ def _impl(ctx):
         tag = tag,
     )]
 
-    image_files = []
-
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
         found = False
@@ -120,11 +118,12 @@ def _impl(ctx):
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
 
+    pusher_runfiles = [ctx.executable._pusher] + image_files + runfiles_tag_file
     if ctx.attr.format == "legacy":
-        pusher_runfiles = [ctx.executable._pusher] + temp_files
+        pusher_runfiles += temp_files
     else:
-        pusher_runfiles = [ctx.executable._pusher] + ctx.files.image
-    runfiles = ctx.runfiles(files = pusher_runfiles + image_files + runfiles_tag_file)
+        pusher_runfiles += ctx.files.image
+    runfiles = ctx.runfiles(files = pusher_runfiles)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
     ctx.actions.expand_template(

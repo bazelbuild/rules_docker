@@ -93,7 +93,7 @@ func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) 
 	return manifest, nil
 }
 
-// writeManifest takes a Manifest object and writes a JSON file to the given manifest.json path.
+// writeManifest takes a Manifest object and writes a JSON file to the given image manifest path.
 func writeManifest(m v1.Manifest, path string) error {
 	rawManifest, err := json.Marshal(m)
 	if err != nil {

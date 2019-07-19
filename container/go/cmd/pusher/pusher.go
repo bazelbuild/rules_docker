@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -47,12 +48,12 @@ const (
 // arrayFlags are defined for flags that may have multiple values.
 type arrayFlags []string
 
-func (i *arrayFlags) String() string {
-	return ""
+func (f *arrayFlags) String() string {
+	return strings.Join(*f, "")
 }
 
-func (i *arrayFlags) Set(value string) error {
-	*i = append(*i, value)
+func (f *arrayFlags) Set(value string) error {
+	*f = append(*f, value)
 	return nil
 }
 

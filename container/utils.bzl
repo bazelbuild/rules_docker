@@ -14,7 +14,7 @@
 """Utility tools for container rules."""
 
 def generate_legacy_dir(ctx, layers, config):
-    """Generate a legacy directory from the image represented by the given layers and config to /image_runfiles.
+    """Generate a intermediate legacy directory from the image represented by the given layers and config to /image_runfiles.
 
     Args:
       ctx: the execution context
@@ -22,17 +22,18 @@ def generate_legacy_dir(ctx, layers, config):
       config: the config file for the image
 
     Returns:
-      The config file path and a list of directories for the generated symlinked files.
+      The filepaths generated and runfiles to be made available. 
+      config: the generated config file.
+      layers: the generated layer tarball files. 
+      temp_files: all the files generated to be made available at runtime. 
     """
     path = "image_runfiles/"
-    temp_files = []
-    layer_paths = []
+    layer_files = []
 
     # Symlink layers to ./image_runfiles/<i>.tar.gz
     for i in range(len(layers)):
         layer_symlink = ctx.actions.declare_file(path + str(i) + ".tar.gz")
-        temp_files.append(layer_symlink)
-        layer_paths.append(layer_symlink)
+        layer_files.append(layer_symlink)
         ctx.actions.run_shell(
             outputs = [layer_symlink],
             inputs = [layers[i]],
@@ -44,7 +45,6 @@ def generate_legacy_dir(ctx, layers, config):
 
     # Symlink config to ./image_runfiles/config.json
     config_symlink = ctx.actions.declare_file(path + "config.json")
-    temp_files.append(config_symlink)
     ctx.actions.run_shell(
         outputs = [config_symlink],
         inputs = [config],
@@ -56,6 +56,6 @@ def generate_legacy_dir(ctx, layers, config):
 
     return {
         "config": config_symlink,
-        "layers": layer_paths,
-        "temp_files": temp_files,
+        "layers": layer_files,
+        "temp_files": [config_symlink] + layer_files,
     }

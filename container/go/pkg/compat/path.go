@@ -30,8 +30,8 @@ const (
 	digestFile   = "digest"
 )
 
-// Return the filename for layer at index i in the layers array in manifest.json.
-// Assume the layers are padded to three digits, e.g., the first layer is named 000.tar.gz.
+// LayerFilename returns the filename for layer at index i in the layers array in manifest.json.
+// Assume the layers are padded to one digit, e.g., the first layer is named 0.tar.gz.
 func LayerFilename(i int) string {
 	return fmt.Sprintf("%01d.tar.gz", i)
 }
