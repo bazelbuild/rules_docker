@@ -32,6 +32,7 @@ platforms:
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
   ubuntu1804:
     test_targets:
     - "--"
@@ -56,6 +57,7 @@ platforms:
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
   macos:
     build_targets:
     - "--"
@@ -99,6 +101,7 @@ platforms:
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
   rbe_ubuntu1604:
     build_targets:
     - "--"
@@ -151,3 +154,4 @@ platforms:
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
