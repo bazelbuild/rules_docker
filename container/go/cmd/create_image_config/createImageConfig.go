@@ -21,6 +21,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -46,8 +47,8 @@ var (
 	creationTime     = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC, 3339 date/time.")
 	user             = flag.String("user", "", "The username to run the commands under.")
 	workdir          = flag.String("workdir", "", "Set the working directory of the layer.")
-	nullEntryPoint   = flag.String("nullEntryPoint", "False", "If True, Entrypoint will be set to null.")
-	nullCmd          = flag.String("nullCmd", "False", "If True, Cmd will be set to null.")
+	nullEntryPoint   = flag.String("nullEntryPoint", "false", "If true, Entrypoint will be set to null.")
+	nullCmd          = flag.String("nullCmd", "false", "If true, Cmd will be set to null.")
 	operatingSystem  = flag.String("operatingSystem", "linux", "Operating system to create docker image for distro specified.")
 	labelsArray      arrayFlags
 	ports            arrayFlags
@@ -58,13 +59,13 @@ var (
 	entrypoint       arrayFlags
 	layer            arrayFlags
 	stampInfoFile    arrayFlags
+	// empty file sha256 hex
+	b         = sha256.Sum256([]byte(""))
+	emptyFile = hex.EncodeToString(b[:])
 )
 
 // default architecture type based on legacy create_image_config.py
 const processorArchitecture = "amd64"
-
-// empty file sha256 sum
-const emptyFile = sha256.Sum256([]byte(""))
 
 // unix epoch 0, representation in 32 bits
 const defaultTimestamp = "1970-01-01T00:00:00Z"
@@ -207,21 +208,21 @@ func main() {
 	if *outputConfig == "" {
 		log.Fatalln("Required option -outputConfig was not specified.")
 	}
-	if *nullEntryPoint == "True" {
+	if *nullEntryPoint == "true" {
 		entrypoint = nil
 	}
-	if *nullCmd == "True" {
+	if *nullCmd == "true" {
 		command = nil
 	}
 
 	// read config file into struct.
-	configPath, err := ioutil.ReadFile(*baseConfig)
+	configPath, err := os.Open(*baseConfig)
 	if err != nil {
 		log.Fatalf("Failed to read the parent image's config file: %v", err)
 	}
-	configFile := v1.ConfigFile{}
-	if err = json.Unmarshal([]byte(configPath), &configFile); err != nil {
-		log.Fatalf("Failed to successfully read config file contents: %v", err)
+	configFile, err := v1.ParseConfigFile(configPath)
+	if err != nil {
+		log.Fatalf("Failed to successfully parse config file json contents: %v", err)
 	}
 
 	// read manifest file into struct if provided.
@@ -237,10 +238,10 @@ func main() {
 	}
 
 	var createTime string
-	var unixTime int64
 	if *creationTime == "" {
 		creationTime = nil
 	} else {
+		var unixTime int64
 		if createTime, err = stamp(*creationTime); err != nil {
 			log.Fatalf("Unable to format creation time from BUILD_TIMESTAMP macros: %v", err)
 		}
@@ -256,6 +257,11 @@ func main() {
 			// construct a RFC 3339 date/time from Unix epoch.
 			t := time.Unix(unixTime, 0)
 			creationTime := t.Format(time.RFC3339)
+			rfcCreationTime, err := time.Parse(time.RFC3339, creationTime)
+			if err != nil {
+				log.Fatalf("Unabel to convert parsed RFC3339 time to time.Time: %v", err)
+			}
+			configFile.Created = v1.Time{rfcCreationTime}
 		}
 	}
 
@@ -356,28 +362,6 @@ func main() {
 		}
 		configFile.RootFS = v1.RootFS{Type: "layers", DiffIDs: diffIDs}
 	}
-
-	// Winnie's speculative implementation. Ignore for now
-	// // update the history
-	// var layerEmpty bool
-	// if len(layers) == 0 {
-	// 	layerEmpty = true
-	// }
-	// historyItem := v1.History{
-	// 	Author:     "Bazel",
-	// 	Created:    v1.Time{time.Unix(unixTime, 0)},
-	// 	CreatedBy:  "bazel build ...",
-	// 	Comment:    *baseConfig,
-	// 	EmptyLayer: layerEmpty,
-	// }
-	// configFile.History = append(configFile.History, historyItem)
-	// if creationTime != nil {
-	// 	rfcV1Time, err := time.Parse(time.RFC3339, *creationTime)
-	// 	configFile.Created = v1.Time{rfcV1Time}
-	// 	if err != nil {
-	// 		log.Fatalf("Unable to parse creation time from RFC3339 formation: %v", err)
-	// 	}
-	// }
 
 	// length of history is expected to match the length of diff_ids
 	history := configFile.History
