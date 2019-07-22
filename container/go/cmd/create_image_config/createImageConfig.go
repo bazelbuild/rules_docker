@@ -47,8 +47,8 @@ var (
 	creationTime     = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC, 3339 date/time.")
 	user             = flag.String("user", "", "The username to run the commands under.")
 	workdir          = flag.String("workdir", "", "Set the working directory of the layer.")
-	nullEntryPoint   = flag.String("nullEntryPoint", "false", "If true, Entrypoint will be set to null.")
-	nullCmd          = flag.String("nullCmd", "false", "If true, Cmd will be set to null.")
+	nullEntryPoint   = flag.String("nullEntryPoint", "False", "If True, Entrypoint will be set to null.")
+	nullCmd          = flag.String("nullCmd", "False", "If True, Cmd will be set to null.")
 	operatingSystem  = flag.String("operatingSystem", "linux", "Operating system to create docker image for distro specified.")
 	labelsArray      arrayFlags
 	ports            arrayFlags
@@ -208,10 +208,10 @@ func main() {
 	if *outputConfig == "" {
 		log.Fatalln("Required option -outputConfig was not specified.")
 	}
-	if *nullEntryPoint == "true" {
+	if *nullEntryPoint == "True" {
 		entrypoint = nil
 	}
-	if *nullCmd == "true" {
+	if *nullCmd == "True" {
 		command = nil
 	}
 
@@ -226,12 +226,12 @@ func main() {
 	}
 
 	// read manifest file into struct if provided.
+	manifestFile := v1.Manifest{}
 	if *baseManifest != "" {
 		manifestPath, err := ioutil.ReadFile(*baseManifest)
 		if err != nil {
 			log.Fatalf("Failed to read the parent image's manifest: %v", err)
 		}
-		manifestFile := v1.Manifest{}
 		if err = json.Unmarshal([]byte(manifestPath), &manifestFile); err != nil {
 			log.Fatalf("Failed to successfully read manifest file contents: %v", err)
 		}
@@ -409,5 +409,16 @@ func main() {
 	}
 
 	log.Println("Successfully created Image Config.")
+
+	// write out the updated manifest
+	rawManifest, err := json.Marshal(manifestFile)
+	if err != nil {
+		log.Fatalf("Unable to read config struct into json object: %v", err)
+	}
+	err = ioutil.WriteFile(*outputManifest, rawManifest, os.ModePerm)
+	if err != nil {
+		log.Fatalf("Writing config to %s was unsuccessful: %v", *outputManifest, err)
+	}
+
 	log.Println("Successfully created Image Manifest.")
 }
