@@ -171,6 +171,9 @@ function test_new_container_push_legacy() {
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img 2>&1)" "Successfully pushed legacy image"
+
+  # Now pull and call the container_test target to verify the files are actually in the pushed image.
+  EXPECT_CONTAINS "$(bazel test @io_bazel_rules_docker//tests/container:new_push_verify_pushed_configs_and_files 2>&1)" "Executed 1 out of 1 test: 1 test passes."
   docker stop -t 0 $cid
 }
 

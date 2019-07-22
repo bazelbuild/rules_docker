@@ -331,6 +331,7 @@ container_image(
     ],
     layers = [
         "//testdata:env_layer",
+        "//testdata:tars_in_layer",
         "//testdata:files_in_layer",
     ],
 )
@@ -473,6 +474,12 @@ new_container_push(
     repository = "docker/test",
     tag_file = ":test.tag",
     tags = ["manual"],
+)
+
+container_test(
+    name = "new_push_verify_pushed_configs_and_files",
+    configs = ["//tests/container/configs:verify_new_pusher.yaml"],
+    image = "@verify_new_pusher_image_contents//image",
 )
 # END_DO_NOT_IMPORT
 
