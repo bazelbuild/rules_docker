@@ -40,12 +40,12 @@ def images():
             name = "dependency_update_syntax_checker",
             registry = "gcr.io",
             repository = "asci-toolchain/container_release_tools/dependency_update/validators/syntax",
-            digest = "sha256:286bcb5ef85777771de3f485ddcf1c14c687a62221029bd3769f2b0bbbcbc29a",
+            tag = "latest",
         )
     if "file_update_syntax_checker" not in excludes:
         container_pull(
             name = "file_update_syntax_checker",
             registry = "gcr.io",
             repository = "asci-toolchain/container_release_tools/file_update/validators/syntax",
-            digest = "sha256:1bcdbde47d55365f2bd4afebe0fdbbd2fdb75700bcfec17cfd8548cb195a4592",
+            tag = "latest",
         )
