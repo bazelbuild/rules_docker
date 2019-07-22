@@ -322,7 +322,7 @@ container_push(
 
 container_image(
     name = "alpine_with_custom_attr",
-    base = "@distroless_fixed_id//image",
+    base = "@new_alpine_linux_amd64//image",
     cmd = ["Hello World!"],
     entrypoint = ["echo"],
     files = [
