@@ -133,7 +133,6 @@
         object: layer-definitions/tests/metadata/random/metadata.yaml
 
 # ================================= Ubuntu1404 =================================
-
 # Bazel debian package tarball.
 - triggerFile:
     target: //layers/ubuntu1404/bazel:bazel_debs.tar
