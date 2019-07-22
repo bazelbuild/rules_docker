@@ -23,6 +23,7 @@ go_library(
         "generateManifest.go",
         "image.go",
         "ociToLegacy.go",
+        "overrideConfig.go",
         "path.go",
         "reader.go",
     ],

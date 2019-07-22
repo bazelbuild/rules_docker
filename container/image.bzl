@@ -192,7 +192,7 @@ def _image_config(
             "-entrypointPrefix=%s" % x
             for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
         ]
-    
+
     ctx.actions.run(
         executable = ctx.executable.create_image_config,
         arguments = args,
