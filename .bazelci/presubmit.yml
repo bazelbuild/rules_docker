@@ -89,7 +89,7 @@ platforms:
     - "//tests/container:test_digest_output1"
     - "//tests/container:test_digest_output2"
     - "//tests/container:test_push_digest_output"
-    - "//testing/new_pusher_tests/..."
+    - "-//testing/new_pusher_tests/..."
     test_flags:
     - "--action_env=PATH"
     # For tests/container:set_env_make_vars
