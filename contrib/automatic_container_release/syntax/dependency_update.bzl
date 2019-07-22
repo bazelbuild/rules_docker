@@ -61,7 +61,7 @@ _dependency_update_test = rule(
         ),
         "spec": attr.label(
             allow_single_file = ["yaml"],
-            doc = "File update YAML spec file to validate.",
+            doc = "Dependency update YAML spec file to validate.",
         ),
         "_extract_image_id": attr.label(
             default = "@io_bazel_rules_docker//contrib:extract_image_id",
