@@ -89,6 +89,7 @@ platforms:
     - "//tests/container:test_digest_output1"
     - "//tests/container:test_digest_output2"
     - "//tests/container:test_push_digest_output"
+    - "//tests/container:new_push_verify_pushed_configs_and_files"
     test_flags:
     - "--action_env=PATH"
     # For tests/container:set_env_make_vars
