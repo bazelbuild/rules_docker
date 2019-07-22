@@ -476,11 +476,6 @@ new_container_push(
     tags = ["manual"],
 )
 
-container_test(
-    name = "new_push_verify_pushed_configs_and_files",
-    configs = ["//tests/container/configs:verify_new_pusher.yaml"],
-    image = "@verify_new_pusher_image_contents//image",
-)
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.

@@ -237,14 +237,6 @@ container_pull(
     repository = "google/bazel",
 )
 
-# This image is used by tests/container new_push_verify_pushed_configs_and_files
-container_pull(
-    name = "verify_new_pusher_image_contents",
-    registry = "localhost:5000",
-    repository = "docker/test",
-    tag = "test",
-)
-
 # Have the py_image dependencies for testing.
 load(
     "//python:image.bzl",
