@@ -387,7 +387,7 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_test_pulled_oci",
+    name = "new_push_test_oci_from_new_puller",
     format = "oci",
     image = "@new_alpine_linux_amd64//image-oci",
     registry = "localhost:5000",
@@ -407,7 +407,7 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_test_legacy_auth",
+    name = "new_push_test_legacy_from_container_img_with_auth",
     format = "legacy",
     image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
@@ -417,7 +417,7 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_test_pulled_legacy",
+    name = "new_push_test_legacy_from_new_puller",
     format = "legacy",
     image = "@new_alpine_linux_ppc64le//image",
     registry = "localhost:5000",
@@ -427,7 +427,7 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_test_old_puller_compat",
+    name = "new_push_test_legacy_from_old_puller",
     format = "legacy",
     image = "@alpine_linux_armv6//image",
     registry = "localhost:5000",

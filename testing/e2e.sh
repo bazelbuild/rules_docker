@@ -132,28 +132,28 @@ function test_new_container_push_oci() {
 }
 
 function test_new_container_push_compat() {
-  # OCI image pulled by new puller, target: new_push_test_pulled_oci
+  # OCI image pulled by new puller, target: new_push_test_oci_from_new_puller
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_pulled_oci 2>&1)" "Successfully pushed oci image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_oci_from_new_puller 2>&1)" "Successfully pushed oci image"
   docker stop -t 0 $cid
 
-  # Legacy image pulled by new puller, target: new_push_test_pulled_legacy
+  # Legacy image pulled by new puller, target: new_push_test_legacy_from_new_puller
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_pulled_legacy 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_new_puller 2>&1)" "Successfully pushed legacy image"
   docker stop -t 0 $cid
 
-  # Legacy image pulled by old puller, target: new_push_test_old_puller_compat
+  # Legacy image pulled by old puller, target: new_push_test_legacy_from_old_puller
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_old_puller_compat 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_old_puller 2>&1)" "Successfully pushed legacy image"
   docker stop -t 0 $cid
 
   # Docker image tarball pulled by new puller, target: new_push_test_old_puller_tar
@@ -197,7 +197,7 @@ function test_new_container_push_legacy_with_auth() {
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting authenticated new container_push..."
 
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_auth 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img_with_auth 2>&1)" "Successfully pushed legacy image"
   bazel clean
 
   # Run the new_container_push test in the Bazel workspace that uses the default
@@ -206,7 +206,7 @@ function test_new_container_push_legacy_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting unauthenticated new container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_auth  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img_with_auth  2>&1)" "unable to push image to localhost:5000/docker/test:test: unsupported status code 401"
   bazel clean
 }
 
