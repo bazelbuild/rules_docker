@@ -225,6 +225,8 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     arguments = [config_arg, output_digest_arg] + layer_args + digest_args
     if image.get("legacy"):
         arguments.append("--tarball=%s" % image["legacy"].path)
+    print("image: {}".format(image))
+    print("image configggg: {}".format(image["config"]))
     ctx.actions.run(
         outputs = [output_digest],
         inputs = [image["config"]] + blobsums + blobs,
