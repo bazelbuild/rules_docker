@@ -31,7 +31,8 @@ gcsDeps:
         # Release immediately for new bazel releases.
         schedule: "* * * * * *"
 
-  # The Debian packages tarball pulled from the GCS bucket required for the Ubuntu1604 Bazel layer.
+  # The Debian packages tarball pulled from the GCS bucket required for the
+  # Ubuntu1604 Bazel layer.
   - name: "DEBS_TARBALL"
     bucket: "layer-deps"
     versionRegex: "\\d{8,}"
