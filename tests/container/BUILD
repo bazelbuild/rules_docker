@@ -62,6 +62,7 @@ container_image(
     name = "set_cmd",
     base = "@distroless_fixed_id//image",
     cmd = ["foo"],
+    # stamp = True,
 )
 
 container_test(
@@ -106,6 +107,21 @@ container_image(
     name = "base_with_cmd_and_entrypoint",
     base = ":set_cmd_and_entrypoint",
 )
+
+# TO CHECK BEHAVIOUR
+# container_image(
+#     name = "my_base",
+#     base = ":set_cmd_and_entrypoint",
+#     port = 80
+#     volumes =
+
+# )
+
+# container_image(
+#     name = "base_with_cmd_and_entrypoint",
+#     base = ":my_base",
+#     port = 100
+# )
 
 container_test(
     name = "base_with_cmd_and_entrypoint_test",
@@ -320,6 +336,7 @@ container_push(
     tags = ["manual"],
 )
 
+# DISGUSTING ONEE
 container_image(
     name = "alpine_with_custom_attr",
     base = "@new_alpine_linux_amd64//image",

@@ -37,10 +37,6 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
-var (
-	emptyFile = emptySHA256Digest([]byte(""))
-)
-
 const (
 	// defaultProcArch is the default architecture type based on legacy create_image_config.py.
 	defaultProcArch = "amd64"
@@ -48,25 +44,26 @@ const (
 	defaultTimestamp = "1970-01-01T00:00:00Z"
 )
 
-// emptySHA256Digest returns the sha256 sum of an empty digest.
-func emptySHA256Digest(emptyByte []byte) (empty string) {
-	b := sha256.Sum256(emptyByte)
+// emptySHA256Digest returns the sha256 sum of an empty string.
+func emptySHA256Digest() (empty string) {
+	b := sha256.Sum256([]byte(""))
 	empty = hex.EncodeToString(b[:])
 	return
 }
 
 // extractValue returns the contents of a file pointed to by value if it starts with a '@'.
 func extractValue(value string) (string, error) {
-	if strings.HasPrefix(value, "@") {
-		f, err := os.Open(value[1:])
-		defer f.Close()
-		shaHash, err := ioutil.ReadAll(f)
-		if err != nil {
-			return "", errors.Wrapf(err, "failed to read content from file %s", value[1:])
-		}
-		return string(shaHash), nil
+	// if strings.HasPrefix(value, "@") {
+	// f, err := os.Open(value[1:])
+	f, err := os.Open(value)
+	defer f.Close()
+	shaHash, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to read content from file %s", value)
 	}
-	return value, errors.Wrapf(nil, "unexpected value, got: %s want: @{...}", value)
+	return string(shaHash), nil
+	// }
+	// return value, errors.Wrapf(nil, "unexpected value, got: %s want: @{...}", value)
 }
 
 // keyValueToMap converts an array of strings separated by '=' into a map of key-value pairs.
@@ -140,6 +137,7 @@ func mapToKeyValue(kvMap map[string]string) []string {
 // provided map of environment variable expansions.
 // It handles formats like "PATH=$PATH:..."
 func resolveVariables(value string, environment map[string]string) (string, error) {
+	fmt.Printf("environment override %v", environment)
 	var i interface{}
 	i = "this is a string type"
 	var errorMet = false
@@ -291,7 +289,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	if len(layer) > 0 {
 		var diffIDToAdd v1.Hash
 		for _, layer := range layerDigests {
-			if layer != emptyFile {
+			if layer != emptySHA256Digest() {
 				diffIDToAdd = v1.Hash{Algorithm: "sha256", Hex: layer}
 				diffIDs = append(diffIDs, diffIDToAdd)
 			}
@@ -322,7 +320,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			Created:   currCreated,
 			CreatedBy: "bazel build ...",
 		}
-		if l == emptyFile {
+		if l == emptySHA256Digest() {
 			historyToAdd.EmptyLayer = true
 		}
 		history = append([]v1.History{historyToAdd}, history...)

@@ -109,51 +109,70 @@ def fix_dashdash(l):
 
 def main():
   args = parser.parse_args()
-
+  print("args: {}".format(args))
   def Stamp(inp):
+    print("inp: {}".format(inp), type(inp))
     """Perform substitutions in the provided value."""
     if not args.stamp_info_file or not inp:
       return inp
     format_args = {}
+    print("stamp info args: {}".format(args.stamp_info_file))
     for infofile in args.stamp_info_file:
       with open(infofile) as info:
         for line in info:
+          print(line)
+          print("\n")
           line = line.strip('\n')
           key, value = line.split(' ', 1)
           if key in format_args:
             print ('WARNING: Duplicate value for key "%s": '
                    'using "%s"' % (key, value))
           format_args[key] = value
-
+    print("hiiiiii")
+    print("format_args: {}".format(format_args))
+    print("byeeee")
+    print("check it: {}".format(inp.format(**format_args)))
     return inp.format(**format_args)
 
   base_json = '{}'
+  print("base arg: {}".format(args.base))
   if args.base:
     with open(args.base, 'r') as r:
       base_json = r.read()
   data = json.loads(base_json)
+  print("data type:", type(data)) # a dict type
 
   base_manifest_json = '{}'
+  print("base manifest: {}".format(args.basemanifest))
   if args.basemanifest:
     with open(args.basemanifest, 'r') as r:
       base_manifest_json = r.read()
   manifestdata = json.loads(base_manifest_json)
 
   layers = []
+  print(args.layer)
   for layer in args.layer:
+    print("utils extract", utils.ExtractValue(layer), type(utils.ExtractValue(layer)))
     layers.append(utils.ExtractValue(layer))
 
   labels = KeyValueToDict(args.labels)
+  print("SAVE ME: {}".format(args.labels))
+  print("six iteritems: {}".format(six.iteritems(labels)))
   for label, value in six.iteritems(labels):
+    print(label, value)
     if value.startswith('@'):
       with open(value[1:], 'r') as f:
         labels[label] = f.read()
     elif '{' in value:
       labels[label] = Stamp(value)
+      print("stamp value: {}".format(Stamp(value)))
+  print("labels: {}".format(labels))
 
   creation_time = None
   if args.creation_time:
     creation_time = Stamp(args.creation_time)
+    print("args creation time: {}".format(args.creation_time))
+    print("creation time: {}".format(creation_time))
     try:
       # If creation_time is parsable as a floating point type, assume unix epoch
       # timestamp.
@@ -170,11 +189,12 @@ def main():
               parsed_unix_timestamp
           ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
       )
+      print("creation time", type(creation_time))
     except ValueError:
       # Otherwise, assume RFC 3339 date/time format.
       pass
 
-  output = v2_2_metadata.Override(data, v2_2_metadata.Overrides(
+  overriden = v2_2_metadata.Overrides(
       author='Bazel',
       created_by='bazel build ...',
       layers=layers,
@@ -186,10 +206,19 @@ def main():
         k: Stamp(v)
         for (k, v) in six.iteritems(KeyValueToDict(args.env))
       },
-      ports=args.ports, volumes=args.volumes, workdir=Stamp(args.workdir)),
+      ports=args.ports, volumes=args.volumes, workdir=Stamp(args.workdir))
+  print("")
+  print("pre Override data (defaults): {}".format(data))
+  print("==============")
+  print("v2_2_metadata.Overide (options): {}".format(overriden))
+  print("")
+  output = v2_2_metadata.Override(data, overriden,
                                   architecture=_PROCESSOR_ARCHITECTURE,
                                   operating_system=args.operating_system)
-
+  print("output: {}".format(output))
+  print("output type: {}".format(type(output)))
+  
+  ## STILL NEED TO DO THESE TWO
   if ('config' in output and 'Cmd' in output['config'] and
       args.null_cmd == "True"):
     del (output['config']['Cmd'])
@@ -205,7 +234,7 @@ def main():
   with open(args.output, 'w') as fp:
     json.dump(output, fp, sort_keys=True)
     fp.write('\n')
-
+  print("hereee")
   if (args.manifestoutput):
     with open(args.manifestoutput, 'w') as fp:
       json.dump(manifestdata, fp, sort_keys=False)

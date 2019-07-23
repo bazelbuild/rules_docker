@@ -124,81 +124,115 @@ def _image_config(
         else:
             labels[label] = fname
     args = [
-        "-outputConfig=%s" % config.path,
+        "-outputConfig", "%s" % config.path,
     ] + [
-        "-outputManifest=%s" % manifest.path,
+        "-outputManifest", "%s" % manifest.path,
     ] + [
-        "-entrypoint=%s" % x
-        for x in entrypoint
+        "-nullEntryPoint", "%s" % null_entrypoint,
     ] + [
-        "-command=%s" % x
-        for x in cmd
-    ] + [
-        "-ports=%s" % x
-        for x in ctx.attr.ports
-    ] + [
-        "-volumes=%s" % x
-        for x in ctx.attr.volumes
-    ] + [
-        "-nullEntryPoint=%s" % null_entrypoint,
-    ] + [
-        "-nullCmd=%s" % null_cmd,
+        "-nullCmd", "%s" % null_cmd,
     ]
+
+    for x in entrypoint:
+        args += ["-entrypoint", "%s" % x]
+    for x in cmd:
+        args += ["-command", "%s" % x]
+    for x in ctx.attr.ports:
+        args += ["-ports", "%s" % x]
+    for x in ctx.attr.volumes:
+        args += ["-volumes", "%s" % x]
+    print("Old args: {}".format(args))
+    # + [
+    #     "-entrypoint=%s" % x
+    #     for x in entrypoint
+    # ] + [
+    #     "-command", "%s" % x
+    #     for x in cmd
+    # ] + [
+    #     "-ports", "%s" % x
+    #     for x in ctx.attr.ports
+    # ] + [
+    #     "-volumes", "%s" % x
+    #     for x in ctx.attr.volumes
+    # ] 
     if creation_time:
-        args += ["-creationTime=%s" % creation_time]
+        args += ["-creationTime", "%s" % creation_time]
     elif ctx.attr.stamp:
         # If stamping is enabled, and the creation_time is not manually defined,
         # default to '{BUILD_TIMESTAMP}'.
-        args += ["-creationTime={BUILD_TIMESTAMP}"]
+        args += ["-creationTime", "{BUILD_TIMESTAMP}"]
 
-    args += ["-labels=%s" % "=".join([key, value]) for key, value in labels.items()]
-    args += ["-env=%s" % "=".join([
-        ctx.expand_make_variables("env", key, {}),
-        ctx.expand_make_variables("env", value, {}),
-    ]) for key, value in env.items()]
+    for key, value in labels.items():
+        args += ["-labels", "%s" % "=".join([key, value])]
+    # args += ["-labels, "%s" % "=".join([key, value]) for key, value in labels.items()]
+
+    print("envitems: {}".format(env.items()))
+    # args += ["-foo", "foo", "-foo", "bar"]
+    for key, value in env.items():
+        print("hit")
+        args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), ctx.expand_make_variables("env", value, {})])]
+    # args += ["-env", "%s" % "=".join([
+    #     ctx.expand_make_variables("env", key, {}),
+    #     ctx.expand_make_variables("env", value, {}),
+    # ]) for key, value in env.items()]
 
     if ctx.attr.user:
-        args += ["-user=" + ctx.attr.user]
+        args += ["-user", ctx.attr.user]
     if workdir:
-        args += ["-workdir=" + workdir]
+        args += ["-workdir", workdir]
 
     inputs = layer_names
     for layer_name in layer_names:
-        args += ["-layer=@" + layer_name.path]
+        args += ["-layerDigestFile", layer_name.path]
+        # args += ["-layerDigestFile", "@" + layer_name.path]
 
     if ctx.attr.label_files:
         inputs += ctx.files.label_files
 
     if base_config:
-        args += ["-baseConfig=%s" % base_config.path]
+        print("base config: {}".format(base_config))
+        print("base config path {}".format(base_config.path))
+        args += ["-baseConfig", "%s" % base_config.path]
         inputs += [base_config]
 
     if base_manifest:
-        args += ["-baseManifest=%s" % base_manifest.path]
+        args += ["-baseManifest", "%s" % base_manifest.path]
         inputs += [base_manifest]
 
     if operating_system:
-        args += ["-operatingSystem=%s" % operating_system]
+        args += ["-operatingSystem", "%s" % operating_system]
 
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
-        args += ["-stampInfoFile=%s" % f.path for f in stamp_inputs]
+        for f in stamp_inputs:
+            args += ["-stampInfoFile", "%s" % f.path]
+        # args += ["-stampInfoFile", "%s" % f.path for f in stamp_inputs]
         inputs += stamp_inputs
 
     if ctx.attr.launcher_args and not ctx.attr.launcher:
         fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
     if ctx.attr.launcher:
-        args += [
-            "-entrypointPrefix=%s" % x
-            for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
-        ]
+        for x in ["/" + ctx.file.launcher.basename]:
+            args += ["-entrypointPrefix", "%s" % (x + ctx.attr.launcher_args)]
+        # args += [
+        #     "-entrypointPrefix=%s" % x
+        #     for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
+        # ]
+    cmd = "echo Arguments {}".format(" ".join(args))
+    print("Running command: {}".format(cmd))
 
-    ctx.actions.run(
-        executable = ctx.executable.create_image_config,
-        arguments = args,
+    #args2 = ctx.actions.args()
+    #args2.add_all(args)
+    # print("Command arguments: {}".format(" ".join(args)))
+    
+    ctx.actions.run_shell(
+        command = cmd,
+        # arguments = ["-outputConfig", config.path],
+        #arguments = args,
+        tools = [ctx.executable.create_image_config],
         inputs = inputs,
         outputs = [config, manifest],
-        use_default_shell_env = True,
+        #use_default_shell_env = True,
         mnemonic = "ImageConfig",
     )
     return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)
@@ -225,8 +259,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     arguments = [config_arg, output_digest_arg] + layer_args + digest_args
     if image.get("legacy"):
         arguments.append("--tarball=%s" % image["legacy"].path)
-    print("image: {}".format(image))
-    print("image configggg: {}".format(image["config"]))
+
     ctx.actions.run(
         outputs = [output_digest],
         inputs = [image["config"]] + blobsums + blobs,
