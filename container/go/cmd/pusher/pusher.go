@@ -56,6 +56,12 @@ func (f *arrayFlags) String() string {
 	return fmt.Sprintf("%v", *f)
 }
 
+// Get returns an empty interface that may be type-asserted to the underlying
+// value of type bool, string, etc.
+func (f *arrayFlags) Get() interface{} {
+	return ""
+}
+
 func (f *arrayFlags) Set(value string) error {
 	*f = append(*f, value)
 	return nil
