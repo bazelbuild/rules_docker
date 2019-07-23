@@ -32,20 +32,3 @@ def images():
             repository = "google/bazel",
             tag = "latest",
         )
-
-    # Config validator images used by the automatic container release config
-    # validator rules.
-    if "dependency_update_syntax_checker" not in excludes:
-        container_pull(
-            name = "dependency_update_syntax_checker",
-            registry = "gcr.io",
-            repository = "asci-toolchain/container_release_tools/dependency_update/validators/syntax",
-            tag = "latest",
-        )
-    if "file_update_syntax_checker" not in excludes:
-        container_pull(
-            name = "file_update_syntax_checker",
-            registry = "gcr.io",
-            repository = "asci-toolchain/container_release_tools/file_update/validators/syntax",
-            tag = "latest",
-        )

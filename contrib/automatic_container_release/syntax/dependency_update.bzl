@@ -15,7 +15,6 @@
 Defines a rule to syntax check a single dependency update YAML spec.
 """
 
-load("//contrib/automatic_container_release:checker_image.bzl", "checker_image")
 load(
     "//skylib:path.bzl",
     "runfile",
@@ -27,69 +26,43 @@ def _get_runfile_path(ctx, f):
 def _impl(ctx):
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
+    spec_file_container_path = "/" + ctx.file.spec.short_path.replace("/", "-")
     cmd_args = [
         "-logtostderr=true",
         "-format=dep_spec",
-        "-specFile={}".format(ctx.file.spec.short_path),
+        "-specFile={}".format(spec_file_container_path),
     ]
     ctx.actions.expand_template(
         template = ctx.file._tpl,
         substitutions = {
             "%{cmd_args}": " ".join(cmd_args),
             "%{docker_path}": toolchain_info.tool_path,
-            "%{docker_run_args}": "",
-            "%{image_id_loader}": _get_runfile_path(ctx, ctx.executable._extract_image_id),
-            "%{image_tar}": _get_runfile_path(ctx, ctx.file.image_tar),
+            "%{image_name}": ctx.attr._checker,
+            "%{spec_file_path}": _get_runfile_path(ctx, ctx.file.spec),
+            "%{spec_file_container_path}": spec_file_container_path,
         },
         output = ctx.outputs.executable,
         is_executable = True,
     )
-    runfiles = ctx.runfiles(
-        files = [
-            ctx.file.spec,
-            ctx.file.image_tar,
-        ] + ctx.files._extract_image_id,
-    )
+    runfiles = ctx.runfiles(files = [ctx.file.spec])
     return [DefaultInfo(runfiles = runfiles)]
 
-_dependency_update_test = rule(
+dependency_update_test = rule(
     attrs = {
-        "image_tar": attr.label(
-            allow_single_file = ["tar"],
-            doc = "Path to the docker image for the syntax checker with the" +
-                  " spec file included in the image.",
-        ),
         "spec": attr.label(
             allow_single_file = ["yaml"],
             doc = "Dependency update YAML spec file to validate.",
         ),
-        "_extract_image_id": attr.label(
-            default = "@io_bazel_rules_docker//contrib:extract_image_id",
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
         "_tpl": attr.label(
             default = "@io_bazel_rules_docker//contrib/automatic_container_release:run_checker.sh.tpl",
             allow_single_file = True,
+        ),
+        "_checker": attr.string(
+            default = "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/syntax",
+            doc = "Name of the checker image to run."
         ),
     },
     test = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
 )
-
-def dependency_update_test(name, spec):
-    # First build an image that includes both the checker binary as well as
-    # the spec file.
-    img_target = "{}-image".format(name)
-    checker_image(
-        name = img_target,
-        base = "@dependency_update_syntax_checker//image",
-        spec = spec,
-    )
-    _dependency_update_test(
-        name = name,
-        spec = spec,
-        image_tar = img_target + ".tar",
-    )
