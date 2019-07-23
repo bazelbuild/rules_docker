@@ -18,15 +18,10 @@ set -eu
 # Generates a docker run command to run a automatic container release config
 # validator released as a Docker image. Argument list:
 # docker_path- Path to the docker executable.
-# docker_run_args- Arguments to pass to docker run other than the working
-#                  directory.
-# spec_file- Absolute path to the YAML spec file to validate.
-# spec_file_mount_path- The path to mount the spec file as in the docker
-#                       container. This can be the same as spec_file but ideally
-#                       it should be made shorter so that the messages printed
-#                       by the checker mentioning the name of the file (which
-#                       will be the mounted path) are more user friendly.
-# docker_image- The docker image for the checker that will be run.
+# spec_file_path- Absolute path to the YAML spec file to validate.
+# spec_file_container_path- The path to copy the spec file to in the docker
+#                           container.
+# image_name- The docker image for the checker that will be run.
 # cmd_args- Arguments to pass to the checker.
 
 function guess_runfiles() {
