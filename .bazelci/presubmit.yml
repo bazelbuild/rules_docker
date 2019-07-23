@@ -32,6 +32,7 @@ platforms:
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
   ubuntu1804:
     test_targets:
     - "--"
@@ -56,6 +57,7 @@ platforms:
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
   macos:
     build_targets:
     - "--"
@@ -99,6 +101,7 @@ platforms:
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
   rbe_ubuntu1604:
     build_targets:
     - "--"
@@ -142,6 +145,9 @@ platforms:
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
     # Disabled e2e tests that pull from localhost in nested workspace
     - "-//testing/new_pusher_tests/..."
+    # Disable the automatic container release tests on RBE as the RBE bots don't
+    # have the necessary permissions to pull the checker images.
+    - "-//tests/contrib/automatic_container_release/..."
     test_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
@@ -151,3 +157,4 @@ platforms:
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
