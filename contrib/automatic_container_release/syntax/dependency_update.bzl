@@ -38,8 +38,8 @@ def _impl(ctx):
             "%{cmd_args}": " ".join(cmd_args),
             "%{docker_path}": toolchain_info.tool_path,
             "%{image_name}": ctx.attr._checker,
-            "%{spec_file_path}": _get_runfile_path(ctx, ctx.file.spec),
             "%{spec_file_container_path}": spec_file_container_path,
+            "%{spec_file_path}": _get_runfile_path(ctx, ctx.file.spec),
         },
         output = ctx.outputs.executable,
         is_executable = True,
@@ -53,13 +53,13 @@ dependency_update_test = rule(
             allow_single_file = ["yaml"],
             doc = "Dependency update YAML spec file to validate.",
         ),
+        "_checker": attr.string(
+            default = "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/syntax",
+            doc = "Name of the checker image to run.",
+        ),
         "_tpl": attr.label(
             default = "@io_bazel_rules_docker//contrib/automatic_container_release:run_checker.sh.tpl",
             allow_single_file = True,
-        ),
-        "_checker": attr.string(
-            default = "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/syntax",
-            doc = "Name of the checker image to run."
         ),
     },
     test = True,
