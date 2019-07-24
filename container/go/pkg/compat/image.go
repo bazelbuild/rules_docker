@@ -112,7 +112,7 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 				return partial.CompressedToLayer(&compressedBlob{
 					path:     li.path,
 					desc:     desc,
-					filename: layerFilename(i),
+					filename: LayerFilename(i),
 				})
 			default:
 				// TODO: We assume everything is a compressed blob, but that might not be true.

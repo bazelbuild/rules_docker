@@ -345,9 +345,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "eab3d241d445219909ad8434cc37da3ebd78adc44fc2281de2ecb59c4499f116",
-    strip_prefix = "rules_rust-3cd4c637289a8e0a3b45ea799c29e13a53154970",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/3cd4c637289a8e0a3b45ea799c29e13a53154970.tar.gz"],
+    sha256 = "1454e9a4fb1e9cbac3619caf1fe8bfcb9a7b8fa4f167c1502eadbf0a1e2445fc",
+    strip_prefix = "rules_rust-c06ab748bd23281d2018899f9539c1bc18467af7",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/c06ab748bd23281d2018899f9539c1bc18467af7.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -434,11 +434,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "68e7678473090542e679ce7e6aa8a3ba5669577dede2b404f9865d556bd99f10",
-    strip_prefix = "bazel-toolchains-0.28.0",
+    sha256 = "38ec4b3cd5079d81f3643bdb4f80e54e98b1005f39aa0f5f31323a3eae06db8e",
+    strip_prefix = "bazel-toolchains-0.28.1",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.1.tar.gz",
     ],
 )
 
