@@ -1,0 +1,175 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This file is used by the File Update Service which continuously
+# checks for updates in the `triggerFile` listed here. If there is an update
+# in the `triggerFile`, the service will
+#   1. archive the new version of the `triggerFile` in its GCS bucket.
+#   2. for each one of `extraFiles`, generate a new version of it and archive it
+#      in its GCS bucket.
+
+# ================================= Ubuntu1604 =================================
+
+# Bazel debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/bazel:bazel_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/bazel/debs
+    metadata:
+        target: //layers/ubuntu1604/bazel:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/bazel/metadata/debs/metadata.yaml
+
+# Clang debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/clang:clang_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/clang/debs
+
+# Docker debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/docker:docker_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/docker/debs
+    metadata:
+        target: //layers/ubuntu1604/docker:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/docker/metadata/debs/metadata.yaml
+
+# Gcloud debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/gcloud:gcloud_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/gcloud/debs
+    metadata:
+        target: //layers/ubuntu1604/gcloud:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/gcloud/metadata/debs/metadata.yaml
+
+# Python debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/python:python_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/python/debs
+    metadata:
+        target: //layers/ubuntu1604/python:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/python/metadata/debs/metadata.yaml
+
+# Python for RBE debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/python_rbe:python_rbe_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/python_rbe/debs
+    metadata:
+        target: //layers/ubuntu1604/python_rbe:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/python_rbe/metadata/debs/metadata.yaml
+
+# Java debian package tarball and java cacerts file generated when
+# installing `ca-certificates-java`.
+- triggerFile:
+    target: //layers/ubuntu1604/java:java_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/java/debs
+    metadata:
+        target: //layers/ubuntu1604/java:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/java/metadata/debs/metadata.yaml
+  extraFiles:
+    - target: //layers/ubuntu1604/java:cacerts_tar/cacerts.tar
+      bucket: layer-deps
+      dir: ubuntu1604/java/cacerts
+
+# Base RBE tools debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/rbe_tools:rbe_tools_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/rbe_tools/debs
+    metadata:
+        target: //layers/ubuntu1604/rbe_tools:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/rbe_tools/metadata/debs/metadata.yaml
+
+# Webtest debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/webtest:webtest_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/webtest/debs
+    metadata:
+        target: //layers/ubuntu1604/webtest:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/webtest/metadata/debs/metadata.yaml
+
+# Android test debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1604/android_test:android_test_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1604/android_test/debs
+    metadata:
+        target: //layers/ubuntu1604/android_test:metadata.yaml
+        bucket: layer-deps
+        object: ubuntu1604/android_test/metadata/debs/metadata.yaml
+
+# Test target that always generates an update.
+- triggerFile:
+    target: //tests/layers/random:random_file.txt
+    bucket: dep-update-service-test
+    dir: layer-definitions/tests/random
+    metadata:
+        target: //tests/layers/random:metadata.yaml
+        bucket: dep-update-service-test
+        object: layer-definitions/tests/metadata/random/metadata.yaml
+
+# ================================= Ubuntu1404 =================================
+# Bazel debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1404/bazel:bazel_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1404/bazel/debs
+
+# Gcc debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1404/gcc:gcc_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1404/gcc/debs
+
+# Docker debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1404/docker:docker_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1404/docker/debs
+
+# Gcloud debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1404/gcloud:gcloud_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1404/gcloud/debs
+
+# Python debian package tarball.
+- triggerFile:
+    target: //layers/ubuntu1404/python:python_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1404/python/debs
+
+# Java debian package tarball and java cacerts file generated when
+# installing `ca-certificates-java`.
+- triggerFile:
+    target: //layers/ubuntu1404/java:java_debs.tar
+    bucket: layer-deps
+    dir: ubuntu1404/java/debs
+  extraFiles:
+    - target: //layers/ubuntu1404/java:cacerts_tar/cacerts.tar
+      bucket: layer-deps
+      dir: ubuntu1404/java/cacerts
