@@ -89,7 +89,8 @@ def _impl(ctx):
         for layer_path in legacy_dir["layers"]:
             pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_path))]
 
-    pusher_args += ["-format", str(ctx.attr.format)]
+    ctx.actions.write(ctx.outputs.digest, "")
+    pusher_args += ["-format", str(ctx.attr.format), "-digest", _get_runfile_path(ctx, ctx.outputs.digest)]
 
     # If the docker toolchain is configured to use a custom client config
     # directory, use that instead
@@ -124,6 +125,7 @@ def _impl(ctx):
             registry = registry,
             repository = repository,
             tag = tag,
+            digest = ctx.outputs.digest,
         ),
     ]
 
@@ -164,11 +166,6 @@ new_container_push = rule(
             allow_single_file = True,
             doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
         ),
-        "_digester": attr.label(
-            default = "@containerregistry//:digester",
-            cfg = "host",
-            executable = True,
-        ),
         "_pusher": attr.label(
             default = Label("@io_bazel_rules_docker//container/go/cmd/pusher:pusher"),
             cfg = "host",
@@ -183,4 +180,7 @@ new_container_push = rule(
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
+    outputs = {
+        "digest": "%{name}.digest",
+    },
 )
