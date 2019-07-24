@@ -11,30 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-py_binary(
-    name = "config_stripper",
-    srcs = ["config_stripper.py"],
-)
-
-py_binary(
-    name = "to_json",
-    srcs = ["to_json.py"],
-)
-
-exports_files([
-    "commit.sh.tpl",
-    "extract.sh.tpl",
-    "image_util.sh",
-])
-
-bzl_library(
-    name = "util",
-    srcs = ["run.bzl"],
-)
+exports_files(["run_checker.sh.tpl"])

@@ -114,7 +114,12 @@ container_import(
         # Currently exports all files pulled by the binary and will not be depended on by other rules_docker rules.
         repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
 
-exports_files(glob(["**"]))""")
+exports_files(glob(["**"]))
+
+filegroup(
+  name = "image-oci",
+  srcs = glob(["**"]),
+)""")
 
     puller = repository_ctx.attr._puller_linux
     if repository_ctx.os.name.lower().startswith("mac os"):

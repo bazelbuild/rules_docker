@@ -12,29 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//contrib:test.bzl", "container_test")
 
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])  # Apache 2.0
-
-py_binary(
-    name = "config_stripper",
-    srcs = ["config_stripper.py"],
-)
-
-py_binary(
-    name = "to_json",
-    srcs = ["to_json.py"],
-)
-
-exports_files([
-    "commit.sh.tpl",
-    "extract.sh.tpl",
-    "image_util.sh",
-])
-
-bzl_library(
-    name = "util",
-    srcs = ["run.bzl"],
+container_test(
+    name = "new_push_verify_pushed_configs_and_files",
+    configs = ["//tests/container/configs:verify_new_pusher.yaml"],
+    image = "@verify_new_pusher_image_contents//image",
 )
