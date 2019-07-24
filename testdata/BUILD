@@ -53,7 +53,6 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files([
     "pause.tar",
-    "go_pusher_test.tar",
     "bar",
     "foo",
 ])
