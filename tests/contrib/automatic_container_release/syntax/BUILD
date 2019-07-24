@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
-package(default_visibility = ["//visibility:public"])
-
 licenses(["notice"])  # Apache 2.0
 
-py_binary(
-    name = "config_stripper",
-    srcs = ["config_stripper.py"],
+load(
+    "//contrib/automatic_container_release/syntax:dependency_update.bzl",
+    dependency_update_syntax_test = "dependency_update_test",
+)
+load(
+    "//contrib/automatic_container_release/syntax:file_update.bzl",
+    file_update_syntax_test = "file_update_test",
 )
 
-py_binary(
-    name = "to_json",
-    srcs = ["to_json.py"],
+file_update_syntax_test(
+    name = "file_update_syntax_test",
+    spec = "file_updates.yaml",
 )
 
-exports_files([
-    "commit.sh.tpl",
-    "extract.sh.tpl",
-    "image_util.sh",
-])
-
-bzl_library(
-    name = "util",
-    srcs = ["run.bzl"],
+dependency_update_syntax_test(
+    name = "dependency_update_syntax_test",
+    spec = "deps_spec.yaml",
 )

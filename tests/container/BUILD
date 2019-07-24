@@ -320,6 +320,22 @@ container_push(
     tags = ["manual"],
 )
 
+container_image(
+    name = "alpine_with_custom_attr",
+    base = "@new_alpine_linux_amd64//image",
+    cmd = ["Hello World!"],
+    entrypoint = ["echo"],
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+    layers = [
+        "//testdata:env_layer",
+        "//testdata:tars_in_layer",
+        "//testdata:files_in_layer",
+    ],
+)
+
 create_banana_directory(
     name = "banana_directory",
 )
@@ -371,9 +387,49 @@ new_container_push(
 )
 
 new_container_push(
-    name = "new_push_test_legacy",
+    name = "new_push_test_oci_from_new_puller",
+    format = "oci",
+    image = "@new_alpine_linux_amd64//image-oci",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_from_container_img",
     format = "legacy",
-    image = "//container/go/pkg/compat:legacy_test_index1",
+    image = ":alpine_with_custom_attr",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_from_container_img_with_auth",
+    format = "legacy",
+    image = ":set_cmd_and_entrypoint",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_from_new_puller",
+    format = "legacy",
+    image = "@new_alpine_linux_ppc64le//image",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_from_old_puller",
+    format = "legacy",
+    image = "@alpine_linux_armv6//image",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -383,7 +439,17 @@ new_container_push(
 new_container_push(
     name = "new_push_test_tar",
     format = "docker",
-    image = "//testdata:go_pusher_test.tar",
+    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_old_puller_tar",
+    format = "docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -403,12 +469,13 @@ new_container_push(
 new_container_push(
     name = "new_push_test_legacy_tag_file",
     format = "legacy",
-    image = "//container/go/pkg/compat:legacy_test_index1",
+    image = ":set_cmd",
     registry = "localhost:5000",
     repository = "docker/test",
     tag_file = ":test.tag",
     tags = ["manual"],
 )
+
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.
