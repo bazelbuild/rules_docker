@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utility tools for container rules."""
-
-load(
-    "//container:layer_tools.bzl",
-    _get_layers = "get_from_target",
-)
-
-def generate_legacy_dir(ctx):
+def generate_legacy_dir(ctx, config, manifest, layers):
     """Generate a intermediate legacy directory from the image represented by the given layers and config to /image_runfiles.
 
     Args:
       ctx: the execution context
+      config: the image config file
+      manifest: the image manifest file
+      layers: the list of layer tarballs
 
     Returns:
       The filepaths generated and runfiles to be made available.
@@ -30,12 +27,7 @@ def generate_legacy_dir(ctx):
       layers: the generated layer tarball files.
       temp_files: all the files generated to be made available at runtime.
     """
-
-    # Construct container_parts for input to pusher.
-    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-    layers = image.get("zipped_layer", [])
-    config = image["config"]
-    manifest = image["manifest"]
+    # Construct image runfiles for input to pusher.
     image_files = [] + layers
     if config:
         image_files += [config]
