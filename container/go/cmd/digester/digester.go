@@ -98,7 +98,7 @@ func main() {
 		log.Fatalf("Error getting image digest: %v", err)
 	}
 
-	err = WriteDigest(digest, *dst)
+	err = writeDigest(digest, *dst)
 	if err != nil {
 		log.Fatalf("Error outputting digest file to %s: %v", *dst, err)
 	}
