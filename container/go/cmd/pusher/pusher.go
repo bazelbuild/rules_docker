@@ -38,6 +38,7 @@ var (
 	legacyBaseImage = flag.String("legacyBaseImage", "", "Path to a legacy base image in tarball form. Should be specified only when format is legacy.")
 	configPath      = flag.String("configPath", "", "Path to the image config. Should be specified only when format is legacy.")
 	layers          utils.ArrayStringFlags
+	stampInfoFile   utils.ArrayStringFlags
 )
 
 const (
