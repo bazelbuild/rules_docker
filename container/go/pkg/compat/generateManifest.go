@@ -111,7 +111,6 @@ func writeManifest(m v1.Manifest, path string) error {
 	}
 
 	err = ioutil.WriteFile(path, rawManifest, os.ModePerm)
-	// err = ioutil.WriteFile("/usr/local/google/home/xiaohegong/manifest.json", rawManifest, os.ModePerm)
 	if err != nil {
 		return errors.Wrapf(err, "unable to write manifest to path %s", path)
 	}
