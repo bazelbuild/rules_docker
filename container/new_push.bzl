@@ -21,6 +21,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo")
 load(
     "//container:layer_tools.bzl",
+    _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
 load(
@@ -40,11 +41,11 @@ def _impl(ctx):
 
     # TODO (xiaohegong): 1) Possible optimization for efficiently pushing intermediate
     # representation, similar with the old python implementation, e.g., push-by-layer.
-    # Some of the digester arguments omitted from before: --tarball, --config, --manifest, --digest, --layer, --oci.
-    # 2) The old implementation outputs a {image_name}.digest for compatibility with container_digest, omitted for now.
-    # 3) Use and implementation of attr.stamp.
+    # 2) Use and implementation of attr.stamp.
 
     pusher_args = []
+    digester_args = []
+    digester_input = []
 
     # Parse and get destination registry to be pushed to
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
@@ -57,20 +58,16 @@ def _impl(ctx):
         tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
         runfiles_tag_file = [ctx.file.tag_file]
 
-    pusher_args += ["-dst", "{registry}/{repository}:{tag}".format(
-        registry = registry,
-        repository = repository,
-        tag = tag,
-    )]
-
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
         found = False
         for f in ctx.files.image:
+            digester_input.append(f)
             if f.basename == "index.json":
                 pusher_args += ["-src", "{index_dir}".format(
                     index_dir = _get_runfile_path(ctx, f),
                 )]
+                digester_args += ["-src", str(f.path)]
                 found = True
         if not found:
             fail("Did not find an index.json in the image attribute {} specified to {}".format(ctx.attr.image, ctx.label))
@@ -80,16 +77,38 @@ def _impl(ctx):
         if len(ctx.files.image) > 1:
             fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
         pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
+        digester_args += ["-src", ctx.files.image[0].path]
+        digester_input = [ctx.files.image[0]]
     if ctx.attr.format == "legacy":
-        legacy_dir = generate_legacy_dir(ctx)
+        # Construct container_parts for input to pusher.
+        image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
+        legacy_dir = generate_legacy_dir(ctx, image["config"], image["manifest"], image.get("zipped_layer", []))
         temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
 
         pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
+        digester_args += ["-src", str(config.path)]
+        digester_input = temp_files
 
-        for layer_path in legacy_dir["layers"]:
-            pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_path))]
+        for layer_file in legacy_dir["layers"]:
+            pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_file))]
+            digester_args += ["-layers", layer_file.path]
 
     pusher_args += ["-format", str(ctx.attr.format)]
+    pusher_args += ["-dst", "{registry}/{repository}:{tag}".format(
+        registry = registry,
+        repository = repository,
+        tag = tag,
+    )]
+
+    digester_args += ["-dst", str(ctx.outputs.digest.path), "-format", str(ctx.attr.format)]
+    ctx.actions.run(
+        inputs = digester_input,
+        outputs = [ctx.outputs.digest],
+        executable = ctx.executable._digester,
+        arguments = digester_args,
+        tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
+        mnemonic = "NewContainerPushDigest",
+    )
 
     # If the docker toolchain is configured to use a custom client config
     # directory, use that instead
@@ -165,7 +184,7 @@ new_container_push = rule(
             doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
         ),
         "_digester": attr.label(
-            default = "@containerregistry//:digester",
+            default = "@io_bazel_rules_docker//container/go/cmd/digester",
             cfg = "host",
             executable = True,
         ),
@@ -183,4 +202,7 @@ new_container_push = rule(
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
+    outputs = {
+        "digest": "%{name}.digest",
+    },
 )
