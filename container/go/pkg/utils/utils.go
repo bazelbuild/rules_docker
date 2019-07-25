@@ -20,7 +20,7 @@ func (f *ArrayStringFlags) String() string {
 
 // Get returns an empty interface that may be type-asserted to the underlying
 // value of type bool, string, etc.
-func (f *ArrayFlags) Get() interface{} {
+func (f *ArrayStringFlags) Get() interface{} {
 	return ""
 }
 
