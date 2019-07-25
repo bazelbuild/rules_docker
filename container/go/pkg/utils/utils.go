@@ -10,16 +10,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ArrayFlags are defined for flags that may have multiple values.
-type ArrayFlags []string
+// ArrayStringFlags are defined for string flags that may have multiple values.
+type ArrayStringFlags []string
 
 // Returns the concatenated string representation of the array of flags.
-func (f *ArrayFlags) String() string {
+func (f *ArrayStringFlags) String() string {
 	return fmt.Sprintf("%v", *f)
 }
 
+// Get returns an empty interface that may be type-asserted to the underlying
+// value of type bool, string, etc.
+func (f *ArrayFlags) Get() interface{} {
+	return ""
+}
+
 // Set appends value the array of flags.
-func (f *ArrayFlags) Set(value string) error {
+func (f *ArrayStringFlags) Set(value string) error {
 	*f = append(*f, value)
 	return nil
 }

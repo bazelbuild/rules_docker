@@ -93,11 +93,12 @@ def _impl(ctx):
             pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_file))]
             digester_args += ["-layers", layer_file.path]
 
+    pusher_args += ["-format", str(ctx.attr.format)]
     pusher_args += ["-dst", "{registry}/{repository}:{tag}".format(
         registry = registry,
         repository = repository,
         tag = tag,
-    ), "-format", str(ctx.attr.format)]
+    )]
 
     digester_args += ["-dst", str(ctx.outputs.digest.path), "-format", str(ctx.attr.format)]
     ctx.actions.run(
@@ -183,7 +184,7 @@ new_container_push = rule(
             doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
         ),
         "_digester": attr.label(
-            default = Label("@io_bazel_rules_docker//container/go/cmd/digester:digester"),
+            default = "@io_bazel_rules_docker//container/go/cmd/digester",
             cfg = "host",
             executable = True,
         ),
