@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utility tools for container rules."""
+
 def generate_legacy_dir(ctx, config, manifest, layers):
     """Generate a intermediate legacy directory from the image represented by the given layers and config to /image_runfiles.
 
@@ -27,6 +28,7 @@ def generate_legacy_dir(ctx, config, manifest, layers):
       layers: the generated layer tarball files.
       temp_files: all the files generated to be made available at runtime.
     """
+
     # Construct image runfiles for input to pusher.
     image_files = [] + layers
     if config:

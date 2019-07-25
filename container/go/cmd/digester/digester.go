@@ -13,8 +13,6 @@
 // limitations under the License/
 ////////////////////////////////////
 //This binary implements the ability to load a docker image, calculate its image manifest sha256 hash and output a digest file.
-// It expects to be run with:
-//     extract_config -tarball=image.tar -output=output.confi
 package main
 
 import (
