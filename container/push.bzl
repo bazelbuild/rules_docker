@@ -57,6 +57,7 @@ def _impl(ctx):
               "If the image is checked in, consider using " +
               "docker_import instead.")
         pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
+        digester_args.add("-tarball", "%s" % tarball.path)
         image_files += [tarball]
     if config:
         pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
@@ -73,6 +74,7 @@ def _impl(ctx):
 
     legacy_dir = generate_legacy_dir(ctx, image["config"], image["manifest"], image.get("zipped_layer", []))
     digester_input, config = legacy_dir["temp_files"], legacy_dir["config"]
+    digester_input = digester_input + [tarball] if tarball else digester_input + []
 
     digester_args.add_all(["-src", str(config.path), "-dst", str(ctx.outputs.digest.path), "-format", "legacy"])
     for layer_file in legacy_dir["layers"]:

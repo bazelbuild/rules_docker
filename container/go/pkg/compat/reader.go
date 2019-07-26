@@ -20,8 +20,11 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
+
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 	"github.com/pkg/errors"
 )
@@ -55,6 +58,31 @@ func Read(src string) (v1.Image, error) {
 	}
 
 	return img, nil
+}
+
+// ReadWithBaseTarball returns a Image object read from src with tarball as base and layers appended from layersPath.
+func ReadWithBaseTarball(src, tarballPath string, layersPath []string) (v1.Image, error) {
+	base, err := tarball.ImageFromPath(tarballPath, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to parse image from tarball at %s", tarballPath)
+	}
+
+	var newImage = base
+
+	for i, l := range layersPath {
+		layer, err := tarball.LayerFromFile(l)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to get layer %d from %s", i, l)
+		}
+
+		newImage, err = mutate.AppendLayers(base, layer)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to append layer %d to base tarball", i)
+		}
+	}
+
+	return newImage, nil
+
 }
 
 // Get the hash of the image to read at <path> from digest file.
