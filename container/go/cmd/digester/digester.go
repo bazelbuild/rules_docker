@@ -16,15 +16,19 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
 
@@ -94,12 +98,7 @@ func main() {
 		log.Fatalf("Error reading from %s: %v", imgSrc, err)
 	}
 
-	digest, err := img.Digest()
-	if err != nil {
-		log.Fatalf("Error getting image digest: %v", err)
-	}
-
-	err = writeDigest(digest, *dst)
+	err = writeDigest(img, *dst, filepath.Join(imgSrc, configFile))
 	if err != nil {
 		log.Fatalf("Error outputting digest file to %s: %v", *dst, err)
 	}
@@ -107,14 +106,75 @@ func main() {
 	log.Printf("Successfully generated image digest file at %s", *dst)
 }
 
-// writeDigest outputs digest to a "digest file" at dst. Digest is the image manifest's sha256 hash.
-func writeDigest(digest v1.Hash, dst string) error {
+// writeDigest outputs image's digest to a "digest file" at dst. Digest is the image manifest's sha256 hash.
+func writeDigest(image v1.Image, dst, configPath string) error {
+	m, err := image.Manifest()
+	if err != nil {
+		return errors.Wrap(err, "Error getting image manifest")
+	}
+
+	rawConfig, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return errors.Wrapf(err, "unable to read image config file from %s", configPath)
+	}
+
+	cfgHash, cfgSize, err := v1.SHA256(bytes.NewReader(rawConfig))
+	if err != nil {
+		return errors.Wrap(err, "unable to hash image config file")
+	}
+
+	m.Config = v1.Descriptor{
+		MediaType: types.DockerConfigJSON,
+		Size:      cfgSize,
+		Digest:    cfgHash,
+	}
+
+	out, err := formatStruct(m)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("%+v", m)
+
+	digest, _, err := v1.SHA256(bytes.NewReader((*out).Bytes()))
+	if err != nil {
+		return errors.Wrap(err, "unable to compute sha256 sum for digest")
+	}
+
 	rawDigest := []byte(digest.Algorithm + ":" + digest.Hex)
 
-	err := ioutil.WriteFile(dst, rawDigest, os.ModePerm)
+	err = ioutil.WriteFile(dst, rawDigest, os.ModePerm)
 	if err != nil {
 		return errors.Wrapf(err, "unable to write digest file to %s", dst)
 	}
 
 	return nil
+}
+
+func formatStruct(s interface{}) (*bytes.Buffer, error) {
+
+	raw, err := json.Marshal(s)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get the JSON encoding of manifest")
+	}
+
+	// Converting Manifest to string map sorts the output json by key
+	var o map[string]interface{}
+	if err := json.Unmarshal(raw, &o); err != nil {
+		return nil, errors.Wrap(err, "unable to get the JSON encoding of manifest")
+	}
+
+	raw, err = json.Marshal(o)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get the JSON encoding of manifest")
+	}
+
+	// Manually remove new line char and add space after comma for consistency with digester.py
+	var out bytes.Buffer
+	json.Indent(&out, raw, "", "")
+	outStr := strings.ReplaceAll(out.String(), ",\n", ", ")
+	outStr = strings.ReplaceAll(outStr, "\n", "")
+
+	return bytes.NewBufferString(outStr), nil
+
 }

@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"strings"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
@@ -100,25 +99,7 @@ func writeManifest(m v1.Manifest, path string) error {
 		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
 	}
 
-	// Converting Manifest to string map sorts the output json by key
-	var o map[string]interface{}
-	if err := json.Unmarshal(rawManifest, &o); err != nil {
-		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
-	}
-
-	rawManifest, err = json.Marshal(o)
-	if err != nil {
-		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
-	}
-
-	// Manually remove new line char and add space after comma for consistency with digester.py
-	var out bytes.Buffer
-	json.Indent(&out, rawManifest, "", "")
-	s := strings.ReplaceAll(out.String(), ",\n", ", ")
-	s = strings.ReplaceAll(s, "\n", "")
-	out = *bytes.NewBufferString(s)
-
-	err = ioutil.WriteFile(path, out.Bytes(), os.ModePerm)
+	err = ioutil.WriteFile(path, rawManifest, os.ModePerm)
 	if err != nil {
 		return errors.Wrapf(err, "unable to write manifest to path %s", path)
 	}

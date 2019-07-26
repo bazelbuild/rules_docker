@@ -504,6 +504,19 @@ file_test(
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",
 )
+
+file_test(
+    name = "alpine_custom_attr_digest_test",
+    content = "sha256:ef2c4c0b18e95abbd3611703c5af69b5e76c3a4b1e19990c1ab284b9276b455a",
+    file = ":new_push_test_legacy_from_container_img.digest",
+)
+
+file_test(
+    name = "new_alpine_linux_armv6_image_tar_digest_test",
+    content = "sha256:a0b19fd8750d6e5442c61d43fc8bb7a854548c570fbf6601ab5ab0c92d520eab",
+    file = ":new_alpine_linux_armv6_image_tar.digest",
+)
+
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.
