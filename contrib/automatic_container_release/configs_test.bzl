@@ -27,9 +27,21 @@ def _get_runfile_path(ctx, f):
 def _impl(ctx):
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     cmd_args = ["-logtostderr=true"]
+
+    # specs is the list of abosoluate runfile paths to all the spec files that
+    # need to be copied on to the checker container.
     specs = []
+
+    # spec_container_paths is the corresponding path in the container the spec
+    # files from 'specs' will be copied to.
     spec_container_paths = []
+
+    # file_update_specs is the paths in the container to the file update spec
+    # files.
     file_update_specs = []
+
+    # dependency_update_specs is the paths in the container to the dependency
+    # update spec files.
     dependency_update_specs = []
     for f in ctx.files.file_update_specs:
         specs.append(_get_runfile_path(ctx, f))

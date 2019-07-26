@@ -21,6 +21,6 @@ load(
 
 configs_test(
     name = "configs_test",
-    file_update_specs = ["file_updates.yaml"],
     dependency_update_specs = ["deps_spec.yaml"],
+    file_update_specs = ["file_updates.yaml"],
 )
