@@ -55,6 +55,10 @@ load(
     _layer = "layer",
 )
 load(
+    "//container:utils.bzl",
+    "generate_legacy_dir",
+)
+load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _get_layers = "get_from_target",
@@ -216,23 +220,24 @@ def _repository_name(ctx):
     return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
-    blobsums = image.get("blobsum", [])
-    digest_args = ["--digest=%s" % f.path for f in blobsums]
-    blobs = image.get("zipped_layer", [])
-    layer_args = ["--layer=%s" % f.path for f in blobs]
-    config_arg = "--config=%s" % image["config"].path
-    output_digest_arg = "--output-digest=%s" % output_digest.path
+    digester_args = ctx.actions.args()
+    legacy_dir = generate_legacy_dir(ctx, image["config"], image["manifest"], image.get("zipped_layer", []))
+    digester_input, config = legacy_dir["temp_files"], legacy_dir["config"]
 
-    arguments = [config_arg, output_digest_arg] + layer_args + digest_args
+    digester_args.add_all(["-src", str(config.path), "-dst", str(output_digest.path), "-format", "legacy"])
+    for layer_file in legacy_dir["layers"]:
+        digester_args.add("-layers", layer_file.path)
+
     if image.get("legacy"):
-        arguments.append("--tarball=%s" % image["legacy"].path)
+        digester_input += image.get("legacy")
+        digester_args.add("-tarball", "%s" % image["legacy"].path)
 
     ctx.actions.run(
         outputs = [output_digest],
-        inputs = [image["config"]] + blobsums + blobs,
+        inputs = digester_input,
         tools = ([image["legacy"]] if image.get("legacy") else []),
         executable = ctx.executable._digester,
-        arguments = arguments,
+        arguments = [digester_args],
         mnemonic = "ImageDigest",
         progress_message = "Extracting image digest of %s" % image_tarball.short_path,
     )
@@ -508,7 +513,7 @@ _attrs = dicts.add(_layer.attrs, {
     "volumes": attr.string_list(),
     "workdir": attr.string(),
     "_digester": attr.label(
-        default = "@containerregistry//:digester",
+        default = "@io_bazel_rules_docker//container/go/cmd/digester",
         cfg = "host",
         executable = True,
     ),

@@ -79,7 +79,6 @@ def _impl(ctx):
     digester_args.add_all(["-src", str(config.path), "-dst", str(ctx.outputs.digest.path), "-format", "legacy"])
     for layer_file in legacy_dir["layers"]:
         digester_args.add("-layers", layer_file.path)
-    print(digester_args)
 
     # create image digest
     ctx.actions.run(
