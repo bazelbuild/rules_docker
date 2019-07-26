@@ -123,76 +123,77 @@ def _image_config(
             labels[label] = "@" + label_file_dict[fname[1:]].path
         else:
             labels[label] = fname
-
     args = [
-        "--output=%s" % config.path,
+        "-outputConfig", "%s" % config.path,
     ] + [
-        "--manifestoutput=%s" % manifest.path,
+        "-outputManifest", "%s" % manifest.path,
     ] + [
-        "--entrypoint=%s" % x
-        for x in entrypoint
+        "-nullEntryPoint", "%s" % null_entrypoint,
     ] + [
-        "--command=%s" % x
-        for x in cmd
-    ] + [
-        "--ports=%s" % x
-        for x in ctx.attr.ports
-    ] + [
-        "--volumes=%s" % x
-        for x in ctx.attr.volumes
-    ] + [
-        "--null_entrypoint=%s" % null_entrypoint,
-    ] + [
-        "--null_cmd=%s" % null_cmd,
+        "-nullCmd", "%s" % null_cmd,
     ]
+
+    for x in entrypoint:
+        args += ["-entrypoint", "%s" % x]
+    for x in cmd:
+        args += ["-command", "%s" % x]
+    for x in ctx.attr.ports:
+        args += ["-ports", "%s" % x]
+    for x in ctx.attr.volumes:
+        args += ["-volumes", "%s" % x]
+    print("Old args: {}".format(args))
+
     if creation_time:
-        args += ["--creation_time=%s" % creation_time]
+        args += ["-creationTime", "%s" % creation_time]
     elif ctx.attr.stamp:
         # If stamping is enabled, and the creation_time is not manually defined,
         # default to '{BUILD_TIMESTAMP}'.
-        args += ["--creation_time={BUILD_TIMESTAMP}"]
+        args += ["-creationTime", "{BUILD_TIMESTAMP}"]
 
-    args += ["--labels=%s" % "=".join([key, value]) for key, value in labels.items()]
-    args += ["--env=%s" % "=".join([
-        ctx.expand_make_variables("env", key, {}),
-        ctx.expand_make_variables("env", value, {}),
-    ]) for key, value in env.items()]
+    for key, value in labels.items():
+        args += ["-labels", "%s" % "=".join([key, value])]
 
+    for key, value in env.items():
+        print("hit")
+        args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), ctx.expand_make_variables("env", value, {})])]
+   
     if ctx.attr.user:
-        args += ["--user=" + ctx.attr.user]
+        args += ["-user", ctx.attr.user]
     if workdir:
-        args += ["--workdir=" + workdir]
+        args += ["-workdir", workdir]
 
     inputs = layer_names
     for layer_name in layer_names:
-        args += ["--layer=@" + layer_name.path]
+        args += ["-layerDigestFile", "@" + layer_name.path]
 
     if ctx.attr.label_files:
         inputs += ctx.files.label_files
 
     if base_config:
-        args += ["--base=%s" % base_config.path]
+        args += ["-baseConfig", "%s" % base_config.path]
         inputs += [base_config]
 
     if base_manifest:
-        args += ["--basemanifest=%s" % base_manifest.path]
+        args += ["-baseManifest", "%s" % base_manifest.path]
         inputs += [base_manifest]
 
     if operating_system:
-        args += ["--operating_system=%s" % operating_system]
+        args += ["-operatingSystem", "%s" % operating_system]
 
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
-        args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
+        for f in stamp_inputs:
+            args += ["-stampInfoFile", "%s" % f.path]
         inputs += stamp_inputs
 
     if ctx.attr.launcher_args and not ctx.attr.launcher:
         fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
     if ctx.attr.launcher:
-        args += [
-            "--entrypoint_prefix=%s" % x
-            for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
-        ]
+        for x in ["/" + ctx.file.launcher.basename]:
+            args += ["-entrypointPrefix", "%s" % (x + ctx.attr.launcher_args)]
+
+    cmd = "echo Arguments {}".format(" ".join(args))
+    print("Running command: {}".format(cmd))
 
     ctx.actions.run(
         executable = ctx.executable.create_image_config,
@@ -469,7 +470,7 @@ _attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
     "create_image_config": attr.label(
-        default = Label("//container:create_image_config"),
+        default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
