@@ -72,7 +72,7 @@ def _impl(ctx):
     if ctx.attr.format == "OCI":
         pusher_args += ["--oci"]
 
-    legacy_dir = generate_legacy_dir(ctx, image["config"], image["manifest"], image.get("zipped_layer", []))
+    legacy_dir = generate_legacy_dir(ctx, ctx.attr.name, image["config"], image["manifest"], image.get("zipped_layer", []))
     digester_input, config = legacy_dir["temp_files"], legacy_dir["config"]
     digester_input = digester_input + [tarball] if tarball else digester_input + []
 

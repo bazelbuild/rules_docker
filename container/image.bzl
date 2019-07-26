@@ -221,7 +221,8 @@ def _repository_name(ctx):
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     digester_args = ctx.actions.args()
-    legacy_dir = generate_legacy_dir(ctx, image["config"], image["manifest"], image.get("zipped_layer", []))
+
+    legacy_dir = generate_legacy_dir(ctx, name, image["config"], image["manifest"], image.get("zipped_layer", []))
     digester_input, config = legacy_dir["temp_files"], legacy_dir["config"]
 
     digester_args.add_all(["-src", str(config.path), "-dst", str(output_digest.path), "-format", "legacy"])

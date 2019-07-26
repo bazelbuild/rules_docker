@@ -92,7 +92,7 @@ def _impl(ctx):
             pusher_args += ["-tarball", "%s" % _get_runfile_path(ctx, tarball)]
             digester_args += ("-tarball", "%s" % tarball.path)
 
-        legacy_dir = generate_legacy_dir(ctx, image["config"], image["manifest"], image.get("zipped_layer", []))
+        legacy_dir = generate_legacy_dir(ctx, ctx.attr.name, image["config"], image["manifest"], image.get("zipped_layer", []))
         temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
 
         pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
