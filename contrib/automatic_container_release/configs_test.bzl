@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Defines a rule to syntax check a single dependency update YAML spec.
+Defines a rule to validate YAML configs used to configure automatic container
+release.
 """
 
 load(
@@ -25,36 +26,57 @@ def _get_runfile_path(ctx, f):
 
 def _impl(ctx):
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
-
-    spec_file_container_path = "/" + ctx.file.spec.short_path.replace("/", "-")
-    cmd_args = [
-        "-logtostderr=true",
-        "-format=dep_spec",
-        "-specFile={}".format(spec_file_container_path),
+    cmd_args = ["-logtostderr=true"]
+    specs = []
+    spec_container_paths = []
+    file_update_specs = []
+    dependency_update_specs = []
+    for f in ctx.files.file_update_specs:
+        specs.append(_get_runfile_path(ctx, f))
+        container_path = "/" + f.short_path.replace("/", "-")
+        spec_container_paths.append(container_path)
+        file_update_specs.append(container_path)
+    cmd_args += [
+        "-fileUpdateSpecs",
+        ",".join(file_update_specs),
     ]
+    for f in ctx.files.dependency_update_specs:
+        specs.append(_get_runfile_path(ctx, f))
+        container_path = "/" + f.short_path.replace("/", "-")
+        spec_container_paths.append(container_path)
+        dependency_update_specs.append(container_path)
+    cmd_args += [
+        "-depSpecs",
+        ",".join(dependency_update_specs),
+    ]
+
     ctx.actions.expand_template(
         template = ctx.file._tpl,
         substitutions = {
             "%{cmd_args}": " ".join(cmd_args),
             "%{docker_path}": toolchain_info.tool_path,
             "%{image_name}": ctx.attr._checker,
-            "%{spec_file_container_path}": spec_file_container_path,
-            "%{spec_file_path}": _get_runfile_path(ctx, ctx.file.spec),
+            "%{spec_container_paths}": " ".join(spec_container_paths),
+            "%{specs}": " ".join(specs),
         },
         output = ctx.outputs.executable,
         is_executable = True,
     )
-    runfiles = ctx.runfiles(files = [ctx.file.spec])
+    runfiles = ctx.runfiles(files = ctx.files.file_update_specs + ctx.files.dependency_update_specs)
     return [DefaultInfo(runfiles = runfiles)]
 
-dependency_update_test = rule(
+configs_test = rule(
     attrs = {
-        "spec": attr.label(
-            allow_single_file = ["yaml"],
-            doc = "Dependency update YAML spec file to validate.",
+        "dependency_update_specs": attr.label_list(
+            allow_files = ["yaml"],
+            doc = "Dependency update YAML dep spec files to validate.",
+        ),
+        "file_update_specs": attr.label_list(
+            allow_files = ["yaml"],
+            doc = "File update YAML spec files to validate.",
         ),
         "_checker": attr.string(
-            default = "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/syntax",
+            default = "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/semantics",
             doc = "Name of the checker image to run.",
         ),
         "_tpl": attr.label(
