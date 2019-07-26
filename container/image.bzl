@@ -55,15 +55,15 @@ load(
     _layer = "layer",
 )
 load(
-    "//container:utils.bzl",
-    "generate_legacy_dir",
-)
-load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
+)
+load(
+    "//container:utils.bzl",
+    "generate_legacy_dir",
 )
 load(
     "//skylib:filetype.bzl",
@@ -229,7 +229,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
         digester_args.add("-layers", layer_file.path)
 
     if image.get("legacy"):
-        digester_input += image.get("legacy")
+        digester_input += [image.get("legacy")]
         digester_args.add("-tarball", "%s" % image["legacy"].path)
 
     ctx.actions.run(
