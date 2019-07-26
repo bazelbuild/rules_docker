@@ -36,7 +36,7 @@ def generate_legacy_dir(ctx, config, manifest, layers):
     if manifest:
         image_files += [manifest]
 
-    path = "image_runfiles/"
+    path = str(ctx.attr.name) + "-image_runfiles/"
     layer_files = []
 
     # Symlink layers to ./image_runfiles/<i>.tar.gz
