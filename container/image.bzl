@@ -141,20 +141,7 @@ def _image_config(
         args += ["-ports", "%s" % x]
     for x in ctx.attr.volumes:
         args += ["-volumes", "%s" % x]
-    print("Old args: {}".format(args))
-    # + [
-    #     "-entrypoint=%s" % x
-    #     for x in entrypoint
-    # ] + [
-    #     "-command", "%s" % x
-    #     for x in cmd
-    # ] + [
-    #     "-ports", "%s" % x
-    #     for x in ctx.attr.ports
-    # ] + [
-    #     "-volumes", "%s" % x
-    #     for x in ctx.attr.volumes
-    # ] 
+
     if creation_time:
         args += ["-creationTime", "%s" % creation_time]
     elif ctx.attr.stamp:
@@ -164,18 +151,10 @@ def _image_config(
 
     for key, value in labels.items():
         args += ["-labels", "%s" % "=".join([key, value])]
-    # args += ["-labels, "%s" % "=".join([key, value]) for key, value in labels.items()]
 
-    print("envitems: {}".format(env.items()))
-    # args += ["-foo", "foo", "-foo", "bar"]
     for key, value in env.items():
-        print("hit")
         args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), ctx.expand_make_variables("env", value, {})])]
-    # args += ["-env", "%s" % "=".join([
-    #     ctx.expand_make_variables("env", key, {}),
-    #     ctx.expand_make_variables("env", value, {}),
-    # ]) for key, value in env.items()]
-
+   
     if ctx.attr.user:
         args += ["-user", ctx.attr.user]
     if workdir:
@@ -183,8 +162,7 @@ def _image_config(
 
     inputs = layer_names
     for layer_name in layer_names:
-        args += ["-layerDigestFile", layer_name.path]
-        # args += ["-layerDigestFile", "@" + layer_name.path]
+        args += ["-layerDigestFile", "@" + layer_name.path]
 
     if ctx.attr.label_files:
         inputs += ctx.files.label_files
@@ -206,7 +184,6 @@ def _image_config(
         stamp_inputs = [ctx.info_file, ctx.version_file]
         for f in stamp_inputs:
             args += ["-stampInfoFile", "%s" % f.path]
-        # args += ["-stampInfoFile", "%s" % f.path for f in stamp_inputs]
         inputs += stamp_inputs
 
     if ctx.attr.launcher_args and not ctx.attr.launcher:
@@ -214,10 +191,7 @@ def _image_config(
     if ctx.attr.launcher:
         for x in ["/" + ctx.file.launcher.basename]:
             args += ["-entrypointPrefix", "%s" % (x + ctx.attr.launcher_args)]
-        # args += [
-        #     "-entrypointPrefix=%s" % x
-        #     for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
-        # ]
+
     cmd = "echo Arguments {}".format(" ".join(args))
     print("Running command: {}".format(cmd))
 
@@ -225,14 +199,12 @@ def _image_config(
     #args2.add_all(args)
     # print("Command arguments: {}".format(" ".join(args)))
     
-    ctx.actions.run_shell(
-        command = cmd,
-        # arguments = ["-outputConfig", config.path],
-        #arguments = args,
-        tools = [ctx.executable.create_image_config],
+    ctx.actions.run(
+        executable = ctx.executable.create_image_config,
+        arguments = args,
         inputs = inputs,
         outputs = [config, manifest],
-        #use_default_shell_env = True,
+        use_default_shell_env = True,
         mnemonic = "ImageConfig",
     )
     return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)

@@ -53,17 +53,17 @@ func emptySHA256Digest() (empty string) {
 
 // extractValue returns the contents of a file pointed to by value if it starts with a '@'.
 func extractValue(value string) (string, error) {
-	// if strings.HasPrefix(value, "@") {
-	// f, err := os.Open(value[1:])
-	f, err := os.Open(value)
-	defer f.Close()
-	shaHash, err := ioutil.ReadAll(f)
-	if err != nil {
-		return "", errors.Wrapf(err, "failed to read content from file %s", value)
+	if strings.HasPrefix(value, "@") {
+		f, err := os.Open(value[1:])
+		// f, err := os.Open(value)
+		defer f.Close()
+		shaHash, err := ioutil.ReadAll(f)
+		if err != nil {
+			return "", errors.Wrapf(err, "failed to read content from file %s", value)
+		}
+		return string(shaHash), nil
 	}
-	return string(shaHash), nil
-	// }
-	// return value, errors.Wrapf(nil, "unexpected value, got: %s want: @{...}", value)
+	return value, errors.Wrapf(nil, "unexpected value, got: %s want: @{...}", value)
 }
 
 // keyValueToMap converts an array of strings separated by '=' into a map of key-value pairs.
@@ -81,15 +81,17 @@ func keyValueToMap(value []string) map[string]string {
 
 type formattedString map[string]interface{}
 
+// formateWithMap takes all variables of format {{.VAR}} in the input string `format`
+// and replaces it according to the map of parameters to values in `params`.
 func formatWithMap(format string, params formattedString) string {
 	msg := &bytes.Buffer{}
 	template.Must(template.New("").Parse(format)).Execute(msg, params)
 	return msg.String()
 }
 
-// stamp provides the substitutions of variables inside {} using info in file pointed to
+// Stamp provides the substitutions of variables inside {} using info in file pointed to
 // by stampInfoFile.
-func stamp(inp string, stampInfoFile []string) (string, error) {
+func Stamp(inp string, stampInfoFile []string) (string, error) {
 	if len(stampInfoFile) == 0 || inp == "" {
 		return inp, nil
 	}
@@ -150,7 +152,7 @@ func resolveVariables(value string, environment map[string]string) (string, erro
 		return ""
 	}
 	if errorMet {
-		err := errors.New("environment variable sought after does not exist in evnrionemnet map")
+		err := errors.New("environment variable sought after does not exist in environement map")
 		if err != nil {
 			errors.Wrap(err, "failed to create new error")
 		}
@@ -170,7 +172,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		creationTime = defaultTimestamp
 	} else {
 		var unixTime int64
-		if createTime, err = stamp(creationTimeString, stampInfoFile); err != nil {
+		if createTime, err = Stamp(creationTimeString, stampInfoFile); err != nil {
 			errors.Wrapf(err, "Unable to format creation time from BUILD_TIMESTAMP macros")
 		}
 		// If creationTime is parsable as a floating point type, assume unix epoch timestamp.
@@ -197,7 +199,6 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	configFile.OS = operatingSystem
 	configFile.Architecture = defaultProcArch
 
-	configFile.Config = v1.Config{}
 	if len(entrypoint) > 0 {
 		configFile.Config.Entrypoint = entrypoint
 	}
@@ -206,16 +207,35 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	}
 	configFile.Config.User = user
 
-	if len(env) != 0 {
-		environMap := keyValueToMap(env)
-		var resolvedValue string
+	environMap := keyValueToMap(env)
+	// do any preliminary substitutions of macros (i.e no '$') by stamp info files.
+	// (this is the "new" environment we are passing into overriden).
+	for key, valToBeStamped := range environMap {
+		stampedValue, err := Stamp(valToBeStamped, stampInfoFile)
+		if err != nil {
+			return errors.Wrapf(err, "Error stamping value %s", valToBeStamped)
+		}
+		environMap[key] = stampedValue
+	}
+	// perform any substitutions of $VAR or ${VAR} with environment variables
+	if len(environMap) != 0 {
+		var baseEnvMap map[string]string
+
+		if len(configFile.Config.Env) > 0 {
+			baseEnvMap = keyValueToMap(configFile.Config.Env)
+		} else {
+			baseEnvMap = make(map[string]string)
+		}
 		for k, v := range environMap {
-			if resolvedValue, err = resolveVariables(v, environMap); err != nil {
+			var expanded string
+			if expanded, err = resolveVariables(v, baseEnvMap); err != nil {
 				return errors.Wrapf(err, "Unable to resolve environment variables in %s with content mapping at %s", k, v)
 			}
-			environMap[k] = resolvedValue
+			if _, ok := environMap[k]; ok {
+				baseEnvMap[k] = expanded
+			}
 		}
-		configFile.Config.Env = mapToKeyValue(environMap)
+		configFile.Config.Env = mapToKeyValue(baseEnvMap)
 	}
 
 	labels := keyValueToMap(labelsArray)
@@ -229,7 +249,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			continue
 		}
 		if strings.Contains(value, "{") {
-			if extractedValue, err = stamp(value, stampInfoFile); err != nil {
+			if extractedValue, err = Stamp(value, stampInfoFile); err != nil {
 				return errors.Wrapf(err, "Failed to format the string accordingly at %s", value)
 			}
 			labels[label] = extractedValue
