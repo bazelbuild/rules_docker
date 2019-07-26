@@ -124,13 +124,17 @@ def _image_config(
         else:
             labels[label] = fname
     args = [
-        "-outputConfig", "%s" % config.path,
+        "-outputConfig",
+        "%s" % config.path,
     ] + [
-        "-outputManifest", "%s" % manifest.path,
+        "-outputManifest",
+        "%s" % manifest.path,
     ] + [
-        "-nullEntryPoint", "%s" % null_entrypoint,
+        "-nullEntryPoint",
+        "%s" % null_entrypoint,
     ] + [
-        "-nullCmd", "%s" % null_cmd,
+        "-nullCmd",
+        "%s" % null_cmd,
     ]
 
     for x in entrypoint:
@@ -154,7 +158,7 @@ def _image_config(
 
     for key, value in env.items():
         args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), ctx.expand_make_variables("env", value, {})])]
-   
+
     if ctx.attr.user:
         args += ["-user", ctx.attr.user]
     if workdir:
@@ -198,7 +202,7 @@ def _image_config(
     #args2 = ctx.actions.args()
     #args2.add_all(args)
     # print("Command arguments: {}".format(" ".join(args)))
-    
+
     ctx.actions.run(
         executable = ctx.executable.create_image_config,
         arguments = args,

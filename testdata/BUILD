@@ -349,10 +349,8 @@ container_image(
         "x": "y",
     },
     layers = [":env_layer"],
-    entrypoint = ["aaa", "bbb"],
 )
 
-##### TESTINGGGGG NOW
 container_layer(
     name = "env_layer",
     env = {
