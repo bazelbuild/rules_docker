@@ -98,7 +98,11 @@ func main() {
 		log.Fatalf("Error reading from %s: %v", imgSrc, err)
 	}
 
-	err = writeDigest(img, *dst, filepath.Join(imgSrc, configFile))
+	configPath := ""
+	if *format == "legacy"{
+		configPath = *src
+	}
+	err = writeDigest(img, *dst, configPath)
 	if err != nil {
 		log.Fatalf("Error outputting digest file to %s: %v", *dst, err)
 	}
@@ -110,31 +114,32 @@ func main() {
 func writeDigest(image v1.Image, dst, configPath string) error {
 	m, err := image.Manifest()
 	if err != nil {
-		return errors.Wrap(err, "Error getting image manifest")
+		return errors.Wrap(err, "error getting image manifest")
 	}
 
-	rawConfig, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return errors.Wrapf(err, "unable to read image config file from %s", configPath)
-	}
+	var rawConfig []byte
+	if configPath == "" {
+		rawConfig, err = image.RawConfigFile()
+		if err != nil {
+			return errors.Wrap(err, "Error getting image raw config")
+		}
+		
+		cfgHash, cfgSize, err := v1.SHA256(bytes.NewReader(rawConfig))
+		if err != nil {
+			return errors.Wrap(err, "unable to hash image config file")
+		}
 
-	cfgHash, cfgSize, err := v1.SHA256(bytes.NewReader(rawConfig))
-	if err != nil {
-		return errors.Wrap(err, "unable to hash image config file")
-	}
-
-	m.Config = v1.Descriptor{
-		MediaType: types.DockerConfigJSON,
-		Size:      cfgSize,
-		Digest:    cfgHash,
+		m.Config = v1.Descriptor{
+			MediaType: types.DockerConfigJSON,
+			Size:      cfgSize,
+			Digest:    cfgHash,
+		}
 	}
 
 	out, err := formatStruct(m)
 	if err != nil {
 		return err
 	}
-
-	log.Printf("%+v", m)
 
 	digest, _, err := v1.SHA256(bytes.NewReader((*out).Bytes()))
 	if err != nil {
