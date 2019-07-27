@@ -117,9 +117,8 @@ func writeDigest(image v1.Image, dst, configPath string) error {
 		return errors.Wrap(err, "error getting image manifest")
 	}
 
-	var rawConfig []byte
-	if configPath == "" {
-		rawConfig, err = image.RawConfigFile()
+	if configPath != "" {
+		rawConfig, err := ioutil.ReadFile(configPath)
 		if err != nil {
 			return errors.Wrap(err, "Error getting image raw config")
 		}
