@@ -24,3 +24,8 @@ configs_test(
     dependency_update_specs = ["deps_spec.yaml"],
     file_update_specs = ["file_updates.yaml"],
 )
+
+configs_test(
+    name = "configs_test_deps_spec_only",
+    dependency_update_specs = ["deps_spec.yaml"],
+)
