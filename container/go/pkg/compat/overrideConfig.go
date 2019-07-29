@@ -163,7 +163,7 @@ func resolveVariables(value string, environment map[string]string) (string, erro
 }
 
 // OverrideContent updates the current image config file to reflect the given changes.
-func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, nullEntryPoint, nullCmd, operatingSystem, createdByArg, authorArg string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
+func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, operatingSystem, createdByArg, authorArg string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
 	configFile.Author = "Bazel"
 	configFile.OS = operatingSystem
 	configFile.Architecture = defaultProcArch
@@ -217,6 +217,8 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			entrypoint[i] = stampedEntry
 		}
 		configFile.Config.Entrypoint = entrypoint
+	} else {
+		configFile.Config.Entrypoint = nil
 	}
 
 	if len(command) > 0 {
@@ -228,6 +230,8 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			command[i] = stampedCmd
 		}
 		configFile.Config.Cmd = command
+	} else {
+		configFile.Config.Cmd = nil
 	}
 
 	// if user != "" {

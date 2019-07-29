@@ -79,6 +79,10 @@ func (i *arrayFlags) Set(value string) error {
 	return nil
 }
 
+// struct Override{
+
+// }
+
 func main() {
 	log.Println("Args before:", os.Args)
 	flag.Var(&labelsArray, "labels", "Augment the Label of the previous layer.")
@@ -97,12 +101,6 @@ func main() {
 
 	if *outputConfig == "" {
 		log.Fatalln("Required option -outputConfig was not specified.")
-	}
-	if *nullEntryPoint == "True" {
-		entrypoint = nil
-	}
-	if *nullCmd == "True" {
-		command = nil
 	}
 
 	// read config file into struct.
@@ -126,8 +124,16 @@ func main() {
 		// write out an empty config file.
 		log.Println("baseConfig is empty!!!")
 	}
+
+	if *nullEntryPoint == "True" {
+		*entrypoint = []string{}
+	}
+	if *nullCmd == "True" {
+		*command = []string{}
+	}
+
 	// write out the updated config after overriding config content.
-	err := compat.OverrideContent(configFile, *outputConfig, *creationTimeString, *user, *workdir, *nullEntryPoint, *nullCmd, *operatingSystem, createdBy, defaultAuthor, labelsArray[:], ports[:], volumes[:], entrypointPrefix[:], env[:], command[:], entrypoint[:], layerDigestFile[:], stampInfoFile[:])
+	err := compat.OverrideContent(configFile, *outputConfig, *creationTimeString, *user, *workdir, *operatingSystem, createdBy, defaultAuthor, labelsArray[:], ports[:], volumes[:], entrypointPrefix[:], env[:], command[:], entrypoint[:], layerDigestFile[:], stampInfoFile[:])
 	if err != nil {
 		log.Fatalf("Failed to override values in old image config and write to dst %s: %v", err, *outputConfig)
 	}
