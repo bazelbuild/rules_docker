@@ -11,10 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Defines a rules to syntax check YAML specs used to configure automatic container release.
-"""
-
-package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+load(
+    "//contrib/automatic_container_release:configs_test.bzl",
+    "configs_test",
+)
+
+configs_test(
+    name = "configs_test",
+    dependency_update_specs = ["deps_spec.yaml"],
+    file_update_specs = ["file_updates.yaml"],
+)
