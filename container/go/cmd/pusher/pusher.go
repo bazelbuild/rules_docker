@@ -105,13 +105,11 @@ func main() {
 	}
 
 	// Infer stamp info if provided and perform substitutions in the provided tag name.
-	formattedDst := *dst
-	if len(stampInfoFile) > 0 {
-		formattedDst, err = utils.Stamp(*dst, stampInfoFile)
-		if err != nil {
-			log.Fatalf("Error resolving stamp info to destination %s: %v", *dst, err)
-		}
-
+	formattedDst, err := utils.Stamp(*dst, stampInfoFile)
+	if err != nil {
+		log.Fatalf("Error resolving stamp info to destination %s: %v", *dst, err)
+	}
+	if formattedDst != *dst {
 		log.Printf("Destination %s was resolved to %s based on inferred stamp info.", *dst, formattedDst)
 	}
 
