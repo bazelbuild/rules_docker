@@ -39,9 +39,7 @@ def _get_runfile_path(ctx, f):
 def _impl(ctx):
     """Core implementation of new_container_push."""
 
-    # TODO (xiaohegong): 1) Possible optimization for efficiently pushing intermediate
-    # representation, similar with the old python implementation, e.g., push-by-layer.
-    # 2) Use and implementation of attr.stamp.
+    # TODO: Possible optimization for efficiently pushing intermediate format after container_image is refactored, similar with the old python implementation, e.g., push-by-layer.
 
     pusher_args = []
     digester_args = []
@@ -57,12 +55,6 @@ def _impl(ctx):
     if ctx.file.tag_file:
         tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
         runfiles_tag_file = [ctx.file.tag_file]
-
-    pusher_args += ["-dst", "{registry}/{repository}:{tag}".format(
-        registry = registry,
-        repository = repository,
-        tag = tag,
-    )]
 
     # If any stampable attr contains python format syntax (which is how users
     # configure stamping), we enable stamping.
