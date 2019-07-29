@@ -48,19 +48,22 @@ def _impl(ctx):
         container_path = "/" + f.short_path.replace("/", "-")
         spec_container_paths.append(container_path)
         file_update_specs.append(container_path)
-    cmd_args += [
-        "-fileUpdateSpecs",
-        ",".join(file_update_specs),
-    ]
+
+    if len(file_update_specs) > 0:
+        cmd_args += [
+            "-fileUpdateSpecs",
+            ",".join(file_update_specs),
+        ]
     for f in ctx.files.dependency_update_specs:
         specs.append(_get_runfile_path(ctx, f))
         container_path = "/" + f.short_path.replace("/", "-")
         spec_container_paths.append(container_path)
         dependency_update_specs.append(container_path)
-    cmd_args += [
-        "-depSpecs",
-        ",".join(dependency_update_specs),
-    ]
+    if len(dependency_update_specs) > 0:
+        cmd_args += [
+            "-depSpecs",
+            ",".join(dependency_update_specs),
+        ]
 
     ctx.actions.expand_template(
         template = ctx.file._tpl,
