@@ -50,7 +50,7 @@ func ReadImage(src, format string) (v1.Image, error) {
 	return nil, errors.Errorf("unknown image format %q", format)
 }
 
-// TODO: REMOVE these two functions copied from Winnie's PR, refactor after her PR is merged. https://github.com/bazelbuild/rules_docker/pull/973
+// TODO: REMOVE these two functions copied from https://github.com/bazelbuild/rules_docker/pull/973, should refactor after it is merged.
 type formattedString map[string]interface{}
 
 // formateWithMap takes all variables of format {{.VAR}} in the input string `format`
