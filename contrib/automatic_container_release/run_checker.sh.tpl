@@ -48,8 +48,19 @@ fi
 # Create a new docker container that will run the checker.
 container_id=$($DOCKER create %{image_name} %{cmd_args})
 
-# Copy the spec file to the container. The "-L" is to follow symlinks.
-$DOCKER cp -L %{spec_file_path} $container_id:%{spec_file_container_path}
+specs=(%{specs})
+spec_container_paths=(%{spec_container_paths})
+
+# Copy the spec files to the container. The "-L" is to follow symlinks.
+if [ ${#specs[@]} -ne ${#spec_container_paths[@]} ]; then
+    echo "Given list of spec files had length ${#specs[@]} which didn't match "\
+    "the ${#spec_container_paths[@]} length of the list of corresponding "\
+    "container paths"
+    exit 1
+fi
+for ((i=0;i<${#specs[@]};i++)); do
+    $DOCKER cp -L ${specs[$i]} $container_id:${spec_container_paths[$i]}
+done
 
 # Start the container that will run the checker logic.
 $DOCKER start $container_id
