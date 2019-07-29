@@ -163,7 +163,7 @@ func resolveVariables(value string, environment map[string]string) (string, erro
 }
 
 // OverrideContent updates the current image config file to reflect the given changes.
-func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, nullEntryPoint, nullCmd, operatingSystem string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
+func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, nullEntryPoint, nullCmd, operatingSystem, createdByArg, authorArg string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
 	configFile.Author = "Bazel"
 	configFile.OS = operatingSystem
 	configFile.Architecture = defaultProcArch
@@ -172,7 +172,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	// createTime stores the input creation time with macros substituted.
 	var createTime string
 	// creationTime is the RFC 3339 formatted time derived from createTime input.
-	var creationTime time.Time
+	var creationTime = time.Unix(0, 0)
 
 	// Parse for specific time formats.
 	if creationTimeString == "" {
@@ -208,24 +208,29 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	log.Printf("the stamped command: %v", command)
 
 	// have to Stamp each entry and assign to config entries accordingly.
-	for i, entry := range entrypoint {
-		stampedEntry, err := Stamp(entry, stampInfoFile)
-		if err != nil {
-			errors.Wrapf(err, "Unable to perform substitutions to env variable %s", entry)
+	if len(entrypoint) > 0 {
+		for i, entry := range entrypoint {
+			stampedEntry, err := Stamp(entry, stampInfoFile)
+			if err != nil {
+				errors.Wrapf(err, "Unable to perform substitutions to env variable %s", entry)
+			}
+			entrypoint[i] = stampedEntry
 		}
-		entrypoint[i] = stampedEntry
+		configFile.Config.Entrypoint = entrypoint
 	}
-	configFile.Config.Entrypoint = entrypoint
 
-	for i, cmd := range command {
-		stampedCmd, err := Stamp(cmd, stampInfoFile)
-		if err != nil {
-			errors.Wrapf(err, "Unable to perform substitutions to env variable %s", cmd)
+	if len(command) > 0 {
+		for i, cmd := range command {
+			stampedCmd, err := Stamp(cmd, stampInfoFile)
+			if err != nil {
+				errors.Wrapf(err, "Unable to perform substitutions to env variable %s", cmd)
+			}
+			command[i] = stampedCmd
 		}
-		command[i] = stampedCmd
+		configFile.Config.Cmd = command
 	}
-	configFile.Config.Cmd = command
 
+	// if user != "" {
 	stampedUser, err := Stamp(user, stampInfoFile)
 	if err != nil {
 		errors.Wrapf(err, "Unable to perform substitutions to user %s", user)
@@ -348,25 +353,22 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		// length of history is expected to match the length of diff_ids.
 		history := configFile.History
 		var historyToAdd v1.History
-		var currAuthor string
-		if configFile.Author != "" {
-			currAuthor = configFile.Author
-		} else {
-			currAuthor = "Unknown"
-		}
-		var currCreated v1.Time
-		var zeroedVal v1.Time
-		if configFile.Created == zeroedVal {
-			currCreated = configFile.Created
-		} else {
-			currCreated = v1.Time{time.Unix(0, 0)}
-		}
 
 		for _, l := range layerDigests {
+			var createdBy = createdByArg
+			if createdBy == "" {
+				createdBy = "Unknown"
+			}
+
+			var Author = authorArg
+			if Author == "" {
+				Author = "Unknown"
+			}
+
 			historyToAdd = v1.History{
-				Author:    currAuthor,
-				Created:   currCreated,
-				CreatedBy: "bazel build ...",
+				Author:    Author,
+				Created:   v1.Time{creationTime},
+				CreatedBy: createdBy,
 			}
 			if l == emptySHA256Digest() {
 				historyToAdd.EmptyLayer = true

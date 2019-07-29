@@ -54,10 +54,10 @@ var (
 )
 
 const (
-	// defaultProcArch is the default architecture type based on legacy create_image_config.py.
-	defaultProcArch = "amd64"
-	// defaultTimeStamp is the unix epoch 0 time representation in 32 bits.
-	defaultTimestamp = "1970-01-01T00:00:00Z"
+	// createdBy default
+	createdBy = "bazel build..."
+	// author default
+	defaultAuthor = "Bazel"
 )
 
 // arrayFlags can be used to store multiple flags the same name.
@@ -127,7 +127,7 @@ func main() {
 		log.Println("baseConfig is empty!!!")
 	}
 	// write out the updated config after overriding config content.
-	err := compat.OverrideContent(configFile, *outputConfig, *creationTimeString, *user, *workdir, *nullEntryPoint, *nullCmd, *operatingSystem, labelsArray[:], ports[:], volumes[:], entrypointPrefix[:], env[:], command[:], entrypoint[:], layerDigestFile[:], stampInfoFile[:])
+	err := compat.OverrideContent(configFile, *outputConfig, *creationTimeString, *user, *workdir, *nullEntryPoint, *nullCmd, *operatingSystem, createdBy, defaultAuthor, labelsArray[:], ports[:], volumes[:], entrypointPrefix[:], env[:], command[:], entrypoint[:], layerDigestFile[:], stampInfoFile[:])
 	if err != nil {
 		log.Fatalf("Failed to override values in old image config and write to dst %s: %v", err, *outputConfig)
 	}
@@ -159,5 +159,5 @@ func main() {
 		log.Fatalf("Writing config to %s was unsuccessful: %v", *outputManifest, err)
 	}
 
-	log.Println("Successfully created Image Manifest at %s.\n", *outputManifest)
+	log.Printf("Successfully created Image Manifest at %s.\n", *outputManifest)
 }
