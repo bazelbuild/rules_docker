@@ -163,7 +163,7 @@ func resolveVariables(value string, environment map[string]string) (string, erro
 }
 
 // OverrideContent updates the current image config file to reflect the given changes.
-func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, operatingSystem, createdByArg, authorArg string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
+func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, nullEntryPoint, nullCmd, operatingSystem, createdByArg, authorArg string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
 	configFile.Author = "Bazel"
 	configFile.OS = operatingSystem
 	configFile.Architecture = defaultProcArch
@@ -205,10 +205,10 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	}
 	configFile.Created = v1.Time{creationTime}
 
-	log.Printf("the stamped command: %v", command)
-
-	// have to Stamp each entry and assign to config entries accordingly.
-	if len(entrypoint) > 0 {
+	if len(configFile.Config.Entrypoint) == 0 && nullEntryPoint == "True" {
+		configFile.Config.Entrypoint = nil
+	} else if len(entrypoint) > 0 {
+		// have to Stamp each entry and assign to config entries accordingly.
 		for i, entry := range entrypoint {
 			stampedEntry, err := Stamp(entry, stampInfoFile)
 			if err != nil {
@@ -217,11 +217,11 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			entrypoint[i] = stampedEntry
 		}
 		configFile.Config.Entrypoint = entrypoint
-	} else {
-		configFile.Config.Entrypoint = nil
 	}
 
-	if len(command) > 0 {
+	if len(configFile.Config.Cmd) == 0 && nullCmd == "True" {
+		configFile.Config.Cmd = nil
+	} else if len(command) > 0 {
 		for i, cmd := range command {
 			stampedCmd, err := Stamp(cmd, stampInfoFile)
 			if err != nil {
@@ -230,9 +230,12 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			command[i] = stampedCmd
 		}
 		configFile.Config.Cmd = command
-	} else {
-		configFile.Config.Cmd = nil
 	}
+	// else {
+	// 	configFile.Config.Cmd = nil
+	// }
+
+	log.Printf("the stamped command: %v", command)
 
 	// if user != "" {
 	stampedUser, err := Stamp(user, stampInfoFile)

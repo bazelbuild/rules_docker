@@ -97,6 +97,9 @@ func main() {
 
 	flag.Parse()
 
+	log.Printf("command: %v", command)
+	log.Printf("entrypoint: %v", entrypoint)
+
 	log.Println("Running the Image Config manipulator...")
 
 	if *outputConfig == "" {
@@ -125,15 +128,15 @@ func main() {
 		log.Println("baseConfig is empty!!!")
 	}
 
-	if *nullEntryPoint == "True" {
-		*entrypoint = []string{}
-	}
-	if *nullCmd == "True" {
-		*command = []string{}
-	}
+	// if *nullEntryPoint == "True" {
+	// 	entrypoint = []string{}
+	// }
+	// if *nullCmd == "True" {
+	// 	command = []string{}
+	// }
 
 	// write out the updated config after overriding config content.
-	err := compat.OverrideContent(configFile, *outputConfig, *creationTimeString, *user, *workdir, *operatingSystem, createdBy, defaultAuthor, labelsArray[:], ports[:], volumes[:], entrypointPrefix[:], env[:], command[:], entrypoint[:], layerDigestFile[:], stampInfoFile[:])
+	err := compat.OverrideContent(configFile, *outputConfig, *creationTimeString, *user, *workdir, *nullEntryPoint, *nullCmd, *operatingSystem, createdBy, defaultAuthor, labelsArray[:], ports[:], volumes[:], entrypointPrefix[:], env[:], command[:], entrypoint[:], layerDigestFile[:], stampInfoFile[:])
 	if err != nil {
 		log.Fatalf("Failed to override values in old image config and write to dst %s: %v", err, *outputConfig)
 	}
