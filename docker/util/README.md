@@ -15,7 +15,7 @@ properly via
 ## container_run_and_commit
 
 <pre>
-container_run_and_commit(<a href="#container_run_and_commit-name">name</a>, <a href="#container_run_and_commit-commands">commands</a>, <a href="#container_run_and_commit-image">image</a>)
+container_run_and_commit(<a href="#container_run_and_commit-name">name</a>, <a href="#container_run_and_commit-commands">commands</a>, <a href="#container_run_and_commit-docker_run_flags">docker_run_flags</a>, <a href="#container_run_and_commit-image">image</a>)
 </pre>
 
 This rule runs a set of commands in a given image, waits for the commands
@@ -44,6 +44,15 @@ to finish, and then commits the container to a new image.
         List of strings; required
         <p>
           A list of commands to run (sequentially) in the container.
+        </p>
+      </td>
+    </tr>
+    <tr id="container_run_and_commit-docker_run_flags">
+      <td><code>docker_run_flags</code></td>
+      <td>
+        List of strings; optional
+        <p>
+          Extra flags to pass to the docker run command.
         </p>
       </td>
     </tr>

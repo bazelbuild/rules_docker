@@ -69,6 +69,10 @@ file_test(
 container_run_and_commit(
     name = "test_container_commit",
     commands = ["touch /foo.txt"],
+    docker_run_flags = [
+        "-u",
+        "root",
+    ],
     image = "@debian_base//image",
 )
 
