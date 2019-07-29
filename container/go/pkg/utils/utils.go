@@ -54,7 +54,7 @@ func ReadImage(src, format, configPath, tarballBase string, layersPath []string)
 	return nil, errors.Errorf("unknown image format %q", format)
 }
 
-// TODO: REMOVE these two functions copied from Winnie's PR, refactor after her PR is merged.
+// TODO: REMOVE these two functions copied from Winnie's PR, refactor after her PR is merged. https://github.com/bazelbuild/rules_docker/pull/973
 type formattedString map[string]interface{}
 
 // formateWithMap takes all variables of format {{.VAR}} in the input string `format`
