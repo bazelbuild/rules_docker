@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -163,49 +164,73 @@ func resolveVariables(value string, environment map[string]string) (string, erro
 
 // OverrideContent updates the current image config file to reflect the given changes.
 func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, nullEntryPoint, nullCmd, operatingSystem string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
+	configFile.Author = "Bazel"
+	configFile.OS = operatingSystem
+	configFile.Architecture = defaultProcArch
+
 	var err error
 	// createTime stores the input creation time with macros substituted.
 	var createTime string
 	// creationTime is the RFC 3339 formatted time derived from createTime input.
-	var creationTime string
+	var creationTime time.Time
+
+	// Parse for specific time formats.
 	if creationTimeString == "" {
-		creationTime = defaultTimestamp
+		creationTime, err = time.Parse(time.UnixDate, defaultTimestamp)
+		if err != nil {
+			errors.Wrapf(err, "Unable to convert %s to unix epoch time", defaultTimestamp)
+		}
 	} else {
-		var unixTime int64
+		var unixTime float64
+		// Use stamp to as preliminary replacement.
 		if createTime, err = Stamp(creationTimeString, stampInfoFile); err != nil {
 			errors.Wrapf(err, "Unable to format creation time from BUILD_TIMESTAMP macros")
 		}
 		// If creationTime is parsable as a floating point type, assume unix epoch timestamp.
 		// otherwise, assume RFC 3339 date/time format.
-		unixTime, err := strconv.ParseInt(createTime, 10, 64)
-		if err != nil {
-			errors.Wrapf(err, "Unable to parse an integer type from flag creationTime")
+		unixTime, err := strconv.ParseFloat(createTime, 64)
+		// Assume RFC 3339 date/time format.
+		if err == nil {
+			// Ensure that the parsed time is within the floating point range.
+			// Values > 1e11 are assumed to be unix epoch milliseconds.
+			if unixTime > 1.0e+11 {
+				unixTime = unixTime / 1000.0
+			}
+			// Construct a RFC 3339 date/time from Unix epoch.
+			creationTime, err = time.Parse(time.RFC3339, strconv.FormatFloat(unixTime, 'f', 6, 64))
+			if err != nil {
+				errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
+			}
 		}
-		// Ensure that the parsed time is within the floating point range.
-		if unixTime > 1.0e+11 {
-			unixTime = unixTime / 1000.0
-		}
-		// Construct a RFC 3339 date/time from Unix epoch.
-		t := time.Unix(unixTime, 0)
-		creationTime = t.Format(time.RFC3339)
-		rfcCreationTime, err := time.Parse(time.RFC3339, creationTime)
-		if err != nil {
-			errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
-		}
-		configFile.Created = v1.Time{rfcCreationTime}
 	}
+	configFile.Created = v1.Time{creationTime}
 
-	configFile.Author = "Bazel"
-	configFile.OS = operatingSystem
-	configFile.Architecture = defaultProcArch
+	log.Printf("the stamped command: %v", command)
 
-	if len(entrypoint) > 0 {
-		configFile.Config.Entrypoint = entrypoint
+	// have to Stamp each entry and assign to config entries accordingly.
+	for i, entry := range entrypoint {
+		stampedEntry, err := Stamp(entry, stampInfoFile)
+		if err != nil {
+			errors.Wrapf(err, "Unable to perform substitutions to env variable %s", entry)
+		}
+		entrypoint[i] = stampedEntry
 	}
-	if len(command) > 0 {
-		configFile.Config.Cmd = command
+	configFile.Config.Entrypoint = entrypoint
+
+	for i, cmd := range command {
+		stampedCmd, err := Stamp(cmd, stampInfoFile)
+		if err != nil {
+			errors.Wrapf(err, "Unable to perform substitutions to env variable %s", cmd)
+		}
+		command[i] = stampedCmd
 	}
-	configFile.Config.User = user
+	configFile.Config.Cmd = command
+
+	stampedUser, err := Stamp(user, stampInfoFile)
+	if err != nil {
+		errors.Wrapf(err, "Unable to perform substitutions to user %s", user)
+	}
+	configFile.Config.User = stampedUser
 
 	environMap := keyValueToMap(env)
 	// do any preliminary substitutions of macros (i.e no '$') by stamp info files.
@@ -291,9 +316,13 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		}
 	}
 
-	if workdir != "" {
-		configFile.Config.WorkingDir = workdir
+	// if workdir != "" {
+	stampedWorkdir, err := Stamp(workdir, stampInfoFile)
+	if err != nil {
+		return errors.Wrapf(err, "Unable to stamp the working directory %s", workdir)
 	}
+	configFile.Config.WorkingDir = stampedWorkdir
+	// }
 
 	layerDigests := []string{}
 	for _, l := range layer {
@@ -303,7 +332,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		}
 		layerDigests = append(layerDigests, newLayer)
 	}
-	// diffIDs are ordered from bottom-most to top-most
+	// diffIDs are ordered from bottom-most to top-most.
 	// []Hash type
 	diffIDs := configFile.RootFS.DiffIDs
 	if len(layer) > 0 {
@@ -315,37 +344,38 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			}
 		}
 		configFile.RootFS = v1.RootFS{Type: "layers", DiffIDs: diffIDs}
-	}
 
-	// length of history is expected to match the length of diff_ids
-	history := configFile.History
-	var historyToAdd v1.History
-	var currAuthor string
-	if configFile.Author != "" {
-		currAuthor = configFile.Author
-	} else {
-		currAuthor = "Unknown"
-	}
-	var currCreated v1.Time
-	var zeroedVal v1.Time
-	if configFile.Created == zeroedVal {
-		currCreated = configFile.Created
-	} else {
-		currCreated = v1.Time{time.Unix(0, 0)}
-	}
+		// length of history is expected to match the length of diff_ids.
+		history := configFile.History
+		var historyToAdd v1.History
+		var currAuthor string
+		if configFile.Author != "" {
+			currAuthor = configFile.Author
+		} else {
+			currAuthor = "Unknown"
+		}
+		var currCreated v1.Time
+		var zeroedVal v1.Time
+		if configFile.Created == zeroedVal {
+			currCreated = configFile.Created
+		} else {
+			currCreated = v1.Time{time.Unix(0, 0)}
+		}
 
-	for _, l := range layerDigests {
-		historyToAdd = v1.History{
-			Author:    currAuthor,
-			Created:   currCreated,
-			CreatedBy: "bazel build ...",
+		for _, l := range layerDigests {
+			historyToAdd = v1.History{
+				Author:    currAuthor,
+				Created:   currCreated,
+				CreatedBy: "bazel build ...",
+			}
+			if l == emptySHA256Digest() {
+				historyToAdd.EmptyLayer = true
+			}
+			// prepend to history.
+			history = append([]v1.History{historyToAdd}, history...)
 		}
-		if l == emptySHA256Digest() {
-			historyToAdd.EmptyLayer = true
-		}
-		history = append([]v1.History{historyToAdd}, history...)
+		configFile.History = history
 	}
-	configFile.History = history
 
 	if len(entrypointPrefix) != 0 {
 		newEntrypoint := append(configFile.Config.Entrypoint, entrypointPrefix...)
