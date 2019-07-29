@@ -1,7 +1,12 @@
 package utils
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"html/template"
+	"os"
+	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -47,4 +52,50 @@ func ReadImage(src, format, configPath, tarballBase string, layersPath []string)
 	}
 
 	return nil, errors.Errorf("unknown image format %q", format)
+}
+
+// TODO: REMOVE these two functions copied from Winnie's PR, refactor after her PR is merged.
+type formattedString map[string]interface{}
+
+// formateWithMap takes all variables of format {{.VAR}} in the input string `format`
+// and replaces it according to the map of parameters to values in `params`.
+func formatWithMap(format string, params formattedString) string {
+	msg := &bytes.Buffer{}
+	template.Must(template.New("").Parse(format)).Execute(msg, params)
+	return msg.String()
+}
+
+// Stamp provides the substitutions of variables inside {} using info in file pointed to
+// by stampInfoFile.
+func Stamp(inp string, stampInfoFile []string) (string, error) {
+	if len(stampInfoFile) == 0 || inp == "" {
+		return inp, nil
+	}
+	formatArgs := make(map[string]interface{})
+	for _, infofile := range stampInfoFile {
+		f, err := os.Open(infofile)
+		if err != nil {
+			return "", errors.Wrapf(err, "failed to open file %s", infofile)
+		}
+		defer f.Close()
+		// scanner reads line by line and discards '\n' character already
+		scanner := bufio.NewScanner(f)
+		var temp []string
+		for scanner.Scan() {
+			temp = strings.Split(scanner.Text(), " ")
+			key, val := temp[0], temp[1]
+			if _, ok := formatArgs[key]; ok {
+				fmt.Printf("WARNING: Duplicate value for key %s: using %s", key, val)
+			}
+			formatArgs[key] = val
+		}
+		if err = scanner.Err(); err != nil {
+			return "", errors.Wrapf(err, "failed to read line from file %s", infofile)
+		}
+	}
+	// do string manipulation in order to mimic python string format.
+	// specifically, replace '{' with '{{.' and '}' with '}}'.
+	inpReformatted := strings.ReplaceAll(inp, "{", "{{.")
+	inpReformatted = strings.ReplaceAll(inpReformatted, "}", "}}")
+	return formatWithMap(inpReformatted, formattedString(formatArgs)), nil
 }
