@@ -132,12 +132,12 @@ def repositories():
                 "https://github.com/bazelbuild/rules_go/archive/4c28450eae71d4179d946dfc930b9f13dee9a76c.tar.gz",
             ],
         )
-    if "io_bazel_rules_python" not in excludes:
+    if "rules_python" not in excludes:
         http_archive(
-            name = "io_bazel_rules_python",
-            sha256 = "a8d454f63f792a6b1c17b86d83aa3c954a9fe5805e64b3cb7187afe07f624f2e",
-            strip_prefix = "rules_python-640e88a6ee6b949ef131a9d512e2f71c6e0e858c",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/640e88a6ee6b949ef131a9d512e2f71c6e0e858c.tar.gz"],
+            name = "rules_python",
+            sha256 = "74a0a739cf308e23d5e6080a72daca6d4a696cf4071d78428eda05c4cac1700d",
+            strip_prefix = "rules_python-93d8b0af6d8ca1ee37816a829085d7092b04cc7b",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/93d8b0af6d8ca1ee37816a829085d7092b04cc7b.tar.gz"],
         )
 
     if "httplib2" not in excludes:
