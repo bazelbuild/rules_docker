@@ -138,7 +138,7 @@ http_file(
 
 http_file(
     name = "launchpad_openjdk_gpg",
-    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
+    sha256 = "429b667af38f71f727de92aa662fb535c587b870a8ed0dcfbe7d2b8971b7e616",
     urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
 )
 
