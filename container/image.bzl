@@ -231,7 +231,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
 
     if image.get("legacy"):
         digester_input += [image.get("legacy")]
-        digester_args.add("-tarball", "%s" % image["legacy"].path)
+        digester_args.add("-legacyBaseImage", "%s" % image["legacy"].path)
 
     ctx.actions.run(
         outputs = [output_digest],

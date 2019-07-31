@@ -57,7 +57,7 @@ def _impl(ctx):
               "If the image is checked in, consider using " +
               "docker_import instead.")
         pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
-        digester_args.add("-tarball", "%s" % tarball.path)
+        digester_args.add("-legacyBaseImage", "%s" % tarball.path)
         image_files += [tarball]
     if config:
         pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]

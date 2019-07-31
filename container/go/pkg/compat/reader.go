@@ -60,8 +60,8 @@ func Read(src string) (v1.Image, error) {
 	return img, nil
 }
 
-// ReadWithBaseTarball returns a Image object read from src with tarball as base and layers appended from layersPath.
-func ReadWithBaseTarball(src, tarballPath string, layersPath []string) (v1.Image, error) {
+// ReadWithBaseTarball returns a Image object with tarball at tarballPath as base and layers appended from layersPath.
+func ReadWithBaseTarball(tarballPath string, layersPath []string) (v1.Image, error) {
 	base, err := tarball.ImageFromPath(tarballPath, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to parse image from tarball at %s", tarballPath)

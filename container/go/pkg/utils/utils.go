@@ -39,7 +39,7 @@ func ReadImage(src, format, tarballBase string, layersPath []string) (v1.Image, 
 		if tarballBase == "" {
 			return compat.Read(src)
 		} else {
-			return compat.ReadWithBaseTarball(src, tarballBase, layersPath)
+			return compat.ReadWithBaseTarball(tarballBase, layersPath)
 		}
 	}
 	if format == "docker" {

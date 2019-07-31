@@ -92,8 +92,8 @@ def _impl(ctx):
                   "docker_build, consider dropping the '.tar' extension. " +
                   "If the image is checked in, consider using " +
                   "docker_import instead.")
-            pusher_args += ["-tarball", "%s" % _get_runfile_path(ctx, tarball)]
-            digester_args += ["-tarball", "%s" % tarball.path]
+            pusher_args += ["-legacyBaseImage", "%s" % _get_runfile_path(ctx, tarball)]
+            digester_args += ["-legacyBaseImage", "%s" % tarball.path]
             temp_files += [tarball]
 
         pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
