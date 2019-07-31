@@ -172,24 +172,35 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	// createTime stores the input creation time with macros substituted.
 	var createTime string
 	// creationTime is the RFC 3339 formatted time derived from createTime input.
-	var creationTime = time.Unix(0, 0)
+	// var creationTime = time.Unix(0, 0)
+	creationTime, err := time.Parse(time.RFC3339, defaultTimestamp)
+	log.Printf("the very very first creationTime: %v", creationTime)
+	if err != nil {
+		return errors.Wrap(err, "Unable to parse the default unix epoch time 1970-01-01T00:00:00Z")
+	}
 
 	// Parse for specific time formats.
-	if creationTimeString == "" {
-		creationTime, err = time.Parse(time.UnixDate, defaultTimestamp)
-		if err != nil {
-			errors.Wrapf(err, "Unable to convert %s to unix epoch time", defaultTimestamp)
-		}
-	} else {
+	// if creationTimeString == "" {
+	// 	// epoch := time.Unix(0, 0)
+	// 	creationTime, err = time.Parse(time.RFC3339, defaultTimestamp)
+	// 	log.Printf("the creation time inside empty string: %v", creationTime)
+	// 	if err != nil {
+	// 		return errors.Wrapf(err, "Unable to convert %s to unix epoch time", defaultTimestamp)
+	// 	}
+	// }
+	// else {
+	if creationTimeString != "" {
 		var unixTime float64
 		// Use stamp to as preliminary replacement.
 		if createTime, err = Stamp(creationTimeString, stampInfoFile); err != nil {
-			errors.Wrapf(err, "Unable to format creation time from BUILD_TIMESTAMP macros")
+			return errors.Wrapf(err, "Unable to format creation time from BUILD_TIMESTAMP macros")
 		}
+		log.Printf("The first createTime is: %v", createTime)
 		// If creationTime is parsable as a floating point type, assume unix epoch timestamp.
 		// otherwise, assume RFC 3339 date/time format.
 		unixTime, err := strconv.ParseFloat(createTime, 64)
-		// Assume RFC 3339 date/time format.
+		log.Printf("the unixTime after strconv is: %f", unixTime)
+		// Assume RFC 3339 date/time format. No err means it is parsable as floating point.
 		if err == nil {
 			// Ensure that the parsed time is within the floating point range.
 			// Values > 1e11 are assumed to be unix epoch milliseconds.
@@ -198,8 +209,9 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			}
 			// Construct a RFC 3339 date/time from Unix epoch.
 			creationTime, err = time.Parse(time.RFC3339, strconv.FormatFloat(unixTime, 'f', 6, 64))
+			log.Printf("The second creationTime is: %v", creationTime)
 			if err != nil {
-				errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
+				return errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
 			}
 		}
 	}
@@ -212,7 +224,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		for i, entry := range entrypoint {
 			stampedEntry, err := Stamp(entry, stampInfoFile)
 			if err != nil {
-				errors.Wrapf(err, "Unable to perform substitutions to env variable %s", entry)
+				return errors.Wrapf(err, "Unable to perform substitutions to env variable %s", entry)
 			}
 			entrypoint[i] = stampedEntry
 		}
@@ -225,7 +237,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		for i, cmd := range command {
 			stampedCmd, err := Stamp(cmd, stampInfoFile)
 			if err != nil {
-				errors.Wrapf(err, "Unable to perform substitutions to env variable %s", cmd)
+				return errors.Wrapf(err, "Unable to perform substitutions to env variable %s", cmd)
 			}
 			command[i] = stampedCmd
 		}
@@ -328,13 +340,13 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		}
 	}
 
-	// if workdir != "" {
-	stampedWorkdir, err := Stamp(workdir, stampInfoFile)
-	if err != nil {
-		return errors.Wrapf(err, "Unable to stamp the working directory %s", workdir)
+	if workdir != "" {
+		stampedWorkdir, err := Stamp(workdir, stampInfoFile)
+		if err != nil {
+			return errors.Wrapf(err, "Unable to stamp the working directory %s", workdir)
+		}
+		configFile.Config.WorkingDir = stampedWorkdir
 	}
-	configFile.Config.WorkingDir = stampedWorkdir
-	// }
 
 	layerDigests := []string{}
 	for _, l := range layer {

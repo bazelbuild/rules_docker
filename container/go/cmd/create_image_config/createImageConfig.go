@@ -36,7 +36,7 @@ var (
 	baseManifest       = flag.String("baseManifest", "", "The base image manifest.")
 	outputConfig       = flag.String("outputConfig", "", "The output image config file to generate.")
 	outputManifest     = flag.String("outputManifest", "", "The output manifest file to generate.")
-	creationTimeString = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC, 3339 date/time.")
+	creationTimeString = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC 3339 date/time.")
 	user               = flag.String("user", "", "The username to run the commands under.")
 	workdir            = flag.String("workdir", "", "Set the working directory of the layer.")
 	nullEntryPoint     = flag.String("nullEntryPoint", "False", "If True, Entrypoint will be set to null.")
