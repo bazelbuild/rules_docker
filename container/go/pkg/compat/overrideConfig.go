@@ -27,6 +27,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"strconv"
@@ -180,6 +181,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 
 	// Parse for specific time formats.
 	if creationTimeString != "" {
+		log.Printf("The creationTimeString is: %s", creationTimeString)
 		var unixTime float64
 		// Use stamp to as preliminary replacement.
 		if createTime, err = Stamp(creationTimeString, stampInfoFile); err != nil {
@@ -188,23 +190,34 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		log.Printf("The first createTime is: %v", createTime)
 		// If creationTime is parsable as a floating point type, assume unix epoch timestamp.
 		// otherwise, assume RFC 3339 date/time format.
-		unixTime, err := strconv.ParseFloat(createTime, 64)
+		unixTime, err = strconv.ParseFloat(createTime, 64)
 		log.Printf("the unixTime after strconv is: %f", unixTime)
 		// Assume RFC 3339 date/time format. No err means it is parsable as floating point.
 		if err == nil {
 			// Ensure that the parsed time is within the floating point range.
 			// Values > 1e11 are assumed to be unix epoch milliseconds.
 			if unixTime > 1.0e+11 {
+				// log.Println("we are less and milliseconds")
 				unixTime = unixTime / 1000.0
 			}
 			// Construct a RFC 3339 date/time from Unix epoch.
-			creationTime, err = time.Parse(time.RFC3339, strconv.FormatFloat(unixTime, 'f', 6, 64))
+			// stringFromFloat := strconv.FormatFloat(unixTime, 'f', 6, 64)
+			// log.Printf("The stringFromFloat unixTime to RFC is: %s", stringFromFloat)
+			// creationTime, err = time.Parse(time.RFC3339, stringFromFloat)
+			sec, dec := math.Modf(unixTime)
+			log.Printf("sec: %v, dec: %v", sec, dec)
+			creationTime = time.Unix(int64(sec), int64(dec*(1e9)))
+			// 1970-01-01T00:00:00Z
+			// creationTime = creationTime.UTC().Format("2006-01-02T15:04:05.00Z0700")
+			log.Printf("the formated creationTime: %s", creationTime.UTC().Format("2006-01-02T15:04:05.00Z0700"))
+			//creationTime, _ = time.Parse(time.RFC3339, creationTime.Format(time.RFC3339))
 			log.Printf("The second creationTime is: %v", creationTime)
 			if err != nil {
 				return errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
 			}
 		}
 	}
+	log.Printf("the assigned CreationTime is: %v", creationTime)
 	configFile.Created = v1.Time{creationTime}
 
 	// 	if len(configFile.Config.Entrypoint) == 0 && nullEntryPoint == "True" {

@@ -194,7 +194,8 @@ def _image_config(
         fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
     if ctx.attr.launcher:
         for x in ["/" + ctx.file.launcher.basename]:
-            args += ["-entrypointPrefix", "%s" % (x + ctx.attr.launcher_args)]
+            args += ["-entrypointPrefix", "%s" % x]
+        args += ctx.attr.launcher_args
 
     cmd = "echo Arguments {}".format(" ".join(args))
     print("Running command: {}".format(cmd))
