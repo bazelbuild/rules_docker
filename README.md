@@ -159,7 +159,7 @@ container_pull(
 )
 ```
 
-## Known Issues
+### Known Issues
 
 * Bazel does not deal well with diamond dependencies.
 
