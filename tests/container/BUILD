@@ -483,7 +483,7 @@ new_container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_push_digest_output",
-    content = "sha256:3b7f28bf8caefd13d4a22513727f3e8cd8d3a464c72df387f0fd7a74a0f82f2bxiaohegong@xiaohegong",
+    content = "sha256:3b7f28bf8caefd13d4a22513727f3e8cd8d3a464c72df387f0fd7a74a0f82f2b",
     file = ":push_test.digest",
 )
 
