@@ -172,7 +172,6 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	// createTime stores the input creation time with macros substituted.
 	var createTime string
 	// creationTime is the RFC 3339 formatted time derived from createTime input.
-	// var creationTime = time.Unix(0, 0)
 	creationTime, err := time.Parse(time.RFC3339, defaultTimestamp)
 	log.Printf("the very very first creationTime: %v", creationTime)
 	if err != nil {
@@ -180,15 +179,6 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	}
 
 	// Parse for specific time formats.
-	// if creationTimeString == "" {
-	// 	// epoch := time.Unix(0, 0)
-	// 	creationTime, err = time.Parse(time.RFC3339, defaultTimestamp)
-	// 	log.Printf("the creation time inside empty string: %v", creationTime)
-	// 	if err != nil {
-	// 		return errors.Wrapf(err, "Unable to convert %s to unix epoch time", defaultTimestamp)
-	// 	}
-	// }
-	// else {
 	if creationTimeString != "" {
 		var unixTime float64
 		// Use stamp to as preliminary replacement.
@@ -217,7 +207,8 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	}
 	configFile.Created = v1.Time{creationTime}
 
-	if len(configFile.Config.Entrypoint) == 0 && nullEntryPoint == "True" {
+	// 	if len(configFile.Config.Entrypoint) == 0 && nullEntryPoint == "True" {
+	if nullEntryPoint == "True" {
 		configFile.Config.Entrypoint = nil
 	} else if len(entrypoint) > 0 {
 		// have to Stamp each entry and assign to config entries accordingly.
@@ -231,7 +222,8 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		configFile.Config.Entrypoint = entrypoint
 	}
 
-	if len(configFile.Config.Cmd) == 0 && nullCmd == "True" {
+	if nullCmd == "True" {
+		log.Println("hellooooo")
 		configFile.Config.Cmd = nil
 	} else if len(command) > 0 {
 		for i, cmd := range command {
