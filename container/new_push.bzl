@@ -161,13 +161,13 @@ def _impl(ctx):
 new_container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
-            default = "oci",
+            default = "legacy",
             values = [
                 "oci",
                 "docker",
                 "legacy",
             ],
-            doc = "The form to push: docker, legacy or oci, default to 'oci'.",
+            doc = "The form to push: docker, legacy or oci, default to 'legacy'.",
         ),
         "image": attr.label(
             allow_files = True,

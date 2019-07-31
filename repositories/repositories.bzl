@@ -126,18 +126,18 @@ def repositories():
         # https://github.com/bazelbuild/rules_go/issues/2089 is released.
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "ae03ced2e0bab7691ee7a8c0aa9d0670c61ccc1fc2670a6082400458928f4e34",
-            strip_prefix = "rules_go-b2968ca94603d36a9ad6b102cad9cdd651fbf8a9",
+            sha256 = "9c3579a83b585d898c1d732950a5d2cfc5f6500b81cd9b351346e532a3084a18",
+            strip_prefix = "rules_go-4c28450eae71d4179d946dfc930b9f13dee9a76c",
             urls = [
-                "https://github.com/bazelbuild/rules_go/archive/b2968ca94603d36a9ad6b102cad9cdd651fbf8a9.tar.gz",
+                "https://github.com/bazelbuild/rules_go/archive/4c28450eae71d4179d946dfc930b9f13dee9a76c.tar.gz",
             ],
         )
-    if "io_bazel_rules_python" not in excludes:
+    if "rules_python" not in excludes:
         http_archive(
-            name = "io_bazel_rules_python",
-            sha256 = "a8d454f63f792a6b1c17b86d83aa3c954a9fe5805e64b3cb7187afe07f624f2e",
-            strip_prefix = "rules_python-640e88a6ee6b949ef131a9d512e2f71c6e0e858c",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/640e88a6ee6b949ef131a9d512e2f71c6e0e858c.tar.gz"],
+            name = "rules_python",
+            sha256 = "74a0a739cf308e23d5e6080a72daca6d4a696cf4071d78428eda05c4cac1700d",
+            strip_prefix = "rules_python-93d8b0af6d8ca1ee37816a829085d7092b04cc7b",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/93d8b0af6d8ca1ee37816a829085d7092b04cc7b.tar.gz"],
         )
 
     if "httplib2" not in excludes:
