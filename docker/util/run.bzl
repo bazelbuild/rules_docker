@@ -143,6 +143,7 @@ def _commit_impl(
         name = None,
         image = None,
         commands = None,
+        docker_run_flags = None,
         output_image_tar = None):
     """Implementation for the container_run_and_commit rule.
 
@@ -154,6 +155,7 @@ def _commit_impl(
         name: A unique name for this rule.
         image: The input image tarball
         commands: The commands to run in the input imnage container
+        docker_run_flags: String list, overrides ctx.attr.docker_run_flags
         output_image_tar: The output image obtained as a result of running
                           the commands on the input image
     """
@@ -161,6 +163,7 @@ def _commit_impl(
     name = name or ctx.attr.name
     image = image or ctx.file.image
     commands = commands or ctx.attr.commands
+    docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
     script = ctx.actions.declare_file(name + ".build")
     output_image_tar = output_image_tar or ctx.outputs.out
 
@@ -172,6 +175,7 @@ def _commit_impl(
         output = script,
         substitutions = {
             "%{commands}": _process_commands(commands),
+            "%{docker_run_flags}": " ".join(docker_run_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
@@ -202,6 +206,10 @@ _commit_attrs = {
         doc = "A list of commands to run (sequentially) in the container.",
         mandatory = True,
         allow_empty = False,
+    ),
+    "docker_run_flags": attr.string_list(
+        doc = "Extra flags to pass to the docker run command.",
+        mandatory = False,
     ),
     "image": attr.label(
         doc = "The image to run the commands in.",

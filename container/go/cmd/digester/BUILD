@@ -1,3 +1,5 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,31 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ###
-# Build file for new puller binary based on go-containerregistry backend.
-load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-
-# gazelle:prefix github.com/bazelbuild/rules_docker
-gazelle(name = "gazelle")
+# Build file for digester binary based on go-containerregistry backend.
 
 go_library(
-    name = "go_pusher",
-    srcs = ["pusher.go"],
-    importpath = "github.com/bazelbuild/rules_docker",
+    name = "go_default_library",
+    srcs = ["digester.go"],
+    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/digester",
     visibility = ["//visibility:private"],
     deps = [
         "//container/go/pkg/compat:go_default_library",
         "//container/go/pkg/utils:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/name:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
 )
 
 go_binary(
-    name = "pusher",
-    embed = [":go_pusher"],
+    name = "digester",
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

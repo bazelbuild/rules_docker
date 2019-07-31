@@ -138,7 +138,7 @@ http_file(
 
 http_file(
     name = "launchpad_openjdk_gpg",
-    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
+    sha256 = "429b667af38f71f727de92aa662fb535c587b870a8ed0dcfbe7d2b8971b7e616",
     urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
 )
 
@@ -345,9 +345,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "1454e9a4fb1e9cbac3619caf1fe8bfcb9a7b8fa4f167c1502eadbf0a1e2445fc",
-    strip_prefix = "rules_rust-c06ab748bd23281d2018899f9539c1bc18467af7",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/c06ab748bd23281d2018899f9539c1bc18467af7.tar.gz"],
+    sha256 = "e630980fc9f18febda89ce544fe7c3fe3bf31985bae283fbb55b1eff64bd9cdc",
+    strip_prefix = "rules_rust-949b5d69a392fd14b60f7ee3aacc6d69706e6018",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/949b5d69a392fd14b60f7ee3aacc6d69706e6018.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -434,11 +434,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "38ec4b3cd5079d81f3643bdb4f80e54e98b1005f39aa0f5f31323a3eae06db8e",
-    strip_prefix = "bazel-toolchains-0.28.1",
+    sha256 = "dcb58e7e5f0b4da54c6c5f8ebc65e63fcfb37414466010cf82ceff912162296e",
+    strip_prefix = "bazel-toolchains-0.28.2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.1.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.2.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.2.tar.gz",
     ],
 )
 
