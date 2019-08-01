@@ -206,18 +206,18 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			// creationTime, err = time.Parse(time.RFC3339, stringFromFloat)
 			sec, dec := math.Modf(unixTime)
 			log.Printf("sec: %v, dec: %v", sec, dec)
-			creationTime = time.Unix(int64(sec), int64(dec*(1e9)))
+			creationTime = time.Unix(int64(sec), int64(dec*(1e9))).UTC()
 			// 1970-01-01T00:00:00Z
 			// creationTime = creationTime.UTC().Format("2006-01-02T15:04:05.00Z0700")
-			stringFormatCorrect := creationTime.UTC().Format("2006-01-02T15:04:05.00Z0700")
-			log.Printf("the formated creationTime: %s", stringFormatCorrect)
-			creationTime, _ = time.Parse(time.RFC3339, stringFormatCorrect)
-			log.Printf("stringFormatCorrect into time object: %v", creationTime)
+			// stringFormatCorrect := creationTime.UTC().Format("2006-01-02T15:04:05.000000Z0700")
+			//log.Printf("the formated creationTime: %s", stringFormatCorrect)
+			// creationTime, _ = time.Parse(time.RFC3339, stringFormatCorrect)
+			//log.Printf("stringFormatCorrect into time object: %v", creationTime)
 			//creationTime, _ = time.Parse(time.RFC3339, creationTime.Format(time.RFC3339))
-			log.Printf("The second creationTime is: %v", creationTime)
-			if err != nil {
-				return errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
-			}
+			//log.Printf("The second creationTime is: %v", creationTime)
+			//if err != nil {
+			//return errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
+			//}
 		}
 	}
 	log.Printf("the assigned CreationTime is: %v", creationTime)
