@@ -30,6 +30,7 @@ import (
 	"math"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -134,6 +135,8 @@ func mapToKeyValue(kvMap map[string]string) []string {
 		concatenated = k + "=" + v
 		keyVals = append(keyVals, concatenated)
 	}
+
+	sort.Sort(sort.StringSlice(keyVals))
 	return keyVals
 }
 
@@ -194,6 +197,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		log.Printf("the unixTime after strconv is: %f", unixTime)
 		// Assume RFC 3339 date/time format. No err means it is parsable as floating point.
 		if err == nil {
+			log.Println("nani")
 			// Ensure that the parsed time is within the floating point range.
 			// Values > 1e11 are assumed to be unix epoch milliseconds.
 			if unixTime > 1.0e+11 {
@@ -218,6 +222,9 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			//if err != nil {
 			//return errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
 			//}
+		} else {
+			log.Println("hallo")
+			creationTime, _ = time.Parse(time.RFC3339, createTime)
 		}
 	}
 	log.Printf("the assigned CreationTime is: %v", creationTime)
@@ -300,7 +307,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	for label, value := range labels {
 		if strings.HasPrefix(value, "@") {
 			if extractedValue, err = extractValue(value); err != nil {
-				return errors.Wrap(err, "Failed to extract the contents of labels file: %v")
+				return errors.Wrap(err, "Failed to extract the contents of labels file")
 			}
 			labels[label] = extractedValue
 			continue
@@ -314,6 +321,9 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	}
 	if len(labelsArray) > 0 {
 		labelsMap := make(map[string]string)
+		if len(configFile.Config.Labels) > 0 {
+			labelsMap = configFile.Config.Labels
+		}
 		for k, v := range labels {
 			labelsMap[k] = v
 		}
