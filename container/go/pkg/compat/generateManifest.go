@@ -99,17 +99,6 @@ func writeManifest(m v1.Manifest, path string) error {
 		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
 	}
 
-	// Converting Manifest to string map sorts the output json by key
-	var o map[string]interface{}
-	if err := json.Unmarshal(rawManifest, &o); err != nil {
-		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
-	}
-
-	rawManifest, err = json.Marshal(o)
-	if err != nil {
-		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
-	}
-
 	err = ioutil.WriteFile(path, rawManifest, os.ModePerm)
 	if err != nil {
 		return errors.Wrapf(err, "unable to write manifest to path %s", path)
