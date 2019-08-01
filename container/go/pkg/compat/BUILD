@@ -31,6 +31,7 @@ go_library(
     deps = [
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/mutate:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/partial:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",

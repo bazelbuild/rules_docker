@@ -138,7 +138,7 @@ http_file(
 
 http_file(
     name = "launchpad_openjdk_gpg",
-    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
+    sha256 = "429b667af38f71f727de92aa662fb535c587b870a8ed0dcfbe7d2b8971b7e616",
     urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
 )
 
@@ -309,9 +309,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "8d4c6b07281182fc63373d5f0eb38e22afe70d7b424a1f739a6c6b4458c3ea50",
-    strip_prefix = "rules_scala-0b6cff39c30da5585394348883b36ba031584727",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/0b6cff39c30da5585394348883b36ba031584727.tar.gz"],
+    sha256 = "b1fbdd5657930c6f13226eaae71a0340a74d615fbc08d3c6e74884e9858d662c",
+    strip_prefix = "rules_scala-e1f66970af3c4a88ec742a9c0a85710983f5b2d2",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/e1f66970af3c4a88ec742a9c0a85710983f5b2d2.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -345,9 +345,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "eab3d241d445219909ad8434cc37da3ebd78adc44fc2281de2ecb59c4499f116",
-    strip_prefix = "rules_rust-3cd4c637289a8e0a3b45ea799c29e13a53154970",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/3cd4c637289a8e0a3b45ea799c29e13a53154970.tar.gz"],
+    sha256 = "e630980fc9f18febda89ce544fe7c3fe3bf31985bae283fbb55b1eff64bd9cdc",
+    strip_prefix = "rules_rust-949b5d69a392fd14b60f7ee3aacc6d69706e6018",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/949b5d69a392fd14b60f7ee3aacc6d69706e6018.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -434,11 +434,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "68e7678473090542e679ce7e6aa8a3ba5669577dede2b404f9865d556bd99f10",
-    strip_prefix = "bazel-toolchains-0.28.0",
+    sha256 = "dcb58e7e5f0b4da54c6c5f8ebc65e63fcfb37414466010cf82ceff912162296e",
+    strip_prefix = "bazel-toolchains-0.28.2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.2.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.2.tar.gz",
     ],
 )
 

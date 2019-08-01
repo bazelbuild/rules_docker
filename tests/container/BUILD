@@ -213,13 +213,13 @@ container_test(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
-    content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
+    content = "sha256:bfe2a9d4b2c37ceaa0b5db475c54f356846f4ebbb70a8e8c4b10525f9270ac72",
     file = ":deb_image_with_dpkgs.digest",
 )
 
 file_test(
     name = "test_digest_output2",
-    content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
+    content = "sha256:437978f37315238cca48d540a5dbdcfbc8a6b617f17a04e6be931718414abbd6",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
 # END_DO_NOT_IMPORT
@@ -320,6 +320,22 @@ container_push(
     tags = ["manual"],
 )
 
+container_image(
+    name = "alpine_with_custom_attr",
+    base = "@new_alpine_linux_amd64//image",
+    cmd = ["Hello World!"],
+    entrypoint = ["echo"],
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+    layers = [
+        "//testdata:env_layer",
+        "//testdata:tars_in_layer",
+        "//testdata:files_in_layer",
+    ],
+)
+
 create_banana_directory(
     name = "banana_directory",
 )
@@ -371,7 +387,27 @@ new_container_push(
 )
 
 new_container_push(
+    name = "new_push_test_oci_from_new_puller",
+    format = "oci",
+    image = "@new_alpine_linux_amd64//image-oci",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
     name = "new_push_test_legacy_from_container_img",
+    format = "legacy",
+    image = ":alpine_with_custom_attr",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_from_container_img_with_auth",
     format = "legacy",
     image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
@@ -381,9 +417,39 @@ new_container_push(
 )
 
 new_container_push(
+    name = "new_push_test_legacy_from_new_puller",
+    format = "legacy",
+    image = "@new_alpine_linux_ppc64le//image",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_legacy_from_old_puller",
+    format = "legacy",
+    image = "@alpine_linux_armv6//image",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
     name = "new_push_test_tar",
     format = "docker",
-    image = "//testdata:go_pusher_test.tar",
+    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_test_old_puller_tar",
+    format = "docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -409,6 +475,7 @@ new_container_push(
     tag_file = ":test.tag",
     tags = ["manual"],
 )
+
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.
@@ -416,7 +483,7 @@ new_container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_push_digest_output",
-    content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
+    content = "sha256:3b7f28bf8caefd13d4a22513727f3e8cd8d3a464c72df387f0fd7a74a0f82f2b",
     file = ":push_test.digest",
 )
 
@@ -437,6 +504,19 @@ file_test(
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",
 )
+
+file_test(
+    name = "alpine_custom_attr_digest_test",
+    content = "sha256:0d91921356df81fd2015764032b380fd97315b08967c6e7c5829b8729ac670d2",
+    file = ":new_push_test_legacy_from_container_img.digest",
+)
+
+file_test(
+    name = "new_alpine_linux_armv6_image_tar_digest_test",
+    content = "sha256:f209a250c03b2b96b9adb685a68e799f81bad44c8d500812dd8a19f32ece189e",
+    file = ":new_alpine_linux_armv6_image_tar.digest",
+)
+
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.
