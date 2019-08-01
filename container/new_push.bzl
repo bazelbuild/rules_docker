@@ -82,8 +82,19 @@ def _impl(ctx):
     if ctx.attr.format == "legacy":
         # Construct container_parts for input to pusher.
         image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-        legacy_dir = generate_legacy_dir(ctx, image["config"], image["manifest"], image.get("zipped_layer", []))
+        legacy_dir = generate_legacy_dir(ctx, ctx.attr.name, image["config"], image["manifest"], image.get("zipped_layer", []))
         temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
+
+        tarball = image.get("legacy")
+        if tarball:
+            print("Pushing an image based on a tarball can be very " +
+                  "expensive.  If the image is the output of a " +
+                  "docker_build, consider dropping the '.tar' extension. " +
+                  "If the image is checked in, consider using " +
+                  "docker_import instead.")
+            pusher_args += ["-legacyBaseImage", "%s" % _get_runfile_path(ctx, tarball)]
+            digester_args += ["-legacyBaseImage", "%s" % tarball.path]
+            temp_files += [tarball]
 
         pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
         digester_args += ["-src", str(config.path)]

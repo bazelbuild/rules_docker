@@ -31,12 +31,16 @@ func (f *ArrayStringFlags) Set(value string) error {
 }
 
 // ReadImage returns a v1.Image after reading an legacy layout, an OCI layout or a Docker tarball from src.
-func ReadImage(src, format string) (v1.Image, error) {
+func ReadImage(src, format, tarballBase string, layersPath []string) (v1.Image, error) {
 	if format == "oci" {
 		return oci.Read(src)
 	}
 	if format == "legacy" {
-		return compat.Read(src)
+		if tarballBase == "" {
+			return compat.Read(src)
+		} else {
+			return compat.ReadWithBaseTarball(tarballBase, layersPath)
+		}
 	}
 	if format == "docker" {
 		return tarball.ImageFromPath(src, nil)
