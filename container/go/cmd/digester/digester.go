@@ -80,7 +80,7 @@ func main() {
 		imgSrc = *src
 	}
 	if *format != "legacy" && (*legacyBaseImage != "" || *configPath != "" || len(layers) != 0) {
-		log.Fatal("-legacyBaseImage, -configPath and -layers should not be specified for legacy image format.")
+		log.Fatal("-legacyBaseImage, -configPath and -layers should not be specified for format %s.", *format)
 	}
 	if *format == "legacy" && *legacyBaseImage == "" {
 		imgSrc = filepath.Dir(*configPath)
