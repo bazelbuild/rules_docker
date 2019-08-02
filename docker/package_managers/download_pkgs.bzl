@@ -114,6 +114,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         executable = output_script,
         inputs = [image_tar],
         tools = [ctx.executable._extract_image_id],
+        use_default_shell_env = True,
     )
 
     # Generate a very similar one as output executable, but with short paths

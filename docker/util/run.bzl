@@ -79,6 +79,7 @@ def _extract_impl(
         outputs = [output_file],
         tools = [image, ctx.executable._extract_image_id],
         executable = script,
+        use_default_shell_env = True,
     )
 
     return struct()
@@ -197,6 +198,7 @@ def _commit_impl(
         inputs = runfiles,
         executable = script,
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
+        use_default_shell_env = True,
     )
 
     return struct()
