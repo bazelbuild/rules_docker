@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(
-    "@bazel_tools//tools/build_rules:test_rules.bzl",
-    "file_test",
-)
 load("//container:bundle.bzl", "container_bundle")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 load("//contrib:push-all.bzl", "docker_push")
