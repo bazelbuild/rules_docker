@@ -29,6 +29,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Expected metadata files in legacy layout.
+const (
+	manifestFile = "manifest.json"
+	digestFile   = "digest"
+)
+
 // Read returns a docker image referenced by the legacy intermediate layout at src with given layer tarball paths.
 // NOTE: this only reads index with a single image.
 func Read(src, configPath string, layers []string) (v1.Image, error) {
