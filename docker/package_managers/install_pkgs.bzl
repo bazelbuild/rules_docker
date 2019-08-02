@@ -116,6 +116,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         ],
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         executable = script,
+        use_default_shell_env = True,
     )
 
     ctx.actions.run(
@@ -123,6 +124,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         inputs = [unstripped_tar],
         executable = ctx.executable._config_stripper,
         arguments = ["--in_tar_path=%s" % unstripped_tar.path, "--out_tar_path=%s" % output_tar.path],
+        use_default_shell_env = True,
     )
 
     return struct()
