@@ -169,12 +169,6 @@ docker_push(
 ]]
 
 toolchain_container(
-    name = "java_pkg_non_deterministic",
-    base = "@official_xenial//image",
-    packages = ["openjdk-8-jdk"],
-)
-
-toolchain_container(
     name = "python3_pkg_non_deterministic",
     base = "@official_xenial//image",
     packages = ["python3-dev"],
@@ -205,13 +199,6 @@ container_repro_test(
 container_repro_test(
     name = "rbe-test-xenial_repro_test",
     image = "//tests/docker/toolchain_container:rbe-test-xenial-with-pkgs",
-    workspace_file = "//:WORKSPACE",
-)
-
-container_repro_test(
-    name = "java_pkg_want_failure",
-    image = ":java_pkg_non_deterministic",
-    want_reproducibility = False,
     workspace_file = "//:WORKSPACE",
 )
 
