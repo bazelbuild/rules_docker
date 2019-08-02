@@ -35,8 +35,10 @@ import (
 type legacyImage struct {
 	// path is the path to the directory containing the legacy image.
 	path string
-	// digest is the sha256 hash for this image.
-	digest v1.Hash
+	// config is the path to the image config.
+	configPath string
+	// layersPath is the paths to the layers for this image.
+	layersPath []string
 	// manifestLock protects rawManifest.
 	manifestLock sync.Mutex
 	// rawManifest is the raw bytes of manifest.json file.
@@ -53,7 +55,7 @@ func (li *legacyImage) MediaType() (types.MediaType, error) {
 	}
 
 	if manifest.MediaType != types.OCIManifestSchema1 && manifest.MediaType != types.DockerManifestSchema2 {
-		return "", fmt.Errorf("unexpected media type for %v: %s", li.digest, manifest.MediaType)
+		return "", fmt.Errorf("unexpected media type for image at %s: %s", li.path, manifest.MediaType)
 	}
 
 	return manifest.MediaType, nil
@@ -85,7 +87,7 @@ func (li *legacyImage) RawManifest() ([]byte, error) {
 
 // RawConfigFile returns the serialized bytes of config.json metadata.
 func (li *legacyImage) RawConfigFile() ([]byte, error) {
-	return ioutil.ReadFile(filepath.Join(li.path, configFile))
+	return ioutil.ReadFile(li.configPath)
 }
 
 // LayerByDigest returns a Layer for interacting with a particular layer of the image, looking it up by "digest" (the compressed hash).
@@ -101,7 +103,7 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 		return partial.CompressedLayer(&compressedBlob{
 			path:     li.path,
 			desc:     manifest.Config,
-			filename: "config.json",
+			filepath: li.configPath,
 		}), nil
 	}
 
@@ -112,7 +114,7 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 				return partial.CompressedToLayer(&compressedBlob{
 					path:     li.path,
 					desc:     desc,
-					filename: LayerFilename(i),
+					filepath: li.layersPath[i],
 				})
 			default:
 				// TODO: We assume everything is a compressed blob, but that might not be true.
@@ -130,8 +132,8 @@ type compressedBlob struct {
 	path string
 	// desc is the descriptor of this compressed blob.
 	desc v1.Descriptor
-	// filename is the filename of this blob at the directory.
-	filename string
+	// filepath is the file path of this blob at the directory.
+	filepath string
 }
 
 // The digest of this compressedBlob.
@@ -141,7 +143,7 @@ func (b *compressedBlob) Digest() (v1.Hash, error) {
 
 // Return and open a the layer file at path.
 func (b *compressedBlob) Compressed() (io.ReadCloser, error) {
-	return os.Open(filepath.Join(b.path, b.filename))
+	return os.Open(b.filepath)
 }
 
 // The size of this compressedBlob.

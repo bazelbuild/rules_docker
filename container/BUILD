@@ -214,7 +214,6 @@ bzl_library(
     name = "image",
     srcs = ["image.bzl"],
     deps = [
-        ":bzl_utils",
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
@@ -223,11 +222,6 @@ bzl_library(
         "//skylib:zip",
         "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
-)
-
-bzl_library(
-    name = "bzl_utils",
-    srcs = ["utils.bzl"],
 )
 
 bzl_library(

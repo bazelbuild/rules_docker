@@ -25,10 +25,6 @@ load(
     _layer_tools = "tools",
 )
 load(
-    "//container:utils.bzl",
-    "generate_legacy_dir",
-)
-load(
     "//skylib:path.bzl",
     "runfile",
 )
@@ -49,6 +45,7 @@ def _impl(ctx):
     manifest = image["manifest"]
     tarball = image.get("legacy")
     image_files = blobs + blobsums
+    digester_input = blobs + [config]
 
     if tarball:
         print("Pushing an image based on a tarball can be very " +
@@ -59,6 +56,7 @@ def _impl(ctx):
         pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
         digester_args.add("-legacyBaseImage", "%s" % tarball.path)
         image_files += [tarball]
+        digester_input += [tarball]
     if config:
         pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
         image_files += [config]
@@ -72,12 +70,8 @@ def _impl(ctx):
     if ctx.attr.format == "OCI":
         pusher_args += ["--oci"]
 
-    legacy_dir = generate_legacy_dir(ctx, ctx.attr.name, image["config"], image["manifest"], image.get("zipped_layer", []))
-    digester_input, config = legacy_dir["temp_files"], legacy_dir["config"]
-    digester_input = digester_input + [tarball] if tarball else digester_input + []
-
-    digester_args.add_all(["-src", str(config.path), "-dst", str(ctx.outputs.digest.path), "-format", "legacy"])
-    for layer_file in legacy_dir["layers"]:
+    digester_args.add_all(["-configPath", str(config.path), "-dst", str(ctx.outputs.digest.path), "-format", "legacy"])
+    for layer_file in blobs:
         digester_args.add("-layers", layer_file.path)
 
     # create image digest

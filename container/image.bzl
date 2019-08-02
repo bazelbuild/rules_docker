@@ -62,10 +62,6 @@ load(
     _layer_tools = "tools",
 )
 load(
-    "//container:utils.bzl",
-    "generate_legacy_dir",
-)
-load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
 )
@@ -221,12 +217,12 @@ def _repository_name(ctx):
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     digester_args = ctx.actions.args()
+    blobs = image.get("zipped_layer", [])
+    config = image["config"]
+    digester_input = [config] + blobs
 
-    legacy_dir = generate_legacy_dir(ctx, name, image["config"], image["manifest"], image.get("zipped_layer", []))
-    digester_input, config = legacy_dir["temp_files"], legacy_dir["config"]
-
-    digester_args.add_all(["-src", str(config.path), "-dst", str(output_digest.path), "-format", "legacy"])
-    for layer_file in legacy_dir["layers"]:
+    digester_args.add_all(["-configPath", str(config.path), "-dst", str(output_digest.path), "-format", "legacy"])
+    for layer_file in blobs:
         digester_args.add("-layers", layer_file.path)
 
     if image.get("legacy"):

@@ -25,10 +25,6 @@ load(
     _layer_tools = "tools",
 )
 load(
-    "//container:utils.bzl",
-    "generate_legacy_dir",
-)
-load(
     "//skylib:path.bzl",
     "runfile",
 )
@@ -82,9 +78,9 @@ def _impl(ctx):
     if ctx.attr.format == "legacy":
         # Construct container_parts for input to pusher.
         image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-        legacy_dir = generate_legacy_dir(ctx, ctx.attr.name, image["config"], image["manifest"], image.get("zipped_layer", []))
-        temp_files, config = legacy_dir["temp_files"], legacy_dir["config"]
-
+        blobs = image.get("zipped_layer", [])
+        config = image["config"]
+        legacy_files = [config] + blobs
         tarball = image.get("legacy")
         if tarball:
             print("Pushing an image based on a tarball can be very " +
@@ -94,13 +90,13 @@ def _impl(ctx):
                   "docker_import instead.")
             pusher_args += ["-legacyBaseImage", "%s" % _get_runfile_path(ctx, tarball)]
             digester_args += ["-legacyBaseImage", "%s" % tarball.path]
-            temp_files += [tarball]
+            legacy_files += [tarball]
 
-        pusher_args += ["-src", "{}".format(_get_runfile_path(ctx, config))]
-        digester_args += ["-src", str(config.path)]
-        digester_input = temp_files
+        pusher_args += ["-configPath", "{}".format(_get_runfile_path(ctx, config))]
+        digester_args += ["-configPath", str(config.path)]
+        digester_input = legacy_files
 
-        for layer_file in legacy_dir["layers"]:
+        for layer_file in blobs:
             pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_file))]
             digester_args += ["-layers", layer_file.path]
 
@@ -129,7 +125,7 @@ def _impl(ctx):
 
     pusher_runfiles = [ctx.executable._pusher] + runfiles_tag_file
     if ctx.attr.format == "legacy":
-        pusher_runfiles += temp_files
+        pusher_runfiles += legacy_files
     else:
         pusher_runfiles += ctx.files.image
     runfiles = ctx.runfiles(files = pusher_runfiles)
