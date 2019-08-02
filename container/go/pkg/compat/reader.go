@@ -16,8 +16,6 @@
 package compat
 
 import (
-	"path/filepath"
-
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -28,15 +26,11 @@ import (
 )
 
 // Expected metadata files in legacy layout.
-const (
-	manifestFile = "manifest.json"
-	digestFile   = "digest"
-)
+const manifestFile = "manifest.json"
 
 // Read returns a docker image referenced by the legacy intermediate layout at src with given layer tarball paths.
 // NOTE: this only reads index with a single image.
 func Read(src, configPath string, layers []string) (v1.Image, error) {
-	manifestPath := filepath.Join(src, manifestFile)
 	// Constructs and validates a v1.Image object.
 	legacyImg := &legacyImage{
 		path:       src,
@@ -46,7 +40,7 @@ func Read(src, configPath string, layers []string) (v1.Image, error) {
 
 	img, err := partial.CompressedToImage(legacyImg)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to load image obtained from the manifest at %s", manifestPath)
+		return nil, errors.Wrapf(err, "unable to load image obtained from %s", src)
 	}
 
 	if err := validate.Image(img); err != nil {
