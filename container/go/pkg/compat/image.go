@@ -35,8 +35,6 @@ import (
 type legacyImage struct {
 	// path is the path to the directory containing the legacy image.
 	path string
-	// digest is the sha256 hash for this image.
-	digest v1.Hash
 	// config is the path to the image config.
 	configPath string
 	// layersPath is the paths to the layers for this image.
@@ -57,7 +55,7 @@ func (li *legacyImage) MediaType() (types.MediaType, error) {
 	}
 
 	if manifest.MediaType != types.OCIManifestSchema1 && manifest.MediaType != types.DockerManifestSchema2 {
-		return "", fmt.Errorf("unexpected media type for %v: %s", li.digest, manifest.MediaType)
+		return "", fmt.Errorf("unexpected media type for image at %s: %s", li.path, manifest.MediaType)
 	}
 
 	return manifest.MediaType, nil
@@ -105,7 +103,7 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 		return partial.CompressedLayer(&compressedBlob{
 			path:     li.path,
 			desc:     manifest.Config,
-			filepath: filepath.Join(li.path, "config.json"),
+			filepath: li.configPath,
 		}), nil
 	}
 

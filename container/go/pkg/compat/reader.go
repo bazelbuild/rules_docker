@@ -16,8 +16,6 @@
 package compat
 
 import (
-	"bytes"
-	"io/ioutil"
 	"path/filepath"
 
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
@@ -38,26 +36,21 @@ const (
 // Read returns a docker image referenced by the legacy intermediate layout at src with given layer tarball paths.
 // NOTE: this only reads index with a single image.
 func Read(src, configPath string, layers []string) (v1.Image, error) {
-	digest, err := getManifestDigest(src)
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to get manifest digest from %s", src)
-	}
-
+	manifestPath := filepath.Join(src, manifestFile)
 	// Constructs and validates a v1.Image object.
 	legacyImg := &legacyImage{
 		path:       src,
-		digest:     digest,
 		configPath: configPath,
 		layersPath: layers,
 	}
 
 	img, err := partial.CompressedToImage(legacyImg)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s obtained from the manifest at %s", digest, src)
+		return nil, errors.Wrapf(err, "unable to load image obtained from the manifest at %s", manifestPath)
 	}
 
 	if err := validate.Image(img); err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid legacy layout format from %s", digest, src)
+		return nil, errors.Wrapf(err, "unable to load image at %s due to invalid legacy layout format", src)
 	}
 
 	return img, nil
@@ -86,26 +79,4 @@ func ReadWithBaseTarball(tarballPath string, layersPath []string) (v1.Image, err
 
 	return newImage, nil
 
-}
-
-// Get the hash of the image to read at <path> from digest file.
-func getManifestDigest(path string) (v1.Hash, error) {
-	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
-	digest, err := ioutil.ReadFile(filepath.Join(path, digestFile))
-
-	// We compute the manifest digest here if the digest file does not exist.
-	if err != nil {
-		rawManifest, err := ioutil.ReadFile(filepath.Join(path, manifestFile))
-		if err != nil {
-			return v1.Hash{}, err
-		}
-
-		digest, _, err := v1.SHA256(bytes.NewReader(rawManifest))
-		if err != nil {
-			return v1.Hash{}, errors.Wrapf(err, "unable to generate digest file from manifest at %s", path)
-		}
-		return digest, nil
-	}
-
-	return v1.NewHash(string(digest))
 }
