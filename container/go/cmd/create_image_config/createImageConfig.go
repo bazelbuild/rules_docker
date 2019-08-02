@@ -156,10 +156,13 @@ func main() {
 		}
 	}
 
+	
+
 	type Q struct{}
 
 	// TODO(xwinxu): write out the updated manifest after updating it from compat pkg.
-	rawManifest, err := json.Marshal(Q{})
+	// rawManifest, err := json.Marshal(Q{})
+	rawManifest, err := json.Marshal(manifestFile)
 	if err != nil {
 		log.Fatalf("Unable to read config struct into json object: %v", err)
 	}

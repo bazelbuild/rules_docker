@@ -223,8 +223,10 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			//return errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
 			//}
 		} else {
-			log.Println("hallo")
-			creationTime, _ = time.Parse(time.RFC3339, createTime)
+			creationTime, err = time.Parse(time.RFC3339, createTime)
+			if err != nil {
+				return errors.Wrapf(err, "failed to parse the %s into float, so assuming RFC3339", createTime)
+			}
 		}
 	}
 	log.Printf("the assigned CreationTime is: %v", creationTime)
@@ -366,6 +368,7 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		configFile.Config.WorkingDir = stampedWorkdir
 	}
 
+	// layerDigests are diffIDs extracted from each layer file.
 	layerDigests := []string{}
 	for _, l := range layer {
 		newLayer, err := extractValue(l)
@@ -376,19 +379,25 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	}
 	// diffIDs are ordered from bottom-most to top-most.
 	// []Hash type
-	diffIDs := configFile.RootFS.DiffIDs
+	diffIDs := []v1.Hash{}
+	if len(configFile.RootFS.DiffIDs) > 0 {
+		diffIDs = configFile.RootFS.DiffIDs
+	}
 	if len(layer) > 0 {
 		var diffIDToAdd v1.Hash
-		for _, layer := range layerDigests {
-			if layer != emptySHA256Digest() {
-				diffIDToAdd = v1.Hash{Algorithm: "sha256", Hex: layer}
+		for _, diffID := range layerDigests {
+			if diffID != emptySHA256Digest() {
+				diffIDToAdd = v1.Hash{Algorithm: "sha256", Hex: diffID}
 				diffIDs = append(diffIDs, diffIDToAdd)
 			}
 		}
 		configFile.RootFS = v1.RootFS{Type: "layers", DiffIDs: diffIDs}
 
 		// length of history is expected to match the length of diff_ids.
-		history := configFile.History
+		history := []v1.History{}
+		if len(configFile.History) > 0 {
+			history = configFile.History
+		}
 		var historyToAdd v1.History
 
 		for _, l := range layerDigests {
@@ -410,8 +419,10 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			if l == emptySHA256Digest() {
 				historyToAdd.EmptyLayer = true
 			}
-			// prepend to history.
+			// prepend to history
+			log.Printf("history before prepend: %+v", history)
 			history = append([]v1.History{historyToAdd}, history...)
+			log.Printf("history after prepend: %+v", history)
 		}
 		configFile.History = history
 	}
