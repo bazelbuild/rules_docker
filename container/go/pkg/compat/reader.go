@@ -29,14 +29,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Read returns a docker image referenced by the legacy intermediate layout at src. The image index should have been outputted by container_pull.
+// Read returns a docker image referenced by the legacy intermediate layout at src with given layer tarball paths.
 // NOTE: this only reads index with a single image.
-func Read(src string) (v1.Image, error) {
-	_, err := isValidLegacylayout(src)
-	if err != nil {
-		return nil, errors.Wrapf(err, "invalid legacy layout at %s, requires manifest.json, config.json and digest files", src)
-	}
-
+func Read(src, configPath string, layers []string) (v1.Image, error) {
 	digest, err := getManifestDigest(src)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to get manifest digest from %s", src)
@@ -44,8 +39,10 @@ func Read(src string) (v1.Image, error) {
 
 	// Constructs and validates a v1.Image object.
 	legacyImg := &legacyImage{
-		path:   src,
-		digest: digest,
+		path:       src,
+		digest:     digest,
+		configPath: configPath,
+		layersPath: layers,
 	}
 
 	img, err := partial.CompressedToImage(legacyImg)
