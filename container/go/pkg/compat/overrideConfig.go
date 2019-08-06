@@ -443,10 +443,10 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 // WriteConfig writes a json representation of a config file to outPath.
 func WriteConfig(configFile *v1.ConfigFile, outPath string) error {
 	rawConfig, err := json.Marshal(configFile)
-
 	if err != nil {
 		return errors.Wrap(err, "Unable to read config struct into json object")
 	}
+
 	err = ioutil.WriteFile(outPath, rawConfig, os.ModePerm)
 	if err != nil {
 		return errors.Wrapf(err, "Writing config to %s was unsuccessful", outPath)

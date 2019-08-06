@@ -74,6 +74,7 @@ class FromParts(v2_2_image.DockerImage):
     config = json.loads(self._config)
 
     content = self.config_file().encode('utf-8')
+    # print("the content of config file: {}".format(content))
 
     self._manifest = json.dumps({
         'schemaVersion': 2,
@@ -127,12 +128,17 @@ class FromParts(v2_2_image.DockerImage):
     return info.st_size
 
   def diff_id_to_manifest_layer(self, diff_id):
+    # print("the diff_id2: {}".format(diff_id))
+    # print("the blobsum: {}".format(self._diffid_to_blobsum))  
+    # print("the blobsum: {}".format(self._diffid_to_blobsum[diff_id])) 
     return self.blobsum_to_manifest_layer(self._diffid_to_blobsum[diff_id])
 
   def blobsum_to_manifest_layer(self, digest):
+    # print("hellooooooooooooooooooooooooooooooo")
+    # print("the diff_id: {}".format(digest))
     if self._manifest:
       manifest = json.loads(self._manifest)
-      if 'layers' in manifest:
+      if 'layers' in manifest and manifest['layers']:
         for layer in manifest['layers']:
           if layer['digest'] == digest:
             return layer
@@ -140,7 +146,7 @@ class FromParts(v2_2_image.DockerImage):
 
   def blobsum_to_media_type(self, digest):
     manifest_layer = self.blobsum_to_manifest_layer(digest)
-    if manifest_layer:
+    if manifest_layer and manifest_layer['mediaType']:
       return manifest_layer['mediaType']
     return docker_http.LAYER_MIME
 
@@ -267,6 +273,8 @@ def main():
       diff_id = 'sha256:' + utils.ExtractValue(diffid_filename)
       blob_sum = 'sha256:' + utils.ExtractValue(blobsum_filename)
 
+      # print("\nxingaodebug: {}\n".format(diff_id))
+
       diffid_to_blobsum[diff_id] = blob_sum
       blobsum_to_unzipped[blob_sum] = unzipped_filename
       blobsum_to_zipped[blob_sum] = zipped_filename
@@ -284,8 +292,11 @@ def main():
   # describe the parent image layers.
   for tag, manifest_file in tag_to_manifest.items():
     manifest = json.loads(manifest_file)
-    if 'layers' in manifest:
+    # print("\nxingaodebug the manifest is: {}\n".format(diff_id))
+    if 'layers' in manifest and manifest['layers']:
+      # print(manifest)
       config = json.loads(tag_to_config[tag])
+      # print("\nxingaodebug the manifest layers is: {}\n".format(manifest['layers']))
       for i, layer in enumerate(manifest['layers']):
         diff_id = config['rootfs']['diff_ids'][i]
         if layer['mediaType'] == docker_http.FOREIGN_LAYER_MIME:
