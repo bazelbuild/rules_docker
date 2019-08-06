@@ -568,7 +568,7 @@ container_image_ = rule(
 def _validate_command(name, argument, operating_system):
     if type(argument) == type(""):
         if (operating_system == "windows"):
-            return ["%WinDir%\system32\cmd.exe", "/c", argument]
+            return ["%WinDir%\\system32\\cmd.exe", "/c", argument]
         else:
             return ["/bin/sh", "-c", argument]
     elif type(argument) == type([]):
