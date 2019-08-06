@@ -213,13 +213,13 @@ container_test(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
-    content = "sha256:bfe2a9d4b2c37ceaa0b5db475c54f356846f4ebbb70a8e8c4b10525f9270ac72",
+    content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
     file = ":deb_image_with_dpkgs.digest",
 )
 
 file_test(
     name = "test_digest_output2",
-    content = "sha256:437978f37315238cca48d540a5dbdcfbc8a6b617f17a04e6be931718414abbd6",
+    content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
 # END_DO_NOT_IMPORT
@@ -483,7 +483,7 @@ new_container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_push_digest_output",
-    content = "sha256:3b7f28bf8caefd13d4a22513727f3e8cd8d3a464c72df387f0fd7a74a0f82f2b",
+    content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
     file = ":push_test.digest",
 )
 
