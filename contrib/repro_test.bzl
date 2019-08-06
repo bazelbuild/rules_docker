@@ -148,7 +148,7 @@ def _impl(ctx):
         command = "exit 0",
         outputs = [bazel_out1, bazel_out2],
     )
-    cd_cmd = ["cd \$(cat /%s)" % proj_root.basename]
+    cd_cmd = ["cd \\$(cat /%s)" % proj_root.basename]
 
     # Commands to copy the files required for image
     # comparison to a known location in the container.
@@ -156,7 +156,7 @@ def _impl(ctx):
         "mkdir %s" % extract_path,
         "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_tar, extract_path, img_tar),
         "cp bazel-bin/%s/%s %s/%s" % (img_pkg, img_digest, extract_path, img_digest),
-        "cp \$(readlink -f bazel-bin/%s/%s).sha256 %s/%s" % (img_pkg, img_name + ".json", extract_path, img_name + ".id"),
+        "cp \\$(readlink -f bazel-bin/%s/%s).sha256 %s/%s" % (img_pkg, img_name + ".json", extract_path, img_name + ".id"),
     ]
 
     # We need to use absolute paths to the directory being mounted
