@@ -513,7 +513,7 @@ file_test(
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:f209a250c03b2b96b9adb685a68e799f81bad44c8d500812dd8a19f32ece189e",
+    content = "sha256:a0b19fd8750d6e5442c61d43fc8bb7a854548c570fbf6601ab5ab0c92d520eab",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
