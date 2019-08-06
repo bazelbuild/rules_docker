@@ -85,7 +85,7 @@ def _impl(
         "apt-get update",
         "apt-get install -y -q gnupg",
         # Put keys in a special directory and use glob.
-        "for file in /gpg/*; do apt-key add \$file; done",
+        "for file in /gpg/*; do apt-key add \\$file; done",
     ]
     extract_file_name = "/etc/apt/trusted.gpg"
     extract_file_out = ctx.actions.declare_file(name + "-trusted.gpg")
