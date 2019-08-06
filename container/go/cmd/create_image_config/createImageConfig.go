@@ -161,6 +161,7 @@ func main() {
 		// if err != nil {
 		// 	log.Fatalf("Unable to read config struct into json object: %v", err)
 		// }
+		// write manifest instead of rawManifest
 		err = ioutil.WriteFile(*outputManifest, manifest, os.ModePerm)
 		if err != nil {
 			log.Fatalf("Writing config to %s was unsuccessful: %v", *outputManifest, err)
