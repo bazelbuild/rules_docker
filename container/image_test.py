@@ -766,6 +766,7 @@ def load_stamp_info():
         key = split_line[0]
         value = " ".join(split_line[1:])
       STAMP_DICT[key] = value
+      print("Stamp variable '{key}'='{value}'".format(
         key=key,
         value=value
       ))

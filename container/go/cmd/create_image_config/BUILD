@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//container/go/pkg/compat:go_default_library",
+        "//container/go/pkg/utils:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
     ],
 )

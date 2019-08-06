@@ -21,13 +21,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
+	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
@@ -42,15 +41,15 @@ var (
 	nullEntryPoint     = flag.String("nullEntryPoint", "False", "If True, Entrypoint will be set to null.")
 	nullCmd            = flag.String("nullCmd", "False", "If True, Cmd will be set to null.")
 	operatingSystem    = flag.String("operatingSystem", "linux", "Operating system to create docker image for, eg. linux.")
-	labelsArray        arrayFlags
-	ports              arrayFlags
-	volumes            arrayFlags
-	entrypointPrefix   arrayFlags
-	env                arrayFlags
-	command            arrayFlags
-	entrypoint         arrayFlags
-	layerDigestFile    arrayFlags
-	stampInfoFile      arrayFlags
+	labelsArray        utils.ArrayStringFlags
+	ports              utils.ArrayStringFlags
+	volumes            utils.ArrayStringFlags
+	entrypointPrefix   utils.ArrayStringFlags
+	env                utils.ArrayStringFlags
+	command            utils.ArrayStringFlags
+	entrypoint         utils.ArrayStringFlags
+	layerDigestFile    utils.ArrayStringFlags
+	stampInfoFile      utils.ArrayStringFlags
 )
 
 const (
@@ -59,25 +58,6 @@ const (
 	// author default
 	defaultAuthor = "Bazel"
 )
-
-// arrayFlags can be used to store multiple flags the same name.
-// the resulting data parsed in will be an slice data type.
-type arrayFlags []string
-
-func (i *arrayFlags) String() string {
-	return fmt.Sprintf("%s", strings.Join(*i, ", "))
-}
-
-// Get returns an empty interface that may be type-asserted to the underlying
-// value of type bool, string, etc.
-func (i *arrayFlags) Get() interface{} {
-	return ""
-}
-
-func (i *arrayFlags) Set(value string) error {
-	*i = append(*i, value)
-	return nil
-}
 
 func main() {
 	log.Println("Args before:", os.Args)

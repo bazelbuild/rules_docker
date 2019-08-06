@@ -132,7 +132,7 @@ class FromParts(v2_2_image.DockerImage):
   def blobsum_to_manifest_layer(self, digest):
     if self._manifest:
       manifest = json.loads(self._manifest)
-      if 'layers' in manifest and manifest['layers']:
+      if 'layers' in manifest:
         for layer in manifest['layers']:
           if layer['digest'] == digest:
             return layer
@@ -140,7 +140,7 @@ class FromParts(v2_2_image.DockerImage):
 
   def blobsum_to_media_type(self, digest):
     manifest_layer = self.blobsum_to_manifest_layer(digest)
-    if manifest_layer and manifest_layer['mediaType']:
+    if manifest_layer:
       return manifest_layer['mediaType']
     return docker_http.LAYER_MIME
 
@@ -284,7 +284,7 @@ def main():
   # describe the parent image layers.
   for tag, manifest_file in tag_to_manifest.items():
     manifest = json.loads(manifest_file)
-    if 'layers' in manifest and manifest['layers']:
+    if 'layers' in manifest:
       config = json.loads(tag_to_config[tag])
       for i, layer in enumerate(manifest['layers']):
         diff_id = config['rootfs']['diff_ids'][i]
