@@ -17,6 +17,5 @@ $DOCKER load -i %{image_tar}
 id=$($DOCKER run -d %{docker_run_flags} $image_id %{commands})
 
 $DOCKER wait $id
-$DOCKER logs $id
 $DOCKER cp $id:%{extract_file} %{output}
 $DOCKER rm $id
