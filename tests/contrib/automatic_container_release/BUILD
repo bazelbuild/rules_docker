@@ -27,5 +27,5 @@ configs_test(
 
 configs_test(
     name = "configs_test_deps_spec_only",
-    dependency_update_specs = ["deps_spec.yaml"],
+    dependency_update_specs = ["deps_spec_no_fus_deps.yaml"],
 )
