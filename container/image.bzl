@@ -145,7 +145,6 @@ def _image_config(
         args += ["-ports", "%s" % x]
     for x in ctx.attr.volumes:
         args += ["-volumes", "%s" % x]
-    print("Old args: {}".format(args))
 
     if creation_time:
         args += ["-creationTime", "%s" % creation_time]
@@ -158,7 +157,6 @@ def _image_config(
         args += ["-labels", "%s" % "=".join([key, value])]
 
     for key, value in env.items():
-        print("hit")
         args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), ctx.expand_make_variables("env", value, {})])]
 
     if ctx.attr.user:
@@ -198,7 +196,6 @@ def _image_config(
         args += ctx.attr.launcher_args
 
     cmd = "echo Arguments {}".format(" ".join(args))
-    print("Running command: {}".format(cmd))
 
     ctx.actions.run(
         executable = ctx.executable.create_image_config,

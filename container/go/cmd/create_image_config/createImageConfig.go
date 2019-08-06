@@ -61,7 +61,7 @@ const (
 )
 
 // arrayFlags can be used to store multiple flags the same name.
-// the resulting data parsed in will be an array data type.
+// the resulting data parsed in will be an slice data type.
 type arrayFlags []string
 
 func (i *arrayFlags) String() string {
@@ -79,10 +79,6 @@ func (i *arrayFlags) Set(value string) error {
 	return nil
 }
 
-// struct Override{
-
-// }
-
 func main() {
 	log.Println("Args before:", os.Args)
 	flag.Var(&labelsArray, "labels", "Augment the Label of the previous layer.")
@@ -97,20 +93,14 @@ func main() {
 
 	flag.Parse()
 
-	log.Printf("command: %v", command)
-	log.Printf("entrypoint: %v", entrypoint)
-
-	log.Println("Running the Image Config manipulator...")
+	log.Println("Running the Image Config creator...")
 
 	if *outputConfig == "" {
 		log.Fatalln("Required option -outputConfig was not specified.")
 	}
 
-	// read config file into struct.
 	configFile := &v1.ConfigFile{}
-	// var configPath []byte
 	if *baseConfig != "" {
-		// configPath, err := os.Open(*baseConfig)
 		configPath, err := ioutil.ReadFile(*baseConfig)
 		if err != nil {
 			log.Fatalf("Failed to read the base image's config file: %v", err)
@@ -122,46 +112,48 @@ func main() {
 		}
 	} else {
 		// write out an empty config file.
-		log.Println("baseConfig is empty!!!")
+		log.Println("baseConfig is empty!")
+	}
+
+	overrideConfig := compat.OverrideConfigOpts{
+		ConfigFile:         configFile,
+		OutputConfig:       *outputConfig,
+		CreationTimeString: *creationTimeString,
+		User:               *user,
+		Workdir:            *workdir,
+		NullEntryPoint:     *nullEntryPoint,
+		NullCmd:            *nullCmd,
+		OperatingSystem:    *operatingSystem,
+		CreatedByArg:       createdBy,
+		AuthorArg:          defaultAuthor,
+		LabelsArray:        labelsArray[:],
+		Ports:              ports[:],
+		Volumes:            volumes[:],
+		EntrypointPrefix:   entrypointPrefix[:],
+		Env:                env[:],
+		Command:            command[:],
+		Entrypoint:         entrypoint[:],
+		Layer:              layerDigestFile[:],
+		StampInfoFile:      stampInfoFile[:],
 	}
 
 	// write out the updated config after overriding config content.
-	err := compat.OverrideContent(configFile, *outputConfig, *creationTimeString, *user, *workdir, *nullEntryPoint, *nullCmd, *operatingSystem, createdBy, defaultAuthor, labelsArray[:], ports[:], volumes[:], entrypointPrefix[:], env[:], command[:], entrypoint[:], layerDigestFile[:], stampInfoFile[:])
+	err := compat.OverrideImageConfig(&overrideConfig)
 	if err != nil {
 		log.Fatalf("Failed to override values in old image config and write to dst %s: %v", err, *outputConfig)
 	}
 
 	log.Printf("Successfully created Image Config at %s.\n", *outputConfig)
 
-	// empty struct for writing empty manifest if applicable.
+	// Q is an empty struct for writing empty manifest if applicable.
 	type Q struct{}
 
-	// manifestFile := &v1.Manifest{}
+	log.Println("Running the Image Manifest creator...")
+
 	if *baseManifest != "" {
 		log.Printf(*baseManifest)
 		manifest, err := ioutil.ReadFile(*baseManifest)
-		// log.Println(string(manifest))
-		// if err != nil {
-		// 	log.Fatalf("Failed to read the base image's manifest: %v", err)
-		// }
-		// log.Println("Manifest contents: ", string(manifest))
-		// manifestFile, err = v1.ParseManifest(bytes.NewReader(manifest))
-		// if err != nil {
-		// 	log.Fatalf("Failed to successfully read manifest file: %v", err)
-		// }
-		// // add the sha256: thing so that we do not get error
-		// // on gocon hash.go L71 when returning a hasher
-		// log.Printf("The manifestFile is set as: %+v", manifestFile)
-		// if manifestFile.Config.Digest.String() == ":" {
-		// 	manifestFile.Config.Digest = v1.Hash{"sha256", ""}
-		// }
 
-		// // rawManifest, err := json.Marshal(Q{})
-		// rawManifest, err := json.Marshal(manifestFile)
-		// if err != nil {
-		// 	log.Fatalf("Unable to read config struct into json object: %v", err)
-		// }
-		// write manifest instead of rawManifest
 		err = ioutil.WriteFile(*outputManifest, manifest, os.ModePerm)
 		if err != nil {
 			log.Fatalf("Writing config to %s was unsuccessful: %v", *outputManifest, err)
@@ -177,10 +169,5 @@ func main() {
 		}
 	}
 
-	// _, err = compat.GenerateManifest(*outputManifest, *outputConfig, layers)
-	// if err != nil {
-	// 	log.Printf("MANIFESTTTTTTTT FAILEDDDDDD: %v", err)
-	// }
 	log.Printf("Successfully created Image Manifest at %s.\n", *outputManifest)
-
 }

@@ -47,6 +47,29 @@ const (
 	defaultTimestamp = "1970-01-01T00:00:00Z"
 )
 
+// OverrideConfigOpts holds all configuration settings for the newly outputted config file.
+type OverrideConfigOpts struct {
+	ConfigFile         *v1.ConfigFile
+	OutputConfig       string
+	CreationTimeString string
+	User               string
+	Workdir            string
+	NullEntryPoint     string
+	NullCmd            string
+	OperatingSystem    string
+	CreatedByArg       string
+	AuthorArg          string
+	LabelsArray        []string
+	Ports              []string
+	Volumes            []string
+	EntrypointPrefix   []string
+	Env                []string
+	Command            []string
+	Entrypoint         []string
+	Layer              []string
+	StampInfoFile      []string
+}
+
 // emptySHA256Digest returns the sha256 sum of an empty string.
 func emptySHA256Digest() (empty string) {
 	b := sha256.Sum256([]byte(""))
@@ -105,7 +128,7 @@ func Stamp(inp string, stampInfoFile []string) (string, error) {
 			return "", errors.Wrapf(err, "failed to open file %s", infofile)
 		}
 		defer f.Close()
-		// scanner reads line by line and discards '\n' character already
+		// scanner reads line by line and discards '\n' character by default.
 		scanner := bufio.NewScanner(f)
 		var temp []string
 		for scanner.Scan() {
@@ -127,7 +150,7 @@ func Stamp(inp string, stampInfoFile []string) (string, error) {
 	return formatWithMap(inpReformatted, formattedString(formatArgs)), nil
 }
 
-// mapToKeyValue reverses a map to a '='-separated array of strings in {key}={value} format
+// mapToKeyValue reverses a map to a '='-separated array of strings in {key}={value} format.
 func mapToKeyValue(kvMap map[string]string) []string {
 	keyVals := []string{}
 	concatenated := ""
@@ -166,11 +189,11 @@ func resolveVariables(value string, environment map[string]string) (string, erro
 	return os.Expand(value, mapper), nil
 }
 
-// OverrideContent updates the current image config file to reflect the given changes.
-func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString, user, workdir, nullEntryPoint, nullCmd, operatingSystem, createdByArg, authorArg string, labelsArray, ports, volumes, entrypointPrefix, env, command, entrypoint, layer, stampInfoFile []string) error {
-	configFile.Author = "Bazel"
-	configFile.OS = operatingSystem
-	configFile.Architecture = defaultProcArch
+// OverrideImageConfig updates the current image config file to reflect the given changes.
+func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
+	overrideInfo.ConfigFile.Author = "Bazel"
+	overrideInfo.ConfigFile.OS = overrideInfo.OperatingSystem
+	overrideInfo.ConfigFile.Architecture = defaultProcArch
 
 	var err error
 	// createTime stores the input creation time with macros substituted.
@@ -183,11 +206,11 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 	}
 
 	// Parse for specific time formats.
-	if creationTimeString != "" {
-		log.Printf("The creationTimeString is: %s", creationTimeString)
+	if overrideInfo.CreationTimeString != "" {
+		log.Printf("The CreationTimeString is: %s", overrideInfo.CreationTimeString)
 		var unixTime float64
 		// Use stamp to as preliminary replacement.
-		if createTime, err = Stamp(creationTimeString, stampInfoFile); err != nil {
+		if createTime, err = Stamp(overrideInfo.CreationTimeString, overrideInfo.StampInfoFile); err != nil {
 			return errors.Wrapf(err, "Unable to format creation time from BUILD_TIMESTAMP macros")
 		}
 		log.Printf("The first createTime is: %v", createTime)
@@ -201,27 +224,12 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			// Ensure that the parsed time is within the floating point range.
 			// Values > 1e11 are assumed to be unix epoch milliseconds.
 			if unixTime > 1.0e+11 {
-				// log.Println("we are less and milliseconds")
 				unixTime = unixTime / 1000.0
 			}
 			// Construct a RFC 3339 date/time from Unix epoch.
-			// stringFromFloat := strconv.FormatFloat(unixTime, 'f', 6, 64)
-			// log.Printf("The stringFromFloat unixTime to RFC is: %s", stringFromFloat)
-			// creationTime, err = time.Parse(time.RFC3339, stringFromFloat)
 			sec, dec := math.Modf(unixTime)
 			log.Printf("sec: %v, dec: %v", sec, dec)
 			creationTime = time.Unix(int64(sec), int64(dec*(1e9))).UTC()
-			// 1970-01-01T00:00:00Z
-			// creationTime = creationTime.UTC().Format("2006-01-02T15:04:05.00Z0700")
-			// stringFormatCorrect := creationTime.UTC().Format("2006-01-02T15:04:05.000000Z0700")
-			//log.Printf("the formated creationTime: %s", stringFormatCorrect)
-			// creationTime, _ = time.Parse(time.RFC3339, stringFormatCorrect)
-			//log.Printf("stringFormatCorrect into time object: %v", creationTime)
-			//creationTime, _ = time.Parse(time.RFC3339, creationTime.Format(time.RFC3339))
-			//log.Printf("The second creationTime is: %v", creationTime)
-			//if err != nil {
-			//return errors.Wrapf(err, "Unable to convert parsed RFC3339 time to time.Time")
-			//}
 		} else {
 			creationTime, err = time.Parse(time.RFC3339, createTime)
 			if err != nil {
@@ -230,65 +238,57 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		}
 	}
 	log.Printf("the assigned CreationTime is: %v", creationTime)
-	configFile.Created = v1.Time{creationTime}
+	overrideInfo.ConfigFile.Created = v1.Time{creationTime}
 
-	// 	if len(configFile.Config.Entrypoint) == 0 && nullEntryPoint == "True" {
-	if nullEntryPoint == "True" {
-		configFile.Config.Entrypoint = nil
-	} else if len(entrypoint) > 0 {
-		// have to Stamp each entry and assign to config entries accordingly.
-		for i, entry := range entrypoint {
-			stampedEntry, err := Stamp(entry, stampInfoFile)
+	if overrideInfo.NullEntryPoint == "True" {
+		overrideInfo.ConfigFile.Config.Entrypoint = nil
+	} else if len(overrideInfo.Entrypoint) > 0 {
+		for i, entry := range overrideInfo.Entrypoint {
+			stampedEntry, err := Stamp(entry, overrideInfo.StampInfoFile)
 			if err != nil {
-				return errors.Wrapf(err, "Unable to perform substitutions to env variable %s", entry)
+				return errors.Wrapf(err, "Unable to perform substitutions to Env variable %s", entry)
 			}
-			entrypoint[i] = stampedEntry
+			overrideInfo.Entrypoint[i] = stampedEntry
 		}
-		configFile.Config.Entrypoint = entrypoint
+		overrideInfo.ConfigFile.Config.Entrypoint = overrideInfo.Entrypoint
 	}
 
-	if nullCmd == "True" {
+	if overrideInfo.NullCmd == "True" {
 		log.Println("hellooooo")
-		configFile.Config.Cmd = nil
-	} else if len(command) > 0 {
-		for i, cmd := range command {
-			stampedCmd, err := Stamp(cmd, stampInfoFile)
+		overrideInfo.ConfigFile.Config.Cmd = nil
+	} else if len(overrideInfo.Command) > 0 {
+		for i, cmd := range overrideInfo.Command {
+			stampedCmd, err := Stamp(cmd, overrideInfo.StampInfoFile)
 			if err != nil {
-				return errors.Wrapf(err, "Unable to perform substitutions to env variable %s", cmd)
+				return errors.Wrapf(err, "Unable to perform substitutions to Env variable %s", cmd)
 			}
-			command[i] = stampedCmd
+			overrideInfo.Command[i] = stampedCmd
 		}
-		configFile.Config.Cmd = command
+		overrideInfo.ConfigFile.Config.Cmd = overrideInfo.Command
 	}
-	// else {
-	// 	configFile.Config.Cmd = nil
-	// }
 
-	log.Printf("the stamped command: %v", command)
+	log.Printf("the stamped Command: %v", overrideInfo.Command)
 
-	// if user != "" {
-	stampedUser, err := Stamp(user, stampInfoFile)
+	stampedUser, err := Stamp(overrideInfo.User, overrideInfo.StampInfoFile)
 	if err != nil {
-		errors.Wrapf(err, "Unable to perform substitutions to user %s", user)
+		errors.Wrapf(err, "Unable to perform substitutions to user %s", overrideInfo.User)
 	}
-	configFile.Config.User = stampedUser
+	overrideInfo.ConfigFile.Config.User = stampedUser
 
-	environMap := keyValueToMap(env)
-	// do any preliminary substitutions of macros (i.e no '$') by stamp info files.
-	// (this is the "new" environment we are passing into overriden).
+	environMap := keyValueToMap(overrideInfo.Env)
 	for key, valToBeStamped := range environMap {
-		stampedValue, err := Stamp(valToBeStamped, stampInfoFile)
+		stampedValue, err := Stamp(valToBeStamped, overrideInfo.StampInfoFile)
 		if err != nil {
 			return errors.Wrapf(err, "Error stamping value %s", valToBeStamped)
 		}
 		environMap[key] = stampedValue
 	}
-	// perform any substitutions of $VAR or ${VAR} with environment variables
+	// perform any substitutions of $VAR or ${VAR} with environment variables.
 	if len(environMap) != 0 {
 		var baseEnvMap map[string]string
 
-		if len(configFile.Config.Env) > 0 {
-			baseEnvMap = keyValueToMap(configFile.Config.Env)
+		if len(overrideInfo.ConfigFile.Config.Env) > 0 {
+			baseEnvMap = keyValueToMap(overrideInfo.ConfigFile.Config.Env)
 		} else {
 			baseEnvMap = make(map[string]string)
 		}
@@ -301,10 +301,10 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 				baseEnvMap[k] = expanded
 			}
 		}
-		configFile.Config.Env = mapToKeyValue(baseEnvMap)
+		overrideInfo.ConfigFile.Config.Env = mapToKeyValue(baseEnvMap)
 	}
 
-	labels := keyValueToMap(labelsArray)
+	labels := keyValueToMap(overrideInfo.LabelsArray)
 	var extractedValue string
 	for label, value := range labels {
 		if strings.HasPrefix(value, "@") {
@@ -315,62 +315,62 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			continue
 		}
 		if strings.Contains(value, "{") {
-			if extractedValue, err = Stamp(value, stampInfoFile); err != nil {
+			if extractedValue, err = Stamp(value, overrideInfo.StampInfoFile); err != nil {
 				return errors.Wrapf(err, "Failed to format the string accordingly at %s", value)
 			}
 			labels[label] = extractedValue
 		}
 	}
-	if len(labelsArray) > 0 {
+	if len(overrideInfo.LabelsArray) > 0 {
 		labelsMap := make(map[string]string)
-		if len(configFile.Config.Labels) > 0 {
-			labelsMap = configFile.Config.Labels
+		if len(overrideInfo.ConfigFile.Config.Labels) > 0 {
+			labelsMap = overrideInfo.ConfigFile.Config.Labels
 		}
 		for k, v := range labels {
 			labelsMap[k] = v
 		}
-		configFile.Config.Labels = labelsMap
+		overrideInfo.ConfigFile.Config.Labels = labelsMap
 	}
 
-	if len(ports) > 0 {
-		if len(configFile.Config.ExposedPorts) == 0 {
-			configFile.Config.ExposedPorts = make(map[string]struct{})
+	if len(overrideInfo.Ports) > 0 {
+		if len(overrideInfo.ConfigFile.Config.ExposedPorts) == 0 {
+			overrideInfo.ConfigFile.Config.ExposedPorts = make(map[string]struct{})
 		}
-		for _, port := range ports {
+		for _, port := range overrideInfo.Ports {
 			match, err := regexp.MatchString("[0-9]+/(tcp|udp)", port)
 			if err != nil {
 				return errors.Wrapf(err, "Failed to successfully match regex to %s", port)
 			}
 			if match {
 				// the port spec has the form 80/tcp, 1234/udp so simply use it as the key.
-				configFile.Config.ExposedPorts[port] = struct{}{}
+				overrideInfo.ConfigFile.Config.ExposedPorts[port] = struct{}{}
 			} else {
 				// assume tcp
-				configFile.Config.ExposedPorts[port+"/tcp"] = struct{}{}
+				overrideInfo.ConfigFile.Config.ExposedPorts[port+"/tcp"] = struct{}{}
 			}
 		}
 	}
 
-	if len(volumes) > 0 {
-		if len(configFile.Config.Volumes) == 0 {
-			configFile.Config.Volumes = make(map[string]struct{})
+	if len(overrideInfo.Volumes) > 0 {
+		if len(overrideInfo.ConfigFile.Config.Volumes) == 0 {
+			overrideInfo.ConfigFile.Config.Volumes = make(map[string]struct{})
 		}
-		for _, volume := range volumes {
-			configFile.Config.Volumes[volume] = struct{}{}
+		for _, volume := range overrideInfo.Volumes {
+			overrideInfo.ConfigFile.Config.Volumes[volume] = struct{}{}
 		}
 	}
 
-	if workdir != "" {
-		stampedWorkdir, err := Stamp(workdir, stampInfoFile)
+	if overrideInfo.Workdir != "" {
+		stampedWorkdir, err := Stamp(overrideInfo.Workdir, overrideInfo.StampInfoFile)
 		if err != nil {
-			return errors.Wrapf(err, "Unable to stamp the working directory %s", workdir)
+			return errors.Wrapf(err, "Unable to stamp the working directory %s", overrideInfo.Workdir)
 		}
-		configFile.Config.WorkingDir = stampedWorkdir
+		overrideInfo.ConfigFile.Config.WorkingDir = stampedWorkdir
 	}
 
 	// layerDigests are diffIDs extracted from each layer file.
 	layerDigests := []string{}
-	for _, l := range layer {
+	for _, l := range overrideInfo.Layer {
 		newLayer, err := extractValue(l)
 		if err != nil {
 			return errors.Wrap(err, "Failed to extract the contents of layer file: %v")
@@ -378,12 +378,11 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 		layerDigests = append(layerDigests, newLayer)
 	}
 	// diffIDs are ordered from bottom-most to top-most.
-	// []Hash type
 	diffIDs := []v1.Hash{}
-	if len(configFile.RootFS.DiffIDs) > 0 {
-		diffIDs = configFile.RootFS.DiffIDs
+	if len(overrideInfo.ConfigFile.RootFS.DiffIDs) > 0 {
+		diffIDs = overrideInfo.ConfigFile.RootFS.DiffIDs
 	}
-	if len(layer) > 0 {
+	if len(overrideInfo.Layer) > 0 {
 		var diffIDToAdd v1.Hash
 		for _, diffID := range layerDigests {
 			if diffID != emptySHA256Digest() {
@@ -391,22 +390,22 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 				diffIDs = append(diffIDs, diffIDToAdd)
 			}
 		}
-		configFile.RootFS = v1.RootFS{Type: "layers", DiffIDs: diffIDs}
+		overrideInfo.ConfigFile.RootFS = v1.RootFS{Type: "layers", DiffIDs: diffIDs}
 
 		// length of history is expected to match the length of diff_ids.
 		history := []v1.History{}
-		if len(configFile.History) > 0 {
-			history = configFile.History
+		if len(overrideInfo.ConfigFile.History) > 0 {
+			history = overrideInfo.ConfigFile.History
 		}
 		var historyToAdd v1.History
 
 		for _, l := range layerDigests {
-			var createdBy = createdByArg
+			var createdBy = overrideInfo.CreatedByArg
 			if createdBy == "" {
 				createdBy = "Unknown"
 			}
 
-			var Author = authorArg
+			var Author = overrideInfo.AuthorArg
 			if Author == "" {
 				Author = "Unknown"
 			}
@@ -419,20 +418,18 @@ func OverrideContent(configFile *v1.ConfigFile, outputConfig, creationTimeString
 			if l == emptySHA256Digest() {
 				historyToAdd.EmptyLayer = true
 			}
-			// prepend to history
-			log.Printf("history before prepend: %+v", history)
+			// prepend to history list.
 			history = append([]v1.History{historyToAdd}, history...)
-			log.Printf("history after prepend: %+v", history)
 		}
-		configFile.History = history
+		overrideInfo.ConfigFile.History = history
 	}
 
-	if len(entrypointPrefix) != 0 {
-		newEntrypoint := append(configFile.Config.Entrypoint, entrypointPrefix...)
-		configFile.Config.Entrypoint = newEntrypoint
+	if len(overrideInfo.EntrypointPrefix) != 0 {
+		newEntrypoint := append(overrideInfo.ConfigFile.Config.Entrypoint, overrideInfo.EntrypointPrefix...)
+		overrideInfo.ConfigFile.Config.Entrypoint = newEntrypoint
 	}
 
-	err = WriteConfig(configFile, outputConfig)
+	err = WriteConfig(overrideInfo.ConfigFile, overrideInfo.OutputConfig)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create updated Image Config.")
 	}

@@ -33,8 +33,6 @@ def TestData(name):
                       TEST_DATA_TARGET_BASE, name)
 
 def TestImage(name):
-  print("TestImage hereeeee")
-  print(TestData(name + '.tar'))
   return v2_2_image.FromTarball(TestData(name + '.tar'))
 
 def TestBundleImage(name, image_name):
@@ -199,7 +197,6 @@ class ImageTest(unittest.TestCase):
       self.assertDigest(img, '8b0831dbd59bad97acfa05c7579cdd395969a3e203286956d7ed6e4594aa298d')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
-      print("hi1")
       self.assertEqual(u'2009-02-13T23:31:30.119999885Z', cfg.get('created', ''))
 
   def test_with_millisecond_unix_epoch_creation_time(self):
@@ -207,16 +204,13 @@ class ImageTest(unittest.TestCase):
       self.assertDigest(img, '9574f947ef4f5b6b3e23c80b6339003ad71a385319e2fd9087a8c357606e360c')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
-      print("hi2")
       self.assertEqual(u'2009-02-13T23:31:30.12345004Z', cfg.get('created', ''))
 
   def test_with_rfc_3339_creation_time(self):
     with TestImage('with_rfc_3339_creation_time') as img:
-      print(img.config_file())
       self.assertDigest(img, '4560b374b18abe7c641c9242d2ef610a9bc5a5a7b03458c1575e24714287dfff')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
-      print("hi3")
       self.assertEqual(u'1989-05-03T12:58:12.345Z', cfg.get('created', ''))
 
   # This test is flaky. If it fails, do a bazel clean --expunge_async and try again
@@ -245,9 +239,7 @@ class ImageTest(unittest.TestCase):
     # `creation_time` isn't explicitly defined.
     with TestImage('with_default_stamped_creation_time') as img:
       self.assertEqual(2, len(img.fs_layers()))
-      print("from img config {}".format(img.config_file()))
       cfg = json.loads(img.config_file())
-      print("config is here {}".format(cfg))
       created_str = cfg.get('created', '')
       self.assertNotEqual('', created_str)
 
@@ -306,7 +298,6 @@ class ImageTest(unittest.TestCase):
 
   def test_with_double_label(self):
     with TestImage('with_double_label') as img:
-      print("test with doubl label: {}".format(img.config_file()))
       self.assertDigest(img, '7ae45ba114e7eb95bce9ca4460b2b4ea31b99881ec21d81c2ff0f2caa8c58f5d')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Labels', {
@@ -775,7 +766,6 @@ def load_stamp_info():
         key = split_line[0]
         value = " ".join(split_line[1:])
       STAMP_DICT[key] = value
-      print("Stamp variable '{key}'='{value}'".format(
         key=key,
         value=value
       ))
