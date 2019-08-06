@@ -108,6 +108,7 @@ func main() {
 
 	// read config file into struct.
 	configFile := &v1.ConfigFile{}
+	// var configPath []byte
 	if *baseConfig != "" {
 		// configPath, err := os.Open(*baseConfig)
 		configPath, err := ioutil.ReadFile(*baseConfig)
@@ -135,80 +136,32 @@ func main() {
 	// empty struct for writing empty manifest if applicable.
 	type Q struct{}
 
-	// // read manifest file into struct if provided.
-	// manifestFileQ := Q{}
-	// var manifestFile = v1.Manifest{}
-
-	// var hasContent = false
-	/////////
-	// var rawManifest []byte
-	// if *baseManifest != "" {
-	// 	// 	log.Println("helllloooo")
-	// 	rawManifest, err = ioutil.ReadFile(*baseManifest)
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to read the base image's manifest: %v", err)
-	// 	}
-	/////////
-	// 	log.Printf("An empty manifestFile: %+v", manifestFile)
-	// 	// log.Printf("An empty manifestFile2: %v", *manifestFile)
-
-	// 	// manifestFile, err = v1.ParseManifest(bytes.NewReader(manifestPath))
-	// 	// if err != nil {
-	// 	// 	log.Fatalf("Failed to successfully parse manifest file json contents: %v", err)
-	// 	// }
-	// 	err = json.Unmarshal(manifestPath, &manifestFile)
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to successfully read manifest file contents: %v", err)
-	// 	}
-	// 	// hasContent = true
-	// }
-
-	// log.Printf("ManifestFile: %+v", manifestFile)
-
-	// TODO(xwinxu): write out the updated manifest after updating it from compat pkg.
-	// var rawManifest []byte
-	// // if hasContent {
-	// rawManifest, err = json.Marshal(manifestFile)
-	// if err != nil {
-	// 	log.Fatalf("Manifest has content but was unable to marshall struct into json object: %v", err)
-	// }
-	// }
-	// else {
-	// 	rawManifest, err = json.Marshal(manifestFileQ)
-	// 	if err != nil {
-	// 		log.Fatalf("Unable to read manifest struct into json object: %v", err)
-	// 	}
-	// }
-
-	// manifestFile := v1.Manifest{
-	// 	Config: v1.Descriptor{},
-	// }
-	manifestFile := &v1.Manifest{}
+	// manifestFile := &v1.Manifest{}
 	if *baseManifest != "" {
 		log.Printf(*baseManifest)
 		manifest, err := ioutil.ReadFile(*baseManifest)
-		log.Println(string(manifest))
-		if err != nil {
-			log.Fatalf("Failed to read the base image's manifest: %v", err)
-		}
-		log.Println("Manifest contents: ", string(manifest))
-		manifestFile, err = v1.ParseManifest(bytes.NewReader(manifest))
-		if err != nil {
-			log.Fatalf("Failed to successfully read manifest file: %v", err)
-		}
-		// add the sha256: thing so that we do not get error
-		// on gocon hash.go L71 when returning a hasher
-		log.Printf("The manifestFile is set as: %+v", manifestFile)
-		if manifestFile.Config.Digest.String() == ":" {
-			manifestFile.Config.Digest = v1.Hash{"sha256", ""}
-		}
+		// log.Println(string(manifest))
+		// if err != nil {
+		// 	log.Fatalf("Failed to read the base image's manifest: %v", err)
+		// }
+		// log.Println("Manifest contents: ", string(manifest))
+		// manifestFile, err = v1.ParseManifest(bytes.NewReader(manifest))
+		// if err != nil {
+		// 	log.Fatalf("Failed to successfully read manifest file: %v", err)
+		// }
+		// // add the sha256: thing so that we do not get error
+		// // on gocon hash.go L71 when returning a hasher
+		// log.Printf("The manifestFile is set as: %+v", manifestFile)
+		// if manifestFile.Config.Digest.String() == ":" {
+		// 	manifestFile.Config.Digest = v1.Hash{"sha256", ""}
+		// }
 
-		rawManifest, err := json.Marshal(Q{})
+		// // rawManifest, err := json.Marshal(Q{})
 		// rawManifest, err := json.Marshal(manifestFile)
-		if err != nil {
-			log.Fatalf("Unable to read config struct into json object: %v", err)
-		}
-		err = ioutil.WriteFile(*outputManifest, rawManifest, os.ModePerm)
+		// if err != nil {
+		// 	log.Fatalf("Unable to read config struct into json object: %v", err)
+		// }
+		err = ioutil.WriteFile(*outputManifest, manifest, os.ModePerm)
 		if err != nil {
 			log.Fatalf("Writing config to %s was unsuccessful: %v", *outputManifest, err)
 		}
@@ -223,6 +176,10 @@ func main() {
 		}
 	}
 
+	// _, err = compat.GenerateManifest(*outputManifest, *outputConfig, layers)
+	// if err != nil {
+	// 	log.Printf("MANIFESTTTTTTTT FAILEDDDDDD: %v", err)
+	// }
 	log.Printf("Successfully created Image Manifest at %s.\n", *outputManifest)
 
 }
