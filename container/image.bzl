@@ -129,13 +129,13 @@ def _image_config(
     ] + [
         "-outputManifest",
         "%s" % manifest.path,
-    ] + [
-        "-nullEntryPoint",
-        "%s" % null_entrypoint,
-    ] + [
-        "-nullCmd",
-        "%s" % null_cmd,
     ]
+    
+    if null_entrypoint:
+        args += ["-nullEntryPoint"]
+    
+    if null_cmd:
+        args += ["-nullCmd"]
 
     for x in entrypoint:
         args += ["-entrypoint", "%s" % x]
@@ -157,7 +157,8 @@ def _image_config(
         args += ["-labels", "%s" % "=".join([key, value])]
 
     for key, value in env.items():
-        args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), ctx.expand_make_variables("env", value, {})])]
+        args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), 
+                                          ctx.expand_make_variables("env", value, {})])]
 
     if ctx.attr.user:
         args += ["-user", ctx.attr.user]
@@ -194,8 +195,6 @@ def _image_config(
         for x in ["/" + ctx.file.launcher.basename]:
             args += ["-entrypointPrefix", "%s" % x]
         args += ctx.attr.launcher_args
-
-    cmd = "echo Arguments {}".format(" ".join(args))
 
     ctx.actions.run(
         executable = ctx.executable.create_image_config,

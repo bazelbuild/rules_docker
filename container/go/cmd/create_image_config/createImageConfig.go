@@ -19,7 +19,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -38,8 +37,8 @@ var (
 	creationTimeString = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC 3339 date/time.")
 	user               = flag.String("user", "", "The username to run the commands under.")
 	workdir            = flag.String("workdir", "", "Set the working directory of the layer.")
-	nullEntryPoint     = flag.String("nullEntryPoint", "False", "If True, Entrypoint will be set to null.")
-	nullCmd            = flag.String("nullCmd", "False", "If True, Cmd will be set to null.")
+	nullEntryPoint     = flag.Bool("nullEntryPoint", false, "If true, Entrypoint will be set to null.")
+	nullCmd            = flag.Bool("nullCmd", false, "If true, Cmd will be set to null.")
 	operatingSystem    = flag.String("operatingSystem", "linux", "Operating system to create docker image for, eg. linux.")
 	labelsArray        utils.ArrayStringFlags
 	ports              utils.ArrayStringFlags
@@ -60,7 +59,6 @@ const (
 )
 
 func main() {
-	log.Println("Args before:", os.Args)
 	flag.Var(&labelsArray, "labels", "Augment the Label of the previous layer.")
 	flag.Var(&ports, "ports", "Augment the ExposedPorts of the previous layer.")
 	flag.Var(&volumes, "volumes", "Augment the Volumes of the previous layer.")
@@ -95,7 +93,7 @@ func main() {
 		log.Println("baseConfig is empty!")
 	}
 
-	overrideConfig := compat.OverrideConfigOpts{
+	opts := compat.OverrideConfigOpts{
 		ConfigFile:         configFile,
 		OutputConfig:       *outputConfig,
 		CreationTimeString: *creationTimeString,
@@ -104,8 +102,8 @@ func main() {
 		NullEntryPoint:     *nullEntryPoint,
 		NullCmd:            *nullCmd,
 		OperatingSystem:    *operatingSystem,
-		CreatedByArg:       createdBy,
-		AuthorArg:          defaultAuthor,
+		CreatedBy:          createdBy,
+		Author:             defaultAuthor,
 		LabelsArray:        labelsArray[:],
 		Ports:              ports[:],
 		Volumes:            volumes[:],
@@ -118,35 +116,27 @@ func main() {
 	}
 
 	// write out the updated config after overriding config content.
-	err := compat.OverrideImageConfig(&overrideConfig)
-	if err != nil {
+	if err := compat.OverrideImageConfig(&opts); err != nil {
 		log.Fatalf("Failed to override values in old image config and write to dst %s: %v", err, *outputConfig)
 	}
 
 	log.Printf("Successfully created Image Config at %s.\n", *outputConfig)
 
-	// Q is an empty struct for writing empty manifest if applicable.
-	type Q struct{}
-
 	log.Println("Running the Image Manifest creator...")
 
+	var manifestBlob []byte
+	var err error
 	if *baseManifest != "" {
-		log.Printf(*baseManifest)
-		manifest, err := ioutil.ReadFile(*baseManifest)
-
-		err = ioutil.WriteFile(*outputManifest, manifest, os.ModePerm)
+		manifestBlob, err = ioutil.ReadFile(*baseManifest)
 		if err != nil {
-			log.Fatalf("Writing config to %s was unsuccessful: %v", *outputManifest, err)
+			log.Fatalf("Failed to read manifest file from %s: %v", *baseManifest, err)
 		}
 	} else {
-		rawManifest, err := json.Marshal(Q{})
-		if err != nil {
-			log.Fatalf("Unable to read manifest struct into json object: %v", err)
-		}
-		err = ioutil.WriteFile(*outputManifest, rawManifest, os.ModePerm)
-		if err != nil {
-			log.Fatalf("Writing config to %s was unsuccessful: %v", *outputManifest, err)
-		}
+		// generating an empty manifest.
+		manifestBlob = []byte("{}")
+	}
+	if err = ioutil.WriteFile(*outputManifest, manifestBlob, os.ModePerm); err != nil {
+		log.Fatalf("Writing manifest to %s was unsuccessful: %v", *outputManifest, err)
 	}
 
 	log.Printf("Successfully created Image Manifest at %s.\n", *outputManifest)
