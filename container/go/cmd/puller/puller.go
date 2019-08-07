@@ -126,6 +126,11 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 		}
 	}
 
+	digestPath := path.Join(legacyPath, "digest")
+	if err := compat.WriteDigest(img, digestPath); err != nil {
+		return errors.Wrapf(err, "failed to generate image digest file to pulled image at %s", digestPath)
+	}
+
 	return nil
 }
 

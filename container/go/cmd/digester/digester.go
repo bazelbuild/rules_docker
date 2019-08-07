@@ -17,15 +17,11 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -99,25 +95,9 @@ func main() {
 		log.Fatalf("Error reading from %s: %v", imgSrc, err)
 	}
 
-	if err = writeDigest(img, *dst); err != nil {
+	if err = compat.WriteDigest(img, *dst); err != nil {
 		log.Fatalf("Error outputting digest file to %s: %v", *dst, err)
 	}
 
 	log.Printf("Successfully generated image digest file at %s", *dst)
-}
-
-// writeDigest writes the sha256 digest of the manifest of the given image to the file given by dst.
-func writeDigest(image v1.Image, dst string) error {
-	digest, err := image.Digest()
-	if err != nil {
-		log.Fatalf("Error getting image digest: %v", err)
-	}
-
-	rawDigest := []byte(digest.Algorithm + ":" + digest.Hex)
-
-	if err = ioutil.WriteFile(dst, rawDigest, os.ModePerm); err != nil {
-		return errors.Wrapf(err, "unable to write digest file to %s", dst)
-	}
-
-	return nil
 }
