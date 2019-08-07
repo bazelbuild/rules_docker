@@ -216,25 +216,23 @@ def _repository_name(ctx):
     return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
-    digester_args = ctx.actions.args()
+    blobsums = image.get("blobsum", [])
+    digest_args = ["--digest=%s" % f.path for f in blobsums]
     blobs = image.get("zipped_layer", [])
-    config = image["config"]
-    digester_input = [config] + blobs
+    layer_args = ["--layer=%s" % f.path for f in blobs]
+    config_arg = "--config=%s" % image["config"].path
+    output_digest_arg = "--output-digest=%s" % output_digest.path
 
-    digester_args.add_all(["-configPath", str(config.path), "-dst", str(output_digest.path), "-format", "legacy"])
-    for layer_file in blobs:
-        digester_args.add("-layers", layer_file.path)
-
+    arguments = [config_arg, output_digest_arg] + layer_args + digest_args
     if image.get("legacy"):
-        digester_input += [image.get("legacy")]
-        digester_args.add("-legacyBaseImage", "%s" % image["legacy"].path)
+        arguments.append("--tarball=%s" % image["legacy"].path)
 
     ctx.actions.run(
         outputs = [output_digest],
-        inputs = digester_input,
+        inputs = [image["config"]] + blobsums + blobs,
         tools = ([image["legacy"]] if image.get("legacy") else []),
         executable = ctx.executable._digester,
-        arguments = [digester_args],
+        arguments = arguments,
         mnemonic = "ImageDigest",
         progress_message = "Extracting image digest of %s" % image_tarball.short_path,
     )
@@ -510,7 +508,7 @@ _attrs = dicts.add(_layer.attrs, {
     "volumes": attr.string_list(),
     "workdir": attr.string(),
     "_digester": attr.label(
-        default = "@io_bazel_rules_docker//container/go/cmd/digester",
+        default = "@containerregistry//:digester",
         cfg = "host",
         executable = True,
     ),
@@ -568,7 +566,7 @@ container_image_ = rule(
 def _validate_command(name, argument, operating_system):
     if type(argument) == type(""):
         if (operating_system == "windows"):
-            return ["%WinDir%\system32\cmd.exe", "/c", argument]
+            return ["%WinDir%\\system32\\cmd.exe", "/c", argument]
         else:
             return ["/bin/sh", "-c", argument]
     elif type(argument) == type([]):
