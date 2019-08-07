@@ -45,7 +45,6 @@ def _impl(ctx):
     manifest = image["manifest"]
     tarball = image.get("legacy")
     image_files = blobs + blobsums
-    digester_input = blobs + [config]
 
     if tarball:
         print("Pushing an image based on a tarball can be very " +
@@ -54,29 +53,30 @@ def _impl(ctx):
               "If the image is checked in, consider using " +
               "docker_import instead.")
         pusher_args += ["--tarball=%s" % _get_runfile_path(ctx, tarball)]
-        digester_args.add("-legacyBaseImage", "%s" % tarball.path)
+        digester_args.add("--tarball", tarball)
         image_files += [tarball]
-        digester_input += [tarball]
     if config:
         pusher_args += ["--config=%s" % _get_runfile_path(ctx, config)]
+        digester_args.add("--config", config)
         image_files += [config]
     if manifest:
         pusher_args += ["--manifest=%s" % _get_runfile_path(ctx, manifest)]
+        digester_args.add("--manifest", manifest)
         image_files += [manifest]
     for f in blobsums:
         pusher_args += ["--digest=%s" % _get_runfile_path(ctx, f)]
+        digester_args.add("--digest", f)
     for f in blobs:
         pusher_args += ["--layer=%s" % _get_runfile_path(ctx, f)]
+        digester_args.add("--layer", f)
     if ctx.attr.format == "OCI":
         pusher_args += ["--oci"]
-
-    digester_args.add_all(["-configPath", str(config.path), "-dst", str(ctx.outputs.digest.path), "-format", "legacy"])
-    for layer_file in blobs:
-        digester_args.add("-layers", layer_file.path)
+        digester_args.add("--oci")
 
     # create image digest
+    digester_args.add("--output-digest", ctx.outputs.digest)
     ctx.actions.run(
-        inputs = digester_input,
+        inputs = image_files,
         outputs = [ctx.outputs.digest],
         executable = ctx.executable._digester,
         arguments = [digester_args],
@@ -176,7 +176,7 @@ container_push = rule(
             doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
         ),
         "_digester": attr.label(
-            default = "@io_bazel_rules_docker//container/go/cmd/digester",
+            default = "@containerregistry//:digester",
             cfg = "host",
             executable = True,
         ),
