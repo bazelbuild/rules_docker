@@ -92,6 +92,196 @@ def _get_base_manifest(ctx, name, base):
         return layer.get("manifest")
     return None
 
+def _add_go_args(
+        ctx,
+        args,
+        inputs,
+        manifest,
+        config,
+        labels,
+        entrypoint,
+        cmd,
+        null_cmd,
+        null_entrypoint,
+        creation_time,
+        env,
+        workdir,
+        layer_names,
+        base_config,
+        base_manifest,
+        operating_system):
+    args = [
+        "-outputConfig",
+        "%s" % config.path,
+    ] + [
+        "-outputManifest",
+        "%s" % manifest.path,
+    ]
+
+    if null_entrypoint:
+        args += ["-nullEntryPoint"]
+
+    if null_cmd:
+        args += ["-nullCmd"]
+
+    for x in entrypoint:
+        args += ["-entrypoint", "%s" % x]
+    for x in cmd:
+        args += ["-command", "%s" % x]
+    for x in ctx.attr.ports:
+        args += ["-ports", "%s" % x]
+    for x in ctx.attr.volumes:
+        args += ["-volumes", "%s" % x]
+
+    if creation_time:
+        args += ["-creationTime", "%s" % creation_time]
+    elif ctx.attr.stamp:
+        # If stamping is enabled, and the creation_time is not manually defined,
+        # default to '{BUILD_TIMESTAMP}'.
+        args += ["-creationTime", "{BUILD_TIMESTAMP}"]
+
+    for key, value in labels.items():
+        args += ["-labels", "%s" % "=".join([key, value])]
+
+    for key, value in env.items():
+        args += ["-env", "%s" % "=".join([
+            ctx.expand_make_variables("env", key, {}),
+            ctx.expand_make_variables("env", value, {}),
+        ])]
+
+    if ctx.attr.user:
+        args += ["-user", ctx.attr.user]
+    if workdir:
+        args += ["-workdir", workdir]
+
+    inputs = layer_names
+    for layer_name in layer_names:
+        args += ["-layerDigestFile", "@" + layer_name.path]
+
+    if ctx.attr.label_files:
+        inputs += ctx.files.label_files
+
+    if base_config:
+        args += ["-baseConfig", "%s" % base_config.path]
+        inputs += [base_config]
+
+    if base_manifest:
+        args += ["-baseManifest", "%s" % base_manifest.path]
+        inputs += [base_manifest]
+
+    if operating_system:
+        args += ["-operatingSystem", "%s" % operating_system]
+
+    if ctx.attr.stamp:
+        stamp_inputs = [ctx.info_file, ctx.version_file]
+        for f in stamp_inputs:
+            args += ["-stampInfoFile", "%s" % f.path]
+        inputs += stamp_inputs
+
+    if ctx.attr.launcher_args and not ctx.attr.launcher:
+        fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
+    if ctx.attr.launcher:
+        for x in ["/" + ctx.file.launcher.basename]:
+            args += ["-entrypointPrefix", "%s" % x]
+        args += ctx.attr.launcher_args
+
+def _add_legacy_args(
+        ctx,
+        args,
+        inputs,
+        manifest,
+        config,
+        labels,
+        entrypoint,
+        cmd,
+        null_cmd,
+        null_entrypoint,
+        creation_time,
+        env,
+        workdir,
+        layer_names,
+        base_config,
+        base_manifest,
+        operating_system):
+    args = [
+        "--output=%s" % config.path,
+    ] + [
+        "--manifestoutput=%s" % manifest.path,
+    ] + [
+        "--entrypoint=%s" % x
+        for x in entrypoint
+    ] + [
+        "--command=%s" % x
+        for x in cmd
+    ] + [
+        "--ports=%s" % x
+        for x in ctx.attr.ports
+    ] + [
+        "--volumes=%s" % x
+        for x in ctx.attr.volumes
+    ] + [
+        "--null_entrypoint=%s" % null_entrypoint,
+    ] + [
+        "--null_cmd=%s" % null_cmd,
+    ]
+    if creation_time:
+        args += ["--creation_time=%s" % creation_time]
+    elif ctx.attr.stamp:
+        # If stamping is enabled, and the creation_time is not manually defined,
+        # default to '{BUILD_TIMESTAMP}'.
+        args += ["--creation_time={BUILD_TIMESTAMP}"]
+
+    args += ["--labels=%s" % "=".join([key, value]) for key, value in labels.items()]
+    args += ["--env=%s" % "=".join([
+        ctx.expand_make_variables("env", key, {}),
+        ctx.expand_make_variables("env", value, {}),
+    ]) for key, value in env.items()]
+
+    if ctx.attr.user:
+        args += ["--user=" + ctx.attr.user]
+    if workdir:
+        args += ["--workdir=" + workdir]
+
+    inputs = layer_names
+    for layer_name in layer_names:
+        args += ["--layer=@" + layer_name.path]
+
+    if ctx.attr.label_files:
+        inputs += ctx.files.label_files
+
+    if base_config:
+        args += ["--base=%s" % base_config.path]
+        inputs += [base_config]
+
+    if base_manifest:
+        args += ["--basemanifest=%s" % base_manifest.path]
+        inputs += [base_manifest]
+
+    if operating_system:
+        args += ["--operating_system=%s" % operating_system]
+
+    if ctx.attr.stamp:
+        stamp_inputs = [ctx.info_file, ctx.version_file]
+        args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
+        inputs += stamp_inputs
+
+    if ctx.attr.launcher_args and not ctx.attr.launcher:
+        fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
+    if ctx.attr.launcher:
+        args += [
+            "--entrypoint_prefix=%s" % x
+            for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
+        ]
+    
+    ctx.actions.run(
+        executable = ctx.executable.create_image_config,
+        arguments = args,
+        inputs = inputs,
+        outputs = [config, manifest],
+        use_default_shell_env = True,
+        mnemonic = "ImageConfig",
+    )
+
 def _image_config(
         ctx,
         name,
@@ -124,168 +314,61 @@ def _image_config(
         else:
             labels[label] = fname
 
+    args = []
+    inputs = []
+    exec = None
     if ctx.attr.legacy_create_image_config:
-        args = [
-            "--output=%s" % config.path,
-        ] + [
-            "--manifestoutput=%s" % manifest.path,
-        ] + [
-            "--entrypoint=%s" % x
-            for x in entrypoint
-        ] + [
-            "--command=%s" % x
-            for x in cmd
-        ] + [
-            "--ports=%s" % x
-            for x in ctx.attr.ports
-        ] + [
-            "--volumes=%s" % x
-            for x in ctx.attr.volumes
-        ] + [
-            "--null_entrypoint=%s" % null_entrypoint,
-        ] + [
-            "--null_cmd=%s" % null_cmd,
-        ]
-        if creation_time:
-            args += ["--creation_time=%s" % creation_time]
-        elif ctx.attr.stamp:
-            # If stamping is enabled, and the creation_time is not manually defined,
-            # default to '{BUILD_TIMESTAMP}'.
-            args += ["--creation_time={BUILD_TIMESTAMP}"]
-
-        args += ["--labels=%s" % "=".join([key, value]) for key, value in labels.items()]
-        args += ["--env=%s" % "=".join([
-            ctx.expand_make_variables("env", key, {}),
-            ctx.expand_make_variables("env", value, {}),
-        ]) for key, value in env.items()]
-
-        if ctx.attr.user:
-            args += ["--user=" + ctx.attr.user]
-        if workdir:
-            args += ["--workdir=" + workdir]
-
-        inputs = layer_names
-        for layer_name in layer_names:
-            args += ["--layer=@" + layer_name.path]
-
-        if ctx.attr.label_files:
-            inputs += ctx.files.label_files
-
-        if base_config:
-            args += ["--base=%s" % base_config.path]
-            inputs += [base_config]
-
-        if base_manifest:
-            args += ["--basemanifest=%s" % base_manifest.path]
-            inputs += [base_manifest]
-
-        if operating_system:
-            args += ["--operating_system=%s" % operating_system]
-
-        if ctx.attr.stamp:
-            stamp_inputs = [ctx.info_file, ctx.version_file]
-            args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
-            inputs += stamp_inputs
-
-        if ctx.attr.launcher_args and not ctx.attr.launcher:
-            fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
-        if ctx.attr.launcher:
-            args += [
-                "--entrypoint_prefix=%s" % x
-                for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
-            ]
-        
-        ctx.actions.run(
-            executable = ctx.executable.create_image_config,
-            arguments = args,
-            inputs = inputs,
-            outputs = [config, manifest],
-            use_default_shell_env = True,
-            mnemonic = "ImageConfig",
-        )
+        _add_legacy_args(
+            ctx,
+            args,
+            inputs,
+            manifest,
+            config,
+            manifest,
+            labels,
+            entrypoint,
+            cmd,
+            null_cmd,
+            null_entrypoint,
+            creation_time,
+            env,
+            workdir,
+            layer_names,
+            base_config,
+            base_manifest,
+            operating_system)
+        exec = ctx.executable.create_image_config
     else:
-        args = [
-            "-outputConfig",
-            "%s" % config.path,
-        ] + [
-            "-outputManifest",
-            "%s" % manifest.path,
-        ]
-
-        if null_entrypoint:
-            args += ["-nullEntryPoint"]
-
-        if null_cmd:
-            args += ["-nullCmd"]
-
-        for x in entrypoint:
-            args += ["-entrypoint", "%s" % x]
-        for x in cmd:
-            args += ["-command", "%s" % x]
-        for x in ctx.attr.ports:
-            args += ["-ports", "%s" % x]
-        for x in ctx.attr.volumes:
-            args += ["-volumes", "%s" % x]
-
-        if creation_time:
-            args += ["-creationTime", "%s" % creation_time]
-        elif ctx.attr.stamp:
-            # If stamping is enabled, and the creation_time is not manually defined,
-            # default to '{BUILD_TIMESTAMP}'.
-            args += ["-creationTime", "{BUILD_TIMESTAMP}"]
-
-        for key, value in labels.items():
-            args += ["-labels", "%s" % "=".join([key, value])]
-
-        for key, value in env.items():
-            args += ["-env", "%s" % "=".join([
-                ctx.expand_make_variables("env", key, {}),
-                ctx.expand_make_variables("env", value, {}),
-            ])]
-
-        if ctx.attr.user:
-            args += ["-user", ctx.attr.user]
-        if workdir:
-            args += ["-workdir", workdir]
-
-        inputs = layer_names
-        for layer_name in layer_names:
-            args += ["-layerDigestFile", "@" + layer_name.path]
-
-        if ctx.attr.label_files:
-            inputs += ctx.files.label_files
-
-        if base_config:
-            args += ["-baseConfig", "%s" % base_config.path]
-            inputs += [base_config]
-
-        if base_manifest:
-            args += ["-baseManifest", "%s" % base_manifest.path]
-            inputs += [base_manifest]
-
-        if operating_system:
-            args += ["-operatingSystem", "%s" % operating_system]
-
-        if ctx.attr.stamp:
-            stamp_inputs = [ctx.info_file, ctx.version_file]
-            for f in stamp_inputs:
-                args += ["-stampInfoFile", "%s" % f.path]
-            inputs += stamp_inputs
-
-        if ctx.attr.launcher_args and not ctx.attr.launcher:
-            fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
-        if ctx.attr.launcher:
-            for x in ["/" + ctx.file.launcher.basename]:
-                args += ["-entrypointPrefix", "%s" % x]
-            args += ctx.attr.launcher_args
-        ctx.actions.run(
-            executable = ctx.executable.go_create_image_config,
-            arguments = args,
-            inputs = inputs,
-            outputs = [config, manifest],
-            use_default_shell_env = True,
-            mnemonic = "Go ImageConfig",
-        )
+        _add_go_args(
+            ctx,
+            args,
+            inputs,
+            manifest,
+            config,
+            manifest,
+            labels,
+            entrypoint,
+            cmd,
+            null_cmd,
+            null_entrypoint,
+            creation_time,
+            env,
+            workdir,
+            layer_names,
+            base_config,
+            base_manifest,
+            operating_system)
+        exec = ctx.executable.go_create_image_config
+    
+    ctx.actions.run(
+        executable = exec,
+        arguments = args,
+        inputs = inputs,
+        outputs = [config, manifest],
+        use_default_shell_env = True,
+        mnemonic = "ImageConfig",
+    )
+    
     return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)
 
 def _repository_name(ctx):
@@ -554,7 +637,7 @@ _attrs = dicts.add(_layer.attrs, {
     "cmd": attr.string_list(),
     "legacy_create_image_config": attr.bool(
         default = True,
-        doc = ("If set to False, the Go create_image_config binary will be ran instead."),
+        doc = ("If set to False, the Go create_image_config binary will be run instead."),
     ),
     "create_image_config": attr.label(
         default = Label("//container:create_image_config"),
