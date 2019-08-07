@@ -110,7 +110,7 @@ def _add_go_args(
         base_config,
         base_manifest,
         operating_system):
-    args = [
+    args += [
         "-outputConfig",
         "%s" % config.path,
     ] + [
@@ -154,7 +154,7 @@ def _add_go_args(
     if workdir:
         args += ["-workdir", workdir]
 
-    inputs = layer_names
+    inputs += layer_names
     for layer_name in layer_names:
         args += ["-layerDigestFile", "@" + layer_name.path]
 
@@ -203,7 +203,7 @@ def _add_legacy_args(
         base_config,
         base_manifest,
         operating_system):
-    args = [
+    args += [
         "--output=%s" % config.path,
     ] + [
         "--manifestoutput=%s" % manifest.path,
@@ -242,7 +242,7 @@ def _add_legacy_args(
     if workdir:
         args += ["--workdir=" + workdir]
 
-    inputs = layer_names
+    inputs += layer_names
     for layer_name in layer_names:
         args += ["--layer=@" + layer_name.path]
 
@@ -272,15 +272,6 @@ def _add_legacy_args(
             "--entrypoint_prefix=%s" % x
             for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
         ]
-    
-    ctx.actions.run(
-        executable = ctx.executable.create_image_config,
-        arguments = args,
-        inputs = inputs,
-        outputs = [config, manifest],
-        use_default_shell_env = True,
-        mnemonic = "ImageConfig",
-    )
 
 def _image_config(
         ctx,
@@ -324,7 +315,6 @@ def _image_config(
             inputs,
             manifest,
             config,
-            manifest,
             labels,
             entrypoint,
             cmd,
@@ -345,7 +335,6 @@ def _image_config(
             inputs,
             manifest,
             config,
-            manifest,
             labels,
             entrypoint,
             cmd,
@@ -359,7 +348,7 @@ def _image_config(
             base_manifest,
             operating_system)
         exec = ctx.executable.go_create_image_config
-    
+
     ctx.actions.run(
         executable = exec,
         arguments = args,
@@ -368,7 +357,7 @@ def _image_config(
         use_default_shell_env = True,
         mnemonic = "ImageConfig",
     )
-    
+
     return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)
 
 def _repository_name(ctx):
@@ -635,18 +624,8 @@ def _impl(
 _attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
-    "legacy_create_image_config": attr.bool(
-        default = True,
-        doc = ("If set to False, the Go create_image_config binary will be run instead."),
-    ),
     "create_image_config": attr.label(
         default = Label("//container:create_image_config"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
-    ),
-    "go_create_image_config": attr.label(
-        default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
@@ -654,6 +633,12 @@ _attrs = dicts.add(_layer.attrs, {
     "creation_time": attr.string(),
     "docker_run_flags": attr.string(),
     "entrypoint": attr.string_list(),
+    "go_create_image_config": attr.label(
+        default = Label("//container/go/cmd/create_image_config:create_image_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
     "label_file_strings": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
@@ -663,6 +648,10 @@ _attrs = dicts.add(_layer.attrs, {
     "launcher": attr.label(allow_single_file = True),
     "launcher_args": attr.string_list(default = []),
     "layers": attr.label_list(providers = [LayerInfo]),
+    "legacy_create_image_config": attr.bool(
+        default = True,
+        doc = ("If set to False, the Go create_image_config binary will be run instead."),
+    ),
     "legacy_repository_naming": attr.bool(default = False),
     "legacy_run_behavior": attr.bool(
         # TODO(mattmoor): Default this to False.
