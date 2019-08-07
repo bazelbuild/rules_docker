@@ -23,6 +23,7 @@ go_library(
         "generateManifest.go",
         "image.go",
         "ociToLegacy.go",
+        "overrideConfig.go",
         "reader.go",
     ],
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/compat",
