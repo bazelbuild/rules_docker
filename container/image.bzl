@@ -130,10 +130,10 @@ def _image_config(
         "-outputManifest",
         "%s" % manifest.path,
     ]
-    
+
     if null_entrypoint:
         args += ["-nullEntryPoint"]
-    
+
     if null_cmd:
         args += ["-nullCmd"]
 
@@ -157,8 +157,10 @@ def _image_config(
         args += ["-labels", "%s" % "=".join([key, value])]
 
     for key, value in env.items():
-        args += ["-env", "%s" % "=".join([ctx.expand_make_variables("env", key, {}), 
-                                          ctx.expand_make_variables("env", value, {})])]
+        args += ["-env", "%s" % "=".join([
+            ctx.expand_make_variables("env", key, {}),
+            ctx.expand_make_variables("env", value, {}),
+        ])]
 
     if ctx.attr.user:
         args += ["-user", ctx.attr.user]
