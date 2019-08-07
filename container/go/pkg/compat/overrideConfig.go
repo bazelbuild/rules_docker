@@ -130,7 +130,7 @@ func keyValueToMap(value []string) (map[string]string, error) {
 	for _, kvpair := range value {
 		temp = strings.Split(kvpair, "=")
 		if len(temp) != 2 {
-			return convMap, errors.New("value in array are not of format key=value")
+			return convMap, errors.New(fmt.Sprintf("%q is not of format key=value", kvpair))
 		}
 		key, val := temp[0], temp[1]
 		convMap[key] = val
@@ -144,7 +144,7 @@ func Stamp(inp string, stampInfoFile []string) (string, error) {
 	if len(stampInfoFile) == 0 || inp == "" {
 		return inp, nil
 	}
-	formatArgs := make(map[string]interface{})
+	formatArgs := make(map[string]string)
 	for _, infofile := range stampInfoFile {
 		f, err := os.Open(infofile)
 		if err != nil {
@@ -169,11 +169,7 @@ func Stamp(inp string, stampInfoFile []string) (string, error) {
 
 	o := inp
 	for k, v := range formatArgs {
-		if vStr, ok := v.(string); ok {
-			o = strings.ReplaceAll(o, fmt.Sprintf("{%s}", k), vStr)
-		} else {
-			return "", errors.New("argument to format is not of string type")
-		}
+		o = strings.ReplaceAll(o, fmt.Sprintf("{%s}", k), v)
 	}
 	return o, nil
 }
