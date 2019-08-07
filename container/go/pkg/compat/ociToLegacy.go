@@ -120,10 +120,9 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 
 // WriteDigest writes the sha256 digest of the manifest of the given image to the file given by dst.
 func WriteDigest(image v1.Image, dst string) error {
-	log.Println(dst)
 	digest, err := image.Digest()
 	if err != nil {
-		return errors.Wrap(err, "Error getting image digest")
+		return errors.Wrap(err, "error getting image digest")
 	}
 
 	rawDigest := []byte(digest.Algorithm + ":" + digest.Hex)
