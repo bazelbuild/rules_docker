@@ -36,7 +36,7 @@ def _impl(ctx):
     """Core implementation of new_container_push."""
 
     # TODO: Possible optimization for efficiently pushing intermediate format after container_image is refactored, similar with the old python implementation, e.g., push-by-layer.
-    
+
     pusher_args = []
     digester_args = []
     digester_input = []
