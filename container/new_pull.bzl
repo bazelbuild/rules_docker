@@ -183,8 +183,10 @@ filegroup(
         ]
 
     kwargs = {}
-    if "PULLER_TIMEOUT" in repository_ctx.os.environ:
-        kwargs["timeout"] = int(repository_ctx.os.environ.get("PULLER_TIMEOUT"))
+
+    # TODO(suvanjan): add the PULLER_TIMEOUT as a environment variable for the puller to process.
+    # if "PULLER_TIMEOUT" in repository_ctx.os.environ:
+    #     kwargs["timeout"] = int(repository_ctx.os.environ.get("PULLER_TIMEOUT"))
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:
@@ -231,6 +233,7 @@ new_container_pull = repository_rule(
     environ = [
         "DOCKER_REPO_CACHE",
         "HOME",
-        "PULLER_TIMEOUT",
+        # Uncomment when the PULLER_TIMEOUT is confirmed to work.
+        # "PULLER_TIMEOUT",
     ],
 )
