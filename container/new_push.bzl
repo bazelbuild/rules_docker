@@ -35,7 +35,7 @@ def _get_runfile_path(ctx, f):
 def _impl(ctx):
     """Core implementation of new_container_push."""
 
-    # TODO (xiaohegong): 1) Possible optimization for efficiently pushing intermediate
+    # TODO: 1) Possible optimization for efficiently pushing intermediate
     # representation, similar with the old python implementation, e.g., push-by-layer.
     # 2) Use and implementation of attr.stamp.
 

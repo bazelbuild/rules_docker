@@ -476,6 +476,26 @@ new_container_push(
     tags = ["manual"],
 )
 
+new_container_push(
+    name = "new_push_stamped_test_legacy",
+    format = "legacy",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+new_container_push(
+    name = "new_push_stamped_test_oci",
+    format = "oci",
+    image = "@new_alpine_linux_amd64//image-oci",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.
@@ -487,8 +507,9 @@ file_test(
     file = ":push_test.digest",
 )
 
+# The following four digest tests for puller should be identical. "image.digest" is symlinked from image/digest.  
 file_test(
-    name = "distoless_fixed_id_digest_test",
+    name = "distroless_fixed_id_digest_test",
     content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
     file = "@distroless_fixed_id//image:digest",
 )
@@ -497,6 +518,18 @@ file_test(
     name = "distroless_fixed_id_image_digest_test",
     content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
     file = "@distroless_fixed_id//image:image.digest",
+)
+
+file_test(
+    name = "new_distroless_fixed_id_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@new_distroless_base_fixed_id//image:digest",
+)
+
+file_test(
+    name = "new_distroless_fixed_id_image_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@new_distroless_base_fixed_id//image:image.digest",
 )
 
 file_test(

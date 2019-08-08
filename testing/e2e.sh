@@ -369,11 +369,11 @@ function test_container_pull_cache() {
   mkdir -p $bazel_cache
 
   # Run container puller one with caching.
-  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=600 bazel --output_base=$bazel_cache test //tests/container:distoless_fixed_id_digest_test
+  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=600 bazel --output_base=$bazel_cache test //tests/container:distroless_fixed_id_digest_test
 
   # Rerun the puller by changing the puller timeout to force a rerun of of the
   # target but now using the cache instead of downloading it again.
-  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=601 bazel --output_base=$bazel_cache test //tests/container:distoless_fixed_id_digest_test
+  DOCKER_REPO_CACHE=$cache_dir PULLER_TIMEOUT=601 bazel --output_base=$bazel_cache test //tests/container:distroless_fixed_id_digest_test
 
   rm -rf $scratch_dir
 }
