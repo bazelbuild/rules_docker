@@ -172,8 +172,8 @@ not be able to use `container_repositories()` and will have to import
 directly in your `WORKSPACE` all the required dependencies (see the most up
 to date impl of `container_repositories()` for details).
 
-* ImportError: No module named moves.urllib.parse    
-    
+* ImportError: No module named moves.urllib.parse
+
 This is an example of an error due to a diamond dependency. If you get this
 error, make sure to import rules_docker before other libraries, so that
 _six_ can be patched properly.
@@ -1516,13 +1516,109 @@ configuration. See [here](#container_push-custom-client-configuration) for detai
         (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
         and custom values set using <code>--workspace_status_command</code>)
         in tags.</p>
-        <p>These fields are specified in the tag using using Python format
+        <p>These fields are specified in the tag using Python format
         syntax, e.g.
         <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
       </td>
     </tr>
   </tbody>
 </table>
+
+
+<a name="new_container_push"></a>
+## new_container_push
+
+```python
+new_container_push(name, image, registry, repository, tag)
+```
+
+An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
+
+**NOTE:** `new_container_push` supports authentication using custom docker client
+configuration. See [here](#container_push-custom-client-configuration) for details.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>Name, required</code></p>
+        <p>Unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>image</code></td>
+      <td>
+        <p><code>Label; required</code></p>
+        <p>The label containing a Docker image to publish.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>registry</code></td>
+      <td>
+        <p><code>Registry Domain; required</code></p>
+        <p>The registry to which to publish the image.</p>
+	<p>This field supports stamp variables.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>repository</code></td>
+      <td>
+        <p><code>Repository; required</code></p>
+        <p>The `repository` of images to which to push.</p>
+	<p>This field supports stamp variables.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td>
+        <p><code>Kind, optional</code></p>
+        <p>The desired format of the published image. Currently, this supports
+	   <code>legacy</code>, <code>docker</code> and <code>oci</code></p>. This attribute defaults to `legacy`.
+      </td>
+    </tr>
+    <tr>
+      <td><code>tag</code></td>
+      <td>
+        <p><code>string; optional</code></p>
+        <p>The `tag` of the Docker image to push to the specified `repository`.
+           This attribute defaults to `latest`.</p>
+	<p>This field supports stamp variables.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>tag_file</code></td>
+      <td>
+        <p><code>File; optional</code></p>
+        <p>The label of the file with tag value. Overrides `tag` if provided.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>stamp</code></td>
+      <td>
+        <p><code>Bool; optional</code></p>
+        <p>Deprecated: it is now automatically inferred.</p>
+        <p>If true, enable use of workspace status variables
+        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
+        and custom values set using <code>--workspace_status_command</code>)
+        in tags.</p>
+        <p>These fields are specified in the tag using Python format
+        syntax, e.g.
+        <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 
 <a name="container_layer"></a>
 ## container_layer
@@ -2011,7 +2107,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
         and custom values set using <code>--workspace_status_command</code>)
         in tags.</p>
-        <p>These fields are specified in attributes using using Python format
+        <p>These fields are specified in attributes using Python format
         syntax, e.g. <code>foo{BUILD_USER}bar</code>.</p>
       </td>
     </tr>
@@ -2126,7 +2222,7 @@ A rule that aliases and saves N images into a single `docker save` tarball.
         (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
         and custom values set using <code>--workspace_status_command</code>)
         in tags.</p>
-        <p>These fields are specified in the tag using using Python format
+        <p>These fields are specified in the tag using Python format
         syntax, e.g.
         <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
       </td>
