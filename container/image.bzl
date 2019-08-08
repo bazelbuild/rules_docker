@@ -326,7 +326,8 @@ def _image_config(
             layer_names,
             base_config,
             base_manifest,
-            operating_system)
+            operating_system,
+        )
         exec = ctx.executable.create_image_config
     else:
         _add_go_args(
@@ -346,7 +347,8 @@ def _image_config(
             layer_names,
             base_config,
             base_manifest,
-            operating_system)
+            operating_system,
+        )
         exec = ctx.executable.go_create_image_config
 
     ctx.actions.run(
