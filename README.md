@@ -1285,6 +1285,28 @@ shared layers and letting them diverge could result in sub-optimal push and pull
 ```python
 new_container_pull(name, registry, repository, digest, tag)
 ```
+A repository rule that pulls down a Docker base image in a manner suitable for
+use with `container_image`'s `base` attribute. Default pull layout is the OCI 
+(Open Container Initiative) image format.
+
+**Note:**: implicit output targets include `<name>.digest`, an image digest that
+can be used to refer to the image.
+
+**NOTE:** new_container_pull supports authentication using custom docker client
+configuration. See [here](#container_pull-custom-client-configuration) for details.
+
+**NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
+
+**NOTE:** Set `DOCKER_REPO_CACHE` env variable to make the container puller
+cache downloaded layers at the directory specified as a value to this env
+variable. The caching feature hasn't been thoroughly tested and may be thread
+unsafe. If you notice flakiness after enabling it, see the warning below on how
+to workaround it.
+
+**NOTE:** `new_container_pull` is suspected to have thread safety issues. To
+ensure multiple new_container_pull(s) don't execute concurrently, please use the
+bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
+
 <table class="table table-condensed table-bordered table-params">
   <colgroup>
     <col class="col-param" />
