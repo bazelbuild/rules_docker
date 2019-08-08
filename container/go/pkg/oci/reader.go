@@ -38,7 +38,7 @@ func Read(src string) (v1.Image, error) {
 	}
 
 	// Read the contents of the layout -- we expect to find a single image.
-	// TODO (xiaohegong): handle case with multiple manifests.
+	// TODO: handle case with multiple manifests.
 	manifest, err := idx.IndexManifest()
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to read image from %s", src)
