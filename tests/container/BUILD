@@ -476,26 +476,6 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
-    name = "new_push_stamped_test_legacy",
-    format = "legacy",
-    image = ":set_cmd",
-    registry = "localhost:5000",
-    repository = "docker/test/{BUILD_USER}",
-    tag = "{BUILD_USER}",
-    tags = ["manual"],
-)
-
-new_container_push(
-    name = "new_push_stamped_test_oci",
-    format = "oci",
-    image = "@new_alpine_linux_amd64//image-oci",
-    registry = "localhost:5000",
-    repository = "docker/test/{BUILD_USER}",
-    tag = "{BUILD_USER}",
-    tags = ["manual"],
-)
-
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.
