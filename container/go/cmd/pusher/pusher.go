@@ -109,7 +109,7 @@ func main() {
 	}
 
 	// Infer stamp info if provided and perform substitutions in the provided tag name.
-	formattedDst, err := utils.Stamp(*dst, stampInfoFile)
+	formattedDst, err := compat.Stamp(*dst, stampInfoFile)
 	if err != nil {
 		log.Fatalf("Error resolving stamp info to destination %s: %v", *dst, err)
 	}
@@ -118,7 +118,7 @@ func main() {
 	}
 
 	if err := push(formattedDst, img); err != nil {
-		log.Fatalf("Error pushing image to %s: %v", *dst, err)
+		log.Fatalf("Error pushing image to %s: %v", formattedDst, err)
 	}
 
 	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, formattedDst)
