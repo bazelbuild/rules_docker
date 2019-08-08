@@ -487,7 +487,7 @@ file_test(
     file = ":push_test.digest",
 )
 
-# The following four digest tests for puller should be identical. "image.digest" is symlinked from image/digest.  
+# The following four digest tests for puller should be identical. "image.digest" is symlinked from image/digest.
 file_test(
     name = "distroless_fixed_id_digest_test",
     content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
