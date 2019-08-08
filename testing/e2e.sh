@@ -224,6 +224,7 @@ function test_new_container_push_tar() {
 
   docker stop -t 0 $cid
 }
+
 function test_new_container_push_oci_tag_file() {
   cd "${ROOT}"
   clear_docker_full
@@ -231,6 +232,21 @@ function test_new_container_push_oci_tag_file() {
   bazel build tests/container:new_push_test_oci_tag_file
   EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_oci_tag_file)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
+  docker stop -t 0 $cid
+}
+
+function test_new_container_push_with_stamp() {
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  # Push a legacy image with stamp substitution
+  bazel run tests/container:new_push_stamped_test_legacy
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_legacy 2>&1)" "Successfully pushed legacy image"
+
+  # Push a oci image with stamp substitution
+  bazel run tests/container:new_push_stamped_test_oci
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_oci 2>&1)" "Successfully pushed oci image"
   docker stop -t 0 $cid
 }
 
@@ -387,6 +403,7 @@ test_container_push_with_stamp
 test_new_container_push_compat
 test_new_container_push_oci
 test_new_container_push_tar
+test_new_container_push_with_stamp
 test_new_container_push_oci_tag_file
 test_new_container_push_oci_with_auth
 test_new_container_push_legacy
