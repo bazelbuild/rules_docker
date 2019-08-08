@@ -28,8 +28,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TODO (xiaohegong): Move these functions to createImageConfig.go and change pusher logic
-
 // GenerateManifest generates a manifest at the path given by 'dst' for the legacy image constructed from config and layers at configPath and layersPath.
 func GenerateManifest(dst, configPath string, layersPath []string) (v1.Manifest, error) {
 	m, err := buildManifest(configPath, layersPath)
