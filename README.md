@@ -12,6 +12,8 @@ Travis CI | Bazel CI
 * [container_load](#container_load)
 * [container_pull](#container_pull-1) ([example](#container_pull))
 * [container_push](#container_push-1) ([example](#container_push))
+* [new_container_pull](#new_container_pull-1)
+* [new_container_push](#new_container_push-1)
 
 These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
 these (mostly) legacy names still exist largely for backwards-compatibility.  We
@@ -1286,7 +1288,7 @@ A repository rule that pulls down a Docker base image in a manner suitable for
 use with `container_image`'s `base` attribute. Default pull layout is the OCI
 (Open Container Initiative) image format.
 
-**Note:** implicit output targets include `<name>.digest`, an image digest that
+**NOTE:** implicit output targets include `<name>.digest`, an image digest that
 can be used to refer to the image.
 
 **NOTE:** new_container_pull supports authentication using custom docker client
@@ -1446,7 +1448,6 @@ bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
   </tbody>
 </table>
 
-
 <a name="new_container_push"></a>
 ## new_container_push
 
@@ -1540,7 +1541,6 @@ configuration. See [here](#container_push-custom-client-configuration) for detai
     </tr>
   </tbody>
 </table>
-
 
 <a name="container_pull"></a>
 ## container_pull
