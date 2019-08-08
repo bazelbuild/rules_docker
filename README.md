@@ -1346,8 +1346,8 @@ new_container_pull(name, registry, repository, digest, tag)
       <td><code>format</code></td>
       <td>
         <p><code>Format; optional</code></p>
-        <p>The format of the image to be pulled, default to `OCI` layout format.</p>
-        <p>Option for `Docker` too (tarball compatible with `docker load` command).</p>
+        <p>The format of the image to be pulled, default `OCI` for OCI layout format.</p>
+        <p>Specify `Docker` if in need of a tarball compatible with `docker load` command.</p>
       </td>
     </tr>
     <tr>
