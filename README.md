@@ -1295,8 +1295,6 @@ can be used to refer to the image.
 **NOTE:** new_container_pull supports authentication using custom docker client
 configuration. See [here](#container_pull-custom-client-configuration) for details.
 
-**NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
-
 **NOTE:** Set `DOCKER_REPO_CACHE` env variable to make the container puller
 cache downloaded layers at the directory specified as a value to this env
 variable. The caching feature hasn't been thoroughly tested and may be thread
