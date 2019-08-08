@@ -56,10 +56,3 @@ alias(
         "//conditions:default": "@structure_test_linux//file",
     }),
 )
-
-py_binary(
-    name = "idd",
-    srcs = ["idd.py"],
-    legacy_create_init = False,
-    python_version = "PY2",
-)

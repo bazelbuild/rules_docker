@@ -24,6 +24,28 @@ steps:
   args:
   - ./tests/contrib/mv_project_root.sh
 
+  # Test basic image is reproducible.
+- name: "l.gcr.io/google/bazel"
+  args:
+  - --output_base=/workspace/output_base
+  - test
+  - --test_output=errors
+  - --spawn_strategy=standalone
+  - --verbose_failures
+  - //tests/contrib:set_cmd_repro_test
+  dir: 'rules_docker'
+
+  # Test image specifying volumes is reproducible.
+- name: "l.gcr.io/google/bazel"
+  args:
+  - --output_base=/workspace/output_base
+  - test
+  - --test_output=errors
+  - --spawn_strategy=standalone
+  - --verbose_failures
+  - //tests/contrib:derivative_with_volume_repro_test
+  dir: 'rules_docker'
+
   # Test RBE image is reproducible.
 - name: "l.gcr.io/google/bazel"
   args:
@@ -33,18 +55,6 @@ steps:
   - --spawn_strategy=standalone
   - --verbose_failures
   - //tests/contrib:rbe-test-xenial_repro_test
-  dir: 'rules_docker'
-
-  # Test that image installing the openjdk-8-jdk apt package (without any
-  # file cleanup) is not reproducible.
-- name: "l.gcr.io/google/bazel"
-  args:
-  - --output_base=/workspace/output_base
-  - test
-  - --test_output=errors
-  - --spawn_strategy=standalone
-  - --verbose_failures
-  - //tests/contrib:java_pkg_want_failure
   dir: 'rules_docker'
 
   # Test that image installing the python3-dev apt package (without any

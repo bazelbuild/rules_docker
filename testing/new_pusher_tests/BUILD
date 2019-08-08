@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//contrib:test.bzl", "container_test")
+load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
 container_test(
     name = "new_push_verify_pushed_configs_and_files",
-    configs = ["//tests/container/configs:verify_new_pusher.yaml"],
+    configs = ["@io_bazel_rules_docker//tests/container/configs:verify_new_pusher.yaml"],
     image = "@verify_new_pusher_image_contents//image",
 )

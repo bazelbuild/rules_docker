@@ -30,11 +30,11 @@ import (
 
 // TODO (xiaohegong): Move these functions to createImageConfig.go and change pusher logic
 
-// GenerateManifest generates a manifest at the path given by 'dst' for the legacy image in the directory 'src'.
-func GenerateManifest(src, dst, configPath string, layersPath []string) (v1.Manifest, error) {
+// GenerateManifest generates a manifest at the path given by 'dst' for the legacy image constructed from config and layers at configPath and layersPath.
+func GenerateManifest(dst, configPath string, layersPath []string) (v1.Manifest, error) {
 	m, err := buildManifest(configPath, layersPath)
 	if err != nil {
-		return v1.Manifest{}, errors.Wrapf(err, "unable to construct manifest from %s", src)
+		return v1.Manifest{}, errors.Wrapf(err, "unable to construct manifest from config at %s", configPath)
 	}
 
 	if err := writeManifest(m, dst); err != nil {
@@ -95,17 +95,6 @@ func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) 
 // writeManifest takes a Manifest object and writes a JSON file to the given image manifest path.
 func writeManifest(m v1.Manifest, path string) error {
 	rawManifest, err := json.Marshal(m)
-	if err != nil {
-		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
-	}
-
-	// Converting Manifest to string map sorts the output json by key
-	var o map[string]interface{}
-	if err := json.Unmarshal(rawManifest, &o); err != nil {
-		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
-	}
-
-	rawManifest, err = json.Marshal(o)
 	if err != nil {
 		return errors.Wrap(err, "unable to get the JSON encoding of manifest")
 	}

@@ -107,12 +107,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.8.1
+# Download the rules_docker repository at release v0.9.0
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "87fc6a2b128147a0a3039a2fd0b53cc1f2ed5adb8716f50756544a572999ae9a",
-    strip_prefix = "rules_docker-0.8.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.8.1.tar.gz"],
+    sha256 = "e513c0ac6534810eb7a14bf025a0f159726753f97f74ab7863c650d26e01d677",
+    strip_prefix = "rules_docker-0.9.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.9.0.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -159,16 +159,28 @@ container_pull(
 )
 ```
 
-Note: Bazel does not deal well with diamond dependencies. If the repositories that
-are imported by `container_repositories()` have already been imported (at a
-different version) by other rules you called in your `WORKSPACE`, which are
-placed above the call to `container_repositories()`, arbitrary errors might
+### Known Issues
+
+* Bazel does not deal well with diamond dependencies.
+
+
+If the repositories that are imported by `container_repositories()` have already been
+imported (at a different version) by other rules you called in your `WORKSPACE`, which
+are placed above the call to `container_repositories()`, arbitrary errors might
 ocurr. If you get errors related to external repositories, you will likely
 not be able to use `container_repositories()` and will have to import
 directly in your `WORKSPACE` all the required dependencies (see the most up
 to date impl of `container_repositories()` for details).
 
-NEW: Starting with Bazel 0.27.0, you also need to add to your .bazelrc
+* ImportError: No module named moves.urllib.parse    
+    
+This is an example of an error due to a diamond dependency. If you get this
+error, make sure to import rules_docker before other libraries, so that
+_six_ can be patched properly.
+
+  See https://github.com/bazelbuild/rules_docker/issues/1022 for more details.
+
+* Starting with Bazel 0.27.0, you also need to add to your .bazelrc
 file the following:
 
 ```

@@ -16,65 +16,61 @@
 package compat
 
 import (
-	"bytes"
-	"io/ioutil"
-	"path/filepath"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 	"github.com/pkg/errors"
 )
 
-// Read returns a docker image referenced by the legacy intermediate layout at src. The image index should have been outputted by container_pull.
+// Expected metadata files in legacy layout.
+const manifestFile = "manifest.json"
+
+// Read returns a docker image referenced by the legacy intermediate layout at src with given layer tarball paths.
 // NOTE: this only reads index with a single image.
-func Read(src string) (v1.Image, error) {
-	_, err := isValidLegacylayout(src)
-	if err != nil {
-		return nil, errors.Wrapf(err, "invalid legacy layout at %s, requires manifest.json, config.json and digest files", src)
-	}
-
-	digest, err := getManifestDigest(src)
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to get manifest digest from %s", src)
-	}
-
+func Read(src, configPath string, layers []string) (v1.Image, error) {
 	// Constructs and validates a v1.Image object.
 	legacyImg := &legacyImage{
-		path:   src,
-		digest: digest,
+		path:       src,
+		configPath: configPath,
+		layersPath: layers,
 	}
 
 	img, err := partial.CompressedToImage(legacyImg)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s obtained from the manifest at %s", digest, src)
+		return nil, errors.Wrapf(err, "unable to load image obtained from %s", src)
 	}
 
 	if err := validate.Image(img); err != nil {
-		return nil, errors.Wrapf(err, "unable to load image with digest %s due to invalid legacy layout format from %s", digest, src)
+		return nil, errors.Wrapf(err, "unable to load image at %s due to invalid legacy layout format", src)
 	}
 
 	return img, nil
 }
 
-// Get the hash of the image to read at <path> from digest file.
-func getManifestDigest(path string) (v1.Hash, error) {
-	// We expect a file named digest that stores the manifest's hash formatted as sha256:{Hash} in this directory.
-	digest, err := ioutil.ReadFile(filepath.Join(path, digestFile))
-
-	// We compute the manifest digest here if the digest file does not exist.
+// ReadWithBaseTarball returns a Image object with tarball at tarballPath as base and layers appended from layersPath.
+func ReadWithBaseTarball(tarballPath string, layersPath []string) (v1.Image, error) {
+	base, err := tarball.ImageFromPath(tarballPath, nil)
 	if err != nil {
-		rawManifest, err := ioutil.ReadFile(filepath.Join(path, manifestFile))
-		if err != nil {
-			return v1.Hash{}, err
-		}
-
-		digest, _, err := v1.SHA256(bytes.NewReader(rawManifest))
-		if err != nil {
-			return v1.Hash{}, errors.Wrapf(err, "unable to generate digest file from manifest at %s", path)
-		}
-		return digest, nil
+		return nil, errors.Wrapf(err, "unable to parse image from tarball at %s", tarballPath)
 	}
 
-	return v1.NewHash(string(digest))
+	var newImage = base
+
+	for i, l := range layersPath {
+		layer, err := tarball.LayerFromFile(l)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to get layer %d from %s", i, l)
+		}
+
+		newImage, err = mutate.AppendLayers(base, layer)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to append layer %d to base tarball", i)
+		}
+	}
+
+	return newImage, nil
+
 }

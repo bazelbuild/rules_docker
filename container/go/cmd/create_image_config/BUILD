@@ -1,5 +1,3 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +12,25 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ###
-# Build file for digester binary based on go-containerregistry backend.
+# Build file for new create image config binary for creating and writing
+# new config and manifest json files using the go-containerregistry as backend.
+
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["digester.go"],
-    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/digester",
+    srcs = ["createImageConfig.go"],
+    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/create_image_config",
     visibility = ["//visibility:private"],
     deps = [
         "//container/go/pkg/compat:go_default_library",
         "//container/go/pkg/utils:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
     ],
 )
 
 go_binary(
-    name = "digester",
+    name = "create_image_config",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

@@ -12,13 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(
-    "@bazel_tools//tools/build_rules:test_rules.bzl",
-    "file_test",
-)
 load("//container:bundle.bzl", "container_bundle")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
-load("//contrib:idd.bzl", "idd")
 load("//contrib:push-all.bzl", "docker_push")
 load("//contrib:rename_image.bzl", "rename_image")
 load("//contrib:repro_test.bzl", "container_repro_test")
@@ -132,22 +127,6 @@ compare_ids_fail_test(
     ],
 )
 
-idd(
-    name = "test_idd_rule",
-    args = [
-        "-v",
-        "-d",
-    ],
-    image1 = "@distroless_base//image",
-    image2 = "@distroless_base//image",
-)
-
-file_test(
-    name = "test_idd_rule_output",
-    file = ":test_idd_rule",
-    regexp = "^set -x && python .*idd .*image.tar .*image.tar -v -d$",
-)
-
 container_bundle(
     name = "create_empty_bundle",
     images = {},
@@ -167,12 +146,6 @@ docker_push(
     "kaniko_latest",
     "kaniko_debug",
 ]]
-
-toolchain_container(
-    name = "java_pkg_non_deterministic",
-    base = "@official_xenial//image",
-    packages = ["openjdk-8-jdk"],
-)
 
 toolchain_container(
     name = "python3_pkg_non_deterministic",
@@ -205,13 +178,6 @@ container_repro_test(
 container_repro_test(
     name = "rbe-test-xenial_repro_test",
     image = "//tests/docker/toolchain_container:rbe-test-xenial-with-pkgs",
-    workspace_file = "//:WORKSPACE",
-)
-
-container_repro_test(
-    name = "java_pkg_want_failure",
-    image = ":java_pkg_non_deterministic",
-    want_reproducibility = False,
     workspace_file = "//:WORKSPACE",
 )
 
