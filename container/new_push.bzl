@@ -35,10 +35,7 @@ def _get_runfile_path(ctx, f):
 def _impl(ctx):
     """Core implementation of new_container_push."""
 
-    # TODO: 1) Possible optimization for efficiently pushing intermediate
-    # representation, similar with the old python implementation, e.g., push-by-layer.
-    # 2) Use and implementation of attr.stamp.
-
+    # TODO: Possible optimization for efficiently pushing intermediate format after container_image is refactored, similar with the old python implementation, e.g., push-by-layer.
     pusher_args = []
     digester_args = []
     digester_input = []
@@ -53,6 +50,15 @@ def _impl(ctx):
     if ctx.file.tag_file:
         tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
         runfiles_tag_file = [ctx.file.tag_file]
+
+    # If any stampable attr contains python format syntax (which is how users
+    # configure stamping), we enable stamping.
+    if ctx.attr.stamp:
+        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
+    stamp = "{" in tag or "{" in registry or "{" in repository
+    stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
+    for f in stamp_inputs:
+        pusher_args += ["-stampInfoFile", "%s" % _get_runfile_path(ctx, f)]
 
     # Find and set src to correct paths depending the image format to be pushed
     if ctx.attr.format == "oci":
@@ -123,7 +129,7 @@ def _impl(ctx):
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
 
-    pusher_runfiles = [ctx.executable._pusher] + runfiles_tag_file
+    pusher_runfiles = [ctx.executable._pusher] + runfiles_tag_file + stamp_inputs
     if ctx.attr.format == "legacy":
         pusher_runfiles += legacy_files
     else:
@@ -150,6 +156,8 @@ def _impl(ctx):
             registry = registry,
             repository = repository,
             tag = tag,
+            stamp = stamp,
+            stamp_inputs = stamp_inputs,
         ),
     ]
 

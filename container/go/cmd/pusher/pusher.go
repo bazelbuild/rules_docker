@@ -38,6 +38,7 @@ var (
 	legacyBaseImage = flag.String("legacyBaseImage", "", "Path to a legacy base image in tarball form. Should be specified only when format is legacy.")
 	configPath      = flag.String("configPath", "", "Path to the image config. Should be specified only when format is legacy.")
 	layers          utils.ArrayStringFlags
+	stampInfoFile   utils.ArrayStringFlags
 )
 
 const (
@@ -49,6 +50,7 @@ const (
 
 func main() {
 	flag.Var(&layers, "layers", "The list of paths to the layers of this docker image, only used for legacy images.")
+	flag.Var(&stampInfoFile, "stampInfoFile", "The list of paths to the stamp info files used to substitute supported attribute when a python format placeholder is provivided in dst, e.g., {BUILD_USER}.")
 	flag.Parse()
 	log.Println("Running the Image Pusher to push images to a Docker Registry...")
 
@@ -106,11 +108,20 @@ func main() {
 		log.Fatalf("Error reading from %s: %v", imgSrc, err)
 	}
 
-	if err := push(*dst, img); err != nil {
-		log.Fatalf("Error pushing image to %s: %v", *dst, err)
+	// Infer stamp info if provided and perform substitutions in the provided tag name.
+	formattedDst, err := compat.Stamp(*dst, stampInfoFile)
+	if err != nil {
+		log.Fatalf("Error resolving stamp info to destination %s: %v", *dst, err)
+	}
+	if formattedDst != *dst {
+		log.Printf("Destination %s was resolved to %s based on inferred stamp info.", *dst, formattedDst)
 	}
 
-	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, *dst)
+	if err := push(formattedDst, img); err != nil {
+		log.Fatalf("Error pushing image to %s: %v", formattedDst, err)
+	}
+
+	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, formattedDst)
 }
 
 // push pushes the given image to the given destination.
