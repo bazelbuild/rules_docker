@@ -25,7 +25,7 @@ load(
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.36"
-RULES_DOCKER_GO_BINARY_RELEASE = "0ff1a8a2315b40cd41bba5c5b28d98a5c31d770d"
+RULES_DOCKER_GO_BINARY_RELEASE = "e65f10d1032ad8c56d713696d231338aa87df10a"
 
 _local_tool_build_template = """
 sh_binary(
@@ -62,7 +62,7 @@ def repositories():
         http_file(
             name = "go_puller_linux",
             executable = True,
-            sha256 = "3ba84a62695f8d4fb08d6181a85640c80ab317ed3c363db670a7a2f237ab044c",
+            sha256 = "561e3d59186c55852c0bf5b4fbe9bd728909d7c20085a2538884a3aee8f24bc6",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-amd64")],
         )
 
@@ -70,7 +70,7 @@ def repositories():
         http_file(
             name = "go_puller_darwin",
             executable = True,
-            sha256 = "236cbc4788c8c287ff80b33dd5b1bd9a64ee8d8cf09413f251672340d37532eb",
+            sha256 = "6ba9a537450d4d5d98b1e8226231f05fb7d7d51b3b23e8c9a4d52f78eb6a5a04",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-darwin-amd64")],
         )
 
@@ -78,7 +78,7 @@ def repositories():
         http_file(
             name = "loader_linux",
             executable = True,
-            sha256 = "720aabb9ccc67a11e657dc20534281528d3ab6a4fe963d4127380a42e6ffadd2",
+            sha256 = "5731eacfe4d27c8868f1d8163d0cec52b1d35993fd57fc508da1ca1c10a63a57",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-amd64")],
         )
 
@@ -86,7 +86,7 @@ def repositories():
         http_file(
             name = "loader_darwin",
             executable = True,
-            sha256 = "1f948fae0f32ee463e857c6dc431a7be5fe3ea21e03fbac0530a2478ec07fe2c",
+            sha256 = "80ad854ae1e058d7154c421510a5afebab015ff2d1a49d50ee33842f35c90e44",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-darwin-amd64")],
         )
 

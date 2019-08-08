@@ -19,7 +19,9 @@
 package compat
 
 import (
+	"io/ioutil"
 	"log"
+	"os"
 	ospkg "os"
 	"path"
 	"strconv"
@@ -111,6 +113,22 @@ func LegacyFromOCIImage(img v1.Image, srcDir, dstDir string) error {
 	manifestPath := path.Join(targetDir, manifestHex)
 	if err = generateSymlinks(manifestPath, dstLink); err != nil {
 		return errors.Wrapf(err, "failed to generate %s symlink", legacyManifestFile)
+	}
+
+	return nil
+}
+
+// WriteDigest writes the sha256 digest of the manifest of the given image to the file given by dst.
+func WriteDigest(image v1.Image, dst string) error {
+	digest, err := image.Digest()
+	if err != nil {
+		return errors.Wrap(err, "error getting image digest")
+	}
+
+	rawDigest := []byte(digest.Algorithm + ":" + digest.Hex)
+
+	if err = ioutil.WriteFile(dst, rawDigest, os.ModePerm); err != nil {
+		return errors.Wrapf(err, "unable to write digest file to %s", dst)
 	}
 
 	return nil

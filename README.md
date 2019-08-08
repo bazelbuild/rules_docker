@@ -159,16 +159,28 @@ container_pull(
 )
 ```
 
-Note: Bazel does not deal well with diamond dependencies. If the repositories that
-are imported by `container_repositories()` have already been imported (at a
-different version) by other rules you called in your `WORKSPACE`, which are
-placed above the call to `container_repositories()`, arbitrary errors might
+### Known Issues
+
+* Bazel does not deal well with diamond dependencies.
+
+
+If the repositories that are imported by `container_repositories()` have already been
+imported (at a different version) by other rules you called in your `WORKSPACE`, which
+are placed above the call to `container_repositories()`, arbitrary errors might
 ocurr. If you get errors related to external repositories, you will likely
 not be able to use `container_repositories()` and will have to import
 directly in your `WORKSPACE` all the required dependencies (see the most up
 to date impl of `container_repositories()` for details).
 
-NEW: Starting with Bazel 0.27.0, you also need to add to your .bazelrc
+* ImportError: No module named moves.urllib.parse    
+    
+This is an example of an error due to a diamond dependency. If you get this
+error, make sure to import rules_docker before other libraries, so that
+_six_ can be patched properly.
+
+  See https://github.com/bazelbuild/rules_docker/issues/1022 for more details.
+
+* Starting with Bazel 0.27.0, you also need to add to your .bazelrc
 file the following:
 
 ```

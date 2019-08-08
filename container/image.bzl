@@ -92,39 +92,118 @@ def _get_base_manifest(ctx, name, base):
         return layer.get("manifest")
     return None
 
-def _image_config(
+def _add_go_args(
         ctx,
-        name,
+        args,
+        inputs,
+        manifest,
+        config,
+        labels,
+        entrypoint,
+        cmd,
+        null_cmd,
+        null_entrypoint,
+        creation_time,
+        env,
+        workdir,
         layer_names,
-        entrypoint = None,
-        cmd = None,
-        creation_time = None,
-        env = None,
-        base_config = None,
-        base_manifest = None,
-        operating_system = None,
-        layer_name = None,
-        workdir = None,
-        null_entrypoint = False,
-        null_cmd = False):
-    """Create the configuration for a new container image."""
-    config = ctx.actions.declare_file(name + "." + layer_name + ".config")
-    manifest = ctx.actions.declare_file(name + "." + layer_name + ".manifest")
+        base_config,
+        base_manifest,
+        operating_system):
+    args += [
+        "-outputConfig",
+        "%s" % config.path,
+    ] + [
+        "-outputManifest",
+        "%s" % manifest.path,
+    ]
 
-    label_file_dict = _string_to_label(
-        ctx.files.label_files,
-        ctx.attr.label_file_strings,
-    )
+    if null_entrypoint:
+        args += ["-nullEntryPoint"]
 
-    labels = dict()
-    for label in ctx.attr.labels:
-        fname = ctx.attr.labels[label]
-        if fname[0] == "@":
-            labels[label] = "@" + label_file_dict[fname[1:]].path
-        else:
-            labels[label] = fname
+    if null_cmd:
+        args += ["-nullCmd"]
 
-    args = [
+    for x in entrypoint:
+        args += ["-entrypoint", "%s" % x]
+    for x in cmd:
+        args += ["-command", "%s" % x]
+    for x in ctx.attr.ports:
+        args += ["-ports", "%s" % x]
+    for x in ctx.attr.volumes:
+        args += ["-volumes", "%s" % x]
+
+    if creation_time:
+        args += ["-creationTime", "%s" % creation_time]
+    elif ctx.attr.stamp:
+        # If stamping is enabled, and the creation_time is not manually defined,
+        # default to '{BUILD_TIMESTAMP}'.
+        args += ["-creationTime", "{BUILD_TIMESTAMP}"]
+
+    for key, value in labels.items():
+        args += ["-labels", "%s" % "=".join([key, value])]
+
+    for key, value in env.items():
+        args += ["-env", "%s" % "=".join([
+            ctx.expand_make_variables("env", key, {}),
+            ctx.expand_make_variables("env", value, {}),
+        ])]
+
+    if ctx.attr.user:
+        args += ["-user", ctx.attr.user]
+    if workdir:
+        args += ["-workdir", workdir]
+
+    inputs += layer_names
+    for layer_name in layer_names:
+        args += ["-layerDigestFile", "@" + layer_name.path]
+
+    if ctx.attr.label_files:
+        inputs += ctx.files.label_files
+
+    if base_config:
+        args += ["-baseConfig", "%s" % base_config.path]
+        inputs += [base_config]
+
+    if base_manifest:
+        args += ["-baseManifest", "%s" % base_manifest.path]
+        inputs += [base_manifest]
+
+    if operating_system:
+        args += ["-operatingSystem", "%s" % operating_system]
+
+    if ctx.attr.stamp:
+        stamp_inputs = [ctx.info_file, ctx.version_file]
+        for f in stamp_inputs:
+            args += ["-stampInfoFile", "%s" % f.path]
+        inputs += stamp_inputs
+
+    if ctx.attr.launcher_args and not ctx.attr.launcher:
+        fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
+    if ctx.attr.launcher:
+        for x in ["/" + ctx.file.launcher.basename]:
+            args += ["-entrypointPrefix", "%s" % x]
+        args += ctx.attr.launcher_args
+
+def _add_legacy_args(
+        ctx,
+        args,
+        inputs,
+        manifest,
+        config,
+        labels,
+        entrypoint,
+        cmd,
+        null_cmd,
+        null_entrypoint,
+        creation_time,
+        env,
+        workdir,
+        layer_names,
+        base_config,
+        base_manifest,
+        operating_system):
+    args += [
         "--output=%s" % config.path,
     ] + [
         "--manifestoutput=%s" % manifest.path,
@@ -163,7 +242,7 @@ def _image_config(
     if workdir:
         args += ["--workdir=" + workdir]
 
-    inputs = layer_names
+    inputs += layer_names
     for layer_name in layer_names:
         args += ["--layer=@" + layer_name.path]
 
@@ -194,14 +273,93 @@ def _image_config(
             for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
         ]
 
+def _image_config(
+        ctx,
+        name,
+        layer_names,
+        entrypoint = None,
+        cmd = None,
+        creation_time = None,
+        env = None,
+        base_config = None,
+        base_manifest = None,
+        operating_system = None,
+        layer_name = None,
+        workdir = None,
+        null_entrypoint = False,
+        null_cmd = False):
+    """Create the configuration for a new container image."""
+    config = ctx.actions.declare_file(name + "." + layer_name + ".config")
+    manifest = ctx.actions.declare_file(name + "." + layer_name + ".manifest")
+
+    label_file_dict = _string_to_label(
+        ctx.files.label_files,
+        ctx.attr.label_file_strings,
+    )
+
+    labels = dict()
+    for label in ctx.attr.labels:
+        fname = ctx.attr.labels[label]
+        if fname[0] == "@":
+            labels[label] = "@" + label_file_dict[fname[1:]].path
+        else:
+            labels[label] = fname
+
+    args = []
+    inputs = []
+    exec = None
+    if ctx.attr.legacy_create_image_config:
+        _add_legacy_args(
+            ctx,
+            args,
+            inputs,
+            manifest,
+            config,
+            labels,
+            entrypoint,
+            cmd,
+            null_cmd,
+            null_entrypoint,
+            creation_time,
+            env,
+            workdir,
+            layer_names,
+            base_config,
+            base_manifest,
+            operating_system,
+        )
+        exec = ctx.executable.create_image_config
+    else:
+        _add_go_args(
+            ctx,
+            args,
+            inputs,
+            manifest,
+            config,
+            labels,
+            entrypoint,
+            cmd,
+            null_cmd,
+            null_entrypoint,
+            creation_time,
+            env,
+            workdir,
+            layer_names,
+            base_config,
+            base_manifest,
+            operating_system,
+        )
+        exec = ctx.executable.go_create_image_config
+
     ctx.actions.run(
-        executable = ctx.executable.create_image_config,
+        executable = exec,
         arguments = args,
         inputs = inputs,
         outputs = [config, manifest],
         use_default_shell_env = True,
         mnemonic = "ImageConfig",
     )
+
     return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)
 
 def _repository_name(ctx):
@@ -477,6 +635,12 @@ _attrs = dicts.add(_layer.attrs, {
     "creation_time": attr.string(),
     "docker_run_flags": attr.string(),
     "entrypoint": attr.string_list(),
+    "go_create_image_config": attr.label(
+        default = Label("//container/go/cmd/create_image_config:create_image_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
     "label_file_strings": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
@@ -486,6 +650,10 @@ _attrs = dicts.add(_layer.attrs, {
     "launcher": attr.label(allow_single_file = True),
     "launcher_args": attr.string_list(default = []),
     "layers": attr.label_list(providers = [LayerInfo]),
+    "legacy_create_image_config": attr.bool(
+        default = True,
+        doc = ("If set to False, the Go create_image_config binary will be run instead."),
+    ),
     "legacy_repository_naming": attr.bool(default = False),
     "legacy_run_behavior": attr.bool(
         # TODO(mattmoor): Default this to False.
