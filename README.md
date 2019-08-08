@@ -12,8 +12,8 @@ Travis CI | Bazel CI
 * [container_load](#container_load)
 * [container_pull](#container_pull-1) ([example](#container_pull))
 * [container_push](#container_push-1) ([example](#container_push))
-* [new_container_pull](#new_container_pull-1)
-* [new_container_push](#new_container_push-1)
+* [new_container_pull](#new_container_pull)
+* [new_container_push](#new_container_push)
 
 These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
 these (mostly) legacy names still exist largely for backwards-compatibility.  We
