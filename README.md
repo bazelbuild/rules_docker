@@ -1191,7 +1191,7 @@ This can then be referenced in `BUILD` files as `@gitlab//image`.
 
 ### container_pull (Custom client configuration)
 
-If you specified a docker client directory using the "client_config" attribute
+If you specified a docker client directory using the `client_config` attribute
 to the docker toolchain configuration described <a href="#setup">here</a>, you
 can use a container_pull that uses the authentication credentials from the
 specified docker client directory as follows:
@@ -1224,6 +1224,10 @@ authenticated_container_pull(
 ```
 
 This can then be referenced in `BUILD` files as `@gitlab//image`.
+
+**NOTE:** This should only be used if a custom `client_config` was set. If you want
+          to use the DOCKER_CONFIG env variable or the default home directory
+	  use the standard `container_pull` rule.
 
 **NOTE:** This will only work on systems with Python >2.7.6
 
