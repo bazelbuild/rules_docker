@@ -82,7 +82,7 @@ func main() {
 		imgSrc = filepath.Dir(*configPath)
 		manifestPath := filepath.Join(imgSrc, manifestFile)
 
-		// TODO (xiaohegong): remove generate manifest after createImageConfig is merged.
+		// TODO (suvanjan): remove generate manifest after createImageConfig/createImageManifest is always producing a manifest (not a mandatory output currently). Load and append external manifest if given.
 		log.Printf("Generating image manifest to %s...", manifestPath)
 		_, err := compat.GenerateManifest(manifestPath, *configPath, layers)
 		if err != nil {

@@ -307,7 +307,7 @@ def _image_config(
 
     args = []
     inputs = []
-    exec = None
+    executable = None
     if ctx.attr.legacy_create_image_config:
         _add_legacy_args(
             ctx,
@@ -328,7 +328,7 @@ def _image_config(
             base_manifest,
             operating_system,
         )
-        exec = ctx.executable.create_image_config
+        executable = ctx.executable.create_image_config
     else:
         _add_go_args(
             ctx,
@@ -349,10 +349,10 @@ def _image_config(
             base_manifest,
             operating_system,
         )
-        exec = ctx.executable.go_create_image_config
+        executable = ctx.executable.go_create_image_config
 
     ctx.actions.run(
-        executable = exec,
+        executable = executable,
         arguments = args,
         inputs = inputs,
         outputs = [config, manifest],
