@@ -4,12 +4,10 @@
 reviewers:
 - nlopezgi
 - smukherj1
-- xingao267
 - alex1545
 
 # Approvers can /approve changes to files within this directory tree.
 approvers:
 - nlopezgi
 - smukherj1
-- xingao267
 - alex1545
