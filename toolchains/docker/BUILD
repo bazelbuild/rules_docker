@@ -29,11 +29,13 @@ toolchain_type(
 )
 
 # Default docker toolchain that expects the 'docker' executable
-# to be in the PATH
+# to be in the PATH.
+# Also expects xz to be in PATH if needed for xz compression.
 docker_toolchain(
     name = "default_toolchain_impl",
     tool_path = "docker",
     visibility = ["//visibility:public"],
+    xz_path = "xz",
 )
 
 toolchain(
