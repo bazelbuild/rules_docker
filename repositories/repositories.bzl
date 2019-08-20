@@ -124,10 +124,10 @@ def repositories():
     if "io_bazel_rules_go" not in excludes:
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "8df59f11fb697743cbb3f26cfb8750395f30471e9eabde0d174c3aebc7a1cd39",
+            sha256 = "313f2c7a23fecc33023563f082f381a32b9b7254f727a7dd2d6380ccc6dfe09b",
             urls = [
-                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/0.19.1/rules_go-0.19.1.tar.gz",
-                "https://github.com/bazelbuild/rules_go/releases/download/0.19.1/rules_go-0.19.1.tar.gz",
+                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/0.19.3/rules_go-0.19.3.tar.gz",
+                "https://github.com/bazelbuild/rules_go/releases/download/0.19.3/rules_go-0.19.3.tar.gz",
             ],
         )
     if "rules_python" not in excludes:
@@ -221,10 +221,10 @@ py_library(
     if "subpar" not in excludes:
         http_archive(
             name = "subpar",
-            sha256 = "accdc89c2349c7f62de79b6e4b6df51449117a8afb21e7a24b706424ab392cac",
+            sha256 = "481233d60c547e0902d381cd4fb85b63168130379600f330821475ad234d9336",
             # Commit from 2019-03-07.
-            strip_prefix = "subpar-2917d275ee27d7935f7809413c74eddf71a46e5c",
-            urls = ["https://github.com/google/subpar/archive/2917d275ee27d7935f7809413c74eddf71a46e5c.tar.gz"],
+            strip_prefix = "subpar-9fae6b63cfeace2e0fb93c9c1ebdc28d3991b16f",
+            urls = ["https://github.com/google/subpar/archive/9fae6b63cfeace2e0fb93c9c1ebdc28d3991b16f.tar.gz"],
         )
 
     if "structure_test_linux" not in excludes:
