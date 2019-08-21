@@ -18,6 +18,7 @@ load(
     "http_archive",
     "http_file",
 )
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load(
     "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     _docker_toolchain_configure = "toolchain_configure",
@@ -95,9 +96,8 @@ def repositories():
         http_file(
             name = "puller",
             executable = True,
-            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
-            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
+            sha256 = "8c82aa8e5f45a2294f0f4f1a2056c9caec6ad1b72d628425c56a497fe306bd60",
+            urls = ["http://archive.tubularlabs.net/misc/containerregistry/puller.par"],
         )
 
     if "importer" not in excludes:
@@ -110,12 +110,10 @@ def repositories():
         )
 
     if "containerregistry" not in excludes:
-        http_archive(
+        git_repository(
             name = "containerregistry",
-            sha256 = "a8cdf2452323e0fefa4edb01c08b2ec438c9fa3192bc9f408b89287598c12abc",
-            strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
-            urls = [("https://github.com/google/containerregistry/archive/" +
-                     CONTAINERREGISTRY_RELEASE + ".tar.gz")],
+            remote = "https://github.com/c4urself/containerregistry.git",
+            commit = "c05873486625d452f7dc36ce718e1310a65cd2f1",
         )
 
     # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
@@ -140,21 +138,24 @@ def repositories():
             urls = ["https://github.com/bazelbuild/rules_python/archive/93d8b0af6d8ca1ee37816a829085d7092b04cc7b.tar.gz"],
         )
 
-    if "httplib2" not in excludes:
+    if "httplib2_py2_3" not in excludes:
         # TODO(mattmoor): Is there a clean way to override?
         http_archive(
-            name = "httplib2",
+            name = "httplib2_py2_3",
             build_file_content = """
 py_library(
-   name = "httplib2",
-   srcs = glob(["**/*.py"]),
-   data = ["cacerts.txt"],
-   visibility = ["//visibility:public"]
+    name = "httplib2",
+    srcs = glob(["**/*.py"]),
+    data = [
+        "python2/httplib2/cacerts.txt",
+        "python3/httplib2/cacerts.txt",
+    ],
+visibility = ["//visibility:public"]
 )""",
-            sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
-            strip_prefix = "httplib2-0.12.1/python2/httplib2/",
+            sha256 = "d9f568c183d1230f271e9c60bd99f3f2b67637c3478c9068fea29f7cca3d911f",
+            strip_prefix = "httplib2-0.11.3",
             type = "tar.gz",
-            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
+            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.11.3"],
         )
 
     # Used by oauth2client

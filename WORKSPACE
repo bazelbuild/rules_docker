@@ -33,6 +33,12 @@ load(
 
 container_repositories()
 
+load(
+    "//repositories:go_repositories.bzl",
+    container_go_repositories = "go_deps",
+)
+container_go_repositories()
+
 load("//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
