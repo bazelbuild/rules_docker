@@ -96,8 +96,9 @@ def repositories():
         http_file(
             name = "puller",
             executable = True,
-            sha256 = "8c82aa8e5f45a2294f0f4f1a2056c9caec6ad1b72d628425c56a497fe306bd60",
-            urls = ["http://archive.tubularlabs.net/misc/containerregistry/puller.par"],
+            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
+            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
+                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
         )
 
     if "importer" not in excludes:
