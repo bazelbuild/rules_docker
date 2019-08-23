@@ -30,7 +30,7 @@ import (
 
 // GenerateManifest generates a manifest at the path given by 'dst' for the legacy image constructed from config and layers at configPath and layersPath.
 func GenerateManifest(dst, configPath string, layersPath []string) (v1.Manifest, error) {
-	m, err := buildManifest(configPath, layersPath)
+	m, _, err := buildManifest(configPath, layersPath)
 	if err != nil {
 		return v1.Manifest{}, errors.Wrapf(err, "unable to construct manifest from config at %s", configPath)
 	}
@@ -42,16 +42,19 @@ func GenerateManifest(dst, configPath string, layersPath []string) (v1.Manifest,
 	return m, nil
 }
 
-// buildManifest takes the directory to image config and an array of directories to the layers and build a manifest object based on the given config and layers.
-func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) {
+// buildManifest takes the directory to image config and an array of directories
+// to the layers and build a manifest object based on the given config and
+// layers. Also returns a map from the layer digest to the diff ID because the
+// manifest object itself doesn't store this information.
+func buildManifest(configPath string, layersPath []string) (v1.Manifest, map[string]string, error) {
 	rawConfig, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return v1.Manifest{}, errors.Wrapf(err, "unable to read image config file from %s", configPath)
+		return v1.Manifest{}, nil, errors.Wrapf(err, "unable to read image config file from %s", configPath)
 	}
 
 	cfgHash, cfgSize, err := v1.SHA256(bytes.NewReader(rawConfig))
 	if err != nil {
-		return v1.Manifest{}, errors.Wrap(err, "unable to hash image config file")
+		return v1.Manifest{}, nil, errors.Wrap(err, "unable to hash image config file")
 	}
 
 	manifest := v1.Manifest{
@@ -64,20 +67,26 @@ func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) 
 		},
 	}
 
+	layerDigestToDiffID := make(map[string]string)
+
 	manifest.Layers = make([]v1.Descriptor, len(layersPath))
 	for i, l := range layersPath {
 		layer, err := tarball.LayerFromFile(l)
 		if err != nil {
-			return v1.Manifest{}, errors.Wrapf(err, "unable to get layer %d from %s", i, l)
+			return v1.Manifest{}, nil, errors.Wrapf(err, "unable to get layer %d from %s", i, l)
 		}
 
 		layerSize, err := layer.Size()
 		if err != nil {
-			return v1.Manifest{}, err
+			return v1.Manifest{}, nil, errors.Wrap(err, "unable to get size of layer")
 		}
 		layerHash, err := layer.Digest()
 		if err != nil {
-			return v1.Manifest{}, err
+			return v1.Manifest{}, nil, errors.Wrap(err, "unable to get digest of layer")
+		}
+		layerDiff, err := layer.DiffID()
+		if err != nil {
+			return v1.Manifest{}, nil, errors.Wrap(err, "unable to get DiffID of layer")
 		}
 
 		manifest.Layers[i] = v1.Descriptor{
@@ -85,9 +94,10 @@ func buildManifest(configPath string, layersPath []string) (v1.Manifest, error) 
 			Size:      layerSize,
 			Digest:    layerHash,
 		}
+		layerDigestToDiffID[layerHash.Hex] = layerDiff.Hex
 	}
 
-	return manifest, nil
+	return manifest, layerDigestToDiffID, nil
 }
 
 // writeManifest takes a Manifest object and writes a JSON file to the given image manifest path.

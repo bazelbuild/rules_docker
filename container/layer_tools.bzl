@@ -90,12 +90,12 @@ def assemble(ctx, images, output, stamp = False):
     for tag in images:
         image = images[tag]
         args += [
-            "--tags=" + tag + "=@" + image["config"].path,
+            "--tag=" + tag + "=" + image["config"].path,
         ]
 
         if image.get("manifest"):
             args += [
-                "--manifests=" + tag + "=@" + image["manifest"].path,
+                "--manifest=" + tag + "=" + image["manifest"].path,
             ]
 
         inputs += [image["config"]]
@@ -106,11 +106,10 @@ def assemble(ctx, images, output, stamp = False):
         for i in range(0, len(image["diff_id"])):
             args += [
                 "--layer=" +
-                "@" + image["diff_id"][i].path +
-                "=@" + image["blobsum"][i].path +
-                # No @, not resolved through utils, always filename.
-                "=" + image["unzipped_layer"][i].path +
-                "=" + image["zipped_layer"][i].path,
+                image["diff_id"][i].path +
+                "," + image["blobsum"][i].path +
+                "," + image["unzipped_layer"][i].path +
+                "," + image["zipped_layer"][i].path,
             ]
         inputs += image["unzipped_layer"]
         inputs += image["diff_id"]
@@ -118,14 +117,14 @@ def assemble(ctx, images, output, stamp = False):
         inputs += image["blobsum"]
 
         if image.get("legacy"):
-            args += ["--legacy=" + image["legacy"].path]
+            args += ["--source_image=" + image["legacy"].path]
             inputs += [image["legacy"]]
 
     if stamp:
-        args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
+        args += ["--stamp_info_file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
     ctx.actions.run(
-        executable = ctx.executable.join_layers,
+        executable = ctx.executable.join_layers_go,
         arguments = args,
         tools = inputs,
         outputs = [output],
@@ -249,5 +248,10 @@ tools = {
         cfg = "host",
         executable = True,
         allow_files = True,
+    ),
+    "join_layers_go": attr.label(
+        default = Label("//container/go/cmd/join_layers"),
+        cfg = "host",
+        executable = True,
     ),
 }

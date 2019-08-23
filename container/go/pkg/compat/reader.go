@@ -33,18 +33,17 @@ const manifestFile = "manifest.json"
 func Read(src, configPath string, layers []string) (v1.Image, error) {
 	// Constructs and validates a v1.Image object.
 	legacyImg := &legacyImage{
-		path:       src,
 		configPath: configPath,
 		layersPath: layers,
 	}
 
 	img, err := partial.CompressedToImage(legacyImg)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to load image obtained from %s", src)
+		return nil, err
 	}
 
 	if err := validate.Image(img); err != nil {
-		return nil, errors.Wrapf(err, "unable to load image at %s due to invalid legacy layout format", src)
+		return nil, errors.Wrapf(err, "unable to validate loaded image")
 	}
 
 	return img, nil
