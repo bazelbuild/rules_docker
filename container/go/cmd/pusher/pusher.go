@@ -20,12 +20,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/pkg/errors"
 )
@@ -37,6 +38,7 @@ var (
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	legacyBaseImage = flag.String("legacyBaseImage", "", "Path to a legacy base image in tarball form. Should be specified only when format is legacy.")
 	configPath      = flag.String("configPath", "", "Path to the image config. Should be specified only when format is legacy.")
+	onlyPushChanged = flag.Bool("only-push-changed", false, "If set to true, will only push images where the digest has changed.")
 	layers          utils.ArrayStringFlags
 	stampInfoFile   utils.ArrayStringFlags
 )
@@ -46,6 +48,7 @@ const (
 	manifestFile = "manifest.json"
 	// indexManifestFile is the filename of image manifest config in OCI format.
 	indexManifestFile = "index.json"
+	ManifestUnknownError = "MANIFEST_UNKNOWN: manifest unknown"
 )
 
 func main() {
@@ -124,6 +127,27 @@ func main() {
 	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, formattedDst)
 }
 
+func digestExists(dst string ,img v1.Image) (bool, error) {
+	// Try to create a digest for the image and then check if that digest exists in the repository
+	digest, err := img.Digest()
+	if err != nil {
+		return false, errors.Wrapf(err, "unable to get local image digest")
+	}
+	digestRef, err := name.NewDigest(strings.Join([]string{dst, digest.String()}, "@"))
+	if err != nil {
+		return false, errors.Wrapf(err, "Couldn't create ref from digest")
+	}
+	remoteImg, err := remote.Image(digestRef, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err != nil {
+		if strings.HasPrefix(err.Error(), ManifestUnknownError) {
+			// no manifest matching the digest
+			return false, nil
+		}
+		return false, errors.Wrapf(err, "unable to get remote image")
+	}
+	return remoteImg != nil, nil
+}
+
 // push pushes the given image to the given destination.
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout, legacy layout or Docker tarball format.
@@ -133,6 +157,16 @@ func push(dst string, img v1.Image) error {
 	ref, err := name.ParseReference(dst)
 	if err != nil {
 		return errors.Wrapf(err, "error parsing %q as an image reference", dst)
+	}
+
+	if *onlyPushChanged {
+		exists, err := digestExists(dst, img)
+		if err != nil {
+			log.Printf("Error checking if digest already exists %v. Still pushing", err)
+		}
+		if exists {
+			return nil
+		}
 	}
 
 	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {

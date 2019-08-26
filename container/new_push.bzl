@@ -114,6 +114,9 @@ def _impl(ctx):
         tag = tag,
     )]
 
+    if ctx.attr.only_push_changed:
+      pusher_args += ["-only-push-changed"]
+
     digester_args += ["-dst", str(ctx.outputs.digest.path), "-format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
@@ -199,6 +202,11 @@ new_container_push = rule(
             allow_single_file = True,
             doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
         ),
+        "only_push_changed": attr.bool(
+            default = False,
+            mandatory = False,
+            doc = "Only push images if the digest has changed, default to False",
+        ),
         "_digester": attr.label(
             default = "@io_bazel_rules_docker//container/go/cmd/digester",
             cfg = "host",
@@ -214,7 +222,7 @@ new_container_push = rule(
             default = Label("//container:push-tag.sh.tpl"),
             allow_single_file = True,
         ),
-    }, _layer_tools),
+            }, _layer_tools),
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
