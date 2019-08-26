@@ -92,15 +92,12 @@ def assemble(ctx, images, output, stamp = False):
         args += [
             "--tag=" + tag + "=" + image["config"].path,
         ]
+        inputs += [image["config"]]
 
         if image.get("manifest"):
             args += [
                 "--manifest=" + tag + "=" + image["manifest"].path,
             ]
-
-        inputs += [image["config"]]
-
-        if image.get("manifest"):
             inputs += [image["manifest"]]
 
         for i in range(0, len(image["diff_id"])):
@@ -108,10 +105,8 @@ def assemble(ctx, images, output, stamp = False):
                 "--layer=" +
                 image["diff_id"][i].path +
                 "," + image["blobsum"][i].path +
-                "," + image["unzipped_layer"][i].path +
                 "," + image["zipped_layer"][i].path,
             ]
-        inputs += image["unzipped_layer"]
         inputs += image["diff_id"]
         inputs += image["zipped_layer"]
         inputs += image["blobsum"]
@@ -124,7 +119,7 @@ def assemble(ctx, images, output, stamp = False):
         args += ["--stamp_info_file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
     ctx.actions.run(
-        executable = ctx.executable.join_layers_go,
+        executable = ctx.executable.join_layers,
         arguments = args,
         tools = inputs,
         outputs = [output],
@@ -244,12 +239,6 @@ tools = {
         allow_single_file = True,
     ),
     "join_layers": attr.label(
-        default = Label("//container:join_layers"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
-    ),
-    "join_layers_go": attr.label(
         default = Label("//container/go/cmd/join_layers"),
         cfg = "host",
         executable = True,

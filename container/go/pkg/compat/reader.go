@@ -18,9 +18,10 @@ package compat
 import (
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 	"github.com/pkg/errors"
 )
@@ -28,13 +29,35 @@ import (
 // Expected metadata files in legacy layout.
 const manifestFile = "manifest.json"
 
-// Read returns a docker image referenced by the legacy intermediate layout at src with given layer tarball paths.
+// LayerOpts instructs the legacy image image on how to read a layer.
+type LayerOpts struct {
+	// Type is the media type of the layer.
+	Type types.MediaType
+	// Path is the path to the layer tarball. Can be left unspecified for
+	// foreign layers.
+	Path string
+	// DiffID is the layer diffID. Only required for foreign layers. Ignored
+	// for every other layer type.
+	DiffID string
+	// Digest is the layer digest. Only required for foreign layers. Ignored
+	// for every other layer type.
+	Digest string
+	// Size is the size of the layer. Only required for foreign layers. Ignored
+	// for every other layer type.
+	Size int64
+	// URLS is the url to down the layer blob from. Only required for foreign
+	// layers. Ignored for every other layer type.
+	URLS []string
+}
+
+// Read returns a docker image referenced by the legacy intermediate layout with
+// the image config and layer tarballs at the given paths.
 // NOTE: this only reads index with a single image.
-func Read(src, configPath string, layers []string) (v1.Image, error) {
+func Read(configPath string, layers []LayerOpts) (v1.Image, error) {
 	// Constructs and validates a v1.Image object.
 	legacyImg := &legacyImage{
 		configPath: configPath,
-		layersPath: layers,
+		layers:     layers,
 	}
 
 	img, err := partial.CompressedToImage(legacyImg)

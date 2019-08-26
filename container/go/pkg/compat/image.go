@@ -19,6 +19,7 @@
 package compat
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,7 +27,7 @@ import (
 	"os"
 	"sync"
 
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
@@ -37,8 +38,8 @@ import (
 type legacyImage struct {
 	// config is the path to the image config.
 	configPath string
-	// layersPath is the paths to the layers for this image.
-	layersPath []string
+	// layers are the options to locate the layers in this image.
+	layers []LayerOpts
 	// rawManifestLock protects rawManifest.
 	rawManifestLock sync.Mutex
 	// rawManifest is the raw bytes of manifest.json file.
@@ -77,7 +78,7 @@ func (li *legacyImage) Manifest() (*v1.Manifest, error) {
 		return li.manifest, nil
 	}
 
-	m, d, err := buildManifest(li.configPath, li.layersPath)
+	m, d, err := buildManifest(li.configPath, li.layers)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to build a manifest from config %s & corresponding layer files", li.configPath)
 	}
@@ -113,6 +114,19 @@ func (li *legacyImage) RawConfigFile() ([]byte, error) {
 	return ioutil.ReadFile(li.configPath)
 }
 
+// configFile returns the v1.ConfigFile object for this image.
+func (li *legacyImage) configFile() (*v1.ConfigFile, error) {
+	f, err := os.Open(li.configPath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to read image config from %s", li.configPath)
+	}
+	c, err := v1.ParseConfigFile(f)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to parse config JSON data loaded from %s", li.configPath)
+	}
+	return c, err
+}
+
 // LayerByDigest returns a Layer for interacting with a particular layer of the image, looking it up by "digest" (the compressed hash).
 // We assume the layer files are named in the format of e.g., 000.tar.gz in this path, following the order they appear in manifest.json.
 func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error) {
@@ -135,7 +149,7 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 			case types.OCILayer, types.DockerLayer:
 				return partial.CompressedToLayer(&compressedBlob{
 					desc: desc,
-					path: li.layersPath[i],
+					path: li.layers[i].Path,
 				})
 			case types.OCIUncompressedLayer, types.DockerUncompressedLayer:
 				diffID, ok := li.layerDigestToDiffID[h.Hex]
@@ -146,11 +160,14 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 					&uncompressedBlob{
 						desc:   desc,
 						diffID: v1.Hash{Algorithm: h.Algorithm, Hex: diffID},
-						path:   li.layersPath[i],
+						path:   li.layers[i].Path,
+					})
+			case types.DockerForeignLayer:
+				return partial.UncompressedToLayer(
+					&foreignBlob{
+						diffID: v1.Hash{Algorithm: h.Algorithm, Hex: li.layers[i].DiffID},
 					})
 			default:
-				// TODO: We assume everything is a compressed blob, but that might not be true.
-				// TODO: Handle foreign layers.
 				return nil, fmt.Errorf("unexpected media type: %v for layer: %v", desc.MediaType, desc.Digest)
 			}
 		}
@@ -214,4 +231,28 @@ func (b *uncompressedBlob) Uncompressed() (io.ReadCloser, error) {
 // The media type of this compressedBlob.
 func (b *uncompressedBlob) MediaType() (types.MediaType, error) {
 	return b.desc.MediaType, nil
+}
+
+// foreignBlob represents a foreign layer usually present in windows images.
+// foreignBlob implements the partial.Compressed interface but the blob simply
+// returns the digest.
+type foreignBlob struct {
+	// diffID is the diffID of this foreign layer.
+	diffID v1.Hash
+}
+
+// DiffID returns the diffID of this foreign layer.
+func (b *foreignBlob) DiffID() (v1.Hash, error) {
+	return b.diffID, nil
+}
+
+//  Uncompressed returns a blank reader for this foreign layer.
+func (b *foreignBlob) Uncompressed() (io.ReadCloser, error) {
+	r := bytes.NewReader([]byte{})
+	return ioutil.NopCloser(r), nil
+}
+
+// The media type of this compressedBlob.
+func (b *foreignBlob) MediaType() (types.MediaType, error) {
+	return types.DockerForeignLayer, nil
 }
