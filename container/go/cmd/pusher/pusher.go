@@ -47,7 +47,8 @@ const (
 	// manifestFile is the filename of image manifest.
 	manifestFile = "manifest.json"
 	// indexManifestFile is the filename of image manifest config in OCI format.
-	indexManifestFile    = "index.json"
+	indexManifestFile = "index.json"
+	// ManifestUnknownError is the error returned when a digest is not found
 	ManifestUnknownError = "MANIFEST_UNKNOWN: manifest unknown"
 )
 
