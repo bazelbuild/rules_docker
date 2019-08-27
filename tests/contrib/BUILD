@@ -26,7 +26,7 @@ sh_test(
     srcs = ["rename_image_test.sh"],
     args = [
         "$(location :renamed_image.tar)",
-        "new_image_repo:new_image_tag",
+        "new_image_registry.io/new_image_repo:new_image_tag",
     ],
     data = [
         ":renamed_image.tar",
@@ -36,7 +36,7 @@ sh_test(
 rename_image(
     name = "renamed_image",
     image = "@distroless_base//image",
-    new_repo = "new_image_repo",
+    new_repo = "new_image_registry.io/new_image_repo",
     new_tag = "new_image_tag",
 )
 

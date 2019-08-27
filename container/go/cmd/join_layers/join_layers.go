@@ -325,6 +325,7 @@ func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name
 			return errors.Wrapf(err, "unable to load image %v corresponding to config %s", tag, configFile)
 		}
 		tagToImg[tag] = img
+		log.Println("Added image with tag", tag)
 	}
 	return tarball.MultiWriteToFile(outputTarball, tagToImg)
 }
