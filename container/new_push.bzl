@@ -222,7 +222,7 @@ new_container_push = rule(
             default = Label("//container:push-tag.sh.tpl"),
             allow_single_file = True,
         ),
-            }, _layer_tools),
+    }, _layer_tools),
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,

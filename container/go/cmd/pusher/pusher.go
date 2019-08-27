@@ -26,7 +26,7 @@ import (
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/pkg/errors"
 )
@@ -47,7 +47,7 @@ const (
 	// manifestFile is the filename of image manifest.
 	manifestFile = "manifest.json"
 	// indexManifestFile is the filename of image manifest config in OCI format.
-	indexManifestFile = "index.json"
+	indexManifestFile    = "index.json"
 	ManifestUnknownError = "MANIFEST_UNKNOWN: manifest unknown"
 )
 
@@ -127,8 +127,8 @@ func main() {
 	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, formattedDst)
 }
 
-func digestExists(dst string ,img v1.Image) (bool, error) {
-	// Try to create a digest for the image and then check if that digest exists in the repository
+// Checks whether an images digest exists in a repository
+func digestExists(dst string, img v1.Image) (bool, error) {
 	digest, err := img.Digest()
 	if err != nil {
 		return false, errors.Wrapf(err, "unable to get local image digest")
