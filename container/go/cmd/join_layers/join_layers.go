@@ -213,7 +213,7 @@ func buildDiffIDToLayer(layersData []layerData) map[string]layerData {
 
 // diffIDToLayerFromManifest generates a diffID to layerData lookup from the
 // layers in the given base manifest if the manifest defines any layers. The
-// manifest is only expected to define layers when the image being built is
+// manifest is only needed to define layers when the image being built is
 // a windows image with a base image with foreign layers.
 func diffIDToLayerFromManifest(config *v1.ConfigFile, manifest *v1.Manifest) (map[string]layerData, error) {
 	if len(manifest.Layers) == 0 {
@@ -229,12 +229,12 @@ func diffIDToLayerFromManifest(config *v1.ConfigFile, manifest *v1.Manifest) (ma
 		return nil, errors.Errorf("unexpected number of layers in config %d vs manifest %d, want config to have equal or great number of layers", len(config.RootFS.DiffIDs), len(manifest.Layers))
 	}
 	result := make(map[string]layerData)
-	// Manifest layers should only be specified for foreign layers which are
-	// a special kind of layer in Windows base images. For every other layer,
-	// the layer tarball should be specified with the --layer flag instead.
+	// Manifest is only needed to add foreign layers which are a special kind of
+	// layer in Windows base images. For every other layer, the layer tarball
+	// should be specified with the --layer flag instead.
 	for i, l := range manifest.Layers {
 		if l.MediaType != types.DockerForeignLayer {
-			return nil, errors.Errorf("unexpected layer of type in manifest, got %s, want foreign layer type %s", l.MediaType, types.DockerForeignLayer)
+			continue
 		}
 		diffID := config.RootFS.DiffIDs[i]
 		result[diffID.Hex] = layerData{
