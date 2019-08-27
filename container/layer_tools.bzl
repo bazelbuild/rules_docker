@@ -96,7 +96,7 @@ def assemble(ctx, images, output, stamp = False):
 
         if image.get("manifest"):
             args += [
-                "--manifest=" + tag + "=" + image["manifest"].path,
+                "--basemanifest=" + tag + "=" + image["manifest"].path,
             ]
             inputs += [image["manifest"]]
 

@@ -35,7 +35,7 @@ import (
 var (
 	outputTarball  = flag.String("output", "", "Path to the output image tarball.")
 	tags           utils.ArrayStringFlags
-	manifests      utils.ArrayStringFlags
+	basemanifests  utils.ArrayStringFlags
 	layers         utils.ArrayStringFlags
 	sourceImages   utils.ArrayStringFlags
 	stampInfoFiles utils.ArrayStringFlags
@@ -44,6 +44,8 @@ var (
 // layerData is a collection of files that has the contents and metadata about
 // an image layer.
 type layerData struct {
+	// layer represents a v1.Layer directly.
+	layer v1.Layer
 	// Type is the type of this layer.
 	mediaType types.MediaType
 	// diffID is the digest of the uncompressed blob of this layer.
@@ -67,6 +69,7 @@ type layerData struct {
 // layerData.
 func (l *layerData) layerOpts() compat.LayerOpts {
 	return compat.LayerOpts{
+		Layer:  l.layer,
 		Digest: l.digest,
 		DiffID: l.diffID,
 		Path:   l.compressedBlob,
@@ -120,18 +123,74 @@ func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]st
 	return result, nil
 }
 
+// loadImgLayersData adds layerData objects for the given image to the given
+// list of layerData.
+func loadImgLayersData(img v1.Image, layersData []layerData) error {
+	layers, err := img.Layers()
+	if err != nil {
+		return errors.Wrap(err, "unable to get image layers")
+	}
+	for _, l := range layers {
+		// Set the digest & diffID fields in the layerData object because it
+		// will be used by uniquifyLayerData to de-duplicate layers and
+		// imageLayers to identify what layers belong to the image being built.
+		d, err := l.Digest()
+		if err != nil {
+			return errors.Wrap(err, "unable to get layer digest")
+		}
+		diffID, err := l.DiffID()
+		if err != nil {
+			return errors.Wrap(err, "unable to get layer diffID")
+		}
+		layersData = append(layersData, layerData{
+			layer:  l,
+			digest: d.Hex,
+			diffID: diffID.Hex,
+		})
+	}
+	return nil
+}
+
+// uniquifyLayerData removes duplicate layers from the given list of layerData
+// objects. Duplicate layers that occur later in the list replace earlier
+// occurences. The uniquified list is returned. The given list is not modified.
+func uniquifyLayerData(layersData []layerData) []layerData {
+	result := []layerData{}
+	lookup := make(map[string]bool)
+	// Scan in reverse order and reject duplicates found earlier in the list.
+	for i := len(layersData) - 1; i >= 0; i-- {
+		l := layersData[i]
+		_, ok := lookup[l.digest]
+		if ok {
+			continue
+		}
+		lookup[l.digest] = true
+		result = append(result, l)
+	}
+	return result
+}
+
 // loadLayersData creates layer data objects from the given list of base image
 // tarballs and a list of strings where each string has the format
 // val1,val2,val3 where:
 // val1 is the file containing the layer diffID.
 // val2 is the file containing the layer digest.
 // val3 is the path to the compressed layer tarball.
-func loadLayersData(sourceImages, values []string) ([]layerData, error) {
+func loadLayersData(sourceImages, layers []string) ([]layerData, error) {
 	result := []layerData{}
-	for _, v := range values {
-		split := strings.Split(v, ",")
+	for _, imgPath := range sourceImages {
+		img, err := tarball.ImageFromPath(imgPath, nil)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to load base image tarball from %s", imgPath)
+		}
+		if err := loadImgLayersData(img, result); err != nil {
+			return nil, errors.Wrapf(err, "unable to load layers from base image tarball %s", imgPath)
+		}
+	}
+	for _, l := range layers {
+		split := strings.Split(l, ",")
 		if len(split) != 3 {
-			return nil, errors.Errorf("%q did not split by ',' into the expected number of elements, got %d, want 4", v, len(split))
+			return nil, errors.Errorf("%q did not split by ',' into the expected number of elements, got %d, want 4", l, len(split))
 		}
 		ld, err := initLayerData(split[0], split[1], split[2])
 		if err != nil {
@@ -139,7 +198,7 @@ func loadLayersData(sourceImages, values []string) ([]layerData, error) {
 		}
 		result = append(result, ld)
 	}
-	return result, nil
+	return uniquifyLayerData(result), nil
 }
 
 // buildDiffIDToLayer builds a map from layer diffID to layer data from
@@ -153,7 +212,9 @@ func buildDiffIDToLayer(layersData []layerData) map[string]layerData {
 }
 
 // diffIDToLayerFromManifest generates a diffID to layerData lookup from the
-// layers in the given manifest if the manifest defines any layers.
+// layers in the given base manifest if the manifest defines any layers. The
+// manifest is only expected to define layers when the image being built is
+// a windows image with a base image with foreign layers.
 func diffIDToLayerFromManifest(config *v1.ConfigFile, manifest *v1.Manifest) (map[string]layerData, error) {
 	if len(manifest.Layers) == 0 {
 		// A manifest was not specified or a blank manifest was specified. This
@@ -207,38 +268,55 @@ func imageLayers(cfg *v1.ConfigFile, tarballLayers, manifestLayers map[string]la
 	return result, nil
 }
 
+// loadImageMetadata loads the image config and optionally the manifest for
+// the image with the given tag using the given tag to config file & manifest
+// file lookups.
+func loadImageMetadata(tag name.Tag, tagToConfigs, tagToBaseManifests map[name.Tag]string) (*v1.ConfigFile, *v1.Manifest, error) {
+	configFile, ok := tagToConfigs[tag]
+	if !ok {
+		return nil, nil, errors.Errorf("unable to find the config file for image %v", tag)
+	}
+	cf, err := os.Open(configFile)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "unable to open config for image %v from %s", tag, configFile)
+	}
+	cfg, err := v1.ParseConfigFile(cf)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "unable to parse image config for %v from %s", tag, configFile)
+	}
+	manifestFile, ok := tagToBaseManifests[tag]
+	if !ok {
+		// Manifest is optional and is only needed to build images whose base
+		// image had foreign layers. Just return the config.
+		return cfg, &v1.Manifest{}, nil
+	}
+	mf, err := os.Open(manifestFile)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "unable to open manifest for image %v from %s", tag, manifestFile)
+	}
+	m, err := v1.ParseManifest(mf)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "unable to parse manifest for image %v from %s", tag, manifestFile)
+	}
+	return cfg, m, nil
+}
+
 // writeOutput creates a multi-image tarball at the given output path using
 // the images defined by the given tag to config & manifest maps with the
 // given layers based on the given source images.
-func writeOutput(outputTarball string, tagToConfigs, tagToManifests map[name.Tag]string, layersData []layerData) error {
+func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name.Tag]string, layersData []layerData) error {
 	tagToImg := make(map[name.Tag]v1.Image)
 	layerLookup := buildDiffIDToLayer(layersData)
 	for tag, configFile := range tagToConfigs {
-		cf, err := os.Open(configFile)
+		config, manifest, err := loadImageMetadata(tag, tagToConfigs, tagToBaseManifests)
 		if err != nil {
-			return errors.Wrapf(err, "unable to open config for image %v from %s", tag, configFile)
+			return errors.Wrapf(err, "unable to load config & manifest for image %v", tag)
 		}
-		cfg, err := v1.ParseConfigFile(cf)
+		manifestLayers, err := diffIDToLayerFromManifest(config, manifest)
 		if err != nil {
-			return errors.Wrapf(err, "unable to parse image config for %v from %s", tag, configFile)
+			return errors.Wrapf(err, "unable to get layers defined in manifest and config for image %v", tag)
 		}
-		manifestFile, ok := tagToManifests[tag]
-		if !ok {
-			return errors.Errorf("did not find a image manifest for image %v", tag)
-		}
-		mf, err := os.Open(manifestFile)
-		if err != nil {
-			return errors.Wrapf(err, "unable to open manifest for image %v from %s", tag, manifestFile)
-		}
-		m, err := v1.ParseManifest(mf)
-		if err != nil {
-			return errors.Wrapf(err, "unable to parse manifest for image %v from %s", tag, manifestFile)
-		}
-		manifestLayers, err := diffIDToLayerFromManifest(cfg, m)
-		if err != nil {
-			return errors.Wrapf(err, "unable to get layers defined in manifest %s and config %s for image %v", manifestFile, configFile, tag)
-		}
-		layerOpts, err := imageLayers(cfg, layerLookup, manifestLayers)
+		layerOpts, err := imageLayers(config, layerLookup, manifestLayers)
 		if err != nil {
 			return errors.Wrapf(err, "unable to select the layer tarball files for image %v using its manifest", tag)
 		}
@@ -253,7 +331,7 @@ func writeOutput(outputTarball string, tagToConfigs, tagToManifests map[name.Tag
 
 func main() {
 	flag.Var(&tags, "tag", "One or more fully qualified tag names along with the path to the config of the image they tag in tag=path format. e.g., --tag ubuntu=path/to/config1.json --tag gcr.io/blah/debian=path/to/config2.json.")
-	flag.Var(&manifests, "manifest", "One or more fully qualified tag names along with the associated manifest in tag=manifest format. e.g., --manifest ubuntu=path/to/manifest1.json --manifest gcr.io/blah/debian=path/to/manifest2.json.")
+	flag.Var(&basemanifests, "basemanifest", "One or more fully qualified tag names along with the manifest of the base image in tag=manifest format. e.g., --manifest ubuntu=path/to/manifest1.json --manifest gcr.io/blah/debian=path/to/manifest2.json.")
 	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Diff ID file, Digest file, Compressed layer tarball). e.g., --layer diffa,hash,layer1.tar,layer1.tar.gz.")
 	flag.Var(&sourceImages, "source_image", "One or more image tarballs for images from which the output image of this binary may derive. e.g., --source_image imag1.tar --source_image image2.tar.")
 	flag.Var(&stampInfoFiles, "stamp_info_file", "Path to one or more Bazel stamp info file with key value pairs for substitution.")
@@ -267,7 +345,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --tag: %v", err)
 	}
-	tagToManifest, err := parseTagToFilename(manifests, stamper)
+	tagToBaseManifest, err := parseTagToFilename(basemanifests, stamper)
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --manifest: %v", err)
 	}
@@ -275,7 +353,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --layer: %v", err)
 	}
-	if err := writeOutput(*outputTarball, tagToConfig, tagToManifest, layersData); err != nil {
+	if err := writeOutput(*outputTarball, tagToConfig, tagToBaseManifest, layersData); err != nil {
 		log.Fatalf("Failed to generate output at %s: %v", *outputTarball, err)
 	}
 }

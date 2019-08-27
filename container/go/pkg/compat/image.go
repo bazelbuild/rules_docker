@@ -145,6 +145,10 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 
 	for i, desc := range manifest.Layers {
 		if h == desc.Digest {
+			// A v1.Layer object was directly given. Use it as is.
+			if li.layers[i].Layer != nil {
+				return li.layers[i].Layer, nil
+			}
 			switch desc.MediaType {
 			case types.OCILayer, types.DockerLayer:
 				return partial.CompressedToLayer(&compressedBlob{
