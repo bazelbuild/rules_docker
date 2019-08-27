@@ -165,7 +165,7 @@ type Stamper struct {
 // Stamp stamps the given value.
 func (s *Stamper) Stamp(val string) string {
 	for _, sb := range s.subs {
-		val = strings.ReplaceAll(val, sb.key, val)
+		val = strings.ReplaceAll(val, sb.key, sb.value)
 	}
 	return val
 }

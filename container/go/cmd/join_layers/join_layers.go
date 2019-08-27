@@ -113,10 +113,10 @@ func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]st
 			return nil, errors.Errorf("%q was not specified in the expected key=value format because it split into unexpected number of elements by '=', got %d, want 2", t, len(split))
 		}
 		img, configFile := split[0], split[1]
-		img = stamper.Stamp(img)
-		parsedTag, err := name.NewTag(img, name.WeakValidation)
+		stamped := stamper.Stamp(img)
+		parsedTag, err := name.NewTag(stamped, name.WeakValidation)
 		if err != nil {
-			return nil, errors.Wrapf(err, "unable to parse stamped image name %q as a fully qualified tagged image name", img)
+			return nil, errors.Wrapf(err, "unable to parse stamped image name %q as a fully qualified tagged image name", stamped)
 		}
 		result[parsedTag] = configFile
 	}
@@ -124,11 +124,11 @@ func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]st
 }
 
 // loadImgLayersData adds layerData objects for the given image to the given
-// list of layerData.
-func loadImgLayersData(img v1.Image, layersData []layerData) error {
+// list of layerData and returns the modified list of layersData.
+func loadImgLayersData(img v1.Image, layersData []layerData) ([]layerData, error) {
 	layers, err := img.Layers()
 	if err != nil {
-		return errors.Wrap(err, "unable to get image layers")
+		return nil, errors.Wrap(err, "unable to get image layers")
 	}
 	for _, l := range layers {
 		// Set the digest & diffID fields in the layerData object because it
@@ -136,11 +136,11 @@ func loadImgLayersData(img v1.Image, layersData []layerData) error {
 		// imageLayers to identify what layers belong to the image being built.
 		d, err := l.Digest()
 		if err != nil {
-			return errors.Wrap(err, "unable to get layer digest")
+			return nil, errors.Wrap(err, "unable to get layer digest")
 		}
 		diffID, err := l.DiffID()
 		if err != nil {
-			return errors.Wrap(err, "unable to get layer diffID")
+			return nil, errors.Wrap(err, "unable to get layer diffID")
 		}
 		layersData = append(layersData, layerData{
 			layer:  l,
@@ -148,7 +148,7 @@ func loadImgLayersData(img v1.Image, layersData []layerData) error {
 			diffID: diffID.Hex,
 		})
 	}
-	return nil
+	return layersData, nil
 }
 
 // uniquifyLayerData removes duplicate layers from the given list of layerData
@@ -183,7 +183,8 @@ func loadLayersData(sourceImages, layers []string) ([]layerData, error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "unable to load base image tarball from %s", imgPath)
 		}
-		if err := loadImgLayersData(img, result); err != nil {
+		result, err = loadImgLayersData(img, result)
+		if err != nil {
 			return nil, errors.Wrapf(err, "unable to load layers from base image tarball %s", imgPath)
 		}
 	}
@@ -325,7 +326,6 @@ func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name
 			return errors.Wrapf(err, "unable to load image %v corresponding to config %s", tag, configFile)
 		}
 		tagToImg[tag] = img
-		log.Println("Added image with tag", tag)
 	}
 	return tarball.MultiWriteToFile(outputTarball, tagToImg)
 }

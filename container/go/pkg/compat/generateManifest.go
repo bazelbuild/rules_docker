@@ -105,6 +105,33 @@ func buildManifest(configPath string, layers []LayerOpts) (v1.Manifest, map[stri
 
 	manifest.Layers = make([]v1.Descriptor, len(layers))
 	for i, l := range layers {
+		if l.Layer != nil {
+			// A v1.Layer was directly specified. Use it to obtain the manifest
+			// descriptor for the layer.
+			mediaType, err := l.Layer.MediaType()
+			if err != nil {
+				return v1.Manifest{}, nil, errors.Wrap(err, "unable to get media type of layer")
+			}
+			digest, err := l.Layer.Digest()
+			if err != nil {
+				return v1.Manifest{}, nil, errors.Wrap(err, "unable to get digest of layer")
+			}
+			diffID, err := l.Layer.DiffID()
+			if err != nil {
+				return v1.Manifest{}, nil, errors.Wrap(err, "unable to get diffID of layer")
+			}
+			size, err := l.Layer.Size()
+			if err != nil {
+				return v1.Manifest{}, nil, errors.Wrap(err, "unable to get size of layer")
+			}
+			manifest.Layers[i] = v1.Descriptor{
+				MediaType: mediaType,
+				Digest:    digest,
+				Size:      size,
+			}
+			layerDigestToDiffID[digest.Hex] = diffID.Hex
+			continue
+		}
 		if l.Type == types.DockerLayer {
 			desc, diffID, err := descFromLayerTarball(l)
 			if err != nil {
