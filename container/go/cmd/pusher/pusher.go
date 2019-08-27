@@ -26,7 +26,7 @@ import (
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/pkg/errors"
 )
@@ -49,7 +49,7 @@ const (
 	// indexManifestFile is the filename of image manifest config in OCI format.
 	indexManifestFile = "index.json"
 	// ManifestUnknownError is the error returned when a digest is not found
-	ManifestUnknownError = "MANIFEST_UNKNOWN: manifest unknown"
+	ManifestUnknownError = "MANIFEST_UNKNOWN"
 )
 
 func main() {
