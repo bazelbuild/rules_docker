@@ -26,7 +26,7 @@ sh_test(
     srcs = ["rename_image_test.sh"],
     args = [
         "$(location :renamed_image.tar)",
-        "new_image_repo:new_image_tag",
+        "new_image_registry.io/new_image_repo:new_image_tag",
     ],
     data = [
         ":renamed_image.tar",
@@ -36,8 +36,29 @@ sh_test(
 rename_image(
     name = "renamed_image",
     image = "@distroless_base//image",
-    new_repo = "new_image_repo",
+    new_repo = "new_image_registry.io/new_image_repo",
     new_tag = "new_image_tag",
+)
+
+sh_test(
+    name = "rename_image_go_test",
+    srcs = ["rename_image_test.sh"],
+    args = [
+        "$(location :renamed_image_go.tar)",
+        "new_image_registry.io/new_image_repo:new_image_tag",
+    ],
+    data = [
+        ":renamed_image_go.tar",
+    ],
+)
+
+# Test image renaming using container_bundle using the Go implementation.
+container_bundle(
+    name = "renamed_image_go",
+    images = {
+        "new_image_registry.io/new_image_repo:new_image_tag": "@distroless_base//image",
+    },
+    use_legacy_join_layers = False,
 )
 
 alias(
