@@ -70,7 +70,7 @@ def _impl(ctx):
         substitutions = {
             "%{cmd_args}": " ".join(cmd_args),
             "%{docker_path}": toolchain_info.tool_path,
-            "%{image_name}": ctx.attr._checker + ctx.attr.checker_tag,
+            "%{image_name}": ctx.attr._checker + ":" + ctx.attr.checker_tag,
             "%{spec_container_paths}": " ".join(spec_container_paths),
             "%{specs}": " ".join(specs),
         },
