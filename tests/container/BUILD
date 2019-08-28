@@ -380,40 +380,40 @@ new_container_push(
     name = "new_push_test_only_push_changed_unchanged_tag_1",
     format = "docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
+    only_push_changed = True,
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "unchanged_tag1",
-    only_push_changed = True,
 )
 
 new_container_push(
     name = "new_push_test_only_push_changed_unchanged_tag_2",
     format = "docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
+    only_push_changed = True,
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "unchanged_tag2",
-    only_push_changed = True,
 )
 
 new_container_push(
     name = "new_push_test_only_push_changed_changed_tag_1",
     format = "docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
+    only_push_changed = True,
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "changed_tag1",
-    only_push_changed = True,
-    )
+)
 
 new_container_push(
     name = "new_push_test_only_push_changed_changed_tag_2",
     format = "docker",
     image = "@new_alpine_linux_amd64//image:image.tar",
+    only_push_changed = True,
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "changed_tag2",
-    only_push_changed = True,
 )
 
 new_container_push(

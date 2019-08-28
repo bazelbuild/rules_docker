@@ -115,7 +115,7 @@ def _impl(ctx):
     )]
 
     if ctx.attr.only_push_changed:
-      pusher_args += ["-only-push-changed"]
+        pusher_args += ["-only-push-changed"]
 
     digester_args += ["-dst", str(ctx.outputs.digest.path), "-format", str(ctx.attr.format)]
     ctx.actions.run(
