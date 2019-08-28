@@ -73,20 +73,43 @@ def get_from_target(ctx, name, attr_target, file_target = None):
         target = attr_target.files.to_list()[0]
         return _extract_layers(ctx, name, target)
 
-def assemble(ctx, images, output, stamp = False):
-    """Create the full image from the list of layers.
-
-    Args:
-       ctx: The context
-       images: List of images/layers to assemple
-       output: The output path for the image tar
-       stamp: Whether to stamp the produced image
+def _add_join_layers_py_args(args, inputs, images):
+    """Add args & inputs needed to call join_layers.py for the given images
     """
-    args = [
-        "--output=" + output.path,
-    ]
+    for tag in images:
+        image = images[tag]
+        args += [
+            "--tags=" + tag + "=@" + image["config"].path,
+        ]
+        inputs += [image["config"]]
 
-    inputs = []
+        if image.get("manifest"):
+            args += [
+                "--manifests=" + tag + "=@" + image["manifest"].path,
+            ]
+            inputs += [image["manifest"]]
+
+        for i in range(0, len(image["diff_id"])):
+            args += [
+                "--layer=" +
+                "@" + image["diff_id"][i].path +
+                "=@" + image["blobsum"][i].path +
+                # No @, not resolved through utils, always filename.
+                "=" + image["unzipped_layer"][i].path +
+                "=" + image["zipped_layer"][i].path,
+            ]
+        inputs += image["unzipped_layer"]
+        inputs += image["diff_id"]
+        inputs += image["zipped_layer"]
+        inputs += image["blobsum"]
+
+        if image.get("legacy"):
+            args += ["--legacy=" + image["legacy"].path]
+            inputs += [image["legacy"]]
+
+def _add_join_layers_go_args(args, inputs, images):
+    """Add args & inputs needed to call the Go join_layers for the given images
+    """
     for tag in images:
         image = images[tag]
         args += [
@@ -115,11 +138,36 @@ def assemble(ctx, images, output, stamp = False):
             args += ["--source_image=" + image["legacy"].path]
             inputs += [image["legacy"]]
 
+def assemble(
+        ctx,
+        images,
+        output,
+        stamp = False,
+        use_py_join_layers = True):
+    """Create the full image from the list of layers.
+
+    Args:
+       ctx: The context
+       images: List of images/layers to assemple
+       output: The output path for the image tar
+       stamp: Whether to stamp the produced image
+       use_py_join_layers: Whether to use the python join_layers. Uses the Go
+                           join_layers when set to false.
+    """
+    args = [
+        "--output=" + output.path,
+    ]
+    inputs = []
     if stamp:
         args += ["--stamp_info_file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
+    if use_py_join_layers:
+        _add_join_layers_py_args(args, inputs, images)
+    else:
+        _add_join_layers_go_args(args, inputs, images)
+
     ctx.actions.run(
-        executable = ctx.executable.join_layers,
+        executable = ctx.executable.join_layers_py if use_py_join_layers else ctx.executable.join_layers_go,
         arguments = args,
         tools = inputs,
         outputs = [output],
@@ -238,9 +286,20 @@ tools = {
         default = Label("//container:incremental_load_template"),
         allow_single_file = True,
     ),
-    "join_layers": attr.label(
+    "join_layers_go": attr.label(
         default = Label("//container/go/cmd/join_layers"),
         cfg = "host",
         executable = True,
+    ),
+    "join_layers_py": attr.label(
+        default = Label("//container:join_layers"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "use_py_join_layers": attr.bool(
+        default = True,
+        doc = "Use the python join_layers.py to build the image tarball." +
+              "Uses the Go implementation when set to false.",
     ),
 }

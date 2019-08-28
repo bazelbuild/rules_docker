@@ -121,7 +121,12 @@ def _container_import_impl(ctx):
     }
 
     _incr_load(ctx, images, ctx.outputs.executable)
-    _assemble_image(ctx, images, ctx.outputs.out)
+    _assemble_image(
+        ctx,
+        images,
+        ctx.outputs.out,
+        use_py_join_layers = ctx.attr.use_py_join_layers,
+    )
 
     runfiles = ctx.runfiles(
         files = (container_parts["unzipped_layer"] +

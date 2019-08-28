@@ -67,7 +67,13 @@ def _container_bundle_impl(ctx):
         ctx.outputs.executable,
         stamp = stamp,
     )
-    _assemble_image(ctx, images, ctx.outputs.tar_output, stamp = stamp)
+    _assemble_image(
+        ctx,
+        images,
+        ctx.outputs.tar_output,
+        stamp = stamp,
+        use_py_join_layers = ctx.attr.use_py_join_layers,
+    )
 
     stamp_files = [ctx.info_file, ctx.version_file] if stamp else []
 
