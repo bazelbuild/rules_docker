@@ -762,7 +762,7 @@ container_image(
         "//testdata:bar",
         "//testdata:foo",
     ],
-    use_py_join_layers = False,
+    use_legacy_join_layers = False,
 )
 
 container_test(

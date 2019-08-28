@@ -72,7 +72,6 @@ def _container_bundle_impl(ctx):
         images,
         ctx.outputs.tar_output,
         stamp = stamp,
-        use_py_join_layers = ctx.attr.use_py_join_layers,
     )
 
     stamp_files = [ctx.info_file, ctx.version_file] if stamp else []

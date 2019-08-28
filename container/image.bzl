@@ -420,8 +420,7 @@ def _impl(
         output_layer = None,
         workdir = None,
         null_cmd = None,
-        null_entrypoint = None,
-        use_py_join_layers = None):
+        null_entrypoint = None):
     """Implementation for the container_image rule.
 
   Args:
@@ -450,7 +449,6 @@ def _impl(
     workdir: str, overrides ctx.attr.workdir
     null_cmd: bool, overrides ctx.attr.null_cmd
     null_entrypoint: bool, overrides ctx.attr.null_entrypoint
-    use_py_join_layers: bool, overrides ctx.attr.use_py_join_layers
   """
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
@@ -464,8 +462,6 @@ def _impl(
     output_layer = output_layer or ctx.outputs.layer
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
-    if use_py_join_layers == None:
-        use_py_join_layers = ctx.attr.use_py_join_layers
 
     # If this target specifies docker_run_flags, they are always used.
     # Fall back to the base image's run flags if present, otherwise use the default value.
@@ -602,7 +598,6 @@ def _impl(
         ctx,
         images,
         output_tarball,
-        use_py_join_layers = use_py_join_layers,
     )
     _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 

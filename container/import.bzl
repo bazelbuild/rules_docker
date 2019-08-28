@@ -125,7 +125,6 @@ def _container_import_impl(ctx):
         ctx,
         images,
         ctx.outputs.out,
-        use_py_join_layers = ctx.attr.use_py_join_layers,
     )
 
     runfiles = ctx.runfiles(

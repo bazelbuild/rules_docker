@@ -58,7 +58,7 @@ container_bundle(
     images = {
         "new_image_registry.io/new_image_repo:new_image_tag": "@distroless_base//image",
     },
-    use_py_join_layers = False,
+    use_legacy_join_layers = False,
 )
 
 alias(
