@@ -5,8 +5,9 @@ import (
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
 
@@ -36,8 +37,15 @@ func ReadImage(src, format, configPath, tarballBase string, layersPath []string)
 		return oci.Read(src)
 	}
 	if format == "legacy" {
+		layers := []compat.LayerOpts{}
+		for _, l := range layersPath {
+			layers = append(layers, compat.LayerOpts{
+				Type: types.DockerLayer,
+				Path: l,
+			})
+		}
 		if tarballBase == "" {
-			return compat.Read(src, configPath, layersPath)
+			return compat.Read(configPath, layers)
 		} else {
 			return compat.ReadWithBaseTarball(tarballBase, layersPath)
 		}

@@ -73,34 +73,23 @@ def get_from_target(ctx, name, attr_target, file_target = None):
         target = attr_target.files.to_list()[0]
         return _extract_layers(ctx, name, target)
 
-def assemble(ctx, images, output, stamp = False):
-    """Create the full image from the list of layers.
+def _add_join_layers_py_args(args, inputs, images):
+    """Add args & inputs needed to call join_layers.py for the given images.
 
-    Args:
-       ctx: The context
-       images: List of images/layers to assemple
-       output: The output path for the image tar
-       stamp: Whether to stamp the produced image
+    TODO(smukherj1): Remove this when the migration to go-containerregistry is
+    complete.
     """
-    args = [
-        "--output=" + output.path,
-    ]
-
-    inputs = []
     for tag in images:
         image = images[tag]
         args += [
             "--tags=" + tag + "=@" + image["config"].path,
         ]
+        inputs += [image["config"]]
 
         if image.get("manifest"):
             args += [
                 "--manifests=" + tag + "=@" + image["manifest"].path,
             ]
-
-        inputs += [image["config"]]
-
-        if image.get("manifest"):
             inputs += [image["manifest"]]
 
         for i in range(0, len(image["diff_id"])):
@@ -121,11 +110,64 @@ def assemble(ctx, images, output, stamp = False):
             args += ["--legacy=" + image["legacy"].path]
             inputs += [image["legacy"]]
 
+def _add_join_layers_go_args(args, inputs, images):
+    """Add args & inputs needed to call the Go join_layers for the given images
+    """
+    for tag in images:
+        image = images[tag]
+        args += [
+            "--tag=" + tag + "=" + image["config"].path,
+        ]
+        inputs += [image["config"]]
+
+        if image.get("manifest"):
+            args += [
+                "--basemanifest=" + tag + "=" + image["manifest"].path,
+            ]
+            inputs += [image["manifest"]]
+
+        for i in range(0, len(image["diff_id"])):
+            args += [
+                "--layer=" +
+                image["diff_id"][i].path +
+                "," + image["blobsum"][i].path +
+                "," + image["zipped_layer"][i].path,
+            ]
+        inputs += image["diff_id"]
+        inputs += image["zipped_layer"]
+        inputs += image["blobsum"]
+
+        if image.get("legacy"):
+            args += ["--source_image=" + image["legacy"].path]
+            inputs += [image["legacy"]]
+
+def assemble(
+        ctx,
+        images,
+        output,
+        stamp = False):
+    """Create the full image from the list of layers.
+
+    Args:
+       ctx: The context
+       images: List of images/layers to assemple
+       output: The output path for the image tar
+       stamp: Whether to stamp the produced image
+    """
+    args = [
+        "--output=" + output.path,
+    ]
+    inputs = []
     if stamp:
         args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
+    if ctx.attr.use_legacy_join_layers:
+        _add_join_layers_py_args(args, inputs, images)
+    else:
+        _add_join_layers_go_args(args, inputs, images)
+
     ctx.actions.run(
-        executable = ctx.executable.join_layers,
+        executable = ctx.executable._join_layers_py if ctx.attr.use_legacy_join_layers else ctx.executable._join_layers_go,
         arguments = args,
         tools = inputs,
         outputs = [output],
@@ -244,7 +286,17 @@ tools = {
         default = Label("//container:incremental_load_template"),
         allow_single_file = True,
     ),
-    "join_layers": attr.label(
+    "use_legacy_join_layers": attr.bool(
+        default = True,
+        doc = "Use the legacy python join_layers.py to build the image tarball." +
+              "Uses the experimental Go implementation when set to false.",
+    ),
+    "_join_layers_go": attr.label(
+        default = Label("//container/go/cmd/join_layers"),
+        cfg = "host",
+        executable = True,
+    ),
+    "_join_layers_py": attr.label(
         default = Label("//container:join_layers"),
         cfg = "host",
         executable = True,
