@@ -335,7 +335,7 @@ func main() {
 	flag.Var(&basemanifests, "basemanifest", "One or more fully qualified tag names along with the manifest of the base image in tag=manifest format. e.g., --manifest ubuntu=path/to/manifest1.json --manifest gcr.io/blah/debian=path/to/manifest2.json.")
 	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Diff ID file, Digest file, Compressed layer tarball). e.g., --layer diffa,hash,layer1.tar,layer1.tar.gz.")
 	flag.Var(&sourceImages, "source_image", "One or more image tarballs for images from which the output image of this binary may derive. e.g., --source_image imag1.tar --source_image image2.tar.")
-	flag.Var(&stampInfoFiles, "stamp_info_file", "Path to one or more Bazel stamp info file with key value pairs for substitution.")
+	flag.Var(&stampInfoFiles, "stamp-info-file", "Path to one or more Bazel stamp info file with key value pairs for substitution.")
 	flag.Parse()
 
 	stamper, err := compat.NewStamper(stampInfoFiles)

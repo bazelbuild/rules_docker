@@ -238,8 +238,8 @@ func (b *uncompressedBlob) MediaType() (types.MediaType, error) {
 }
 
 // foreignBlob represents a foreign layer usually present in windows images.
-// foreignBlob implements the partial.Compressed interface but the blob simply
-// returns the digest.
+// foreignBlob implements the partial.Uncompressed interface which returns the
+// digest as the contents.
 type foreignBlob struct {
 	// diffID is the diffID of this foreign layer.
 	diffID v1.Hash

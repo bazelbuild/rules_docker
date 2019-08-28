@@ -159,7 +159,7 @@ def assemble(
     ]
     inputs = []
     if stamp:
-        args += ["--stamp_info_file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
+        args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
     if use_py_join_layers:
         _add_join_layers_py_args(args, inputs, images)
