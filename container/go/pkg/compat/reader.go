@@ -18,59 +18,67 @@ package compat
 import (
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 
-	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
-	"github.com/google/go-containerregistry/pkg/v1/validate"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
 
 // Expected metadata files in legacy layout.
 const manifestFile = "manifest.json"
 
-// Read returns a docker image referenced by the legacy intermediate layout at src with given layer tarball paths.
+// LayerOpts instructs how to read a layer in a legacy image.
+type LayerOpts struct {
+	// Layer directly represents a v1.Layer. If this field is specified, all
+	// other fields are ignored.
+	Layer v1.Layer
+	// Type is the media type of the layer.
+	Type types.MediaType
+	// Path is the path to the layer tarball. Can be left unspecified for
+	// foreign layers.
+	Path string
+	// DiffID is the layer diffID. Only required for foreign layers. Ignored
+	// for every other layer type.
+	DiffID string
+	// Digest is the layer digest. Only required for foreign layers. Ignored
+	// for every other layer type.
+	Digest string
+	// Size is the size of the layer. Only required for foreign layers. Ignored
+	// for every other layer type.
+	Size int64
+	// URLS are the urls to down the layer blob from. Only required for foreign
+	// layers. Ignored for every other layer type.
+	URLS []string
+}
+
+// Read returns a docker image referenced by the legacy intermediate layout with
+// the image config and layer tarballs at the given paths.
 // NOTE: this only reads index with a single image.
-func Read(src, configPath string, layers []string) (v1.Image, error) {
-	// Constructs and validates a v1.Image object.
-	legacyImg := &legacyImage{
-		path:       src,
+func Read(configPath string, layers []LayerOpts) (v1.Image, error) {
+	return partial.CompressedToImage(&legacyImage{
 		configPath: configPath,
-		layersPath: layers,
-	}
-
-	img, err := partial.CompressedToImage(legacyImg)
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to load image obtained from %s", src)
-	}
-
-	if err := validate.Image(img); err != nil {
-		return nil, errors.Wrapf(err, "unable to load image at %s due to invalid legacy layout format", src)
-	}
-
-	return img, nil
+		layers:     layers,
+	})
 }
 
 // ReadWithBaseTarball returns a Image object with tarball at tarballPath as base and layers appended from layersPath.
 func ReadWithBaseTarball(tarballPath string, layersPath []string) (v1.Image, error) {
-	base, err := tarball.ImageFromPath(tarballPath, nil)
+	img, err := tarball.ImageFromPath(tarballPath, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to parse image from tarball at %s", tarballPath)
 	}
-
-	var newImage = base
-
-	for i, l := range layersPath {
+	for _, l := range layersPath {
 		layer, err := tarball.LayerFromFile(l)
 		if err != nil {
-			return nil, errors.Wrapf(err, "unable to get layer %d from %s", i, l)
+			return nil, errors.Wrapf(err, "unable to get layer from %s", l)
 		}
 
-		newImage, err = mutate.AppendLayers(base, layer)
+		img, err = mutate.AppendLayers(img, layer)
 		if err != nil {
-			return nil, errors.Wrapf(err, "unable to append layer %d to base tarball", i)
+			return nil, errors.Wrapf(err, "unable to append layer at %s to image", l)
 		}
 	}
-
-	return newImage, nil
+	return img, nil
 
 }

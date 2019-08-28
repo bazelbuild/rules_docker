@@ -138,40 +138,72 @@ func keyValueToMap(value []string) (map[string]string, error) {
 	return convMap, nil
 }
 
-// Stamp provides the substitutions of variables inside {} using info in file pointed to
-// by stampInfoFile.
-func Stamp(inp string, stampInfoFile []string) (string, error) {
-	if len(stampInfoFile) == 0 || inp == "" {
-		return inp, nil
+// stampSubstitution is a key value pair used by 'Stamper' to convert values in
+// the format "{key}" to "value".
+type stampSubstitution struct {
+	key   string
+	value string
+}
+
+// Stamper provides functionality to stamp a given string based on key value
+// pairs from a stamp info text file.
+// Each stamp info text file can specify key value pairs in the following
+// format:
+// KEY1 VALUE1
+// KEY2 VALUE2
+// ...
+// This will result in the stamper making the following substitutions in the
+// specified order:
+// {KEY1} -> VALUE1
+// {KEY2} -> VALUE2
+// ...
+type Stamper struct {
+	// subs is a list of substitutions done by the stamper for any given string.
+	subs []stampSubstitution
+}
+
+// Stamp stamps the given value.
+func (s *Stamper) Stamp(val string) string {
+	for _, sb := range s.subs {
+		val = strings.ReplaceAll(val, sb.key, sb.value)
 	}
-	formatArgs := make(map[string]string)
-	for _, infofile := range stampInfoFile {
-		f, err := os.Open(infofile)
+	return val
+}
+
+// StampAll stamps all given values and returns a list with the result. The
+// given list is not modified.
+func (s *Stamper) StampAll(vals []string) []string {
+	result := []string{}
+	for _, v := range vals {
+		result = append(result, s.Stamp(v))
+	}
+	return result
+}
+
+// NewStamper creates a Stamper object initialized to stamp strings with the key
+// value pairs in the given stamp info files.
+func NewStamper(stampInfoFiles []string) (*Stamper, error) {
+	result := new(Stamper)
+	for _, s := range stampInfoFiles {
+		f, err := os.Open(s)
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to open file %s", infofile)
+			return nil, errors.Wrapf(err, "unable to open stamp info file %s", s)
 		}
 		defer f.Close()
-		// scanner reads line by line and discards '\n' character by default.
-		scanner := bufio.NewScanner(f)
-		var temp []string
-		for scanner.Scan() {
-			temp = strings.Split(scanner.Text(), " ")
-			key, val := temp[0], temp[1]
-			if _, ok := formatArgs[key]; ok {
-				fmt.Printf("WARNING: Duplicate value for key %s: using %s", key, val)
-			}
-			formatArgs[key] = val
-		}
-		if err = scanner.Err(); err != nil {
-			return "", errors.Wrapf(err, "failed to read line from file %s", infofile)
-		}
-	}
 
-	o := inp
-	for k, v := range formatArgs {
-		o = strings.ReplaceAll(o, fmt.Sprintf("{%s}", k), v)
+		sc := bufio.NewScanner(f)
+		for sc.Scan() {
+			line := strings.Split(sc.Text(), " ")
+			if len(line) != 2 {
+				return nil, errors.Wrapf(err, "line %q in stamp info file %s did not split into expected number of tokens, got %d, want 2", sc.Text(), s, len(line))
+			}
+			result.subs = append(result.subs, stampSubstitution{
+				key:   fmt.Sprintf("{%s}", line[0]),
+				value: line[1],
+			})
+		}
 	}
-	return o, nil
+	return result, nil
 }
 
 // mapToKeyValue reverses a map to a '='-separated array of strings in {key}={value} format.
@@ -195,9 +227,7 @@ func expandEnvVars(val string, env map[string]string) string {
 }
 
 // getCreationTime returns the correct creation time for which to override the current config file.
-func getCreationTime(overrideInfo *OverrideConfigOpts) (time.Time, error) {
-	// createTime stores the input creation time with macros substituted.
-	var createTime string
+func getCreationTime(overrideInfo *OverrideConfigOpts, s *Stamper) (time.Time, error) {
 	var creationTime time.Time
 	var err error
 	if overrideInfo.CreationTimeString == "" {
@@ -209,13 +239,10 @@ func getCreationTime(overrideInfo *OverrideConfigOpts) (time.Time, error) {
 	}
 	// Parse for specific time formats.
 	var unixTime float64
-	// Use stamp to as preliminary replacement.
-	if createTime, err = Stamp(overrideInfo.CreationTimeString, overrideInfo.StampInfoFile); err != nil {
-		return time.Time{}, errors.Wrapf(err, "unable to substitute %s from BUILD_TIMESTAMP macros", overrideInfo.CreationTimeString)
-	}
+	stampedTime := s.Stamp(overrideInfo.CreationTimeString)
 	// If creationTime is parsable as a floating point type, assume unix epoch timestamp.
 	// otherwise, assume RFC 3339 date/time format.
-	unixTime, err = strconv.ParseFloat(createTime, 64)
+	unixTime, err = strconv.ParseFloat(stampedTime, 64)
 	// Assume RFC 3339 date/time format. No err means it is parsable as floating point.
 	if err == nil {
 		// Ensure that the parsed time is within the floating point range.
@@ -227,27 +254,13 @@ func getCreationTime(overrideInfo *OverrideConfigOpts) (time.Time, error) {
 		sec, dec := math.Modf(unixTime)
 		creationTime = time.Unix(int64(sec), int64(dec*(1e9))).UTC()
 	} else {
-		creationTime, err = time.Parse(time.RFC3339, createTime)
+		creationTime, err = time.Parse(time.RFC3339, stampedTime)
 		if err != nil {
-			return time.Time{}, errors.Wrapf(err, "failed to parse %q as RFC3339. Assumed format to be RFC3339 as it failed to parse as a float as well", createTime)
+			return time.Time{}, errors.Wrapf(err, "failed to parse %q as RFC3339. Assumed format to be RFC3339 as it failed to parse as a float as well", stampedTime)
 		}
 	}
 
 	return creationTime, nil
-}
-
-// stampValues returns an updated version of the input infoToStamp.
-func stampValues(values, stampInfoFiles []string) ([]string, error) {
-	var result []string
-	for _, entry := range values {
-		stampedEntry, err := Stamp(entry, stampInfoFiles)
-		if err != nil {
-			return []string{}, errors.Wrapf(err, "unable to perform substitutions to Env variable %s", entry)
-		}
-		result = append(result, stampedEntry)
-	}
-
-	return result, nil
 }
 
 // resolveEnvironment returns a string array with fully substituted environment variables.
@@ -274,7 +287,7 @@ func resolveEnvironment(overrideInfo *OverrideConfigOpts, environMap map[string]
 }
 
 // resolveLabels returns a map of labels to their extracted and stamped formats.
-func resolveLabels(overrideInfo *OverrideConfigOpts) (map[string]string, error) {
+func resolveLabels(overrideInfo *OverrideConfigOpts, stamper *Stamper) (map[string]string, error) {
 	var labels = make(map[string]string)
 	labels, err := keyValueToMap(overrideInfo.LabelsArray)
 	if err != nil {
@@ -290,10 +303,7 @@ func resolveLabels(overrideInfo *OverrideConfigOpts) (map[string]string, error) 
 			continue
 		}
 		if strings.Contains(value, "{") {
-			if extractedValue, err = Stamp(value, overrideInfo.StampInfoFile); err != nil {
-				return labels, errors.Wrapf(err, "failed to format the string accordingly at %s", value)
-			}
-			labels[label] = extractedValue
+			labels[label] = stamper.Stamp(value)
 		}
 	}
 
@@ -396,63 +406,50 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 	overrideInfo.ConfigFile.OS = overrideInfo.OperatingSystem
 	overrideInfo.ConfigFile.Architecture = defaultProcArch
 
-	var err error
+	stamper, err := NewStamper(overrideInfo.StampInfoFile)
+	if err != nil {
+		return errors.Wrap(err, "unable to initialize stamper")
+	}
+
 	var creationTime time.Time
 	// creationTime is the RFC 3339 formatted time derived from createTime input.
-	if creationTime, err = getCreationTime(overrideInfo); err != nil {
-		return errors.Wrap(err, "failed to correctly parse creation time from config")
+	if creationTime, err = getCreationTime(overrideInfo, stamper); err != nil {
+		return errors.Wrap(err, "failed to parse creation time from config")
 	}
 	overrideInfo.ConfigFile.Created = v1.Time{creationTime}
 
 	if overrideInfo.NullEntryPoint {
 		overrideInfo.ConfigFile.Config.Entrypoint = nil
 	} else if len(overrideInfo.Entrypoint) > 0 {
-		overrideEntryPoint, err := stampValues(overrideInfo.Entrypoint[:], overrideInfo.StampInfoFile[:])
-		if err != nil {
-			return errors.Wrap(err, "failed to correctly parse entrypoint from config")
-		}
-		overrideInfo.ConfigFile.Config.Entrypoint = overrideEntryPoint
+		overrideInfo.ConfigFile.Config.Entrypoint = stamper.StampAll(overrideInfo.Entrypoint)
 	}
 
 	if overrideInfo.NullCmd {
 		overrideInfo.ConfigFile.Config.Cmd = nil
 	} else if len(overrideInfo.Command) > 0 {
-		overrideNullCmd, err := stampValues(overrideInfo.Command[:], overrideInfo.StampInfoFile[:])
-		if err != nil {
-			return errors.Wrap(err, "failed to correctly parse entrypoint from config")
-		}
-		overrideInfo.ConfigFile.Config.Cmd = overrideNullCmd
+		overrideInfo.ConfigFile.Config.Cmd = stamper.StampAll(overrideInfo.Command)
 	}
-
-	stampedUser, err := Stamp(overrideInfo.User, overrideInfo.StampInfoFile)
-	if err != nil {
-		errors.Wrapf(err, "unable to perform substitutions to user %s", overrideInfo.User)
-	}
-	overrideInfo.ConfigFile.Config.User = stampedUser
+	overrideInfo.ConfigFile.Config.User = stamper.Stamp(overrideInfo.User)
 
 	var environMap map[string]string
 	if environMap, err = keyValueToMap(overrideInfo.Env); err != nil {
 		return errors.Wrapf(err, "error converting env array %v to map", overrideInfo.Env)
 	}
-	for key, valToBeStamped := range environMap {
-		stampedValue, err := Stamp(valToBeStamped, overrideInfo.StampInfoFile)
-		if err != nil {
-			return errors.Wrapf(err, "error stamping value %s", valToBeStamped)
-		}
-		environMap[key] = stampedValue
+	for k, v := range environMap {
+		environMap[k] = stamper.Stamp(v)
 	}
 	// perform any substitutions of $VAR or ${VAR} with environment variables.
 	if len(environMap) != 0 {
 		overrideEnv, err := resolveEnvironment(overrideInfo, environMap)
 		if err != nil {
-			return errors.Wrap(err, "failed to correctly parse environment variables from config")
+			return errors.Wrap(err, "failed to parse environment variables from config")
 		}
 		overrideInfo.ConfigFile.Config.Env = overrideEnv
 	}
 
 	var labels = make(map[string]string)
-	if labels, err = resolveLabels(overrideInfo); err != nil {
-		return errors.Wrap(err, "failed to correctly resolve labels from config")
+	if labels, err = resolveLabels(overrideInfo, stamper); err != nil {
+		return errors.Wrap(err, "failed to resolve labels from config")
 	}
 	if len(overrideInfo.LabelsArray) > 0 {
 		labelsMap := updateConfigLabels(overrideInfo, labels)
@@ -464,7 +461,7 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 			overrideInfo.ConfigFile.Config.ExposedPorts = make(map[string]struct{})
 		}
 		if err = updateExposedPorts(overrideInfo); err != nil {
-			return errors.Wrap(err, "failed to correctly update exposed ports from config")
+			return errors.Wrap(err, "failed to update exposed ports from config")
 		}
 	}
 
@@ -473,17 +470,11 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 			overrideInfo.ConfigFile.Config.Volumes = make(map[string]struct{})
 		}
 		if err = updateVolumes(overrideInfo); err != nil {
-			return errors.Wrap(err, "failed to correctly update volumes from config")
+			return errors.Wrap(err, "failed to update volumes from config")
 		}
 	}
 
-	if overrideInfo.Workdir != "" {
-		stampedWorkdir, err := Stamp(overrideInfo.Workdir, overrideInfo.StampInfoFile)
-		if err != nil {
-			return errors.Wrapf(err, "unable to stamp the working directory %s", overrideInfo.Workdir)
-		}
-		overrideInfo.ConfigFile.Config.WorkingDir = stampedWorkdir
-	}
+	overrideInfo.ConfigFile.Config.WorkingDir = stamper.Stamp(overrideInfo.Workdir)
 
 	// layerDigests are diffIDs extracted from each layer file.
 	layerDigests := []string{}

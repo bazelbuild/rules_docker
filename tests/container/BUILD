@@ -754,6 +754,17 @@ container_image(
     ],
 )
 
+# Build a container image configured to use the Go join_layers.
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers",
+    base = "@new_alpine_linux_ppc64le//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+    use_legacy_join_layers = False,
+)
+
 container_test(
     name = "new_alpine_linux_ppc64le_image_tar_test",
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
@@ -770,6 +781,14 @@ container_test(
     name = "new_alpine_linux_ppc64le_image_oci_test",
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = ":new_alpine_linux_ppc64le_image_oci",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    # Using the tar driver to force using the Go join layers implementation.
+    driver = "tar",
+    image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
 )
 # END_DO_NOT_IMPORT
 
