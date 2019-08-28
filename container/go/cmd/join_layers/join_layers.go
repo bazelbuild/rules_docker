@@ -46,7 +46,7 @@ var (
 type layerData struct {
 	// layer represents a v1.Layer directly.
 	layer v1.Layer
-	// Type is the type of this layer.
+	// mediaType is the type of this layer.
 	mediaType types.MediaType
 	// diffID is the digest of the uncompressed blob of this layer.
 	diffID string
@@ -110,7 +110,7 @@ func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]st
 	for _, t := range tags {
 		split := strings.Split(t, "=")
 		if len(split) != 2 {
-			return nil, errors.Errorf("%q was not specified in the expected key=value format because it split into unexpected number of elements by '=', got %d, want 2", t, len(split))
+			return nil, errors.Errorf("%q was not specified in the expected key=value format because it split into %q with unexpected number of elements by '=', got %d, want 2", t, split, len(split))
 		}
 		img, configFile := split[0], split[1]
 		stamped := stamper.Stamp(img)
@@ -227,7 +227,7 @@ func diffIDToLayerFromManifest(config *v1.ConfigFile, manifest *v1.Manifest) (ma
 	// config. However, the config shouldn't have removed any of the layers from
 	// the original base manifest.
 	if len(config.RootFS.DiffIDs) < len(manifest.Layers) {
-		return nil, errors.Errorf("unexpected number of layers in config %d vs manifest %d, want config to have equal or great number of layers", len(config.RootFS.DiffIDs), len(manifest.Layers))
+		return nil, errors.Errorf("unexpected number of layers in config %d vs manifest %d, want config to have equal or greater number of layers", len(config.RootFS.DiffIDs), len(manifest.Layers))
 	}
 	result := make(map[string]layerData)
 	// Manifest is only needed to add foreign layers which are a special kind of
@@ -332,10 +332,10 @@ func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name
 
 func main() {
 	flag.Var(&tags, "tag", "One or more fully qualified tag names along with the path to the config of the image they tag in tag=path format. e.g., --tag ubuntu=path/to/config1.json --tag gcr.io/blah/debian=path/to/config2.json.")
-	flag.Var(&basemanifests, "basemanifest", "One or more fully qualified tag names along with the manifest of the base image in tag=manifest format. e.g., --manifest ubuntu=path/to/manifest1.json --manifest gcr.io/blah/debian=path/to/manifest2.json.")
-	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Diff ID file, Digest file, Compressed layer tarball). e.g., --layer diffa,hash,layer1.tar,layer1.tar.gz.")
+	flag.Var(&basemanifests, "basemanifest", "One or more fully qualified tag names along with the manifest of the base image in tag=manifest format. e.g., --basemanifest ubuntu=path/to/manifest1.json --basemanifest gcr.io/blah/debian=path/to/manifest2.json.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Diff ID file, Digest file, Compressed layer tarball). e.g., --layer <file with diffID>,<file with digest>,layer1.tar.gz.")
 	flag.Var(&sourceImages, "source_image", "One or more image tarballs for images from which the output image of this binary may derive. e.g., --source_image imag1.tar --source_image image2.tar.")
-	flag.Var(&stampInfoFiles, "stamp-info-file", "Path to one or more Bazel stamp info file with key value pairs for substitution.")
+	flag.Var(&stampInfoFiles, "stamp-info-file", "Path to one or more Bazel stamp info file with key value pairs for substitution. e.g., --stamp-info-file=file1.txt --stamp-info-file=file2.txt.")
 	flag.Parse()
 
 	stamper, err := compat.NewStamper(stampInfoFiles)

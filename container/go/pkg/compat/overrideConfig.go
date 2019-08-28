@@ -146,7 +146,7 @@ type stampSubstitution struct {
 }
 
 // Stamper provides functionality to stamp a given string based on key value
-// pairs from a stamp info file text file.
+// pairs from a stamp info text file.
 // Each stamp info text file can specify key value pairs in the following
 // format:
 // KEY1 VALUE1

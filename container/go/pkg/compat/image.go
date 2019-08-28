@@ -183,30 +183,28 @@ func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error)
 // compressedBlob represents a compressed layer tarball and implements the
 // partial.Compressed interface.
 type compressedBlob struct {
-	// path of this compressed blob.
-	//path string
 	// desc is the descriptor of this compressed blob.
 	desc v1.Descriptor
 	// path is the path to the compressed layer tarball.
 	path string
 }
 
-// The digest of this compressedBlob.
+// Digest returns the digest of this compressedBlob.
 func (b *compressedBlob) Digest() (v1.Hash, error) {
 	return b.desc.Digest, nil
 }
 
-// Return the opened compressed layer file.
+// Compressed returns the opened compressed layer file.
 func (b *compressedBlob) Compressed() (io.ReadCloser, error) {
 	return os.Open(b.path)
 }
 
-// The size of this compressedBlob.
+// Size returns the size of this compressedBlob.
 func (b *compressedBlob) Size() (int64, error) {
 	return b.desc.Size, nil
 }
 
-// The media type of this compressedBlob.
+// MediaType returns the media type of this compressedBlob.
 func (b *compressedBlob) MediaType() (types.MediaType, error) {
 	return b.desc.MediaType, nil
 }
@@ -222,17 +220,17 @@ type uncompressedBlob struct {
 	path string
 }
 
-// DiffID is the digest of this uncompressed blob.
+// DiffID returns the digest of this uncompressed blob.
 func (b *uncompressedBlob) DiffID() (v1.Hash, error) {
 	return b.diffID, nil
 }
 
-// Return the opened uncompressed layer file.
+// Uncompressed returns the opened uncompressed layer file.
 func (b *uncompressedBlob) Uncompressed() (io.ReadCloser, error) {
 	return os.Open(b.path)
 }
 
-// The media type of this compressedBlob.
+// MediaType returns the media type of this compressedBlob.
 func (b *uncompressedBlob) MediaType() (types.MediaType, error) {
 	return b.desc.MediaType, nil
 }
@@ -250,13 +248,13 @@ func (b *foreignBlob) DiffID() (v1.Hash, error) {
 	return b.diffID, nil
 }
 
-//  Uncompressed returns a blank reader for this foreign layer.
+// Uncompressed returns a blank reader for this foreign layer.
 func (b *foreignBlob) Uncompressed() (io.ReadCloser, error) {
 	r := bytes.NewReader([]byte{})
 	return ioutil.NopCloser(r), nil
 }
 
-// The media type of this compressedBlob.
+// MediaType returns the media type of this foreign layer.
 func (b *foreignBlob) MediaType() (types.MediaType, error) {
 	return types.DockerForeignLayer, nil
 }

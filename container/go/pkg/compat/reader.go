@@ -28,7 +28,7 @@ import (
 // Expected metadata files in legacy layout.
 const manifestFile = "manifest.json"
 
-// LayerOpts instructs the legacy image image on how to read a layer.
+// LayerOpts instructs how to read a layer in a legacy image.
 type LayerOpts struct {
 	// Layer directly represents a v1.Layer. If this field is specified, all
 	// other fields are ignored.
@@ -47,7 +47,7 @@ type LayerOpts struct {
 	// Size is the size of the layer. Only required for foreign layers. Ignored
 	// for every other layer type.
 	Size int64
-	// URLS is the url to down the layer blob from. Only required for foreign
+	// URLS are the urls to down the layer blob from. Only required for foreign
 	// layers. Ignored for every other layer type.
 	URLS []string
 }
