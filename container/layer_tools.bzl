@@ -286,6 +286,11 @@ tools = {
         default = Label("//container:incremental_load_template"),
         allow_single_file = True,
     ),
+    "use_legacy_join_layers": attr.bool(
+        default = True,
+        doc = "Use the legacy python join_layers.py to build the image tarball." +
+              "Uses the experimental Go implementation when set to false.",
+    ),
     "_join_layers_go": attr.label(
         default = Label("//container/go/cmd/join_layers"),
         cfg = "host",
@@ -296,10 +301,5 @@ tools = {
         cfg = "host",
         executable = True,
         allow_files = True,
-    ),
-    "use_legacy_join_layers": attr.bool(
-        default = True,
-        doc = "Use the legacy python join_layers.py to build the image tarball." +
-              "Uses the experimental Go implementation when set to false.",
     ),
 }
