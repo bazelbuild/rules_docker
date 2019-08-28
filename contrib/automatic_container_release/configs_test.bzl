@@ -70,7 +70,7 @@ def _impl(ctx):
         substitutions = {
             "%{cmd_args}": " ".join(cmd_args),
             "%{docker_path}": toolchain_info.tool_path,
-            "%{image_name}": ctx.attr._checker,
+            "%{image_name}": ctx.attr._checker + ctx.attr.checker_tag,
             "%{spec_container_paths}": " ".join(spec_container_paths),
             "%{specs}": " ".join(specs),
         },
@@ -82,6 +82,10 @@ def _impl(ctx):
 
 configs_test = rule(
     attrs = {
+        "checker_tag": attr.string(
+            default = "latest",
+            doc = "Tag of the semantics checker image to be used for validation.",
+        ),
         "dependency_update_specs": attr.label_list(
             allow_files = ["yaml"],
             doc = "Dependency update YAML dep spec files to validate.",
