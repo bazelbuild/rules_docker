@@ -298,7 +298,7 @@ tools = {
         allow_files = True,
     ),
     "use_py_join_layers": attr.bool(
-        default = True,
+        default = False,
         doc = "Use the python join_layers.py to build the image tarball." +
               "Uses the Go implementation when set to false.",
     ),
