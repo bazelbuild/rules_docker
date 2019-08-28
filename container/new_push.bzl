@@ -186,7 +186,7 @@ new_container_push = rule(
             default = False,
             mandatory = False,
             doc = "Only push images if the digest has changed, default to False",
-            ),
+        ),
         "registry": attr.string(
             mandatory = True,
             doc = "The registry to which we are pushing.",
