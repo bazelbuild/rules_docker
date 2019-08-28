@@ -167,7 +167,7 @@ def assemble(
         _add_join_layers_go_args(args, inputs, images)
 
     ctx.actions.run(
-        executable = ctx.executable._join_layers_py if use_legacy_join_layers else ctx.executable._join_layers_go,
+        executable = ctx.executable._join_layers_py if ctx.attr.use_legacy_join_layers else ctx.executable._join_layers_go,
         arguments = args,
         tools = inputs,
         outputs = [output],
