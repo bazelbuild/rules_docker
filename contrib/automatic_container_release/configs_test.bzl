@@ -84,6 +84,7 @@ configs_test = rule(
     attrs = {
         "checker_tag": attr.string(
             default = "latest",
+            values = ["latest", "staging", "test"],
             doc = "Tag of the semantics checker image to be used for validation.",
         ),
         "dependency_update_specs": attr.label_list(
