@@ -594,7 +594,11 @@ def _impl(
         run = not ctx.attr.legacy_run_behavior,
         run_flags = docker_run_flags,
     )
-    _assemble_image(ctx, images, output_tarball)
+    _assemble_image(
+        ctx,
+        images,
+        output_tarball,
+    )
     _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 
     # Symlink config file for usage in structure tests

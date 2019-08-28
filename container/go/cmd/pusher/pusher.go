@@ -112,20 +112,22 @@ func main() {
 		log.Fatalf("Error reading from %s: %v", imgSrc, err)
 	}
 
-	// Infer stamp info if provided and perform substitutions in the provided tag name.
-	formattedDst, err := compat.Stamp(*dst, stampInfoFile)
+	stamper, err := compat.NewStamper(stampInfoFile)
 	if err != nil {
-		log.Fatalf("Error resolving stamp info to destination %s: %v", *dst, err)
-	}
-	if formattedDst != *dst {
-		log.Printf("Destination %s was resolved to %s based on inferred stamp info.", *dst, formattedDst)
+		log.Fatalf("Failed to initialize the stamper: %v", err)
 	}
 
-	if err := push(formattedDst, img); err != nil {
-		log.Fatalf("Error pushing image to %s: %v", formattedDst, err)
+	// Infer stamp info if provided and perform substitutions in the provided tag name.
+	stamped := stamper.Stamp(*dst)
+	if stamped != *dst {
+		log.Printf("Destination %s was resolved to %s after stamping.", *dst, stamped)
 	}
 
-	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, formattedDst)
+	if err := push(stamped, img); err != nil {
+		log.Fatalf("Error pushing image to %s: %v", stamped, err)
+	}
+
+	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, stamped)
 }
 
 // Checks whether an images digest exists in a repository

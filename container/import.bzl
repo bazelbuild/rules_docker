@@ -121,7 +121,11 @@ def _container_import_impl(ctx):
     }
 
     _incr_load(ctx, images, ctx.outputs.executable)
-    _assemble_image(ctx, images, ctx.outputs.out)
+    _assemble_image(
+        ctx,
+        images,
+        ctx.outputs.out,
+    )
 
     runfiles = ctx.runfiles(
         files = (container_parts["unzipped_layer"] +
