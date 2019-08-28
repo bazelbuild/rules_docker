@@ -182,6 +182,11 @@ new_container_push = rule(
             mandatory = True,
             doc = "The label of the image to push.",
         ),
+        "only_push_changed": attr.bool(
+            default = False,
+            mandatory = False,
+            doc = "Only push images if the digest has changed, default to False",
+            ),
         "registry": attr.string(
             mandatory = True,
             doc = "The registry to which we are pushing.",
@@ -201,11 +206,6 @@ new_container_push = rule(
         "tag_file": attr.label(
             allow_single_file = True,
             doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
-        ),
-        "only_push_changed": attr.bool(
-            default = False,
-            mandatory = False,
-            doc = "Only push images if the digest has changed, default to False",
         ),
         "_digester": attr.label(
             default = "@io_bazel_rules_docker//container/go/cmd/digester",
