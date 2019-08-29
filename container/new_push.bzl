@@ -38,6 +38,7 @@ def _impl(ctx):
     # TODO: Possible optimization for efficiently pushing intermediate format after container_image is refactored, similar with the old python implementation, e.g., push-by-layer.
 
     pusher_args = []
+    pusher_input = []
     digester_args = []
     digester_input = []
 
@@ -47,10 +48,9 @@ def _impl(ctx):
     tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
 
     # If a tag file is provided, override <tag> with tag value
-    runfiles_tag_file = []
     if ctx.file.tag_file:
         tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
-        runfiles_tag_file = [ctx.file.tag_file]
+        pusher_input.append(ctx.file.tag_file)
 
     # If any stampable attr contains python format syntax (which is how users
     # configure stamping), we enable stamping.
@@ -59,56 +59,37 @@ def _impl(ctx):
     stamp = "{" in tag or "{" in registry or "{" in repository
     stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
     for f in stamp_inputs:
-        pusher_args += ["-stampInfoFile", "%s" % _get_runfile_path(ctx, f)]
+        pusher_args += ["-stamp-info-file", "%s" % _get_runfile_path(ctx, f)]
+    pusher_input += stamp_inputs
 
-    # Find and set src to correct paths depending the image format to be pushed
-    if ctx.attr.format == "oci":
-        found = False
-        for f in ctx.files.image:
-            digester_input.append(f)
-            if f.basename == "index.json":
-                pusher_args += ["-src", "{index_dir}".format(
-                    index_dir = _get_runfile_path(ctx, f),
-                )]
-                digester_args += ["-src", str(f.path)]
-                found = True
-        if not found:
-            fail("Did not find an index.json in the image attribute {} specified to {}".format(ctx.attr.image, ctx.label))
-    if ctx.attr.format == "docker":
-        if len(ctx.files.image) == 0:
-            fail("Attribute image {} to {} did not contain an image tarball".format(ctx.attr.image, ctx.label))
-        if len(ctx.files.image) > 1:
-            fail("Attribute image {} to {} had {} files. Expected exactly 1".format(ctx.attr.image, ctx.label, len(ctx.files.image)))
-        pusher_args += ["-src", _get_runfile_path(ctx, ctx.files.image[0])]
-        digester_args += ["-src", ctx.files.image[0].path]
-        digester_input = [ctx.files.image[0]]
-    if ctx.attr.format == "legacy":
-        # Construct container_parts for input to pusher.
-        image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-        blobs = image.get("zipped_layer", [])
-        config = image["config"]
-        legacy_files = [config] + blobs
-        tarball = image.get("legacy")
-        if tarball:
-            print("Pushing an image based on a tarball can be very " +
-                  "expensive.  If the image is the output of a " +
-                  "docker_build, consider dropping the '.tar' extension. " +
-                  "If the image is checked in, consider using " +
-                  "docker_import instead.")
-            pusher_args += ["-legacyBaseImage", "%s" % _get_runfile_path(ctx, tarball)]
-            digester_args += ["-legacyBaseImage", "%s" % tarball.path]
-            legacy_files += [tarball]
-
-        pusher_args += ["-configPath", "{}".format(_get_runfile_path(ctx, config))]
-        digester_args += ["-configPath", str(config.path)]
-        digester_input = legacy_files
+    # Construct container_parts for input to pusher.
+    image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
+    blobs = image.get("zipped_layer", [])
+    config = image["config"]
+    legacy_files = [config] + blobs
+    pusher_input += legacy_files
+    digester_input += legacy_files
+    tarball = image.get("legacy")
+    if tarball:
+        print("Pushing an image based on a tarball can be very " +
+              "expensive.  If the image is the output of a " +
+              "docker_build, consider dropping the '.tar' extension. " +
+              "If the image is checked in, consider using " +
+              "docker_import instead.")
+        pusher_args += ["--tarball", "%s" % _get_runfile_path(ctx, tarball)]
+        pusher_input.append(tarball)
+        digester_input.append(tarball)
+        digester_args += ["--tarball", "%s" % tarball.path]
+    else:
+        pusher_args += ["--config", "{}".format(_get_runfile_path(ctx, config))]
+        digester_args += ["--config", str(config.path)]
 
         for layer_file in blobs:
-            pusher_args += ["-layers", "{}".format(_get_runfile_path(ctx, layer_file))]
-            digester_args += ["-layers", layer_file.path]
+            pusher_args += ["--layer", "{}".format(_get_runfile_path(ctx, layer_file))]
+            digester_args += ["--layer", layer_file.path]
 
-    pusher_args += ["-format", str(ctx.attr.format)]
-    pusher_args += ["-dst", "{registry}/{repository}:{tag}".format(
+    pusher_args += ["--format", str(ctx.attr.format)]
+    pusher_args += ["--dst", "{registry}/{repository}:{tag}".format(
         registry = registry,
         repository = repository,
         tag = tag,
@@ -116,8 +97,7 @@ def _impl(ctx):
 
     if ctx.attr.skip_unchanged_digest:
         pusher_args += ["-skip-unchanged-digest"]
-
-    digester_args += ["-dst", str(ctx.outputs.digest.path), "-format", str(ctx.attr.format)]
+    digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
         outputs = [ctx.outputs.digest],
@@ -133,11 +113,7 @@ def _impl(ctx):
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
 
-    pusher_runfiles = [ctx.executable._pusher] + runfiles_tag_file + stamp_inputs
-    if ctx.attr.format == "legacy":
-        pusher_runfiles += legacy_files
-    else:
-        pusher_runfiles += ctx.files.image
+    pusher_runfiles = [ctx.executable._pusher] + pusher_input
     runfiles = ctx.runfiles(files = pusher_runfiles)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
@@ -169,13 +145,12 @@ def _impl(ctx):
 new_container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
-            default = "legacy",
+            default = "Docker",
             values = [
-                "oci",
-                "docker",
-                "legacy",
+                "OCI",
+                "Docker",
             ],
-            doc = "The form to push: docker, legacy or oci, default to 'legacy'.",
+            doc = "The form to push: Docker or OCI, default to 'Docker'.",
         ),
         "image": attr.label(
             allow_files = True,

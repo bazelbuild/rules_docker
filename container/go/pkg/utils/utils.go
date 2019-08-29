@@ -2,9 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
-	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/go-containerregistry/pkg/v1/types"
@@ -31,28 +31,21 @@ func (f *ArrayStringFlags) Set(value string) error {
 	return nil
 }
 
-// ReadImage returns a v1.Image after reading an legacy layout, an OCI layout or a Docker tarball from src.
-func ReadImage(src, format, configPath, tarballBase string, layersPath []string) (v1.Image, error) {
-	if format == "oci" {
-		return oci.Read(src)
+// ReadImage returns a v1.Image after reading an image in OCI or Docker format.
+func ReadImage(imgConfig, imgTarball string, layersPath []string) (v1.Image, error) {
+	if imgTarball != "" && filepath.Ext(imgTarball) != ".tar" {
+		return nil, errors.Errorf("got invalid image tarball file, got %s, want path to file with extension .tar", imgTarball)
 	}
-	if format == "legacy" {
-		layers := []compat.LayerOpts{}
-		for _, l := range layersPath {
-			layers = append(layers, compat.LayerOpts{
-				Type: types.DockerLayer,
-				Path: l,
-			})
-		}
-		if tarballBase == "" {
-			return compat.Read(configPath, layers)
-		} else {
-			return compat.ReadWithBaseTarball(tarballBase, layersPath)
-		}
-	}
-	if format == "docker" {
-		return tarball.ImageFromPath(src, nil)
+	if imgTarball != "" {
+		return tarball.ImageFromPath(imgTarball, nil)
 	}
 
-	return nil, errors.Errorf("unknown image format %q", format)
+	layers := []compat.LayerOpts{}
+	for _, l := range layersPath {
+		layers = append(layers, compat.LayerOpts{
+			Type: types.DockerLayer,
+			Path: l,
+		})
+	}
+	return compat.Read(imgConfig, layers)
 }
