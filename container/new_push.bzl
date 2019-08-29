@@ -184,7 +184,6 @@ new_container_push = rule(
         ),
         "only_push_changed": attr.bool(
             default = False,
-            mandatory = False,
             doc = "Only push images if the digest has changed, default to False",
         ),
         "registry": attr.string(
