@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,6 +29,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 	"github.com/pkg/errors"
 )
 
@@ -48,8 +50,6 @@ const (
 	manifestFile = "manifest.json"
 	// indexManifestFile is the filename of image manifest config in OCI format.
 	indexManifestFile = "index.json"
-	// ManifestUnknownError is the error returned when a digest is not found
-	ManifestUnknownError = "MANIFEST_UNKNOWN"
 )
 
 func main() {
@@ -136,13 +136,13 @@ func digestExists(dst string, img v1.Image) (bool, error) {
 	if err != nil {
 		return false, errors.Wrapf(err, "unable to get local image digest")
 	}
-	digestRef, err := name.NewDigest(strings.Join([]string{dst, digest.String()}, "@"))
+	digestRef, err := name.NewDigest(fmt.Sprintf("%s@%s", dst, digest))
 	if err != nil {
 		return false, errors.Wrapf(err, "Couldn't create ref from digest")
 	}
 	remoteImg, err := remote.Image(digestRef, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 	if err != nil {
-		if strings.HasPrefix(err.Error(), ManifestUnknownError) {
+		if strings.HasPrefix(err.Error(), string(transport.ManifestUnknownErrorCode)) {
 			// no manifest matching the digest
 			return false, nil
 		}
