@@ -182,10 +182,6 @@ new_container_push = rule(
             mandatory = True,
             doc = "The label of the image to push.",
         ),
-        "skip_unchanged_digest": attr.bool(
-            default = False,
-            doc = "Only push images if the digest has changed, default to False",
-        ),
         "registry": attr.string(
             mandatory = True,
             doc = "The registry to which we are pushing.",
@@ -193,6 +189,10 @@ new_container_push = rule(
         "repository": attr.string(
             mandatory = True,
             doc = "The name of the image.",
+        ),
+        "skip_unchanged_digest": attr.bool(
+            default = False,
+            doc = "Only push images if the digest has changed, default to False",
         ),
         "stamp": attr.bool(
             default = False,
