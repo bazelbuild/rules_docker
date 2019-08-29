@@ -130,7 +130,7 @@ func main() {
 	log.Printf("Successfully pushed %s image from %s to %s", *format, imgSrc, stamped)
 }
 
-// Checks whether an images digest exists in a repository
+// digestExists checks whether an image's digest exists in a repository.
 func digestExists(dst string, img v1.Image) (bool, error) {
 	digest, err := img.Digest()
 	if err != nil {
@@ -138,7 +138,7 @@ func digestExists(dst string, img v1.Image) (bool, error) {
 	}
 	digestRef, err := name.NewDigest(fmt.Sprintf("%s@%s", dst, digest))
 	if err != nil {
-		return false, errors.Wrapf(err, "Couldn't create ref from digest")
+		return false, errors.Wrapf(err, "couldn't create ref from digest")
 	}
 	remoteImg, err := remote.Image(digestRef, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 	if err != nil {
