@@ -378,7 +378,7 @@ py_test(
 # BEGIN_DO_NOT_IMPORT
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -388,7 +388,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -398,7 +398,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_1",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -408,7 +408,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_2",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_amd64//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
