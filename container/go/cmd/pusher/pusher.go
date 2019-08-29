@@ -168,6 +168,7 @@ func push(dst string, img v1.Image) error {
 			log.Printf("Error checking if digest already exists %v. Still pushing", err)
 		}
 		if exists {
+			log.Print("Skipping push of unchanged digest")
 			return nil
 		}
 	}
