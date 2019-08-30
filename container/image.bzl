@@ -374,19 +374,20 @@ def _repository_name(ctx):
     return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
+    blobsums = image.get("blobsum", [])
+    digest_args = ["--digest=%s" % f.path for f in blobsums]
     blobs = image.get("zipped_layer", [])
     layer_args = ["--layer=%s" % f.path for f in blobs]
     config_arg = "--config=%s" % image["config"].path
-    output_digest_arg = "--dst=%s" % output_digest.path
+    output_digest_arg = "--output-digest=%s" % output_digest.path
 
-    arguments = [config_arg, output_digest_arg] + layer_args
+    arguments = [config_arg, output_digest_arg] + layer_args + digest_args
     if image.get("legacy"):
         arguments.append("--tarball=%s" % image["legacy"].path)
-    arguments.append("--format=Docker")
 
     ctx.actions.run(
         outputs = [output_digest],
-        inputs = [image["config"]] + blobs,
+        inputs = [image["config"]] + blobsums + blobs,
         tools = ([image["legacy"]] if image.get("legacy") else []),
         executable = ctx.executable._digester,
         arguments = arguments,
