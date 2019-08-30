@@ -136,7 +136,7 @@ function test_new_container_push_skip_unchanged_digest_unchanged() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_unchanged_tag_1 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_unchanged_tag_1 2>&1)" "Successfully pushed Docker image"
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_unchanged_tag_2 2>&1)" "Skipping push of unchanged digest"
   EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["unchanged_tag1"]}'
 }
@@ -146,8 +146,8 @@ function test_new_container_push_skip_unchanged_digest_changed() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_1 2>&1)" "Successfully pushed docker image"
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_2 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_1 2>&1)" "Successfully pushed Docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_2 2>&1)" "Successfully pushed Docker image"
   EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["changed_tag1","changed_tag2"]}'
 }
 
