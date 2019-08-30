@@ -17,7 +17,6 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -79,27 +78,40 @@ func (l *layerData) layerOpts() compat.LayerOpts {
 	}
 }
 
-// initLayerData creates a new layerData object with the given parameters and
-// loads the values of the hashes into the layerData object from the given
-// diffID and digest files.
-func initLayerData(diffIDfile, digestFile, compressedBlob string) (layerData, error) {
-	ld := layerData{
-		mediaType:      types.DockerLayer,
-		compressedBlob: compressedBlob,
-		diffIDFile:     diffIDfile,
-		digestFile:     digestFile,
+// layerPartsToData converts the given LayerParts object to a layerData
+// object.
+func layerPartsToData(lp utils.LayerParts) (layerData, error) {
+	result := layerData{
+		compressedBlob: lp.CompressedTarball,
+		diffIDFile:     lp.DiffIDFile,
+		digestFile:     lp.DigestFile,
 	}
-	diffID, err := ioutil.ReadFile(ld.diffIDFile)
+	layer, err := lp.V1Layer()
 	if err != nil {
-		return layerData{}, errors.Wrapf(err, "unable to read diffID for layer from %s", ld.diffIDFile)
+		return layerData{}, errors.Wrap(err, "unable to build a layer from the given layer parts")
 	}
-	ld.diffID = string(diffID)
-	digest, err := ioutil.ReadFile(ld.digestFile)
+	result.layer = layer
+	mediaType, err := layer.MediaType()
 	if err != nil {
-		return layerData{}, errors.Wrapf(err, "unable to read digest for layer from %s", ld.digestFile)
+		return layerData{}, errors.Wrap(err, "unable to get media type of layer")
 	}
-	ld.digest = string(digest)
-	return ld, nil
+	result.mediaType = mediaType
+	digest, err := layer.Digest()
+	if err != nil {
+		return layerData{}, errors.Wrap(err, "unable to get digest of layer")
+	}
+	result.digest = digest.Hex
+	diffID, err := layer.DiffID()
+	if err != nil {
+		return layerData{}, errors.Wrap(err, "unable to get diffID of layer")
+	}
+	result.diffID = diffID.Hex
+	size, err := layer.Size()
+	if err != nil {
+		return layerData{}, errors.Wrap(err, "unable to get size of layer")
+	}
+	result.size = size
+	return result, nil
 }
 
 // parseTagToFilename converts a list of key=value where 'key' is the name of
@@ -189,15 +201,15 @@ func loadLayersData(sourceImages, layers []string) ([]layerData, error) {
 		}
 	}
 	for _, l := range layers {
-		split := strings.Split(l, ",")
-		if len(split) != 3 {
-			return nil, errors.Errorf("%q did not split by ',' into the expected number of elements, got %d, want 4", l, len(split))
-		}
-		ld, err := initLayerData(split[0], split[1], split[2])
+		lp, err := utils.LayerPartsFromString(l)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to load layer data")
+			return nil, errors.Wrapf(err, "unable to extract the layer parts from %s", l)
 		}
-		result = append(result, ld)
+		layerData, err := layerPartsToData(lp)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to extract layer data from the given parts")
+		}
+		result = append(result, layerData)
 	}
 	return uniquifyLayerData(result), nil
 }
@@ -333,7 +345,7 @@ func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name
 func main() {
 	flag.Var(&tags, "tag", "One or more fully qualified tag names along with the path to the config of the image they tag in tag=path format. e.g., --tag ubuntu=path/to/config1.json --tag gcr.io/blah/debian=path/to/config2.json.")
 	flag.Var(&basemanifests, "basemanifest", "One or more fully qualified tag names along with the manifest of the base image in tag=manifest format. e.g., --basemanifest ubuntu=path/to/manifest1.json --basemanifest gcr.io/blah/debian=path/to/manifest2.json.")
-	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Diff ID file, Digest file, Compressed layer tarball). e.g., --layer <file with diffID>,<file with digest>,layer1.tar.gz.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer1.tar.gz,layer1.tar,<file with digest>,<file with diffID>.")
 	flag.Var(&sourceImages, "source_image", "One or more image tarballs for images from which the output image of this binary may derive. e.g., --source_image imag1.tar --source_image image2.tar.")
 	flag.Var(&stampInfoFiles, "stamp-info-file", "Path to one or more Bazel stamp info file with key value pairs for substitution. e.g., --stamp-info-file=file1.txt --stamp-info-file=file2.txt.")
 	flag.Parse()

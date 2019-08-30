@@ -45,7 +45,7 @@ var (
 )
 
 func main() {
-	flag.Var(&layers, "layer", "The list of paths to the layers of this docker image, only used for legacy images.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer1.tar.gz,layer1.tar,<file with digest>,<file with diffID>.")
 	flag.Var(&stampInfoFile, "stamp-info-file", "The list of paths to the stamp info files used to substitute supported attribute when a python format placeholder is provivided in dst, e.g., {BUILD_USER}.")
 	flag.Parse()
 
@@ -55,11 +55,11 @@ func main() {
 	if *format == "" {
 		log.Fatalln("Required option -format was not specified.")
 	}
-	if *imgTarball == "" && *imgConfig == "" {
-		log.Fatalln("Neither --tarball nor --config was specified.")
+	if *imgTarball == "" && len(layers) == 0 {
+		log.Fatalln("Either --tarball or --layer must be specified for the input image. Neither was specified.")
 	}
-	if *imgTarball != "" && *imgConfig != "" {
-		log.Fatalf("Both --tarball=%q & --config=%q were specified. Only one of them must be specified.", *imgTarball, *imgConfig)
+	if *imgTarball != "" && len(layers) > 0 {
+		log.Fatalf("Both --tarball=%q and --layer=%v were specified. Exactly one of these options must be specified.", *imgTarball, layers)
 	}
 
 	// If the user provided a client config directory, instruct the keychain resolver
@@ -68,7 +68,11 @@ func main() {
 		os.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	img, err := utils.ReadImage(*imgConfig, *imgTarball, layers)
+	imgParts, err := utils.ImagePartsFromArgs(*imgConfig, layers)
+	if err != nil {
+		log.Fatalf("Unable to determine parts of the image from --config=%s & --layer=%v: %v", *imgConfig, layers, err)
+	}
+	img, err := utils.ReadImage(*imgTarball, imgParts)
 	if err != nil {
 		log.Fatalf("Error reading image: %v", err)
 	}

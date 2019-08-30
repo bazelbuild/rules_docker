@@ -179,11 +179,26 @@ container_image(
     operating_system = "windows",
 )
 
+container_image(
+    name = "basic_windows_image_go_join_layers",
+    base = ":import_windows_base_image",
+    cmd = ["echo bar"],
+    operating_system = "windows",
+    use_legacy_join_layers = False,
+)
+
 container_test(
     name = "basic_windows_image_test",
     configs = ["//tests/container/configs:windows_image.yaml"],
     driver = "tar",
     image = ":basic_windows_image",
+)
+
+container_test(
+    name = "basic_windows_image_test_go_join_layers",
+    configs = ["//tests/container/configs:windows_image.yaml"],
+    driver = "tar",
+    image = ":basic_windows_image_go_join_layers",
 )
 
 # The following targets are not imported.

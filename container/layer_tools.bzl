@@ -49,6 +49,55 @@ def _extract_layers(ctx, name, artifact):
         "manifest": manifest_file,
     }
 
+def _file_path(ctx, val):
+    """Return the path of the given file object.
+
+    Args:
+        ctx: The context.
+        val: The file object.
+    """
+    return val.path
+
+def generate_args_for_image(ctx, image, to_path = _file_path):
+    """Generates arguments & inputs for the given image.
+
+    Args:
+        ctx: The context.
+        image: The image parts dictionary as returned by 'get_from_target'.
+        to_path: A function to transform the string paths as they
+                        are added as arguments.
+    Returns:
+        The arguments to call the pusher, digester & flatenner with to load
+        the given image.
+        The file objects to define as inputs to the action.
+    """
+    compressed_layers = image.get("zipped_layer", [])
+    uncompressed_layers = image.get("unzipped_layer", [])
+    digest_files = image.get("blobsum", [])
+    diff_id_files = image.get("diff_id", [])
+    args = ["--config={}".format(to_path(ctx, image["config"]))]
+    inputs = [image["config"]]
+    inputs += compressed_layers
+    inputs += uncompressed_layers
+    inputs += digest_files
+    inputs += diff_id_files
+    for i, compressed_layer in enumerate(compressed_layers):
+        uncompressed_layer = uncompressed_layers[i]
+        digest_file = digest_files[i]
+        diff_id_file = diff_id_files[i]
+        args.append(
+            "--layer={},{},{},{}".format(
+                to_path(ctx, compressed_layer),
+                to_path(ctx, uncompressed_layer),
+                to_path(ctx, digest_file),
+                to_path(ctx, diff_id_file),
+            ),
+        )
+    if image.get("legacy"):
+        inputs.append(image["legacy"])
+        args.append("--tarball={}".format(to_path(ctx, image["legacy"])))
+    return args, inputs
+
 def get_from_target(ctx, name, attr_target, file_target = None):
     """Gets all layers from the given target.
 
@@ -128,13 +177,16 @@ def _add_join_layers_go_args(args, inputs, images):
 
         for i in range(0, len(image["diff_id"])):
             args += [
-                "--layer=" +
-                image["diff_id"][i].path +
-                "," + image["blobsum"][i].path +
-                "," + image["zipped_layer"][i].path,
+                "--layer={},{},{},{}".format(
+                    image["zipped_layer"][i].path,
+                    image["unzipped_layer"][i].path,
+                    image["blobsum"][i].path,
+                    image["diff_id"][i].path,
+                ),
             ]
         inputs += image["diff_id"]
         inputs += image["zipped_layer"]
+        inputs += image["unzipped_layer"]
         inputs += image["blobsum"]
 
         if image.get("legacy"):

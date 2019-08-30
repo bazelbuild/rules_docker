@@ -1,17 +1,17 @@
-// Copyright 2017 The Bazel Authors. All rights reserved.
-
+// Copyright 2015 The Bazel Authors. All rights reserved.
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-
+//
 //    http://www.apache.org/licenses/LICENSE-2.0
-
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License/
-////////////////////////////////////
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////
 //This binary implements the ability to load a docker image, calculate its image manifest sha256 hash and output a digest file.
 package main
 
@@ -33,20 +33,23 @@ var (
 )
 
 func main() {
-	flag.Var(&layers, "layer", "The list of paths to the compressed layers of this docker image, only with --format=Docker.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer1.tar.gz,layer1.tar,<file with digest>,<file with diffID>.")
 	flag.Parse()
 
 	if *dst == "" {
 		log.Fatalln("Required option -dst was not specified.")
 	}
-	if *imgTarball == "" && *imgConfig == "" {
-		log.Fatalln("Neither --tarball nor --config was specified.")
+	if *imgTarball == "" && len(layers) == 0 {
+		log.Fatalln("Either --tarball or --layer must be specified for the input image. Neither was specified.")
 	}
-	if *imgTarball != "" && *imgConfig != "" {
-		log.Fatalf("Both --tarball=%q & --config=%q were specified. Only one of them must be specified.", *imgTarball, *imgConfig)
+	if *imgTarball != "" && len(layers) > 0 {
+		log.Fatalf("Both --tarball=%q and --layer=%v were specified. Exactly one of these options must be specified.", *imgTarball, layers)
 	}
-
-	img, err := utils.ReadImage(*imgConfig, *imgTarball, layers)
+	imgParts, err := utils.ImagePartsFromArgs(*imgConfig, layers)
+	if err != nil {
+		log.Fatalf("Unable to determine parts of the image from --config=%s & --layer=%v: %v", *imgConfig, layers, err)
+	}
+	img, err := utils.ReadImage(*imgTarball, imgParts)
 	if err != nil {
 		log.Fatalf("Error reading image: %v", err)
 	}

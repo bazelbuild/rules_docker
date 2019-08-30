@@ -1,3 +1,17 @@
+// Copyright 2015 The Bazel Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////
 package utils
 
 import (
@@ -5,6 +19,9 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
+
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/google/go-containerregistry/pkg/v1"
@@ -30,21 +47,6 @@ func (f *ArrayStringFlags) Get() interface{} {
 func (f *ArrayStringFlags) Set(value string) error {
 	*f = append(*f, value)
 	return nil
-}
-
-// ReadImageWithCompressedLayers loads v1.Image with the given config and
-// given compressed layer files in Docker format. This method will manully
-// hash the layer tarballs to generate the layer digests if requested from the
-// returned image.
-func ReadImageWithCompressedLayers(imgConfig string, layersPath []string) (v1.Image, error) {
-	layers := []compat.LayerOpts{}
-	for _, l := range layersPath {
-		layers = append(layers, compat.LayerOpts{
-			Type: types.DockerLayer,
-			Path: l,
-		})
-	}
-	return compat.Read(imgConfig, layers)
 }
 
 // fullLayer implements the v1.Layer interface constructed from all the parts
@@ -120,32 +122,107 @@ func (l *fullLayer) loadHashes(digestFile, diffIDFile string) error {
 	return nil
 }
 
-// ReadImageWithFullLayers loads a v1.Image with the given:
-// 1. Image config.
-// 2. Compressed docker layer tarballs in order.
-// 3. Uncompressed docker layer tarballs in order.
-// 4. Files with the digests of the compressed layer tarballs in order.
-// 5. Files with the diffID's of the uncompressed layer tarballs in order.
-// The returned image won't need to digest the actual layer contents to
-// calculate the layer digests & diffIDs.
-func ReadImageWithFullLayers(imgConfig string, compressedLayers, uncompressedLayers, digests, diffIDs []string) (v1.Image, error) {
-	if len(compressedLayers) != len(uncompressedLayers) ||
-		len(uncompressedLayers) != len(digests) ||
-		len(digests) != len(diffIDs) {
-		return nil, errors.Errorf("got unequal number of layer parts for compressed layers, uncompressed layers, digest files, diff ID files, got %d, %d, %d, %d, want all of them to be equal", len(compressedLayers), len(uncompressedLayers), len(digests), len(diffIDs))
+// LayerParts contains paths to the components needed to fully describe a
+// docker image layer.
+type LayerParts struct {
+	// CompressedTarball is the path to the compressed layer tarball.
+	CompressedTarball string
+	// UncompressedTarball is the path to the uncompressed layer tarball.
+	UncompressedTarball string
+	// DigestFile is the path to a file containing the sha256 digest of the
+	// compressed layer.
+	DigestFile string
+	// DiffIDFile is the path to a file containing the sha256 digest of the
+	// uncompressed layer.
+	DiffIDFile string
+}
+
+// V1Layer returns a v1.Layer for the given LayerParts.
+func (l *LayerParts) V1Layer() (v1.Layer, error) {
+	result := &fullLayer{
+		compressedTarball:   l.CompressedTarball,
+		uncompressedTarball: l.UncompressedTarball,
 	}
-	layers := []compat.LayerOpts{}
-	for i, cl := range compressedLayers {
-		fl := &fullLayer{
-			compressedTarball:   cl,
-			uncompressedTarball: uncompressedLayers[i],
+	if err := result.loadHashes(l.DigestFile, l.DiffIDFile); err != nil {
+		return nil, errors.Wrapf(err, "unable to load the hashes for compressed layer at %s", l.CompressedTarball)
+	}
+	return result, nil
+}
+
+// LayerPartsFromString constructs a LayerParts object from a string in the
+// format val1,val2,val3,val4 where:
+// val1 is the compressed layer tarball.
+// val2 is the uncompressed layer tarball.
+// val3 is the digest file.
+// val4 is the diffID file.
+func LayerPartsFromString(val string) (LayerParts, error) {
+	split := strings.Split(val, ",")
+	if len(split) != 4 {
+		return LayerParts{}, errors.Errorf("given layer parts string %q split into unexpected elements by ',', got %d, want 4", val, len(split))
+	}
+	return LayerParts{
+		CompressedTarball:   split[0],
+		UncompressedTarball: split[1],
+		DigestFile:          split[2],
+		DiffIDFile:          split[3],
+	}, nil
+}
+
+// ImageParts contains paths to a Docker image config and the invidual layer
+// parts.
+type ImageParts struct {
+	// Config is the path to the image config.
+	Config string
+	// Layers are the parts of layers in the image defined by this object.
+	Layers []LayerParts
+}
+
+// ImagePartsFromArgs is a convenience function to convert string arguments
+// defining the parts of an image:
+// imgConfig is the path to the image config.
+// layers are strings where each item has the format val1,val2,val3,val4 where:
+//   val1 is the compressed layer tarball.
+//   val2 is the uncompressed layer tarball.
+//   val3 is the digest file.
+//   val4 is the diffID file.
+// to an ImageParts object.
+func ImagePartsFromArgs(imgConfig string, layers []string) (ImageParts, error) {
+	if len(layers) > 0 && imgConfig == "" {
+		return ImageParts{}, errors.Errorf("image config was not provided even though %d layer parts were specified", len(layers))
+	}
+	result := ImageParts{Config: imgConfig}
+	for _, l := range layers {
+		lp, err := LayerPartsFromString(l)
+		if err != nil {
+			return ImageParts{}, errors.Wrapf(err, "unable to extract layer parts from %q", l)
 		}
-		if err := fl.loadHashes(digests[i], diffIDs[i]); err != nil {
-			return nil, errors.Wrapf(err, "unable to load the digest & diffID for layer with compressed tarball %s", cl)
+		result.Layers = append(result.Layers, lp)
+	}
+	return result, nil
+}
+
+// ReadImage loads a v1.Image either directly from an image tarball or from
+// the given ImageParts.
+// Either *only* the image tarball must be specified or the ImageParts.
+// The returned image won't need to digest the actual layer contents to
+// calculate the layer digests & diffIDs when using the image parts.
+func ReadImage(imgTarball string, imgParts ImageParts) (v1.Image, error) {
+	if imgTarball != "" {
+		img, err := tarball.ImageFromPath(imgTarball, nil)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to read image from tarball %s", imgTarball)
 		}
-		layers = append(layers, compat.LayerOpts{
-			Layer: fl,
+		return img, nil
+	}
+	layerOpts := []compat.LayerOpts{}
+	for _, l := range imgParts.Layers {
+		layer, err := l.V1Layer()
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to build a v1.Layer from the specified parts")
+		}
+		layerOpts = append(layerOpts, compat.LayerOpts{
+			Layer: layer,
 		})
 	}
-	return compat.Read(imgConfig, layers)
+	return compat.Read(imgParts.Config, layerOpts)
 }
