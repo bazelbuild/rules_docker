@@ -18,48 +18,21 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"io"
 
 	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
 
-// ociLayer wraps around a v1.Layer pretenting to be a layer in the equivalent
-// OCI format.
+// ociLayer extends a v1.Layer pretenting to be a layer in the equivalent OCI
+// format.
 type ociLayer struct {
-	// layer is the v1.Layer this OCI layer wraps around.
-	layer v1.Layer
-}
-
-// Digest returns the Hash of the compressed layer.
-func (l *ociLayer) Digest() (v1.Hash, error) {
-	return l.layer.Digest()
-}
-
-// DiffID returns the Hash of the uncompressed layer.
-func (l *ociLayer) DiffID() (v1.Hash, error) {
-	return l.layer.DiffID()
-}
-
-// Compressed returns an io.ReadCloser for the compressed layer contents.
-func (l *ociLayer) Compressed() (io.ReadCloser, error) {
-	return l.layer.Compressed()
-}
-
-// Uncompressed returns an io.ReadCloser for the uncompressed layer contents.
-func (l *ociLayer) Uncompressed() (io.ReadCloser, error) {
-	return l.layer.Uncompressed()
-}
-
-// Size returns the compressed size of the Layer.
-func (l *ociLayer) Size() (int64, error) {
-	return l.layer.Size()
+	v1.Layer
 }
 
 // MediaType returns the media type of the Layer.
 func (l *ociLayer) MediaType() (types.MediaType, error) {
-	m, err := l.layer.MediaType()
+	m, err := l.Layer.MediaType()
 	if err != nil {
 		return "", err
 	}
@@ -74,11 +47,9 @@ func (l *ociLayer) MediaType() (types.MediaType, error) {
 	return "", errors.Errorf("don't know equivalent OCI layer media type for %s", m)
 }
 
-// ociImage wraps around a v1.Image pretending to be an image with an OCI
-// manifest.
+// ociImage extends a v1.Image pretending to be an image with an OCI manifest.
 type ociImage struct {
-	// img is the v1.Image the OCI image wraps around.
-	img v1.Image
+	v1.Image
 	// layers are the layers in this image formatted as OCI.
 	layers []v1.Layer
 	// rawManifest are the raw bytes of the OCI manifest of this image.
@@ -92,13 +63,13 @@ type ociImage struct {
 // AsOCIImage converts the given v1.Image to the equivalent OCI image using an
 // OCI schema 1 manifest.
 func AsOCIImage(img v1.Image) (v1.Image, error) {
-	result := &ociImage{img: img}
+	result := &ociImage{Image: img}
 	layers, err := img.Layers()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get layers from image")
 	}
 	for _, l := range layers {
-		result.layers = append(result.layers, &ociLayer{layer: l})
+		result.layers = append(result.layers, &ociLayer{Layer: l})
 	}
 	if err = result.buildManifest(); err != nil {
 		return nil, errors.Wrap(err, "unable to generate an OCI manifest for image")
@@ -173,21 +144,6 @@ func (i *ociImage) Layers() ([]v1.Layer, error) {
 // MediaType returns the media type of this image's manifest.
 func (i *ociImage) MediaType() (types.MediaType, error) {
 	return types.OCIManifestSchema1, nil
-}
-
-// ConfigName returns the hash of the image's config file.
-func (i *ociImage) ConfigName() (v1.Hash, error) {
-	return i.img.ConfigName()
-}
-
-// ConfigFile returns this image's config file.
-func (i *ociImage) ConfigFile() (*v1.ConfigFile, error) {
-	return i.img.ConfigFile()
-}
-
-// RawConfigFile returns the serialized bytes of ConfigFile()
-func (i *ociImage) RawConfigFile() ([]byte, error) {
-	return i.img.RawConfigFile()
 }
 
 // Digest returns the sha256 of this image's manifest.
