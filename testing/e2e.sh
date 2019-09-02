@@ -131,6 +131,26 @@ function test_new_container_push_oci() {
   docker stop -t 0 $cid
 }
 
+function test_new_container_push_skip_unchanged_digest_unchanged() {
+  # test that if the digest hasnt changed and skip_unchanged_digest is True that only one tag is published
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_unchanged_tag_1 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_unchanged_tag_2 2>&1)" "Skipping push of unchanged digest"
+  EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["unchanged_tag1"]}'
+}
+
+function test_new_container_push_skip_unchanged_digest_changed() {
+  # test that if the digest changes and skip_unchanged_digest is True that two tags are published
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_1 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_2 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["changed_tag1","changed_tag2"]}'
+}
+
 function test_new_container_push_compat() {
   # OCI image pulled by new puller, target: new_push_test_oci_from_new_puller
   cd "${ROOT}"
@@ -409,6 +429,8 @@ test_new_container_push_oci_with_auth
 test_new_container_push_legacy
 test_new_container_push_legacy_tag_file
 test_new_container_push_legacy_with_auth
+test_new_container_push_skip_unchanged_digest_unchanged
+test_new_container_push_skip_unchanged_digest_changed
 test_container_pull_with_auth
 test_container_pull_cache
 

@@ -114,6 +114,9 @@ def _impl(ctx):
         tag = tag,
     )]
 
+    if ctx.attr.skip_unchanged_digest:
+        pusher_args += ["-skip-unchanged-digest"]
+
     digester_args += ["-dst", str(ctx.outputs.digest.path), "-format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
@@ -186,6 +189,10 @@ new_container_push = rule(
         "repository": attr.string(
             mandatory = True,
             doc = "The name of the image.",
+        ),
+        "skip_unchanged_digest": attr.bool(
+            default = False,
+            doc = "Only push images if the digest has changed, default to False",
         ),
         "stamp": attr.bool(
             default = False,
