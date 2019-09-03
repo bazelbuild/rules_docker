@@ -44,7 +44,7 @@ def _impl(ctx):
     config_arg = "--config=%s" % image["config"].path
 
     ctx.actions.run(
-        executable = ctx.executable._flattener,
+        executable = ctx.executable._flattener if ctx.attr.use_legacy_flattener else ctx.executable._go_flattener,
         arguments = legacy_base_arg + digest_args + layer_args + diff_id_args +
                     uncompressed_layer_args + [
             config_arg,
@@ -66,7 +66,20 @@ container_flatten = rule(
             allow_single_file = [".tar"],
             mandatory = True,
         ),
+        # TODO (smukherj1): Remove once migration in #580 is done.
+        "use_legacy_flattener": attr.bool(
+            default = True,
+            doc = "Use the legacy python flattener to generate the image " +
+                  "filesystem tarball. Uses the experimental Go implementation" +
+                  "when set to false.",
+        ),
         "_flattener": attr.label(
+            default = Label("@containerregistry//:flatten"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
+        "_go_flattener": attr.label(
             default = Label("//container/go/cmd/flattener"),
             cfg = "host",
             executable = True,

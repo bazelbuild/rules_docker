@@ -350,6 +350,11 @@ class ImageTest(unittest.TestCase):
       self.assertTarballContains(tar, [
         '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
 
+  def test_flattened(self):
+    with tarfile.open(TestData('flat_go.tar'), mode='r') as tar:
+      self.assertTarballContains(tar, [
+        '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
+
   def test_bundle(self):
     with TestBundleImage('stamped_bundle_test', "example.com/aaaaa{BUILD_USER}:stamped".format(
         BUILD_USER=STAMP_DICT['BUILD_USER']
