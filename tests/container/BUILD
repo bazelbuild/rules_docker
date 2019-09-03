@@ -377,9 +377,49 @@ py_test(
 # new_container_push targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
 new_container_push(
+    name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
+    format = "Docker",
+    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "unchanged_tag1",
+)
+
+new_container_push(
+    name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
+    format = "Docker",
+    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "unchanged_tag2",
+)
+
+new_container_push(
+    name = "new_push_test_skip_unchanged_digest_changed_tag_1",
+    format = "Docker",
+    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "changed_tag1",
+)
+
+new_container_push(
+    name = "new_push_test_skip_unchanged_digest_changed_tag_2",
+    format = "Docker",
+    image = "@new_alpine_linux_amd64//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "changed_tag2",
+)
+
+new_container_push(
     name = "new_push_test_oci",
-    format = "oci",
-    image = "//container/go/pkg/oci:oci_test_index1",
+    format = "OCI",
+    image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -388,8 +428,8 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_oci_from_new_puller",
-    format = "oci",
-    image = "@new_alpine_linux_amd64//image-oci",
+    format = "OCI",
+    image = "@new_alpine_linux_amd64//image",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -398,7 +438,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_container_img",
-    format = "legacy",
+    format = "Docker",
     image = ":alpine_with_custom_attr",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -408,7 +448,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_container_img_with_auth",
-    format = "legacy",
+    format = "Docker",
     image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -418,7 +458,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_new_puller",
-    format = "legacy",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -428,7 +468,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_old_puller",
-    format = "legacy",
+    format = "Docker",
     image = "@alpine_linux_armv6//image",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -438,7 +478,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_tar",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -448,7 +488,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_old_puller_tar",
-    format = "docker",
+    format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -458,8 +498,8 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_oci_tag_file",
-    format = "oci",
-    image = "//container/go/pkg/oci:oci_test_index1",
+    format = "OCI",
+    image = ":alpine_with_custom_attr",
     registry = "localhost:5000",
     repository = "docker/test",
     tag_file = ":test.tag",
@@ -468,7 +508,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_tag_file",
-    format = "legacy",
+    format = "Docker",
     image = ":set_cmd",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -478,7 +518,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_stamped_test_legacy",
-    format = "legacy",
+    format = "Docker",
     image = ":set_cmd",
     registry = "localhost:5000",
     repository = "docker/test/{BUILD_USER}",
@@ -488,8 +528,8 @@ new_container_push(
 
 new_container_push(
     name = "new_push_stamped_test_oci",
-    format = "oci",
-    image = "@new_alpine_linux_amd64//image-oci",
+    format = "OCI",
+    image = "@new_alpine_linux_amd64//image",
     registry = "localhost:5000",
     repository = "docker/test/{BUILD_USER}",
     tag = "{BUILD_USER}",
@@ -754,6 +794,17 @@ container_image(
     ],
 )
 
+# Build a container image configured to use the Go join_layers.
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers",
+    base = "@new_alpine_linux_ppc64le//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+    use_legacy_join_layers = False,
+)
+
 container_test(
     name = "new_alpine_linux_ppc64le_image_tar_test",
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
@@ -770,6 +821,14 @@ container_test(
     name = "new_alpine_linux_ppc64le_image_oci_test",
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = ":new_alpine_linux_ppc64le_image_oci",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    # Using the tar driver to force using the Go join layers implementation.
+    driver = "tar",
+    image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
 )
 # END_DO_NOT_IMPORT
 

@@ -138,7 +138,7 @@ http_file(
 
 http_file(
     name = "launchpad_openjdk_gpg",
-    sha256 = "429b667af38f71f727de92aa662fb535c587b870a8ed0dcfbe7d2b8971b7e616",
+    sha256 = "32e2f5ceda14f8929d189f66efe6aa98c77e7f7e4e728b35973e7239f2456017",
     urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
 )
 
@@ -325,9 +325,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "1b6b21d24e641b166ccfeeedc70c2a211796ab91853304b1d80e032914b3bf05",
-    strip_prefix = "rules_groovy-d3b1b862046513a50d1cde266f1443e888c92790",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/d3b1b862046513a50d1cde266f1443e888c92790.tar.gz"],
+    sha256 = "d2047c66847108f8514cb391ef981e11abd6625c267b156ca4b70345ca196574",
+    strip_prefix = "rules_groovy-ce90de1cde0366229c6fc14bed1e00c2a485c2d8",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/ce90de1cde0366229c6fc14bed1e00c2a485c2d8.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -434,11 +434,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "d8c2f20deb2f6143bac792d210db1a4872102d81529fe0ea3476c1696addd7ff",
-    strip_prefix = "bazel-toolchains-0.28.3",
+    sha256 = "b8f105a6b226603d64de0f9f4fc80eee13c7d341184eb3275a2869a88cca407b",
+    strip_prefix = "bazel-toolchains-0.29.0",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.3.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.3.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.0.tar.gz",
     ],
 )
 

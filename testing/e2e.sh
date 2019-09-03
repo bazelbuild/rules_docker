@@ -127,8 +127,28 @@ function test_new_container_push_oci() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed oci image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed OCI image"
   docker stop -t 0 $cid
+}
+
+function test_new_container_push_skip_unchanged_digest_unchanged() {
+  # test that if the digest hasnt changed and skip_unchanged_digest is True that only one tag is published
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_unchanged_tag_1 2>&1)" "Successfully pushed Docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_unchanged_tag_2 2>&1)" "Skipping push of unchanged digest"
+  EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["unchanged_tag1"]}'
+}
+
+function test_new_container_push_skip_unchanged_digest_changed() {
+  # test that if the digest changes and skip_unchanged_digest is True that two tags are published
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_1 2>&1)" "Successfully pushed Docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_2 2>&1)" "Successfully pushed Docker image"
+  EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["changed_tag1","changed_tag2"]}'
 }
 
 function test_new_container_push_compat() {
@@ -137,7 +157,7 @@ function test_new_container_push_compat() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_oci_from_new_puller 2>&1)" "Successfully pushed oci image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_oci_from_new_puller 2>&1)" "Successfully pushed OCI image"
   docker stop -t 0 $cid
 
   # Legacy image pulled by new puller, target: new_push_test_legacy_from_new_puller
@@ -145,7 +165,7 @@ function test_new_container_push_compat() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_new_puller 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_new_puller 2>&1)" "Successfully pushed Docker image"
   docker stop -t 0 $cid
 
   # Legacy image pulled by old puller, target: new_push_test_legacy_from_old_puller
@@ -153,7 +173,7 @@ function test_new_container_push_compat() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_old_puller 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_old_puller 2>&1)" "Successfully pushed Docker image"
   docker stop -t 0 $cid
 
   # Docker image tarball pulled by new puller, target: new_push_test_old_puller_tar
@@ -161,7 +181,7 @@ function test_new_container_push_compat() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_old_puller_tar 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_old_puller_tar 2>&1)" "Successfully pushed Docker image"
   docker stop -t 0 $cid
 }
 
@@ -170,7 +190,7 @@ function test_new_container_push_legacy() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img 2>&1)" "Successfully pushed Docker image"
   bazel clean
 
   cd "${ROOT}/testing/new_pusher_tests"
@@ -203,7 +223,7 @@ function test_new_container_push_legacy_with_auth() {
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting authenticated new container_push..."
 
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img_with_auth 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img_with_auth 2>&1)" "Successfully pushed Docker image"
   bazel clean
 
   # Run the new_container_push test in the Bazel workspace that uses the default
@@ -220,7 +240,7 @@ function test_new_container_push_tar() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_tar 2>&1)" "Successfully pushed docker image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_tar 2>&1)" "Successfully pushed Docker image"
 
   docker stop -t 0 $cid
 }
@@ -242,11 +262,11 @@ function test_new_container_push_with_stamp() {
 
   # Push a legacy image with stamp substitution
   bazel run tests/container:new_push_stamped_test_legacy
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_legacy 2>&1)" "Successfully pushed legacy image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_legacy 2>&1)" "Successfully pushed Docker image"
 
   # Push a oci image with stamp substitution
   bazel run tests/container:new_push_stamped_test_oci
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_oci 2>&1)" "Successfully pushed oci image"
+  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_oci 2>&1)" "Successfully pushed OCI image"
   docker stop -t 0 $cid
 }
 
@@ -312,7 +332,7 @@ function test_new_container_push_oci_with_auth() {
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting authenticated new container_push..."
 
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed oci image"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci 2>&1)" "Successfully pushed OCI image"
   bazel clean
 
   # Run the new_container_push test in the Bazel workspace that uses the default
@@ -409,6 +429,8 @@ test_new_container_push_oci_with_auth
 test_new_container_push_legacy
 test_new_container_push_legacy_tag_file
 test_new_container_push_legacy_with_auth
+test_new_container_push_skip_unchanged_digest_unchanged
+test_new_container_push_skip_unchanged_digest_changed
 test_container_pull_with_auth
 test_container_pull_cache
 

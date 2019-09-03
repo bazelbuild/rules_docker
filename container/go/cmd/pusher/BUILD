@@ -26,11 +26,13 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//container/go/pkg/compat:go_default_library",
+        "//container/go/pkg/oci:go_default_library",
         "//container/go/pkg/utils:go_default_library",
         "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
         "@com_github_google_go_containerregistry//pkg/name:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/remote/transport:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
 )
