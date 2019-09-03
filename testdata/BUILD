@@ -429,16 +429,16 @@ container_image(
 
 container_image(
     name = "image_with_bar_and_baz",
+    # Deriving from the base as a tar tests for the case where the base image
+    # is specified as a tarball to image reader.
+    base = ":image_with_bar.tar",
     files = [
         ":baz",
     ],
-    # Deriving from the base as a tar tests for the case where the base image
-    # is specified as a tarball to image reader.
-    base = ":image_with_bar.tar"
 )
 
 container_flatten(
-    name  = "flatten_with_tarball_base",
+    name = "flatten_with_tarball_base",
     image = ":image_with_bar_and_baz",
     use_legacy_flattener = False,
 )

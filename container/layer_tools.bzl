@@ -66,6 +66,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         image: The image parts dictionary as returned by 'get_from_target'.
         to_path: A function to transform the string paths as they
                         are added as arguments.
+
     Returns:
         The arguments to call the pusher, digester & flatenner with to load
         the given image.
