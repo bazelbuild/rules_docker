@@ -378,7 +378,7 @@ py_test(
 # BEGIN_DO_NOT_IMPORT
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -388,7 +388,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -398,7 +398,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_1",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -408,7 +408,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_2",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_amd64//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -418,8 +418,8 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_oci",
-    format = "oci",
-    image = "//container/go/pkg/oci:oci_test_index1",
+    format = "OCI",
+    image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -428,8 +428,8 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_oci_from_new_puller",
-    format = "oci",
-    image = "@new_alpine_linux_amd64//image-oci",
+    format = "OCI",
+    image = "@new_alpine_linux_amd64//image",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -438,7 +438,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_container_img",
-    format = "legacy",
+    format = "Docker",
     image = ":alpine_with_custom_attr",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -448,7 +448,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_container_img_with_auth",
-    format = "legacy",
+    format = "Docker",
     image = ":set_cmd_and_entrypoint",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -458,7 +458,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_new_puller",
-    format = "legacy",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -468,7 +468,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_from_old_puller",
-    format = "legacy",
+    format = "Docker",
     image = "@alpine_linux_armv6//image",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -478,7 +478,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_tar",
-    format = "docker",
+    format = "Docker",
     image = "@new_alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -488,7 +488,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_old_puller_tar",
-    format = "docker",
+    format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -498,8 +498,8 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_oci_tag_file",
-    format = "oci",
-    image = "//container/go/pkg/oci:oci_test_index1",
+    format = "OCI",
+    image = ":alpine_with_custom_attr",
     registry = "localhost:5000",
     repository = "docker/test",
     tag_file = ":test.tag",
@@ -508,7 +508,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_test_legacy_tag_file",
-    format = "legacy",
+    format = "Docker",
     image = ":set_cmd",
     registry = "localhost:5000",
     repository = "docker/test",
@@ -518,7 +518,7 @@ new_container_push(
 
 new_container_push(
     name = "new_push_stamped_test_legacy",
-    format = "legacy",
+    format = "Docker",
     image = ":set_cmd",
     registry = "localhost:5000",
     repository = "docker/test/{BUILD_USER}",
@@ -528,8 +528,8 @@ new_container_push(
 
 new_container_push(
     name = "new_push_stamped_test_oci",
-    format = "oci",
-    image = "@new_alpine_linux_amd64//image-oci",
+    format = "OCI",
+    image = "@new_alpine_linux_amd64//image",
     registry = "localhost:5000",
     repository = "docker/test/{BUILD_USER}",
     tag = "{BUILD_USER}",
