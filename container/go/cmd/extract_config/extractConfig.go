@@ -35,8 +35,6 @@ var (
 
 func main() {
 	flag.Parse()
-	log.Println("Running the Image Config & Manifest Extractor.")
-
 	if *imageTar == "" {
 		log.Fatalln("Required option -imageTar was not specified.")
 	}
@@ -69,6 +67,4 @@ func main() {
 	if err := ioutil.WriteFile(*outputManifest, manifestContent, 0644); err != nil {
 		log.Fatalf("Failed to write manifest file contents to %s: %v", *outputManifest, err)
 	}
-
-	log.Println("Image Config & Manifest Extractor was successful.")
 }

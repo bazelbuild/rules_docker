@@ -20,241 +20,254 @@ package compat
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
-	"sync"
 
 	"github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/partial"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
+
+// fullLayer implements the v1.Layer interface constructed from all the parts
+// that define a Docker layer such that none of the methods implementing the
+// v1.Layer interface need to do any computations on the layer contents.
+type fullLayer struct {
+	// digest is the digest of this layer.
+	digest v1.Hash
+	// diffID is the diffID of this layer.
+	diffID v1.Hash
+	// compressedTarball is the path to the compressed tarball of this layer.
+	compressedTarball string
+	// uncompressedTarball is the path to the uncompressed tarball of this
+	// layer.
+	uncompressedTarball string
+}
+
+// Digest returns the Hash of the compressed layer.
+func (l *fullLayer) Digest() (v1.Hash, error) {
+	return l.digest, nil
+}
+
+// DiffID returns the Hash of the uncompressed layer.
+func (l *fullLayer) DiffID() (v1.Hash, error) {
+	return l.diffID, nil
+}
+
+// Compressed returns an io.ReadCloser for the compressed layer contents.
+func (l *fullLayer) Compressed() (io.ReadCloser, error) {
+	f, err := os.Open(l.compressedTarball)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to open compressed layer tarball from %s", l.compressedTarball)
+	}
+	return f, nil
+}
+
+// Uncompressed returns an io.ReadCloser for the uncompressed layer contents.
+func (l *fullLayer) Uncompressed() (io.ReadCloser, error) {
+	f, err := os.Open(l.uncompressedTarball)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to open uncompressed layer tarball from %s", l.uncompressedTarball)
+	}
+	return f, nil
+}
+
+// Size returns the compressed size of the Layer.
+func (l *fullLayer) Size() (int64, error) {
+	f, err := os.Stat(l.compressedTarball)
+	if err != nil {
+		return 0, errors.Wrapf(err, "unable to stat %s to determine size of compressed layer", l.compressedTarball)
+	}
+	return f.Size(), nil
+}
+
+// MediaType returns the media type of the Layer.
+func (l *fullLayer) MediaType() (types.MediaType, error) {
+	return types.DockerLayer, nil
+}
+
+// loadHashes loads the sha256 digests for this layer from the given digest and
+// diffID files.
+func (l *fullLayer) loadHashes(digestFile, diffIDFile string) error {
+	digest, err := ioutil.ReadFile(digestFile)
+	if err != nil {
+		return errors.Wrapf(err, "unable to load layer digest from %s", digestFile)
+	}
+	l.digest = v1.Hash{Algorithm: "sha256", Hex: string(digest)}
+	diffID, err := ioutil.ReadFile(diffIDFile)
+	if err != nil {
+		return errors.Wrapf(err, "unable to load layer diffID from %s", diffIDFile)
+	}
+	l.diffID = v1.Hash{Algorithm: "sha256", Hex: string(diffID)}
+	return nil
+}
 
 // legacyImage is the image in legacy intermediate format. Implements
 // partial.CompressedImageCore in go-containerregistry.
 type legacyImage struct {
 	// config is the path to the image config.
 	configPath string
+	// config is the parsed config of this image.
+	config *v1.ConfigFile
+	// rawConfig is the raw bytes of the image config.
+	rawConfig []byte
+	// configDigest is the sha256 digest of the raw image config.
+	configDigest v1.Hash
 	// layers are the options to locate the layers in this image.
-	layers []LayerOpts
-	// rawManifestLock protects rawManifest.
-	rawManifestLock sync.Mutex
-	// rawManifest is the raw bytes of manifest.json file.
+	layers []v1.Layer
+	// rawManifest is the blob of bytes representing the manifest of this
+	// image.
 	rawManifest []byte
-	// manifestLock projects manifest & layerDigestToDiffID.
-	manifestLock sync.Mutex
-	// manifest is the manifest object
+	// manifest is the manifest of this image.
 	manifest *v1.Manifest
-	// layerDigestToDiffID is a lookup from the digest of a compressed layer
-	// to its diff ID which is the digest of the uncompressed layer.
-	layerDigestToDiffID map[string]string
+	// digest is the sha256 digest of the image manifest.
+	digest v1.Hash
 }
 
-var _ partial.CompressedImageCore = (*legacyImage)(nil)
+// Ensure legacyImage implements the v1.Image interface.
+var _ v1.Image = (*legacyImage)(nil)
+
+// genManifest generates the manifest for the given legacy image. This function
+// assumes the config, raw config & config digest have already been loaded.
+func (li *legacyImage) genManifest() error {
+	li.manifest = &v1.Manifest{
+		SchemaVersion: 2,
+		MediaType:     types.DockerManifestSchema2,
+		Config: v1.Descriptor{
+			MediaType: types.DockerConfigJSON,
+			Size:      int64(len(li.rawConfig)),
+			Digest:    li.configDigest,
+		},
+	}
+	for _, l := range li.layers {
+		mediaType, err := l.MediaType()
+		if err != nil {
+			return errors.Wrap(err, "unable to get media type of layer")
+		}
+		digest, err := l.Digest()
+		if err != nil {
+			return errors.Wrap(err, "unable to get digest of layer")
+		}
+		size, err := l.Size()
+		if err != nil {
+			return errors.Wrap(err, "unable to get size of layer")
+		}
+		if fl, ok := l.(*foreignLayer); ok {
+			// The size returned by the Size method on foreign is always zero.
+			// But the implementation has a private variable with the real size
+			// which we need to report in the manifest.
+			size = fl.size
+		}
+		li.manifest.Layers = append(li.manifest.Layers, v1.Descriptor{
+			MediaType: mediaType,
+			Digest:    digest,
+			Size:      size,
+		})
+	}
+	manifestBlob, err := json.Marshal(li.manifest)
+	if err != nil {
+		return errors.Wrap(err, "unable to encode generate manifest to JSON")
+	}
+	li.rawManifest = manifestBlob
+	li.digest = v1.Hash{
+		Algorithm: "sha256",
+		Hex:       sha256Blob(li.rawManifest),
+	}
+	return nil
+}
+
+// sha256Blob returns the sha256 hex digest of the given blob of bytes.
+func sha256Blob(blob []byte) string {
+	digestBlob := sha256.Sum256(blob)
+	return hex.EncodeToString(digestBlob[:])
+}
+
+// init initializes the given legacyImage which includes:
+// 1. Generating the manifest.
+// 2. Generating the config & manifest digests.
+func (li *legacyImage) init() error {
+	configBlob, err := ioutil.ReadFile(li.configPath)
+	if err != nil {
+		return errors.Wrapf(err, "unable to load image config from %s", li.configPath)
+	}
+	li.rawConfig = configBlob
+	config, err := v1.ParseConfigFile(bytes.NewBuffer(li.rawConfig))
+	if err != nil {
+		return errors.Wrapf(err, "unable to parse config loaded from %s", li.configPath)
+	}
+	li.config = config
+	li.configDigest = v1.Hash{
+		Algorithm: "sha256",
+		Hex:       sha256Blob(li.rawConfig),
+	}
+	if err := li.genManifest(); err != nil {
+		return errors.Wrap(err, "unable to generate image manifest")
+	}
+	return nil
+}
+
+// Layers returns the ordered collection of filesystem layers that comprise this
+// image. The order of the list is oldest/base layer first, and most-recent/top
+// layer last.
+func (li *legacyImage) Layers() ([]v1.Layer, error) {
+	return li.layers, nil
+}
 
 // MediaType of this image's manifest from manifest.json.
 func (li *legacyImage) MediaType() (types.MediaType, error) {
-	manifest, err := li.Manifest()
-	if err != nil {
-		return "", err
-	}
-
-	if manifest.MediaType != types.OCIManifestSchema1 && manifest.MediaType != types.DockerManifestSchema2 {
-		return "", fmt.Errorf("unexpected media type %s for image", manifest.MediaType)
-	}
-
-	return manifest.MediaType, nil
+	return li.manifest.MediaType, nil
 }
 
-// Manifest returns the manifest for this image, generating it if necessary.
+// Manifest returns the manifest of this image.
 func (li *legacyImage) Manifest() (*v1.Manifest, error) {
-	li.manifestLock.Lock()
-	defer li.manifestLock.Unlock()
-
-	if li.manifest != nil {
-		return li.manifest, nil
-	}
-
-	m, d, err := buildManifest(li.configPath, li.layers)
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to build a manifest from config %s & corresponding layer files", li.configPath)
-	}
-	li.manifest = &m
-	li.layerDigestToDiffID = d
 	return li.manifest, nil
 }
 
 // RawManifest returns the serialized bytes of the manifest of this image,
 // generating it if necessary.
 func (li *legacyImage) RawManifest() ([]byte, error) {
-	li.rawManifestLock.Lock()
-	defer li.rawManifestLock.Unlock()
-
-	if li.rawManifest != nil {
-		return li.rawManifest, nil
-	}
-
-	m, err := li.Manifest()
-	if err != nil {
-		return nil, err
-	}
-	jsonManifest, err := json.Marshal(m)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to serialize manifest object to JSON")
-	}
-	li.rawManifest = jsonManifest
 	return li.rawManifest, nil
 }
 
 // RawConfigFile returns the serialized bytes of config.json metadata.
 func (li *legacyImage) RawConfigFile() ([]byte, error) {
-	return ioutil.ReadFile(li.configPath)
+	return li.rawConfig, nil
 }
 
-// configFile returns the v1.ConfigFile object for this image.
-func (li *legacyImage) configFile() (*v1.ConfigFile, error) {
-	f, err := os.Open(li.configPath)
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to read image config from %s", li.configPath)
-	}
-	c, err := v1.ParseConfigFile(f)
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to parse config JSON data loaded from %s", li.configPath)
-	}
-	return c, err
+// ConfigFile returns the v1.ConfigFile object for this image.
+func (li *legacyImage) ConfigFile() (*v1.ConfigFile, error) {
+	return li.config, nil
 }
 
-// LayerByDigest returns a Layer for interacting with a particular layer of the image, looking it up by "digest" (the compressed hash).
-// We assume the layer files are named in the format of e.g., 000.tar.gz in this path, following the order they appear in manifest.json.
-func (li *legacyImage) LayerByDigest(h v1.Hash) (partial.CompressedLayer, error) {
-	manifest, err := li.Manifest()
-	if err != nil {
-		return nil, err
-	}
+// Digest returns the sha256 of this image's manifest.
+func (li *legacyImage) Digest() (v1.Hash, error) {
+	return li.digest, nil
+}
 
-	// The config is a layer in some cases.
-	if h == manifest.Config.Digest {
-		return partial.CompressedLayer(&compressedBlob{
-			desc: manifest.Config,
-			path: li.configPath,
-		}), nil
-	}
+// ConfigName returns the hash of the image's config file.
+func (li *legacyImage) ConfigName() (v1.Hash, error) {
+	return li.configDigest, nil
+}
 
-	for i, desc := range manifest.Layers {
-		if h == desc.Digest {
-			// A v1.Layer object was directly given. Use it as is.
-			if li.layers[i].Layer != nil {
-				return li.layers[i].Layer, nil
-			}
-			switch desc.MediaType {
-			case types.OCILayer, types.DockerLayer:
-				return partial.CompressedToLayer(&compressedBlob{
-					desc: desc,
-					path: li.layers[i].Path,
-				})
-			case types.OCIUncompressedLayer, types.DockerUncompressedLayer:
-				diffID, ok := li.layerDigestToDiffID[h.Hex]
-				if !ok {
-					return nil, errors.Errorf("did not find the diff ID for layer with digest %v which can happen if the image was modified after generating the manifest", h)
-				}
-				return partial.UncompressedToLayer(
-					&uncompressedBlob{
-						desc:   desc,
-						diffID: v1.Hash{Algorithm: h.Algorithm, Hex: diffID},
-						path:   li.layers[i].Path,
-					})
-			case types.DockerForeignLayer:
-				return partial.UncompressedToLayer(
-					&foreignBlob{
-						diffID: v1.Hash{Algorithm: h.Algorithm, Hex: li.layers[i].DiffID},
-					})
-			default:
-				return nil, fmt.Errorf("unexpected media type: %v for layer: %v", desc.MediaType, desc.Digest)
-			}
+// LayerByDigest returns the layer with the given digest.
+func (li *legacyImage) LayerByDigest(h v1.Hash) (v1.Layer, error) {
+	for i, l := range li.manifest.Layers {
+		if h == l.Digest {
+			return li.layers[i], nil
 		}
 	}
-
-	return nil, fmt.Errorf("could not find layer in image: %s", h)
+	return nil, errors.Errorf("did not find a layer with digest %v in image", h)
 }
 
-// compressedBlob represents a compressed layer tarball and implements the
-// partial.Compressed interface.
-type compressedBlob struct {
-	// desc is the descriptor of this compressed blob.
-	desc v1.Descriptor
-	// path is the path to the compressed layer tarball.
-	path string
-}
-
-// Digest returns the digest of this compressedBlob.
-func (b *compressedBlob) Digest() (v1.Hash, error) {
-	return b.desc.Digest, nil
-}
-
-// Compressed returns the opened compressed layer file.
-func (b *compressedBlob) Compressed() (io.ReadCloser, error) {
-	return os.Open(b.path)
-}
-
-// Size returns the size of this compressedBlob.
-func (b *compressedBlob) Size() (int64, error) {
-	return b.desc.Size, nil
-}
-
-// MediaType returns the media type of this compressedBlob.
-func (b *compressedBlob) MediaType() (types.MediaType, error) {
-	return b.desc.MediaType, nil
-}
-
-// uncompressedBlob represents a compressed layer tarball and implements the
-// partial.Unompressed interface.
-type uncompressedBlob struct {
-	// desc is the descriptor of this uncompressed blob.
-	desc v1.Descriptor
-	// diffID is the digest of the uncompressed blob.
-	diffID v1.Hash
-	// path is the path to the uncompressed layer tarball.
-	path string
-}
-
-// DiffID returns the digest of this uncompressed blob.
-func (b *uncompressedBlob) DiffID() (v1.Hash, error) {
-	return b.diffID, nil
-}
-
-// Uncompressed returns the opened uncompressed layer file.
-func (b *uncompressedBlob) Uncompressed() (io.ReadCloser, error) {
-	return os.Open(b.path)
-}
-
-// MediaType returns the media type of this compressedBlob.
-func (b *uncompressedBlob) MediaType() (types.MediaType, error) {
-	return b.desc.MediaType, nil
-}
-
-// foreignBlob represents a foreign layer usually present in windows images.
-// foreignBlob implements the partial.Uncompressed interface which returns the
-// digest as the contents.
-type foreignBlob struct {
-	// diffID is the diffID of this foreign layer.
-	diffID v1.Hash
-}
-
-// DiffID returns the diffID of this foreign layer.
-func (b *foreignBlob) DiffID() (v1.Hash, error) {
-	return b.diffID, nil
-}
-
-// Uncompressed returns a blank reader for this foreign layer.
-func (b *foreignBlob) Uncompressed() (io.ReadCloser, error) {
-	r := bytes.NewReader([]byte{})
-	return ioutil.NopCloser(r), nil
-}
-
-// MediaType returns the media type of this foreign layer.
-func (b *foreignBlob) MediaType() (types.MediaType, error) {
-	return types.DockerForeignLayer, nil
+// LayerByDigest returns the layer with the given diffID.
+func (li *legacyImage) LayerByDiffID(h v1.Hash) (v1.Layer, error) {
+	for i, diffID := range li.config.RootFS.DiffIDs {
+		if h == diffID {
+			return li.layers[i], nil
+		}
+	}
+	return nil, errors.Errorf("did not find a layer with diffID %v in image", h)
 }

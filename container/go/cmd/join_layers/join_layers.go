@@ -18,7 +18,6 @@ package main
 import (
 	"flag"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/v1"
@@ -27,7 +26,6 @@ import (
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
 
@@ -39,80 +37,6 @@ var (
 	sourceImages   utils.ArrayStringFlags
 	stampInfoFiles utils.ArrayStringFlags
 )
-
-// layerData is a collection of files that has the contents and metadata about
-// an image layer.
-type layerData struct {
-	// layer represents a v1.Layer directly.
-	layer v1.Layer
-	// mediaType is the type of this layer.
-	mediaType types.MediaType
-	// diffID is the digest of the uncompressed blob of this layer.
-	diffID string
-	// digest is the digest of the compressed blob of this layer.
-	digest string
-	// compressedBlob is the path to the compressed layer tarball.
-	compressedBlob string
-	// diffIDFile is the file from which the diffID for this layer was read.
-	diffIDFile string
-	// digestFile is the file from which the digest for this layer was read.
-	digestFile string
-	// size is the size of this layer. Only needed for foreign layers.
-	size int64
-	// urls are the urls to download this layer from. Only needed for foreign
-	// layers.
-	urls []string
-}
-
-// layerOpts returns the compat.LayerOpts object corresponding to the given
-// layerData.
-func (l *layerData) layerOpts() compat.LayerOpts {
-	return compat.LayerOpts{
-		Layer:  l.layer,
-		Digest: l.digest,
-		DiffID: l.diffID,
-		Path:   l.compressedBlob,
-		Size:   l.size,
-		Type:   l.mediaType,
-		URLS:   l.urls,
-	}
-}
-
-// layerPartsToData converts the given LayerParts object to a layerData
-// object.
-func layerPartsToData(lp utils.LayerParts) (layerData, error) {
-	result := layerData{
-		compressedBlob: lp.CompressedTarball,
-		diffIDFile:     lp.DiffIDFile,
-		digestFile:     lp.DigestFile,
-	}
-	layer, err := lp.V1Layer()
-	if err != nil {
-		return layerData{}, errors.Wrap(err, "unable to build a layer from the given layer parts")
-	}
-	result.layer = layer
-	mediaType, err := layer.MediaType()
-	if err != nil {
-		return layerData{}, errors.Wrap(err, "unable to get media type of layer")
-	}
-	result.mediaType = mediaType
-	digest, err := layer.Digest()
-	if err != nil {
-		return layerData{}, errors.Wrap(err, "unable to get digest of layer")
-	}
-	result.digest = digest.Hex
-	diffID, err := layer.DiffID()
-	if err != nil {
-		return layerData{}, errors.Wrap(err, "unable to get diffID of layer")
-	}
-	result.diffID = diffID.Hex
-	size, err := layer.Size()
-	if err != nil {
-		return layerData{}, errors.Wrap(err, "unable to get size of layer")
-	}
-	result.size = size
-	return result, nil
-}
 
 // parseTagToFilename converts a list of key=value where 'key' is the name of
 // the tagged image and 'value' is the path to a file into a map from key to
@@ -135,205 +59,40 @@ func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]st
 	return result, nil
 }
 
-// loadImgLayersData adds layerData objects for the given image to the given
-// list of layerData and returns the modified list of layersData.
-func loadImgLayersData(img v1.Image, layersData []layerData) ([]layerData, error) {
-	layers, err := img.Layers()
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get image layers")
-	}
-	for _, l := range layers {
-		// Set the digest & diffID fields in the layerData object because it
-		// will be used by uniquifyLayerData to de-duplicate layers and
-		// imageLayers to identify what layers belong to the image being built.
-		d, err := l.Digest()
+// loadImageTarballs returns the images in the given tarballs.
+func loadImageTarballs(imageTarballs []string) ([]v1.Image, error) {
+	result := []v1.Image{}
+	for _, imgTarball := range imageTarballs {
+		img, err := tarball.ImageFromPath(imgTarball, nil)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to get layer digest")
+			return nil, errors.Wrapf(err, "unable to load image from tarball %s", imgTarball)
 		}
-		diffID, err := l.DiffID()
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to get layer diffID")
-		}
-		layersData = append(layersData, layerData{
-			layer:  l,
-			digest: d.Hex,
-			diffID: diffID.Hex,
-		})
-	}
-	return layersData, nil
-}
-
-// uniquifyLayerData removes duplicate layers from the given list of layerData
-// objects. Duplicate layers that occur later in the list replace earlier
-// occurences. The uniquified list is returned. The given list is not modified.
-func uniquifyLayerData(layersData []layerData) []layerData {
-	result := []layerData{}
-	lookup := make(map[string]bool)
-	// Scan in reverse order and reject duplicates found earlier in the list.
-	for i := len(layersData) - 1; i >= 0; i-- {
-		l := layersData[i]
-		_, ok := lookup[l.digest]
-		if ok {
-			continue
-		}
-		lookup[l.digest] = true
-		result = append(result, l)
-	}
-	return result
-}
-
-// loadLayersData creates layer data objects from the given list of base image
-// tarballs and a list of strings where each string has the format
-// val1,val2,val3 where:
-// val1 is the file containing the layer diffID.
-// val2 is the file containing the layer digest.
-// val3 is the path to the compressed layer tarball.
-func loadLayersData(sourceImages, layers []string) ([]layerData, error) {
-	result := []layerData{}
-	for _, imgPath := range sourceImages {
-		img, err := tarball.ImageFromPath(imgPath, nil)
-		if err != nil {
-			return nil, errors.Wrapf(err, "unable to load base image tarball from %s", imgPath)
-		}
-		result, err = loadImgLayersData(img, result)
-		if err != nil {
-			return nil, errors.Wrapf(err, "unable to load layers from base image tarball %s", imgPath)
-		}
-	}
-	for _, l := range layers {
-		lp, err := utils.LayerPartsFromString(l)
-		if err != nil {
-			return nil, errors.Wrapf(err, "unable to extract the layer parts from %s", l)
-		}
-		layerData, err := layerPartsToData(lp)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to extract layer data from the given parts")
-		}
-		result = append(result, layerData)
-	}
-	return uniquifyLayerData(result), nil
-}
-
-// buildDiffIDToLayer builds a map from layer diffID to layer data from
-// the given list of layer data.
-func buildDiffIDToLayer(layersData []layerData) map[string]layerData {
-	result := make(map[string]layerData)
-	for _, l := range layersData {
-		result[l.diffID] = l
-	}
-	return result
-}
-
-// diffIDToLayerFromManifest generates a diffID to layerData lookup from the
-// layers in the given base manifest if the manifest defines any layers. The
-// manifest is only needed to define layers when the image being built is
-// a windows image with a base image with foreign layers.
-func diffIDToLayerFromManifest(config *v1.ConfigFile, manifest *v1.Manifest) (map[string]layerData, error) {
-	if len(manifest.Layers) == 0 {
-		// A manifest was not specified or a blank manifest was specified. This
-		// means this image doesn't have any foreign layers so nothing to do
-		// here.
-		return nil, nil
-	}
-	// The manifest is from the base image which may have fewer layers than the
-	// config. However, the config shouldn't have removed any of the layers from
-	// the original base manifest.
-	if len(config.RootFS.DiffIDs) < len(manifest.Layers) {
-		return nil, errors.Errorf("unexpected number of layers in config %d vs manifest %d, want config to have equal or greater number of layers", len(config.RootFS.DiffIDs), len(manifest.Layers))
-	}
-	result := make(map[string]layerData)
-	// Manifest is only needed to add foreign layers which are a special kind of
-	// layer in Windows base images. For every other layer, the layer tarball
-	// should be specified with the --layer flag instead.
-	for i, l := range manifest.Layers {
-		if l.MediaType != types.DockerForeignLayer {
-			continue
-		}
-		diffID := config.RootFS.DiffIDs[i]
-		result[diffID.Hex] = layerData{
-			mediaType: types.DockerForeignLayer,
-			diffID:    diffID.Hex,
-			digest:    l.Digest.Hex,
-			size:      l.Size,
-			urls:      l.URLs,
-		}
+		result = append(result, img)
 	}
 	return result, nil
-}
-
-// imageLayers returns the layer files from the given layer data lookup for
-// an image with the given config JSON file.
-func imageLayers(cfg *v1.ConfigFile, tarballLayers, manifestLayers map[string]layerData) ([]compat.LayerOpts, error) {
-	result := []compat.LayerOpts{}
-	for _, d := range cfg.RootFS.DiffIDs {
-		layer, ok := tarballLayers[d.Hex]
-		if ok {
-			result = append(result, layer.layerOpts())
-			continue
-		}
-		layer, ok = manifestLayers[d.Hex]
-		if ok {
-			result = append(result, layer.layerOpts())
-			continue
-		}
-		return nil, errors.Errorf("did not find layer with diffID %s specified in image config", d)
-	}
-	return result, nil
-}
-
-// loadImageMetadata loads the image config and optionally the manifest for
-// the image with the given tag using the given tag to config file & manifest
-// file lookups.
-func loadImageMetadata(tag name.Tag, tagToConfigs, tagToBaseManifests map[name.Tag]string) (*v1.ConfigFile, *v1.Manifest, error) {
-	configFile, ok := tagToConfigs[tag]
-	if !ok {
-		return nil, nil, errors.Errorf("unable to find the config file for image %v", tag)
-	}
-	cf, err := os.Open(configFile)
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "unable to open config for image %v from %s", tag, configFile)
-	}
-	cfg, err := v1.ParseConfigFile(cf)
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "unable to parse image config for %v from %s", tag, configFile)
-	}
-	manifestFile, ok := tagToBaseManifests[tag]
-	if !ok {
-		// Manifest is optional and is only needed to build images whose base
-		// image had foreign layers. Just return the config.
-		return cfg, &v1.Manifest{}, nil
-	}
-	mf, err := os.Open(manifestFile)
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "unable to open manifest for image %v from %s", tag, manifestFile)
-	}
-	m, err := v1.ParseManifest(mf)
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "unable to parse manifest for image %v from %s", tag, manifestFile)
-	}
-	return cfg, m, nil
 }
 
 // writeOutput creates a multi-image tarball at the given output path using
 // the images defined by the given tag to config & manifest maps with the
-// given layers based on the given source images.
-func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name.Tag]string, layersData []layerData) error {
+// layers defined by the given LayerParts deriving from images in the given
+// tarballs.
+func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name.Tag]string, imageTarballs []string, layerParts []compat.LayerParts) error {
 	tagToImg := make(map[name.Tag]v1.Image)
-	layerLookup := buildDiffIDToLayer(layersData)
+	images, err := loadImageTarballs(imageTarballs)
+	if err != nil {
+		return errors.Wrap(err, "unable to load images from the given tarballs")
+	}
 	for tag, configFile := range tagToConfigs {
-		config, manifest, err := loadImageMetadata(tag, tagToConfigs, tagToBaseManifests)
-		if err != nil {
-			return errors.Wrapf(err, "unable to load config & manifest for image %v", tag)
+		// Manifest file may not have been specified and this is ok as it's
+		// only required if the base images has foreign layers.
+		manifestFile := tagToBaseManifests[tag]
+		parts := compat.ImageParts{
+			Config:       configFile,
+			BaseManifest: manifestFile,
+			Images:       images,
+			Layers:       layerParts,
 		}
-		manifestLayers, err := diffIDToLayerFromManifest(config, manifest)
-		if err != nil {
-			return errors.Wrapf(err, "unable to get layers defined in manifest and config for image %v", tag)
-		}
-		layerOpts, err := imageLayers(config, layerLookup, manifestLayers)
-		if err != nil {
-			return errors.Wrapf(err, "unable to select the layer tarball files for image %v using its manifest", tag)
-		}
-		img, err := compat.Read(configFile, layerOpts)
+		img, err := compat.ReadImage(parts)
 		if err != nil {
 			return errors.Wrapf(err, "unable to load image %v corresponding to config %s", tag, configFile)
 		}
@@ -346,7 +105,7 @@ func main() {
 	flag.Var(&tags, "tag", "One or more fully qualified tag names along with the path to the config of the image they tag in tag=path format. e.g., --tag ubuntu=path/to/config1.json --tag gcr.io/blah/debian=path/to/config2.json.")
 	flag.Var(&basemanifests, "basemanifest", "One or more fully qualified tag names along with the manifest of the base image in tag=manifest format. e.g., --basemanifest ubuntu=path/to/manifest1.json --basemanifest gcr.io/blah/debian=path/to/manifest2.json.")
 	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer1.tar.gz,layer1.tar,<file with digest>,<file with diffID>.")
-	flag.Var(&sourceImages, "source_image", "One or more image tarballs for images from which the output image of this binary may derive. e.g., --source_image imag1.tar --source_image image2.tar.")
+	flag.Var(&sourceImages, "tarball", "One or more image tarballs for images from which the output image of this binary may derive. e.g., --source_image imag1.tar --source_image image2.tar.")
 	flag.Var(&stampInfoFiles, "stamp-info-file", "Path to one or more Bazel stamp info file with key value pairs for substitution. e.g., --stamp-info-file=file1.txt --stamp-info-file=file2.txt.")
 	flag.Parse()
 
@@ -362,11 +121,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --manifest: %v", err)
 	}
-	layersData, err := loadLayersData(sourceImages, layers)
-	if err != nil {
-		log.Fatalf("Unable to process values passed using the flag --layer: %v", err)
+	layerParts := []compat.LayerParts{}
+	for _, layerArg := range layers {
+		layer, err := compat.LayerPartsFromString(layerArg)
+		if err != nil {
+			log.Fatalf("Unable to parse %q specified to --layer: %v", layerArg, err)
+		}
+		layerParts = append(layerParts, layer)
 	}
-	if err := writeOutput(*outputTarball, tagToConfig, tagToBaseManifest, layersData); err != nil {
+	if err := writeOutput(*outputTarball, tagToConfig, tagToBaseManifest, sourceImages, layerParts); err != nil {
 		log.Fatalf("Failed to generate output at %s: %v", *outputTarball, err)
 	}
 }

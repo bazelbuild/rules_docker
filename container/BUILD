@@ -157,6 +157,7 @@ TEST_TARGETS = [
     ":war_image",
     ":flat",
     ":flat_go",
+    ":flatten_with_tarball_base",
 ]
 
 TEST_DATA = [

@@ -96,6 +96,9 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
     if image.get("legacy"):
         inputs.append(image["legacy"])
         args.append("--tarball={}".format(to_path(ctx, image["legacy"])))
+    if image["manifest"]:
+        inputs.append(image["manifest"])
+        args.append("--manifest={}".format(to_path(ctx, image["manifest"])))
     return args, inputs
 
 def get_from_target(ctx, name, attr_target, file_target = None):
@@ -190,7 +193,7 @@ def _add_join_layers_go_args(args, inputs, images):
         inputs += image["blobsum"]
 
         if image.get("legacy"):
-            args += ["--source_image=" + image["legacy"].path]
+            args += ["--tarball=" + image["legacy"].path]
             inputs += [image["legacy"]]
 
 def assemble(
