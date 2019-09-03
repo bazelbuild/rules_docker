@@ -75,9 +75,9 @@ def _impl(ctx):
     if tarball:
         print("Pushing an image based on a tarball can be very " +
               "expensive.  If the image is the output of a " +
-              "docker_build, consider dropping the '.tar' extension. " +
+              "container_build, consider dropping the '.tar' extension. " +
               "If the image is checked in, consider using " +
-              "docker_import instead.")
+              "container_import instead.")
 
     pusher_args += ["--format", str(ctx.attr.format)]
     pusher_args += ["--dst", "{registry}/{repository}:{tag}".format(
@@ -136,7 +136,7 @@ def _impl(ctx):
 new_container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
-            default = "Docker",
+            mandatory = True,
             values = [
                 "OCI",
                 "Docker",
