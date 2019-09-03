@@ -309,9 +309,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "89fb2bc6af0fed74c7314241ce24970dcd28fa0faee2c09978256e6b7c930fd5",
-    strip_prefix = "rules_scala-17892bf8d61801c844632769e47695a67b7518ea",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/17892bf8d61801c844632769e47695a67b7518ea.tar.gz"],
+    sha256 = "54e2213994976387ab6cb08a6e08fe075eb16d4af0b09d27877e90c1042fc51a",
+    strip_prefix = "rules_scala-8a5ca6b426efbd2415520abdae39877c4dfa206c",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/8a5ca6b426efbd2415520abdae39877c4dfa206c.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -345,9 +345,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "55968c5377d9d9f4a5c61780c8a041d478eaac26d984d19fd589afaf12b353dc",
-    strip_prefix = "rules_rust-05bd7d1d1bd34225a6614fc131267181aee2b61e",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/05bd7d1d1bd34225a6614fc131267181aee2b61e.tar.gz"],
+    sha256 = "019958e96fcb9d8b5e5f74f31ad58f9c59804e8c04cf5aae03b983001edc79e0",
+    strip_prefix = "rules_rust-f727669b8ac3c9d237ed9bc7833b8e1eeec90506",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/f727669b8ac3c9d237ed9bc7833b8e1eeec90506.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
