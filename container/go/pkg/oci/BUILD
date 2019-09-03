@@ -18,6 +18,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "image.go",
         "reader.go",
         "write.go",
     ],
@@ -27,6 +28,7 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/empty:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
@@ -48,10 +50,4 @@ go_test(
         "@com_github_google_go_containerregistry//pkg/v1/validate:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
     ],
-)
-
-filegroup(
-    name = "oci_test_index1",
-    srcs = glob(["testdata/test_index1/**"]),
-    visibility = ["//visibility:public"],
 )

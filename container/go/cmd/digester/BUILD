@@ -23,6 +23,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//container/go/pkg/compat:go_default_library",
+        "//container/go/pkg/oci:go_default_library",
         "//container/go/pkg/utils:go_default_library",
     ],
 )
