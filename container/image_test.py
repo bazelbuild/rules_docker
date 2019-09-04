@@ -346,11 +346,14 @@ class ImageTest(unittest.TestCase):
         '.', './testdata', './testdata/test', './testdata/test/test'])
 
   def test_flattened(self):
+    # Test the flattened tarball produced by the python flattener
+    # binary from google/containerregistry.
     with tarfile.open(TestData('flat.tar'), mode='r') as tar:
       self.assertTarballContains(tar, [
         '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
 
-  def test_flattened(self):
+  def test_flattened_go(self):
+    # Test the flattened tarball produced by the Go flattener binary.
     with tarfile.open(TestData('flat_go.tar'), mode='r') as tar:
       self.assertTarballContains(tar, [
         '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
