@@ -24,7 +24,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
@@ -164,7 +164,7 @@ func (r *reader) loadMetadata() error {
 	return nil
 }
 
-// foreignLayer represents a foreign layer usually present in windows images.
+// foreignLayer represents a foreign layer usually present in Windows images.
 type foreignLayer struct {
 	// digest is the digest of this foreign layer.
 	digest v1.Hash
@@ -172,7 +172,7 @@ type foreignLayer struct {
 	diffID v1.Hash
 	// size is the size of the foreign layer.
 	size int64
-	// urls are the urls where the actual contents of the foreign layer can
+	// urls are the URLs where the actual contents of the foreign layer can
 	// be downloaded from.
 	urls []string
 }

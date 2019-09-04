@@ -359,6 +359,10 @@ class ImageTest(unittest.TestCase):
         '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
 
   def test_flattened_from_tarball_base(self):
+    # Test the flattened tarball produced by the Go flattener where the
+    # image being flattened derived from an image specified as a tarball.
+    # File "bar" came from the base image specified as a tarball and "baz"
+    # came from the top level image.
     with tarfile.open(TestData('flatten_with_tarball_base.tar'), mode='r') as tar:
       self.assertTarballContains(tar, [
         '.', './baz', './bar',])

@@ -29,7 +29,7 @@ import (
 
 var (
 	imgConfig    = flag.String("config", "", "Path to the image config file.")
-	baseManifest = flag.String("manifest", "", "Path to the manifest of the base image. This should be the very first image in the chain of images and is only really required for windows images with a base image that has foreign layers.")
+	baseManifest = flag.String("manifest", "", "Path to the manifest of the base image. This should be the very first image in the chain of images and is only really required for Windows images with a base image that has foreign layers.")
 	imgTarball   = flag.String("tarball", "", "Path to the image tarball.")
 	outTarball   = flag.String("filesystem", "", "Path to the output filesystem tarball to generate.")
 	outConfig    = flag.String("metadata", "", "Path to the output image config.")
