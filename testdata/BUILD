@@ -414,6 +414,12 @@ container_flatten(
     image = ":link_with_files_base",
 )
 
+container_flatten(
+    name = "flat_go",
+    image = ":link_with_files_base",
+    use_legacy_flattener = False,
+)
+
 docker_push(
     name = "push_stamp",
     image = ":link_with_files_base",

@@ -156,6 +156,7 @@ TEST_TARGETS = [
     ":py_image_complex",
     ":war_image",
     ":flat",
+    ":flat_go",
 ]
 
 TEST_DATA = [
