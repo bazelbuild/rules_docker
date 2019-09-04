@@ -28,10 +28,6 @@ import (
 )
 
 var (
-	// The argument names match the arguments of https://github.com/google/containerregistry/blob/master/tools/fast_flatten_.py
-	// for backwards compatibility. Many of these arguments are not actually used
-	// but they are defined to make the Go flattener a drop-in replacement for the
-	// python flattener.
 	imgConfig    = flag.String("config", "", "Path to the image config file.")
 	baseManifest = flag.String("manifest", "", "Path to the manifest of the base image. This should be the very first image in the chain of images and is only really required for windows images with a base image that has foreign layers.")
 	imgTarball   = flag.String("tarball", "", "Path to the image tarball.")
