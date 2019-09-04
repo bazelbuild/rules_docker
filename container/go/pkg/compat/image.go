@@ -155,16 +155,19 @@ func (li *legacyImage) genManifest() error {
 		if err != nil {
 			return errors.Wrap(err, "unable to get size of layer")
 		}
+		var urls []string
 		if fl, ok := l.(*foreignLayer); ok {
 			// The size returned by the Size method on foreign is always zero.
 			// But the implementation has a private variable with the real size
 			// which we need to report in the manifest.
 			size = fl.size
+			urls = fl.urls
 		}
 		li.manifest.Layers = append(li.manifest.Layers, v1.Descriptor{
 			MediaType: mediaType,
 			Digest:    digest,
 			Size:      size,
+			URLs:      urls,
 		})
 	}
 	manifestBlob, err := json.Marshal(li.manifest)

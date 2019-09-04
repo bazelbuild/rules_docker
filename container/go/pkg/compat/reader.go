@@ -172,6 +172,9 @@ type foreignLayer struct {
 	diffID v1.Hash
 	// size is the size of the foreign layer.
 	size int64
+	// urls are the urls where the actual contents of the foreign layer can
+	// be downloaded from.
+	urls []string
 }
 
 var _ v1.Layer = (*foreignLayer)(nil)
@@ -229,6 +232,7 @@ func (r *reader) loadForeignLayers() error {
 			digest: l.Digest,
 			diffID: diffID,
 			size:   l.Size,
+			urls:   l.URLs,
 		}
 	}
 	return nil
