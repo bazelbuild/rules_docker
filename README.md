@@ -1290,8 +1290,7 @@ shared layers and letting them diverge could result in sub-optimal push and pull
 new_container_pull(name, registry, repository, digest, tag)
 ```
 A repository rule that pulls down a Docker base image in a manner suitable for
-use with `container_image`'s `base` attribute. Default pull layout is the OCI
-(Open Container Initiative) image format.
+use with `container_image`'s `base` attribute.
 
 **NOTE:** implicit output targets include `<name>.digest`, an image digest that
 can be used to refer to the image.
@@ -1364,14 +1363,6 @@ bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
           <strong>Note:</strong> For reproducible builds, use of `digest`
           is recommended.
         </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>format</code></td>
-      <td>
-        <p><code>Format; optional</code></p>
-        <p>The format of the image to be pulled, default `OCI` for OCI layout format.</p>
-        <p>Specify `Docker` if in need of a tarball compatible with `docker load` command.</p>
       </td>
     </tr>
     <tr>
@@ -1509,9 +1500,9 @@ configuration. See [here](#container_push-custom-client-configuration) for detai
     <tr>
       <td><code>format</code></td>
       <td>
-        <p><code>Kind, optional</code></p>
+        <p><code>Kind, required</code></p>
         <p>The desired format of the published image. Currently, this supports
-	   <code>legacy</code>, <code>docker</code> and <code>oci</code></p>. This attribute defaults to `legacy`.
+	   <code>Docker</code> and <code>OCI</code>.</p>
       </td>
     </tr>
     <tr>

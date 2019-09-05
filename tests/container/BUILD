@@ -21,6 +21,7 @@ load(
     "//container:container.bzl",
     "container_image",
     "container_import",
+    "container_layer",
     "container_push",
 )
 load(
@@ -32,6 +33,23 @@ load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
 
 package(default_visibility = ["//visibility:public"])
+
+#  Build an image with 11 layers to create an end to end test for the scenario
+# where the puller can download an image and name the layer files such that
+# sorting the layer files by their names produces the same order as the order
+# of the layers in the image manifest.
+[container_layer(
+    name = "empty_layer_{}".format(i),
+    empty_files = ["file_{}.txt".format(i)],
+) for i in range(11)]
+
+container_image(
+    name = "image_with_11_layers",
+    layers = [
+        ":empty_layer_{}".format(i)
+        for i in range(11)
+    ],
+)
 
 container_test(
     name = "structure_test",
@@ -220,6 +238,15 @@ container_test(
     name = "alpine_ppc64le_image_test",
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = "@alpine_linux_ppc64le//image",
+)
+
+new_container_push(
+    name = "push_image_with_11_layers",
+    format = "Docker",
+    image = ":image_with_11_layers",
+    registry = "localhost:5000",
+    repository = "tests/container/image_with_11_layers",
+    tag = "latest",
 )
 # END_DO_NOT_IMPORT
 
