@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/flattener",
     visibility = ["//visibility:private"],
     deps = [
+        "//container/go/pkg/compat:go_default_library",
         "//container/go/pkg/utils:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/mutate:go_default_library",
     ],

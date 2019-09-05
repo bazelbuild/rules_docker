@@ -420,6 +420,29 @@ container_flatten(
     use_legacy_flattener = False,
 )
 
+container_image(
+    name = "image_with_bar",
+    files = [
+        ":bar",
+    ],
+)
+
+container_image(
+    name = "image_with_bar_and_baz",
+    # Deriving from the base as a tar tests for the case where the base image
+    # is specified as a tarball to image reader.
+    base = ":image_with_bar.tar",
+    files = [
+        ":baz",
+    ],
+)
+
+container_flatten(
+    name = "flatten_with_tarball_base",
+    image = ":image_with_bar_and_baz",
+    use_legacy_flattener = False,
+)
+
 docker_push(
     name = "push_stamp",
     image = ":link_with_files_base",

@@ -22,30 +22,22 @@ import (
 	"log"
 	"os"
 
+	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 )
 
 var (
-	// The argument names match the arguments of https://github.com/google/containerregistry/blob/master/tools/fast_flatten_.py
-	// for backwards compatibility. Many of these arguments are not actually used
-	// but they are defined to make the Go flattener a drop-in replacement for the
-	// python flattener.
-	imgConfig          = flag.String("config", "", "Path to the image config file.")
-	imgTarball         = flag.String("tarball", "", "Path to the image tarball.")
-	outTarball         = flag.String("filesystem", "", "Path to the output filesystem tarball to generate.")
-	outConfig          = flag.String("metadata", "", "Path to the output image config.")
-	digests            utils.ArrayStringFlags
-	layers             utils.ArrayStringFlags
-	uncompressedLayers utils.ArrayStringFlags
-	diffIDs            utils.ArrayStringFlags
+	imgConfig    = flag.String("config", "", "Path to the image config file.")
+	baseManifest = flag.String("manifest", "", "Path to the manifest of the base image. This should be the very first image in the chain of images and is only really required for Windows images with a base image that has foreign layers.")
+	imgTarball   = flag.String("tarball", "", "Path to the image tarball.")
+	outTarball   = flag.String("filesystem", "", "Path to the output filesystem tarball to generate.")
+	outConfig    = flag.String("metadata", "", "Path to the output image config.")
+	layers       utils.ArrayStringFlags
 )
 
 func main() {
-	flag.Var(&digests, "digest", "The list of layer digest filenames in order, e.g., --digest=layer1.sha256 --digest=layer2.sha256.")
-	flag.Var(&layers, "layer", "The list of compressed layer filenames in order, e.g., --layer=layer1.tar.gz --layer=layer2.tar.gz.")
-	flag.Var(&uncompressedLayers, "uncompressed_layer", "The list of uncompressed layer filenames in order, e.g., --uncompressed_layer=layer1.tar --uncompressed_layer=layer2.tar.")
-	flag.Var(&diffIDs, "diff_id", "The list of layer diff IDs filenames in order, e.g., --diff_id=diff_id1.sha256 --diff_id=diff_id2.sha256.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer.tar.gz,layer.tar,<file with digest>,<file with diffID>.")
 	flag.Parse()
 	if *outTarball == "" {
 		log.Fatalln("Option --filesystem is required.")
@@ -53,18 +45,16 @@ func main() {
 	if *outConfig == "" {
 		log.Fatalln("Option --metadata is required.")
 	}
-	if *imgTarball == "" && len(layers) == 0 {
-		log.Fatalln("Either --tarball or --layer must be specified for the input image. Neither was specified.")
+	if *imgConfig == "" {
+		log.Fatalln("Option --config is required.")
 	}
-	if *imgTarball != "" && len(layers) > 0 {
-		log.Fatalf("Both --tarball=%q and --layer=%v were specified. Exactly one of these options must be specified.", *imgTarball, layers)
-	}
-	if len(layers) > 0 && *imgConfig == "" {
-		log.Fatalln("--config is required because one or more --layer was specified.")
-	}
-	img, err := utils.ReadImage(*imgConfig, *imgTarball, layers)
+	imgParts, err := compat.ImagePartsFromArgs(*imgConfig, *baseManifest, *imgTarball, layers)
 	if err != nil {
-		log.Fatalf("Failed to load image: %v", err)
+		log.Fatalf("Unable to determine parts of the image from the specified arguments: %v", err)
+	}
+	img, err := compat.ReadImage(imgParts)
+	if err != nil {
+		log.Fatalf("Error reading image: %v", err)
 	}
 	c, err := img.RawConfigFile()
 	if err != nil {

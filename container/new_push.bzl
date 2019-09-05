@@ -21,6 +21,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo")
 load(
     "//container:layer_tools.bzl",
+    _gen_img_args = "generate_args_for_image",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
@@ -64,11 +65,12 @@ def _impl(ctx):
 
     # Construct container_parts for input to pusher.
     image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-    blobs = image.get("zipped_layer", [])
-    config = image["config"]
-    legacy_files = [config] + blobs
-    pusher_input += legacy_files
-    digester_input += legacy_files
+    pusher_img_args, pusher_img_inputs = _gen_img_args(ctx, image, _get_runfile_path)
+    pusher_args += pusher_img_args
+    pusher_input += pusher_img_inputs
+    digester_img_args, digester_img_inputs = _gen_img_args(ctx, image)
+    digester_input += digester_img_inputs
+    digester_args += digester_img_args
     tarball = image.get("legacy")
     if tarball:
         print("Pushing an image based on a tarball can be very " +
@@ -76,17 +78,6 @@ def _impl(ctx):
               "container_build, consider dropping the '.tar' extension. " +
               "If the image is checked in, consider using " +
               "container_import instead.")
-        pusher_args += ["--tarball", "%s" % _get_runfile_path(ctx, tarball)]
-        pusher_input.append(tarball)
-        digester_input.append(tarball)
-        digester_args += ["--tarball", "%s" % tarball.path]
-    else:
-        pusher_args += ["--config", "{}".format(_get_runfile_path(ctx, config))]
-        digester_args += ["--config", str(config.path)]
-
-        for layer_file in blobs:
-            pusher_args += ["--layer", "{}".format(_get_runfile_path(ctx, layer_file))]
-            digester_args += ["--layer", layer_file.path]
 
     pusher_args += ["--format", str(ctx.attr.format)]
     pusher_args += ["--dst", "{registry}/{repository}:{tag}".format(

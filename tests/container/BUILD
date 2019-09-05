@@ -179,11 +179,26 @@ container_image(
     operating_system = "windows",
 )
 
+container_image(
+    name = "basic_windows_image_go_join_layers",
+    base = ":import_windows_base_image",
+    cmd = ["echo bar"],
+    operating_system = "windows",
+    use_legacy_join_layers = False,
+)
+
 container_test(
     name = "basic_windows_image_test",
     configs = ["//tests/container/configs:windows_image.yaml"],
     driver = "tar",
     image = ":basic_windows_image",
+)
+
+container_test(
+    name = "basic_windows_image_test_go_join_layers",
+    configs = ["//tests/container/configs:windows_image.yaml"],
+    driver = "tar",
+    image = ":basic_windows_image_go_join_layers",
 )
 
 # The following targets are not imported.
@@ -376,6 +391,7 @@ py_test(
 # The following targets are not imported.
 # new_container_push targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
+
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
     format = "Docker",

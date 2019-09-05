@@ -17,6 +17,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "FlattenInfo")
 load(
     "//container:layer_tools.bzl",
+    _gen_img_args = "generate_args_for_image",
     _get_layers = "get_from_target",
     _layer_tools = "tools",
 )
@@ -27,32 +28,37 @@ def _impl(ctx):
     image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
 
     # Leverage our efficient intermediate representation to push.
-    legacy_base_arg = []
-    legacy_files = []
-    if image.get("legacy"):
-        legacy_files += [image["legacy"]]
-        legacy_base_arg = ["--tarball=%s" % image["legacy"].path]
+    img_args = []
+    img_inputs = []
+    if ctx.attr.use_legacy_flattener:
+        if image.get("legacy"):
+            img_inputs += [image["legacy"]]
+            img_args = ["--tarball=%s" % image["legacy"].path]
 
-    blobsums = image.get("blobsum", [])
-    digest_args = ["--digest=" + f.path for f in blobsums]
-    blobs = image.get("zipped_layer", [])
-    layer_args = ["--layer=" + f.path for f in blobs]
-    uncompressed_blobs = image.get("unzipped_layer", [])
-    uncompressed_layer_args = ["--uncompressed_layer=" + f.path for f in uncompressed_blobs]
-    diff_ids = image.get("diff_id", [])
-    diff_id_args = ["--diff_id=%s" % f.path for f in diff_ids]
-    config_arg = "--config=%s" % image["config"].path
+        blobsums = image.get("blobsum", [])
+        img_args += ["--digest=" + f.path for f in blobsums]
+        img_inputs += blobsums
+        blobs = image.get("zipped_layer", [])
+        img_args += ["--layer=" + f.path for f in blobs]
+        img_inputs += blobs
+        uncompressed_blobs = image.get("unzipped_layer", [])
+        img_args += ["--uncompressed_layer=" + f.path for f in uncompressed_blobs]
+        img_inputs += uncompressed_blobs
+        diff_ids = image.get("diff_id", [])
+        img_args += ["--diff_id=%s" % f.path for f in diff_ids]
+        img_inputs += diff_ids
+        img_args += ["--config=%s" % image["config"].path]
+        img_inputs += [image["config"]]
+    else:
+        img_args, img_inputs = _gen_img_args(ctx, image)
 
     ctx.actions.run(
         executable = ctx.executable._flattener if ctx.attr.use_legacy_flattener else ctx.executable._go_flattener,
-        arguments = legacy_base_arg + digest_args + layer_args + diff_id_args +
-                    uncompressed_layer_args + [
-            config_arg,
+        arguments = img_args + [
             "--filesystem=" + ctx.outputs.filesystem.path,
             "--metadata=" + ctx.outputs.metadata.path,
         ],
-        inputs = blobsums + blobs + uncompressed_blobs + [image["config"]] +
-                 legacy_files + diff_ids,
+        inputs = img_inputs,
         outputs = [ctx.outputs.filesystem, ctx.outputs.metadata],
         use_default_shell_env = True,
         mnemonic = "Flatten",

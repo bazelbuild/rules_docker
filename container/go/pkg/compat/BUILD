@@ -20,7 +20,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "generateManifest.go",
         "image.go",
         "overrideConfig.go",
         "reader.go",
@@ -30,8 +29,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/mutate:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/partial:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
