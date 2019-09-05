@@ -20,7 +20,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
@@ -38,11 +38,11 @@ var (
 	stampInfoFiles utils.ArrayStringFlags
 )
 
-// parseTagToFilename converts a list of key=value where 'key' is the name of
+// parseRefToFilename converts a list of key=value where 'key' is the name of
 // the tagged image and 'value' is the path to a file into a map from key to
 // value.
-func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]string, error) {
-	result := make(map[name.Tag]string)
+func parseRefToFilename(tags []string, stamper *compat.Stamper) (map[name.Reference]string, error) {
+	result := make(map[name.Reference]string)
 	for _, t := range tags {
 		split := strings.Split(t, "=")
 		if len(split) != 2 {
@@ -50,11 +50,11 @@ func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]st
 		}
 		img, configFile := split[0], split[1]
 		stamped := stamper.Stamp(img)
-		parsedTag, err := name.NewTag(stamped, name.WeakValidation)
+		r, err := name.ParseReference(stamped, name.WeakValidation)
 		if err != nil {
-			return nil, errors.Wrapf(err, "unable to parse stamped image name %q as a fully qualified tagged image name", stamped)
+			return nil, errors.Wrapf(err, "unable to parse stamped image name %q as a fully qualified image reference", stamped)
 		}
-		result[parsedTag] = configFile
+		result[r] = configFile
 	}
 	return result, nil
 }
@@ -76,16 +76,16 @@ func loadImageTarballs(imageTarballs []string) ([]v1.Image, error) {
 // the images defined by the given tag to config & manifest maps with the
 // layers defined by the given LayerParts deriving from images in the given
 // tarballs.
-func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name.Tag]string, imageTarballs []string, layerParts []compat.LayerParts) error {
-	tagToImg := make(map[name.Tag]v1.Image)
+func writeOutput(outputTarball string, refToConfigs, refToBaseManifests map[name.Reference]string, imageTarballs []string, layerParts []compat.LayerParts) error {
+	refToImg := make(map[name.Reference]v1.Image)
 	images, err := loadImageTarballs(imageTarballs)
 	if err != nil {
 		return errors.Wrap(err, "unable to load images from the given tarballs")
 	}
-	for tag, configFile := range tagToConfigs {
+	for ref, configFile := range refToConfigs {
 		// Manifest file may not have been specified and this is ok as it's
 		// only required if the base images has foreign layers.
-		manifestFile := tagToBaseManifests[tag]
+		manifestFile := refToBaseManifests[ref]
 		parts := compat.ImageParts{
 			Config:       configFile,
 			BaseManifest: manifestFile,
@@ -94,11 +94,11 @@ func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name
 		}
 		img, err := compat.ReadImage(parts)
 		if err != nil {
-			return errors.Wrapf(err, "unable to load image %v corresponding to config %s", tag, configFile)
+			return errors.Wrapf(err, "unable to load image %v corresponding to config %s", ref, configFile)
 		}
-		tagToImg[tag] = img
+		refToImg[ref] = img
 	}
-	return tarball.MultiWriteToFile(outputTarball, tagToImg)
+	return tarball.MultiWriteToFile(outputTarball, refToImg)
 }
 
 func main() {
@@ -113,11 +113,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to initialize stamper: %v", err)
 	}
-	tagToConfig, err := parseTagToFilename(tags, stamper)
+	refToConfig, err := parseRefToFilename(tags, stamper)
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --tag: %v", err)
 	}
-	tagToBaseManifest, err := parseTagToFilename(basemanifests, stamper)
+	refToBaseManifest, err := parseRefToFilename(basemanifests, stamper)
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --manifest: %v", err)
 	}
@@ -129,7 +129,7 @@ func main() {
 		}
 		layerParts = append(layerParts, layer)
 	}
-	if err := writeOutput(*outputTarball, tagToConfig, tagToBaseManifest, sourceImages, layerParts); err != nil {
+	if err := writeOutput(*outputTarball, refToConfig, refToBaseManifest, sourceImages, layerParts); err != nil {
 		log.Fatalf("Failed to generate output at %s: %v", *outputTarball, err)
 	}
 }
