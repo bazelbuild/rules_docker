@@ -63,6 +63,7 @@ new_container_pull(
     name = "new_alpine_linux_armv6_tar",
     architecture = "arm",
     cpu_variant = "v6",
+    format = "docker",
     os = "linux",
     registry = "index.docker.io",
     repository = "library/alpine",
@@ -86,6 +87,7 @@ new_container_pull(
 
 new_container_pull(
     name = "new_alpine_linux_amd64_tar",
+    format = "docker",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
@@ -102,6 +104,7 @@ new_container_pull(
 new_container_pull(
     name = "new_alpine_linux_ppc64le_tar",
     architecture = "ppc64le",
+    format = "docker",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
