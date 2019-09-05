@@ -21,6 +21,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 )

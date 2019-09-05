@@ -22,6 +22,7 @@ go_library(
     importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/digester",
     visibility = ["//visibility:private"],
     deps = [
+        "//container/go/pkg/compat:go_default_library",
         "//container/go/pkg/oci:go_default_library",
         "//container/go/pkg/utils:go_default_library",
     ],
