@@ -21,15 +21,14 @@ go_library(
     name = "go_default_library",
     srcs = [
         "image.go",
-        "ociToLegacy.go",
         "overrideConfig.go",
         "reader.go",
+        "write.go",
     ],
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/compat",
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/layout:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
         "@com_github_pkg_errors//:go_default_library",

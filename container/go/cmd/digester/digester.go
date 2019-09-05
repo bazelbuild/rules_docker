@@ -17,9 +17,10 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"log"
+	"os"
 
-	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
 )
@@ -58,7 +59,11 @@ func main() {
 		}
 	}
 
-	if err = compat.WriteDigest(img, *dst); err != nil {
+	d, err := img.Digest()
+	if err != nil {
+		log.Fatalf("Unable to get digest of image: %v", err)
+	}
+	if err := ioutil.WriteFile(*dst, []byte(d.String()), os.ModePerm); err != nil {
 		log.Fatalf("Error outputting digest file to %s: %v", *dst, err)
 	}
 }
