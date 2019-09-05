@@ -20,7 +20,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
@@ -104,7 +104,7 @@ func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name
 func main() {
 	flag.Var(&tags, "tag", "One or more fully qualified tag names along with the path to the config of the image they tag in tag=path format. e.g., --tag ubuntu=path/to/config1.json --tag gcr.io/blah/debian=path/to/config2.json.")
 	flag.Var(&basemanifests, "basemanifest", "One or more fully qualified tag names along with the manifest of the base image in tag=manifest format. e.g., --basemanifest ubuntu=path/to/manifest1.json --basemanifest gcr.io/blah/debian=path/to/manifest2.json.")
-	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer1.tar.gz,layer1.tar,<file with digest>,<file with diffID>.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer.tar.gz,layer.tar,<file with digest>,<file with diffID>.")
 	flag.Var(&sourceImages, "tarball", "One or more image tarballs for images from which the output image of this binary may derive. e.g., --source_image imag1.tar --source_image image2.tar.")
 	flag.Var(&stampInfoFiles, "stamp-info-file", "Path to one or more Bazel stamp info file with key value pairs for substitution. e.g., --stamp-info-file=file1.txt --stamp-info-file=file2.txt.")
 	flag.Parse()
