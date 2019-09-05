@@ -25,26 +25,22 @@ import (
 	"fmt"
 	"log"
 	ospkg "os"
-	"path"
 	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
-	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
 
 var (
 	imgName         = flag.String("name", "", "The name location including repo and digest/tag of the docker image to pull and save. Supports fully-qualified tag or digest references.")
 	directory       = flag.String("directory", "", "Where to save the images files. If pulling as Docker tarball, please specify the directory to save the tarball. The tarball is named as image.tar.")
-	format          = flag.String("format", "", "Format to pull image from remote registry: If 'docker', image is pulled as tarball. If 'oci' (default), image will be pulled as a collection of files in OCI layout.")
 	clientConfigDir = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	cachePath       = flag.String("cache", "", "Image's files cache directory.")
 	arch            = flag.String("architecture", "", "Image platform's CPU architecture.")
@@ -59,12 +55,6 @@ var (
 // that the image was (probably) not tagged with this, but avoids
 // applying the ":latest" tag which might be misleading.
 const iWasADigestTag = "i-was-a-digest"
-
-// Directory containing the pulled OCI image artifacts without modification.
-const ociImageDir = "image-oci"
-
-// Directory containing actual images (symlinks or image.tar) to be used by container_import as the image.
-const imageDir = "image"
 
 // getTag parses the reference inside the name flag and returns the apt tag.
 // WriteToFile requires a tag to write to the tarball, but may have been given a digest,
@@ -86,10 +76,11 @@ func getTag(ref name.Reference) name.Reference {
 	return tag
 }
 
-// NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go
-// with slight modification to take in a platform argument.
-// Pull the image with given <imgName> to destination <dstPath> with optional cache files and required platform specifications.
-func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) error {
+// pull pulls the given given to the given destination directory. A cached
+// copy of the image will be loaded from the given cache path if available. If
+// the given image name points to a list of images, the given platform will
+// be used to select the image to pull.
+func pull(imgName, dstPath, cachePath string, platform v1.Platform) error {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -105,30 +96,8 @@ func pull(imgName, dstPath, format, cachePath string, platform v1.Platform) erro
 		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
 
-	// Image file to write to disk, either a tarball or OCI layout.
-	ociPath := path.Join(dstPath, ociImageDir)
-	legacyPath := path.Join(dstPath, imageDir)
-	switch format {
-	case "docker":
-		tag := getTag(ref)
-		if err := tarball.WriteToFile(path.Join(legacyPath, "image.tar"), tag, img); err != nil {
-			log.Fatalf("failed to write image tarball to %q: %v", legacyPath, err)
-		}
-	default:
-		if err := oci.Write(img, ociPath); err != nil {
-			log.Fatalf("failed to write image to %q: %v", ociPath, err)
-		}
-	}
-
-	if format != "docker" {
-		if err := compat.LegacyFromOCIImage(img, ociPath, legacyPath); err != nil {
-			return errors.Wrapf(err, "failed to generate symbolic links to pulled image at %s", dstPath)
-		}
-	}
-
-	digestPath := path.Join(legacyPath, "digest")
-	if err := compat.WriteDigest(img, digestPath); err != nil {
-		return errors.Wrapf(err, "failed to generate image digest file to pulled image at %s", digestPath)
+	if err := compat.WriteImage(img, dstPath); err != nil {
+		return errors.Wrapf(err, "unable to save remote image %v", ref)
 	}
 
 	return nil
@@ -151,14 +120,6 @@ func main() {
 		ospkg.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
 
-	formatOptions := map[string]bool{
-		"oci":    true,
-		"docker": true,
-	}
-	if *format != "" && !formatOptions[*format] {
-		log.Fatalln("Invalid option -format. Must be one of 'oci' or 'docker'.")
-	}
-
 	// Create a Platform struct with given arguments.
 	platform := v1.Platform{
 		Architecture: *arch,
@@ -169,7 +130,7 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	if err := pull(*imgName, *directory, *format, *cachePath, platform); err != nil {
+	if err := pull(*imgName, *directory, *cachePath, platform); err != nil {
 		log.Fatalf("Image pull was unsuccessful: %v", err)
 	}
 
