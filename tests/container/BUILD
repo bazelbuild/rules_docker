@@ -30,8 +30,26 @@ load(
 load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
+load(":empty_layers.bzl", "empty_layers")
 
 package(default_visibility = ["//visibility:public"])
+
+# Build an image with 11 layers to create an end to end test for the scenario
+# where the puller can download an image and name the layer files such that
+# sorting the layer files by their names produces the same order as the order
+# of the layers in the image manifest.
+empty_layers(
+    name = "empty_layer",
+    num_layers = 11,
+)
+
+container_image(
+    name = "image_with_11_layers",
+    layers = [
+        ":empty_layer_{}".format(i)
+        for i in range(11)
+    ],
+)
 
 container_test(
     name = "structure_test",
@@ -220,6 +238,15 @@ container_test(
     name = "alpine_ppc64le_image_test",
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = "@alpine_linux_ppc64le//image",
+)
+
+new_container_push(
+    name = "push_image_with_11_layers",
+    format = "Docker",
+    image = ":image_with_11_layers",
+    registry = "localhost:5000",
+    repository = "tests/container/image_with_11_layers",
+    tag = "latest",
 )
 # END_DO_NOT_IMPORT
 
@@ -602,7 +629,7 @@ file_test(
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:a0b19fd8750d6e5442c61d43fc8bb7a854548c570fbf6601ab5ab0c92d520eab",
+    content = "sha256:0200c2c330733d6d71f94a642849517cfae8b3467d1712689779a7f0438a119d",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
@@ -611,51 +638,6 @@ file_test(
 # The following targets are not imported.
 # new_container_pull targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
-file_test(
-    name = "new_alpine_linux_armv6_test_index_json",
-    content = """{
-   "schemaVersion": 2,
-   "manifests": [
-      {
-         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 528,
-         "digest": "sha256:f29c3d10359dd0e6d0c11e4f715735b678c0ab03a7ac4565b4b6c08980f6213b"
-      }
-   ]
-}""",
-    file = "@new_alpine_linux_armv6_fixed_id//image-oci:index.json",
-)
-
-file_test(
-    name = "new_distroless_base_test_index_json",
-    content = """{
-   "schemaVersion": 2,
-   "manifests": [
-      {
-         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 444,
-         "digest": "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c"
-      }
-   ]
-}""",
-    file = "@new_distroless_base_fixed_id//image-oci:index.json",
-)
-
-file_test(
-    name = "new_alpine_linux_armv6_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_alpine_linux_armv6_fixed_id//image-oci:oci-layout",
-)
-
-file_test(
-    name = "new_distroless_base_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_distroless_base_fixed_id//image-oci:oci-layout",
-)
 
 # Merely testing for the presence of the pulled image.tar for now.
 file_test(
@@ -664,24 +646,16 @@ file_test(
     regexp = ".*",
 )
 
+# Testing for content of downloaded image artifacts.
 file_test(
-    name = "new_alpine_linux_armv6_oci_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_alpine_linux_armv6_fixed_id//image-oci:oci-layout",
-)
-
-# Testing for content of symlinks
-file_test(
-    name = "new_distroless_base_oci_test_config_symlink",
+    name = "new_distroless_base_oci_test_config",
     file = "@new_alpine_linux_armv6_fixed_id//image:config.json",
     regexp = "{\"architecture\":\"arm\",.*",
 )
 
 file_test(
-    name = "new_distroless_base_oci_test_0_tar_gz_symlink",
-    file = "@new_alpine_linux_armv6_fixed_id//image:0.tar.gz",
+    name = "new_distroless_base_oci_test_0_tar_gz",
+    file = "@new_alpine_linux_armv6_fixed_id//image:000.tar.gz",
     regexp = ".*",
 )
 
@@ -852,43 +826,20 @@ container_test(
 # new_container_load targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
 file_test(
-    name = "new_pause_tar_test_index_json",
-    content = """{
-   "schemaVersion": 2,
-   "manifests": [
-      {
-         "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-         "size": 586,
-         "digest": "sha256:22e0bb47f6dd1938d7c30febe82ac37e99907fd8c76421ab87829ad6a3636bf9"
-      }
-   ]
-}""",
-    file = "@new_pause_tar//image-oci:index.json",
-)
-
-file_test(
-    name = "new_pause_tar_test_oci_layout",
-    content = """{
-    "imageLayoutVersion": "1.0.0"
-}""",
-    file = "@new_pause_tar//image-oci:oci-layout",
-)
-
-file_test(
-    name = "new_pause_tar_test_config_symlink",
+    name = "new_pause_tar_test_config",
     file = "@new_pause_tar//image:config.json",
     regexp = "{\"architecture\":\"amd64\",.*",
 )
 
 file_test(
-    name = "new_pause_tar_test_0_tar_gz_symlink",
-    file = "@new_pause_tar//image:0.tar.gz",
+    name = "new_pause_tar_test_0_tar_gz",
+    file = "@new_pause_tar//image:000.tar.gz",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_pause_tar_test_1_tar_gz_symlink",
-    file = "@new_pause_tar//image:1.tar.gz",
+    name = "new_pause_tar_test_1_tar_gz",
+    file = "@new_pause_tar//image:001.tar.gz",
     regexp = ".*",
 )
 # END_DO_NOT_IMPORT
