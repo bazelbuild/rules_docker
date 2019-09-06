@@ -14,7 +14,11 @@ image_id=$(%{image_id_extractor_path} %{image_tar})
 $DOCKER load -i %{image_tar}
 
 # Run the builder image.
-cid=$($DOCKER run -w="/" -d --privileged $image_id sh -c $'%{download_commands}')
+# The reason for the --ulimit flag is https://github.com/moby/moby/issues/9766
+# & https://askubuntu.com/questions/991773/package-installations-are-very-slow-in-docker-build.
+# The default ulimit is unlimited and somehow this results in apt-get opening
+# too many file descriptors and slowing down to a crawl.
+cid=$($DOCKER run -w="/" -d --ulimit nofile=2048:2048 --privileged $image_id sh -c $'%{download_commands}')
 $DOCKER attach $cid
 $DOCKER cp $cid:%{installables}_packages.tar %{output}
 $DOCKER cp $cid:%{installables}_metadata.csv %{output_metadata}
