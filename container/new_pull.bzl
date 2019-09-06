@@ -38,15 +38,6 @@ _container_pull_attrs = {
               " is not defined, the home directory will be used.",
         mandatory = False,
     ),
-    "format": attr.string(
-        default = "oci",
-        values = [
-            "oci",
-            "docker",
-        ],
-        doc = "(optional) The format of the image to be pulled, default to 'OCI' (OCI Layout Format) " +
-              "or option for 'Docker' (tarball compatible with `docker load` command).",
-    ),
     "os": attr.string(
         default = "linux",
         doc = "(optional) Which os to pull if this image refers to a " +
@@ -96,15 +87,7 @@ def _impl(repository_ctx):
 
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
-
-    if repository_ctx.attr.format == "docker":
-        repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
-exports_files(["image.tar"])""")
-        # Create symlinks to the appropriate config.json and layers in the pulled OCI image in the image-oci directory.
-        # Generates container_import rule which is able to comprehend OCI layout via the symlinks.
-
-    else:
-        repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
+    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
 container_import(
@@ -116,16 +99,6 @@ container_import(
 exports_files(["image.digest", "digest"])
 """)
 
-        # Currently exports all files pulled by the binary and will not be depended on by other rules_docker rules.
-        repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
-
-exports_files(glob(["**"]))
-
-filegroup(
-  name = "image-oci",
-  srcs = glob(["**"]),
-)""")
-
     puller = repository_ctx.attr.puller_linux
     if repository_ctx.os.name.lower().startswith("mac os"):
         puller = repository_ctx.attr.puller_darwin
@@ -133,9 +106,7 @@ filegroup(
     args = [
         repository_ctx.path(puller),
         "-directory",
-        repository_ctx.path(""),
-        "-format",
-        repository_ctx.attr.format,
+        repository_ctx.path("image"),
         "-os",
         repository_ctx.attr.os,
         "-os-version",

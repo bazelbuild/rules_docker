@@ -63,7 +63,6 @@ new_container_pull(
     name = "new_alpine_linux_armv6_tar",
     architecture = "arm",
     cpu_variant = "v6",
-    format = "docker",
     os = "linux",
     registry = "index.docker.io",
     repository = "library/alpine",
@@ -87,7 +86,6 @@ new_container_pull(
 
 new_container_pull(
     name = "new_alpine_linux_amd64_tar",
-    format = "docker",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
@@ -104,7 +102,6 @@ new_container_pull(
 new_container_pull(
     name = "new_alpine_linux_ppc64le_tar",
     architecture = "ppc64le",
-    format = "docker",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
@@ -235,6 +232,14 @@ container_pull(
     digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
     registry = "l.gcr.io",
     repository = "google/bazel",
+)
+
+# End to end test for the puller to download an image with 11 layers.
+new_container_pull(
+    name = "e2e_test_pull_image_with_11_layers",
+    registry = "localhost:5000",
+    repository = "tests/container/image_with_11_layers",
+    tag = "latest",
 )
 
 # Have the py_image dependencies for testing.

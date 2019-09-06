@@ -33,10 +33,6 @@ container_import(
     layers = glob(["*.tar.gz"]),
 )""")
 
-    repository_ctx.file("image-oci/BUILD", """package(default_visibility = ["//visibility:public"])
-
-exports_files(glob(["**"]))""")
-
     loader = repository_ctx.attr._loader_linux
     if repository_ctx.os.name.lower().startswith("mac os"):
         loader = repository_ctx.attr._loader_darwin
@@ -44,7 +40,7 @@ exports_files(glob(["**"]))""")
     result = repository_ctx.execute([
         repository_ctx.path(loader),
         "-directory",
-        repository_ctx.path(""),
+        repository_ctx.path("image"),
         "-tarball",
         repository_ctx.path(repository_ctx.attr.file),
     ])
