@@ -52,14 +52,13 @@ new_container_pull(
     name = "ubuntu1604",
     registry = "l.gcr.io",
     repository = "google/ubuntu1604",
-    digest = "sha256:11c1bc6060236f3dd6c219bba569b887f231e17bd54b0c60b4023dc610863b15",
+    tag = "latest",
 )
 
 new_container_pull(
     name = "bazel_image",
     registry = "launcher.gcr.io",
     repository = "google/bazel",
-    digest = "sha256:35d7537a34314eddaa478b879f0a0725837c8840f7293210bf7f8912bbdcf9e8",
 )
 
 dockerfile_image(
