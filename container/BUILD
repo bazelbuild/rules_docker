@@ -166,6 +166,7 @@ TEST_DATA = [
 ] + [
     "//testdata:stamped_bundle_test",
     "//testdata:stamp_info_file.txt",
+    "//tests/container:basic_windows_image_go_join_layers.tar",
 ]
 
 py_test(

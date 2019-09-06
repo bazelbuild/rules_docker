@@ -28,9 +28,12 @@ PASSWD_FILE_MODE=0o644
 # Dictionary of key to value mappings in the Bazel stamp file
 STAMP_DICT = {}
 
+def TestRunfilePath(path):
+  """Convert a path to a file target to the runfile path"""
+  return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker', path)
+
 def TestData(name):
-  return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker',
-                      TEST_DATA_TARGET_BASE, name)
+  return TestRunfilePath(os.path.join(TEST_DATA_TARGET_BASE, name))
 
 def TestImage(name):
   return v2_2_image.FromTarball(TestData(name + '.tar'))
@@ -520,6 +523,13 @@ class ImageTest(unittest.TestCase):
         './app/io_bazel_rules_docker/testdata',
         './app/io_bazel_rules_docker/testdata/py_image_library.py',
       ])
+
+  def test_windows_image_manifest_with_foreign_layers(self):
+    imgPath = TestRunfilePath("tests/container/basic_windows_image_go_join_layers.tar")
+    with v2_2_image.FromTarball(imgPath) as img:
+      # Ensure the image manifest in the tarball includes the foreign layer.
+      self.assertIn("https://go.microsoft.com/fwlink/?linkid=873595",
+        img.manifest())
 
   def test_py_image_with_symlinks_in_data(self):
     with TestImage('py_image_with_symlinks_in_data') as img:
