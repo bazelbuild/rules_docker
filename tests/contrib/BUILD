@@ -169,9 +169,15 @@ docker_push(
 ]]
 
 toolchain_container(
-    name = "python3_pkg_non_deterministic",
+    name = "img_with_random_file",
     base = "@official_xenial//image",
-    packages = ["python3-dev"],
+    files = [":rand_file"],
+)
+
+genrule(
+    name = "rand_file",
+    outs = ["random.txt"],
+    cmd = "echo $$RANDOM > $@",
 )
 
 container_repro_test(
@@ -203,8 +209,8 @@ container_repro_test(
 )
 
 container_repro_test(
-    name = "python3_pkg_want_failure",
-    image = ":python3_pkg_non_deterministic",
+    name = "random_file_img_non_repro_test",
+    image = ":img_with_random_file",
     want_reproducibility = False,
     workspace_file = "//:WORKSPACE",
 )
