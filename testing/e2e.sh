@@ -431,8 +431,6 @@ function test_new_container_pull_image_with_11_layers() {
 }
 
 # Tests failing on GCB due to isssues with local registry
-test_new_container_pull_image_with_11_layers
-exit 0
 test_container_push
 test_container_push_all
 test_container_push_tag_file
@@ -451,6 +449,7 @@ test_new_container_push_skip_unchanged_digest_unchanged
 test_new_container_push_skip_unchanged_digest_changed
 test_container_pull_with_auth
 test_container_pull_cache
+test_new_container_pull_image_with_11_layers
 
 # Tests failing on GCB due to permissions issue related to building tars
 test_py_image_complex -c opt
