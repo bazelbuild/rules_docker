@@ -17,7 +17,9 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -34,7 +36,7 @@ var (
 )
 
 func main() {
-	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer1.tar.gz,layer1.tar,<file with digest>,<file with diffID>.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer.tar.gz,layer.tar,<file with digest>,<file with diffID>.")
 	flag.Parse()
 
 	if *dst == "" {
@@ -58,7 +60,11 @@ func main() {
 		}
 	}
 
-	if err = compat.WriteDigest(img, *dst); err != nil {
+	d, err := img.Digest()
+	if err != nil {
+		log.Fatalf("Unable to get digest of image: %v", err)
+	}
+	if err := ioutil.WriteFile(*dst, []byte(d.String()), os.ModePerm); err != nil {
 		log.Fatalf("Error outputting digest file to %s: %v", *dst, err)
 	}
 }

@@ -75,7 +75,7 @@ func LayerPartsFromString(val string) (LayerParts, error) {
 	}, nil
 }
 
-// ImageParts contains paths to a Docker image config and the invidual layer
+// ImageParts contains paths to a Docker image config and the individual layer
 // parts.
 type ImageParts struct {
 	// Config is the path to the image config.

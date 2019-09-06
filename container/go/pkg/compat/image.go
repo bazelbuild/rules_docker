@@ -27,7 +27,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
@@ -108,7 +108,7 @@ func (l *fullLayer) loadHashes(digestFile, diffIDFile string) error {
 // legacyImage is the image in legacy intermediate format. Implements
 // partial.CompressedImageCore in go-containerregistry.
 type legacyImage struct {
-	// config is the path to the image config.
+	// configPath is the path to the image config.
 	configPath string
 	// config is the parsed config of this image.
 	config *v1.ConfigFile
@@ -157,9 +157,9 @@ func (li *legacyImage) genManifest() error {
 		}
 		var urls []string
 		if fl, ok := l.(*foreignLayer); ok {
-			// The size returned by the Size method on foreign is always zero.
-			// But the implementation has a private variable with the real size
-			// which we need to report in the manifest.
+			// The size returned by the Size method on foreign layers is always
+			// zero. But the implementation has a private variable with the real
+			// size which we need to report in the manifest.
 			size = fl.size
 			urls = fl.urls
 		}
