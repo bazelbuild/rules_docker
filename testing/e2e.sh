@@ -414,6 +414,22 @@ function test_container_pull_cache() {
   rm -rf $scratch_dir
 }
 
+function test_new_container_pull_image_with_11_layers() {
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  # Push an image with 11 layers.
+  EXPECT_CONTAINS "$(bazel run //tests/container:push_image_with_11_layers 2>&1)" "Successfully pushed Docker image"
+
+  # Pull the image with 11 layers using the Go puller and ensure it can be
+  # loaded by docker which will validate the order of layers matches the order
+  # indicated in the manifest. This tests the scenario reported in
+  # https://github.com/bazelbuild/rules_docker/issues/1127.
+  EXPECT_CONTAINS "$(bazel run @e2e_test_pull_image_with_11_layers//image 2>&1)" "Loaded image ID: sha256:"
+  docker stop -t 0 $cid
+}
+
 # Tests failing on GCB due to isssues with local registry
 test_container_push
 test_container_push_all
@@ -433,6 +449,7 @@ test_new_container_push_skip_unchanged_digest_unchanged
 test_new_container_push_skip_unchanged_digest_changed
 test_container_pull_with_auth
 test_container_pull_cache
+test_new_container_pull_image_with_11_layers
 
 # Tests failing on GCB due to permissions issue related to building tars
 test_py_image_complex -c opt

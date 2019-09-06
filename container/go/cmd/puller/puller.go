@@ -76,7 +76,7 @@ func getTag(ref name.Reference) name.Reference {
 	return tag
 }
 
-// pull pulls the given given to the given destination directory. A cached
+// pull pulls the given image to the given destination directory. A cached
 // copy of the image will be loaded from the given cache path if available. If
 // the given image name points to a list of images, the given platform will
 // be used to select the image to pull.
