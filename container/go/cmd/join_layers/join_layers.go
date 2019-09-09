@@ -38,10 +38,10 @@ var (
 	stampInfoFiles utils.ArrayStringFlags
 )
 
-// parseRefToFilename converts a list of key=value where 'key' is the name of
+// parseTagToFilename converts a list of key=value where 'key' is the name of
 // the tagged image and 'value' is the path to a file into a map from key to
 // value.
-func parseRefToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]string, error) {
+func parseTagToFilename(tags []string, stamper *compat.Stamper) (map[name.Tag]string, error) {
 	result := make(map[name.Tag]string)
 	for _, t := range tags {
 		split := strings.Split(t, "=")
@@ -113,11 +113,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to initialize stamper: %v", err)
 	}
-	tagToConfig, err := parseRefToFilename(tags, stamper)
+	tagToConfig, err := parseTagToFilename(tags, stamper)
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --tag: %v", err)
 	}
-	tagToBaseManifest, err := parseRefToFilename(basemanifests, stamper)
+	tagToBaseManifest, err := parseTagToFilename(basemanifests, stamper)
 	if err != nil {
 		log.Fatalf("Unable to process values passed using the flag --manifest: %v", err)
 	}
