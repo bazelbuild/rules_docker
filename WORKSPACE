@@ -314,9 +314,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "54e2213994976387ab6cb08a6e08fe075eb16d4af0b09d27877e90c1042fc51a",
-    strip_prefix = "rules_scala-8a5ca6b426efbd2415520abdae39877c4dfa206c",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/8a5ca6b426efbd2415520abdae39877c4dfa206c.tar.gz"],
+    sha256 = "9623666b8cc4dcc6ce62cd7f0aea02293d15bc80c2227e33baa78768a59d4651",
+    strip_prefix = "rules_scala-f4a24fe2f76e1b1f2b24757f7740a2699692951f",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/f4a24fe2f76e1b1f2b24757f7740a2699692951f.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -439,11 +439,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "b8f105a6b226603d64de0f9f4fc80eee13c7d341184eb3275a2869a88cca407b",
-    strip_prefix = "bazel-toolchains-0.29.0",
+    sha256 = "ab0d8aaeaeeef413ddb03922dbdb99bbae9e1b2c157a87c77d70d45a830be5b0",
+    strip_prefix = "bazel-toolchains-0.29.1",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.1.tar.gz",
     ],
 )
 
