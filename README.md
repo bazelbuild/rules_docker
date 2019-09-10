@@ -109,12 +109,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.9.0
+# Download the rules_docker repository at release v0.10.0
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "e513c0ac6534810eb7a14bf025a0f159726753f97f74ab7863c650d26e01d677",
-    strip_prefix = "rules_docker-0.9.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.9.0/rules_docker-v0.9.0.tar.gz"],
+    sha256 = "7d453450e1eb70e238eea6b31f4115607ec1200e91afea01c25f9804f37e39c8",
+    strip_prefix = "rules_docker-0.10.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.10.0/rules_docker-v0.10.0.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
