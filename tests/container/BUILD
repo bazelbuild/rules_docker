@@ -422,7 +422,7 @@ py_test(
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     skip_unchanged_digest = True,
@@ -432,7 +432,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     skip_unchanged_digest = True,
@@ -442,7 +442,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_1",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     skip_unchanged_digest = True,
@@ -502,7 +502,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_legacy_from_new_puller",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image",
+    image = "@alpine_linux_ppc64le//image",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -522,7 +522,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_tar",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -768,7 +768,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_ppc64le_image_oci_tar",
-    base = "@new_alpine_linux_ppc64le//image:image.tar",
+    base = "@alpine_linux_ppc64le//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -777,7 +777,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_ppc64le_image_oci",
-    base = "@new_alpine_linux_ppc64le//image:image",
+    base = "@alpine_linux_ppc64le//image:image",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -787,7 +787,7 @@ container_image(
 # Build a container image configured to use the Go join_layers.
 container_image(
     name = "new_alpine_linux_ppc64le_image_oci_go_join_layers",
-    base = "@new_alpine_linux_ppc64le//image:image",
+    base = "@alpine_linux_ppc64le//image:image",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -826,20 +826,20 @@ container_test(
 # new_container_load targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
 file_test(
-    name = "new_pause_tar_test_config",
-    file = "@new_pause_tar//image:config.json",
+    name = "pause_tar_test_config",
+    file = "@pause_tar//image:config.json",
     regexp = "{\"architecture\":\"amd64\",.*",
 )
 
 file_test(
-    name = "new_pause_tar_test_0_tar_gz",
-    file = "@new_pause_tar//image:000.tar.gz",
+    name = "pause_tar_test_0_tar_gz",
+    file = "@pause_tar//image:000.tar.gz",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_pause_tar_test_1_tar_gz",
-    file = "@new_pause_tar//image:001.tar.gz",
+    name = "pause_tar_test_1_tar_gz",
+    file = "@pause_tar//image:001.tar.gz",
     regexp = ".*",
 )
 # END_DO_NOT_IMPORT

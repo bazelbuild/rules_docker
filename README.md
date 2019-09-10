@@ -122,7 +122,7 @@ http_archive(
 # Note this is only required if you actually want to call
 # docker_toolchain_configure with a custom attr; please read the toolchains
 # docs in /toolchains/docker/ before blindly adding this to your WORKSPACE.
-
+# BEGIN OPTIONAL segment:
 load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure="toolchain_configure"
 )
@@ -131,8 +131,9 @@ docker_toolchain_configure(
   # OPTIONAL: Path to a directory which has a custom docker client config.json.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="/path/to/docker/client/config",
+  client_config="<enter absolute path to your docker config directory here>",
 )
+# End of OPTIONAL segment.
 
 load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",
@@ -191,6 +192,13 @@ run --host_force_python=PY2
 ```
 See https://github.com/bazelbuild/rules_docker/issues/842 for more
 details.
+
+* Ensure your project has a `BUILD` or `BUILD.bazel` file at the top level. This
+can be a blank file if necessary. Otherwise you might see and error that looks
+like:
+```
+Unable to load package for //:WORKSPACE: BUILD file not found in any of the following directories.
+```
 
 ## Using with Docker locally.
 
@@ -1517,6 +1525,22 @@ bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
            <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
            manifest list</a>, the desired features. For example, this may
            include CPU features such as <code>["sse4", "aes"]</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>puller_darwin</code></td>
+      <td>
+        <p><code>label; optional</code></p>
+        <p>A Mac 64-bit binary that implements the functionality provided by
+           <code>//container/go/cmd/puller</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>puller_linux</code></td>
+      <td>
+        <p><code>label; optional</code></p>
+        <p>A Linux 64-bit binary that implements the functionality provided by
+           <code>//container/go/cmd/puller</code>.</p>
       </td>
     </tr>
     <tr>

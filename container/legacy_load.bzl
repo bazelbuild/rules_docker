@@ -13,6 +13,9 @@
 # limitations under the License.
 """Rule for importing an image from 'docker save' tarballs.
 
+THIS RULE HAS BEEN DEPRECATED AND SHOULD NOT BE MODIFIED. Use container_load
+from load.bzl instead.
+
 This extracts the tarball, examines the layers and creates a
 container_import target for use with container_image.
 """

@@ -13,6 +13,9 @@
 # limitations under the License.
 """An implementation of legacy_container_pull based on google/containerregistry.
 
+THIS RULE HAS BEEN DEPRECATED AND SHOULD NOT BE MODIFIED. Use container_pull
+from pull.bzl instead.
+
 This wraps the containerregistry.tools.fast_puller executable in a
 Bazel rule for downloading base images without a Docker client to
 construct new images.
