@@ -604,18 +604,6 @@ file_test(
 )
 
 file_test(
-    name = "new_distroless_fixed_id_digest_test",
-    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
-    file = "@distroless_base_fixed_id//image:digest",
-)
-
-file_test(
-    name = "new_distroless_fixed_id_image_digest_test",
-    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
-    file = "@distroless_base_fixed_id//image:image.digest",
-)
-
-file_test(
     name = "k8s_pause_arm64_digest_test",
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",

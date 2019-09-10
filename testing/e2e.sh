@@ -364,7 +364,7 @@ function test_container_pull_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting unauthenticated container_pull..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image 2>&1)" "Error pulling and saving image localhost:5000/docker/test:test"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @local_pull//image 2>&1)" "Image pull was unsuccessful: reading image \"localhost:5000/docker/test:test\""
 }
 
 function test_container_push_with_stamp() {
