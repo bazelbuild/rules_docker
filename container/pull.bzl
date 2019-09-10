@@ -11,36 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of container_pull based on google/containerregistry.
+"""An implementation of container_pull based on google/containerregistry using google/go-containerregistry.
 
-This wraps the containerregistry.tools.fast_puller executable in a
+This wraps the rulesdocker.go.cmd.puller.puller executable in a
 Bazel rule for downloading base images without a Docker client to
 construct new images.
 """
-
-def python(repository_ctx):
-    """Resolves the python path.
-
-    Args:
-      repository_ctx: The repository context
-
-    Returns:
-      The path to the python interpreter
-    """
-
-    if "BAZEL_PYTHON" in repository_ctx.os.environ:
-        return repository_ctx.os.environ.get("BAZEL_PYTHON")
-
-    python_path = repository_ctx.which("python2")
-    if not python_path:
-        python_path = repository_ctx.which("python")
-    if not python_path:
-        python_path = repository_ctx.which("python.exe")
-    if python_path:
-        return python_path
-
-    fail("rules_docker requires a python interpreter installed. " +
-         "Please set BAZEL_PYTHON, or put it on your path.")
 
 _container_pull_attrs = {
     "architecture": attr.string(
@@ -79,6 +55,18 @@ _container_pull_attrs = {
         doc = "(optional) Specifies platform features when pulling a " +
               "multi-platform manifest list.",
     ),
+    "puller_darwin": attr.label(
+        executable = True,
+        default = Label("@go_puller_darwin//file:downloaded"),
+        cfg = "host",
+        doc = "(optional) Exposed to provide a way to test other pullers on macOS",
+    ),
+    "puller_linux": attr.label(
+        executable = True,
+        default = Label("@go_puller_linux//file:downloaded"),
+        cfg = "host",
+        doc = "(optional) Exposed to provide a way to test other pullers on Linux",
+    ),
     "registry": attr.string(
         mandatory = True,
         doc = "The registry from which we are pulling.",
@@ -92,55 +80,50 @@ _container_pull_attrs = {
         doc = "(optional) The tag of the image, default to 'latest' " +
               "if this and 'digest' remain unspecified.",
     ),
-    "_puller": attr.label(
-        executable = True,
-        default = Label("@puller//file:downloaded"),
-        cfg = "host",
-    ),
 }
 
 def _impl(repository_ctx):
-    """Implementation of container_pull."""
+    """Core implementation of container_pull."""
 
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
-
-    repository_ctx.file("image/BUILD", """
-package(default_visibility = ["//visibility:public"])
-
+    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
 container_import(
-  name = "image",
-  config = "config.json",
-  layers = glob(["*.tar.gz"]),
+    name = "image",
+    config = "config.json",
+    layers = glob(["*.tar.gz"]),
 )
 
 exports_files(["image.digest", "digest"])
 """)
 
+    puller = repository_ctx.attr.puller_linux
+    if repository_ctx.os.name.lower().startswith("mac os"):
+        puller = repository_ctx.attr.puller_darwin
+
     args = [
-        python(repository_ctx),
-        repository_ctx.path(repository_ctx.attr._puller),
-        "--directory",
+        repository_ctx.path(puller),
+        "-directory",
         repository_ctx.path("image"),
-        "--os",
+        "-os",
         repository_ctx.attr.os,
-        "--os-version",
+        "-os-version",
         repository_ctx.attr.os_version,
-        "--os-features",
+        "-os-features",
         " ".join(repository_ctx.attr.os_features),
-        "--architecture",
+        "-architecture",
         repository_ctx.attr.architecture,
-        "--variant",
+        "-variant",
         repository_ctx.attr.cpu_variant,
-        "--features",
+        "-features",
         " ".join(repository_ctx.attr.platform_features),
     ]
 
     # Use the custom docker client config directory if specified.
     if repository_ctx.attr.docker_client_config != "":
-        args += ["--client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
+        args += ["-client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
 
     cache_dir = repository_ctx.os.environ.get("DOCKER_REPO_CACHE")
     if cache_dir:
@@ -148,14 +131,14 @@ exports_files(["image.digest", "digest"])
             cache_dir = cache_dir.replace("~", repository_ctx.os.environ["HOME"], 1)
 
         args += [
-            "--cache",
+            "-cache",
             cache_dir,
         ]
 
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
     if repository_ctx.attr.digest:
         args += [
-            "--name",
+            "-name",
             "{registry}/{repository}@{digest}".format(
                 registry = repository_ctx.attr.registry,
                 repository = repository_ctx.attr.repository,
@@ -164,7 +147,7 @@ exports_files(["image.digest", "digest"])
         ]
     else:
         args += [
-            "--name",
+            "-name",
             "{registry}/{repository}:{tag}".format(
                 registry = repository_ctx.attr.registry,
                 repository = repository_ctx.attr.repository,
@@ -173,8 +156,10 @@ exports_files(["image.digest", "digest"])
         ]
 
     kwargs = {}
-    if "PULLER_TIMEOUT" in repository_ctx.os.environ:
-        kwargs["timeout"] = int(repository_ctx.os.environ.get("PULLER_TIMEOUT"))
+
+    # TODO(suvanjan): add the PULLER_TIMEOUT as a environment variable for the puller to process.
+    # if "PULLER_TIMEOUT" in repository_ctx.os.environ:
+    #     kwargs["timeout"] = int(repository_ctx.os.environ.get("PULLER_TIMEOUT"))
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:
@@ -214,14 +199,14 @@ pull = struct(
 
 # Pulls a container image.
 
-# This rule pulls a container image into our intermediate format.  The
-# output of this rule can be used interchangeably with `docker_build`.
+# This rule pulls a container image into our intermediate format (OCI Image Layout).
 container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,
     environ = [
         "DOCKER_REPO_CACHE",
         "HOME",
-        "PULLER_TIMEOUT",
+        # Uncomment when the PULLER_TIMEOUT is confirmed to work.
+        # "PULLER_TIMEOUT",
     ],
 )

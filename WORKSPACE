@@ -43,14 +43,14 @@ load("//repositories:pip_repositories.bzl", "pip_deps")
 pip_deps()
 
 load(
-    "//container:new_pull.bzl",
-    "new_container_pull",
+    "//container:container.bzl",
+    "container_load",
+    "container_pull",
 )
 
-# These are for testing the new container pull.
 # For testing, don't change the sha.
-new_container_pull(
-    name = "new_alpine_linux_armv6_fixed_id",
+container_pull(
+    name = "alpine_linux_armv6_fixed_id",
     architecture = "arm",
     cpu_variant = "v6",
     digest = "sha256:f29c3d10359dd0e6d0c11e4f715735b678c0ab03a7ac4565b4b6c08980f6213b",
@@ -59,8 +59,8 @@ new_container_pull(
     repository = "library/alpine",
 )
 
-new_container_pull(
-    name = "new_alpine_linux_armv6_tar",
+container_pull(
+    name = "alpine_linux_armv6_tar",
     architecture = "arm",
     cpu_variant = "v6",
     os = "linux",
@@ -69,51 +69,28 @@ new_container_pull(
     tag = "3.8",
 )
 
-# For testing, don't change the sha.
-new_container_pull(
-    name = "new_distroless_base_fixed_id",
+container_pull(
+    name = "distroless_base_fixed_id",
     digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
     registry = "gcr.io",
     repository = "distroless/base",
 )
 
-new_container_pull(
-    name = "new_alpine_linux_amd64",
+container_pull(
+    name = "alpine_linux_amd64_tar",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
 )
 
-new_container_pull(
-    name = "new_alpine_linux_amd64_tar",
-    registry = "index.docker.io",
-    repository = "library/alpine",
-    tag = "3.8",
-)
-
-new_container_pull(
-    name = "new_alpine_linux_ppc64le",
+container_pull(
+    name = "alpine_linux_ppc64le_tar",
     architecture = "ppc64le",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
 )
 
-new_container_pull(
-    name = "new_alpine_linux_ppc64le_tar",
-    architecture = "ppc64le",
-    registry = "index.docker.io",
-    repository = "library/alpine",
-    tag = "3.8",
-)
-
-load(
-    "//container:container.bzl",
-    "container_load",
-    "container_pull",
-)
-
-# These are for testing.
 container_pull(
     name = "distroless_base",
     registry = "gcr.io",
@@ -141,17 +118,6 @@ http_file(
 
 container_load(
     name = "pause_tar",
-    file = "//testdata:pause.tar",
-)
-
-load(
-    "//container:new_load.bzl",
-    "new_container_load",
-)
-
-# To test the new_container_load rule.
-new_container_load(
-    name = "new_pause_tar",
     file = "//testdata:pause.tar",
 )
 
@@ -235,7 +201,7 @@ container_pull(
 )
 
 # End to end test for the puller to download an image with 11 layers.
-new_container_pull(
+container_pull(
     name = "e2e_test_pull_image_with_11_layers",
     registry = "localhost:5000",
     repository = "tests/container/image_with_11_layers",
