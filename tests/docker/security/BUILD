@@ -20,7 +20,7 @@ load("//docker/security:security_check.bzl", "security_check")
 
 security_check(
     name = "security_check",
-    image = "gcr.io/asci-toolchain/rbe-ubuntu16_04:latest",
+    image = "gcr.io/gcp-runtimes/ubuntu_16_0_4:latest",
 )
 
 file_test(
