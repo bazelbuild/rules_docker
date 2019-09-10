@@ -65,7 +65,7 @@ docker_pull(
   name = "pause",
   registry = "gcr.io",
   repository = "google-containers/pause",
-  tag = "2.0",
+  tag = "3.1",
 )
 EOF
 

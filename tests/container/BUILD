@@ -364,7 +364,7 @@ container_push(
 
 container_image(
     name = "alpine_with_custom_attr",
-    base = "@new_alpine_linux_amd64//image",
+    base = "@alpine_linux_amd64//image",
     cmd = ["Hello World!"],
     entrypoint = ["echo"],
     files = [
@@ -422,7 +422,7 @@ py_test(
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     skip_unchanged_digest = True,
@@ -432,7 +432,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     skip_unchanged_digest = True,
@@ -442,7 +442,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_1",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     skip_unchanged_digest = True,
@@ -452,7 +452,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_2",
     format = "Docker",
-    image = "@new_alpine_linux_amd64//image:image.tar",
+    image = "@alpine_linux_amd64//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     skip_unchanged_digest = True,
@@ -472,7 +472,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_oci_from_new_puller",
     format = "OCI",
-    image = "@new_alpine_linux_amd64//image",
+    image = "@alpine_linux_amd64//image",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -502,7 +502,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_legacy_from_new_puller",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image",
+    image = "@alpine_linux_ppc64le//image",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -522,7 +522,7 @@ new_container_push(
 new_container_push(
     name = "new_push_test_tar",
     format = "Docker",
-    image = "@new_alpine_linux_ppc64le//image:image.tar",
+    image = "@alpine_linux_ppc64le//image:image.tar",
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
@@ -572,7 +572,7 @@ new_container_push(
 new_container_push(
     name = "new_push_stamped_test_oci",
     format = "OCI",
-    image = "@new_alpine_linux_amd64//image",
+    image = "@alpine_linux_amd64//image",
     registry = "localhost:5000",
     repository = "docker/test/{BUILD_USER}",
     tag = "{BUILD_USER}",
@@ -604,18 +604,6 @@ file_test(
 )
 
 file_test(
-    name = "new_distroless_fixed_id_digest_test",
-    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
-    file = "@new_distroless_base_fixed_id//image:digest",
-)
-
-file_test(
-    name = "new_distroless_fixed_id_image_digest_test",
-    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
-    file = "@new_distroless_base_fixed_id//image:image.digest",
-)
-
-file_test(
     name = "k8s_pause_arm64_digest_test",
     content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     file = "@k8s_pause_arm64//image:digest",
@@ -641,21 +629,21 @@ file_test(
 
 # Merely testing for the presence of the pulled image.tar for now.
 file_test(
-    name = "new_alpine_linux_armv6_tar_test_image_tar",
-    file = "@new_alpine_linux_armv6_tar//image:image.tar",
+    name = "alpine_linux_armv6_tar_test_image_tar",
+    file = "@alpine_linux_armv6_tar//image:image.tar",
     regexp = ".*",
 )
 
 # Testing for content of downloaded image artifacts.
 file_test(
     name = "new_distroless_base_oci_test_config",
-    file = "@new_alpine_linux_armv6_fixed_id//image:config.json",
+    file = "@alpine_linux_armv6_fixed_id//image:config.json",
     regexp = "{\"architecture\":\"arm\",.*",
 )
 
 file_test(
     name = "new_distroless_base_oci_test_0_tar_gz",
-    file = "@new_alpine_linux_armv6_fixed_id//image:000.tar.gz",
+    file = "@alpine_linux_armv6_fixed_id//image:000.tar.gz",
     regexp = ".*",
 )
 
@@ -667,7 +655,7 @@ file_test(
 # Three cases for alpine armv6 distro
 container_image(
     name = "new_alpine_linux_armv6_image_tar",
-    base = "@new_alpine_linux_armv6_tar//image:image.tar",
+    base = "@alpine_linux_armv6_tar//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -676,7 +664,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_armv6_image_oci_tar",
-    base = "@new_alpine_linux_armv6_fixed_id//image:image.tar",
+    base = "@alpine_linux_armv6_fixed_id//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -685,7 +673,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_armv6_image_oci",
-    base = "@new_alpine_linux_armv6_fixed_id//image:image",
+    base = "@alpine_linux_armv6_fixed_id//image:image",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -712,8 +700,8 @@ container_test(
 
 # Three cases for alpine amd64 distro
 container_image(
-    name = "new_alpine_linux_amd64_image_tar",
-    base = "@new_alpine_linux_amd64_tar//image:image.tar",
+    name = "alpine_linux_amd64_image_tar",
+    base = "@alpine_linux_amd64_tar//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -721,8 +709,8 @@ container_image(
 )
 
 container_image(
-    name = "new_alpine_linux_amd64_image_oci_tar",
-    base = "@new_alpine_linux_amd64//image:image.tar",
+    name = "alpine_linux_amd64_image_oci_tar",
+    base = "@alpine_linux_amd64//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -730,8 +718,8 @@ container_image(
 )
 
 container_image(
-    name = "new_alpine_linux_amd64_image_oci",
-    base = "@new_alpine_linux_amd64//image:image",
+    name = "alpine_linux_amd64_image_oci",
+    base = "@alpine_linux_amd64//image:image",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -739,27 +727,27 @@ container_image(
 )
 
 container_test(
-    name = "new_alpine_linux_amd64_image_tar_test",
+    name = "alpine_linux_amd64_image_tar_test",
     configs = ["//tests/container/configs:alpine_amd64.yaml"],
-    image = ":new_alpine_linux_amd64_image_tar",
+    image = ":alpine_linux_amd64_image_tar",
 )
 
 container_test(
-    name = "new_alpine_linux_amd64_image_oci_tar_test",
+    name = "alpine_linux_amd64_image_oci_tar_test",
     configs = ["//tests/container/configs:alpine_amd64.yaml"],
-    image = ":new_alpine_linux_amd64_image_oci_tar",
+    image = ":alpine_linux_amd64_image_oci_tar",
 )
 
 container_test(
-    name = "new_alpine_linux_amd64_image_oci_test",
+    name = "alpine_linux_amd64_image_oci_test",
     configs = ["//tests/container/configs:alpine_amd64.yaml"],
-    image = ":new_alpine_linux_amd64_image_oci",
+    image = ":alpine_linux_amd64_image_oci",
 )
 
 # Three cases for alpine ppc64le distro
 container_image(
     name = "new_alpine_linux_ppc64le_image_tar",
-    base = "@new_alpine_linux_ppc64le_tar//image:image.tar",
+    base = "@alpine_linux_ppc64le_tar//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -768,7 +756,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_ppc64le_image_oci_tar",
-    base = "@new_alpine_linux_ppc64le//image:image.tar",
+    base = "@alpine_linux_ppc64le//image:image.tar",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -777,7 +765,7 @@ container_image(
 
 container_image(
     name = "new_alpine_linux_ppc64le_image_oci",
-    base = "@new_alpine_linux_ppc64le//image:image",
+    base = "@alpine_linux_ppc64le//image:image",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -787,7 +775,7 @@ container_image(
 # Build a container image configured to use the Go join_layers.
 container_image(
     name = "new_alpine_linux_ppc64le_image_oci_go_join_layers",
-    base = "@new_alpine_linux_ppc64le//image:image",
+    base = "@alpine_linux_ppc64le//image:image",
     files = [
         "//testdata:bar",
         "//testdata:foo",
@@ -826,20 +814,20 @@ container_test(
 # new_container_load targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
 file_test(
-    name = "new_pause_tar_test_config",
-    file = "@new_pause_tar//image:config.json",
+    name = "pause_tar_test_config",
+    file = "@pause_tar//image:config.json",
     regexp = "{\"architecture\":\"amd64\",.*",
 )
 
 file_test(
-    name = "new_pause_tar_test_0_tar_gz",
-    file = "@new_pause_tar//image:000.tar.gz",
+    name = "pause_tar_test_0_tar_gz",
+    file = "@pause_tar//image:000.tar.gz",
     regexp = ".*",
 )
 
 file_test(
-    name = "new_pause_tar_test_1_tar_gz",
-    file = "@new_pause_tar//image:001.tar.gz",
+    name = "pause_tar_test_1_tar_gz",
+    file = "@pause_tar//image:001.tar.gz",
     regexp = ".*",
 )
 # END_DO_NOT_IMPORT

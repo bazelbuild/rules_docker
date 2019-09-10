@@ -12,7 +12,6 @@ Travis CI | Bazel CI
 * [container_load](#container_load)
 * [container_pull](#container_pull-1) ([example](#container_pull))
 * [container_push](#container_push-1) ([example](#container_push))
-* [new_container_pull](#new_container_pull)
 * [new_container_push](#new_container_push)
 
 These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
@@ -123,7 +122,7 @@ http_archive(
 # Note this is only required if you actually want to call
 # docker_toolchain_configure with a custom attr; please read the toolchains
 # docs in /toolchains/docker/ before blindly adding this to your WORKSPACE.
-
+# BEGIN OPTIONAL segment:
 load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure="toolchain_configure"
 )
@@ -132,8 +131,9 @@ docker_toolchain_configure(
   # OPTIONAL: Path to a directory which has a custom docker client config.json.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="/path/to/docker/client/config",
+  client_config="<enter absolute path to your docker config directory here>",
 )
+# End of OPTIONAL segment.
 
 load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",
@@ -192,6 +192,13 @@ run --host_force_python=PY2
 ```
 See https://github.com/bazelbuild/rules_docker/issues/842 for more
 details.
+
+* Ensure your project has a `BUILD` or `BUILD.bazel` file at the top level. This
+can be a blank file if necessary. Otherwise you might see and error that looks
+like:
+```
+Unable to load package for //:WORKSPACE: BUILD file not found in any of the following directories.
+```
 
 ## Using with Docker locally.
 
@@ -1283,167 +1290,6 @@ Image references should not be updated individually because these images have
 shared layers and letting them diverge could result in sub-optimal push and pull
  performance.
 
-
-<a name="new_container_pull"></a>
-## new_container_pull
-```python
-new_container_pull(name, registry, repository, digest, tag)
-```
-A repository rule that pulls down a Docker base image in a manner suitable for
-use with `container_image`'s `base` attribute.
-
-**NOTE:** implicit output targets include `<name>.digest`, an image digest that
-can be used to refer to the image.
-
-**NOTE:** new_container_pull supports authentication using custom docker client
-configuration. See [here](#container_pull-custom-client-configuration) for details.
-
-**NOTE:** Set `DOCKER_REPO_CACHE` env variable to make the container puller
-cache downloaded layers at the directory specified as a value to this env
-variable. The caching feature hasn't been thoroughly tested and may be thread
-unsafe. If you notice flakiness after enabling it, see the warning below on how
-to workaround it.
-
-**NOTE:** `new_container_pull` is suspected to have thread safety issues. To
-ensure multiple new_container_pull(s) don't execute concurrently, please use the
-bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this repository rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>registry</code></td>
-      <td>
-        <p><code>Registry Domain; required</code></p>
-        <p>The registry from which to pull the base image.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>repository</code></td>
-      <td>
-        <p><code>Repository; required</code></p>
-        <p>The `repository` of images to pull from.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>digest</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>The `digest` of the Docker image to pull from the specified
-           `repository`.</p>
-        <p>
-          <strong>Note:</strong> For reproducible builds, use of `digest`
-          is recommended.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tag</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>The `tag` of the Docker image to pull from the specified `repository`.
-           If neither this nor `digest` is specified, this attribute defaults
-           to `latest`.  If both are specified, then `tag` is ignored.</p>
-        <p>
-          <strong>Note:</strong> For reproducible builds, use of `digest`
-          is recommended.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>os</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired operating system. For example,
-           <code>linux</code> or
-           <code>windows</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>os_version</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired operating system version. For example,
-           <code>10.0.10586</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>os_features</code></td>
-      <td>
-        <p><code>string list; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired operating system features. For example,
-           on Windows this might be <code>["win32k"]</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>architecture</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired CPU architecture. For example,
-           <code>amd64</code> or <code>arm</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>cpu_variant</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired CPU variant. For example, for ARM you
-           may need to use <code>v6</code> or <code>v7</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>platform_features</code></td>
-      <td>
-        <p><code>string list; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired features. For example, this may
-           include CPU features such as <code>["sse4", "aes"]</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>docker_client_config</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>Specifies the directory to look for the docker client configuration. Don't use this directly.
-           Specify the docker configuration directory using a custom docker toolchain configuration. Look
-           for the <code>client_config</code> attribute in <code>docker_toolchain_configure</code> <a href="#setup">here</a> for
-           details. See <a href="#container_pull-custom-client-configuration">here</a> for an example on
-           how to use <code>container_pull</code> after configuring the docker toolchain</p>
-        <p>When left unspecified (ie not set explicitly or set by the docker toolchain), docker will use
-        the directory specified via the DOCKER_CONFIG environment variable. If DOCKER_CONFIG isn't set,
-        docker falls back to $HOME/.docker.
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
 <a name="new_container_push"></a>
 ## new_container_push
 
@@ -1679,6 +1525,24 @@ bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
            <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
            manifest list</a>, the desired features. For example, this may
            include CPU features such as <code>["sse4", "aes"]</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>puller_darwin</code></td>
+      <td>
+        <p><code>label; optional</code></p>
+        <p>A Mac 64-bit binary that implements the functionality provided by
+           <code>//container/go/cmd/puller</code>. Visible for testing purposes
+           only.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>puller_linux</code></td>
+      <td>
+        <p><code>label; optional</code></p>
+        <p>A Linux 64-bit binary that implements the functionality provided by
+           <code>//container/go/cmd/puller</code>. Visible for testing purposes
+           only.</p>
       </td>
     </tr>
     <tr>
