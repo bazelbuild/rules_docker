@@ -1532,7 +1532,8 @@ bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
       <td>
         <p><code>label; optional</code></p>
         <p>A Mac 64-bit binary that implements the functionality provided by
-           <code>//container/go/cmd/puller</code>.</p>
+           <code>//container/go/cmd/puller</code>. Visible for testing purposes
+           only.</p>
       </td>
     </tr>
     <tr>
@@ -1540,7 +1541,8 @@ bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
       <td>
         <p><code>label; optional</code></p>
         <p>A Linux 64-bit binary that implements the functionality provided by
-           <code>//container/go/cmd/puller</code>.</p>
+           <code>//container/go/cmd/puller</code>. Visible for testing purposes
+           only.</p>
       </td>
     </tr>
     <tr>
