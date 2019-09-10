@@ -11,16 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for importing an image from 'docker save' tarballs.
+"""Rule for loading an image from 'docker save' tarball or the current
+   container_pull tarball format into OCI intermediate layout.
 
-This extracts the tarball, examines the layers and creates a
-container_import target for use with container_image.
+This extracts the tarball amd creates a filegroup of the untarred objects in OCI layout.
 """
-
-load(
-    "//container:pull.bzl",
-    _python = "python",
-)
 
 def _impl(repository_ctx):
     """Core implementation of container_load."""
@@ -30,22 +25,23 @@ def _impl(repository_ctx):
 
     repository_ctx.file("image/BUILD", """
 package(default_visibility = ["//visibility:public"])
-
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
 container_import(
-  name = "image",
-  config = "config.json",
-  layers = glob(["*.tar"]),
-)
-""", executable = False)
+    name = "image",
+    config = "config.json",
+    layers = glob(["*.tar.gz"]),
+)""")
+
+    loader = repository_ctx.attr._loader_linux
+    if repository_ctx.os.name.lower().startswith("mac os"):
+        loader = repository_ctx.attr._loader_darwin
 
     result = repository_ctx.execute([
-        _python(repository_ctx),
-        repository_ctx.path(repository_ctx.attr._importer),
-        "--directory",
+        repository_ctx.path(loader),
+        "-directory",
         repository_ctx.path("image"),
-        "--tarball",
+        "-tarball",
         repository_ctx.path(repository_ctx.attr.file),
     ])
 
@@ -58,9 +54,14 @@ container_load = repository_rule(
             allow_single_file = True,
             mandatory = True,
         ),
-        "_importer": attr.label(
+        "_loader_darwin": attr.label(
             executable = True,
-            default = Label("@importer//file:downloaded"),
+            default = Label("@loader_darwin//file:downloaded"),
+            cfg = "host",
+        ),
+        "_loader_linux": attr.label(
+            executable = True,
+            default = Label("@loader_linux//file:downloaded"),
             cfg = "host",
         ),
     },
