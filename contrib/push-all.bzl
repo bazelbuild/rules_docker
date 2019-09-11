@@ -19,12 +19,12 @@ the embedded image references.
 
 load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
-    "//skylib:path.bzl",
-    "runfile",
-)
-load(
     "//container:layer_tools.bzl",
     _gen_img_args = "generate_args_for_image",
+)
+load(
+    "//skylib:path.bzl",
+    "runfile",
 )
 
 def _get_runfile_path(ctx, f):

@@ -145,11 +145,9 @@ def _add_go_args(
         args += ["-labels", "%s" % "=".join([key, value])]
 
     for key, value in env.items():
-        key = ctx.expand_make_variables("env", key, {})
-        value = ctx.expand_make_variables("env", value, {})
         args += ["-env", "%s" % "=".join([
-            key,
-            value,
+            ctx.expand_make_variables("env", key, {}),
+            ctx.expand_make_variables("env", value, {}),
         ])]
 
     if ctx.attr.user:
