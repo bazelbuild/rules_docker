@@ -222,7 +222,16 @@ func mapToKeyValue(kvMap map[string]string) []string {
 // It handles formats like "PATH=$PATH:..."
 func expandEnvVars(val string, env map[string]string) string {
 	return os.Expand(val, func(k string) string {
-		return env[k]
+		v, ok := env[k]
+		// If the variable doesn't exist, return the key as is which mimics the
+		// behavior of the legacy python config creator.
+		// If the key was specified was "${k}", this will actually change it to
+		// "$k" while the old python code would have retained the curly braces.
+		// However, functionally, this shouldn't be a problem.
+		if !ok {
+			return "$" + k
+		}
+		return v
 	})
 }
 

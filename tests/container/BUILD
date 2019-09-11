@@ -23,10 +23,6 @@ load(
     "container_import",
     "container_push",
 )
-load(
-    "//container:new_push.bzl",
-    "new_container_push",
-)
 load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
@@ -240,7 +236,7 @@ container_test(
     image = "@alpine_linux_ppc64le//image",
 )
 
-new_container_push(
+container_push(
     name = "push_image_with_11_layers",
     format = "Docker",
     image = ":image_with_11_layers",
@@ -416,10 +412,10 @@ py_test(
 )
 
 # The following targets are not imported.
-# new_container_push targets are only available and tested on GitHub.
+# container_push targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -429,7 +425,7 @@ new_container_push(
     tag = "unchanged_tag1",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -439,7 +435,7 @@ new_container_push(
     tag = "unchanged_tag2",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_1",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -449,7 +445,7 @@ new_container_push(
     tag = "changed_tag1",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_2",
     format = "Docker",
     image = "@alpine_linux_amd64//image:image.tar",
@@ -459,7 +455,7 @@ new_container_push(
     tag = "changed_tag2",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_oci",
     format = "OCI",
     image = ":set_cmd_and_entrypoint",
@@ -469,7 +465,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_oci_from_new_puller",
     format = "OCI",
     image = "@alpine_linux_amd64//image",
@@ -479,7 +475,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_container_img",
     format = "Docker",
     image = ":alpine_with_custom_attr",
@@ -489,7 +485,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_container_img_with_auth",
     format = "Docker",
     image = ":set_cmd_and_entrypoint",
@@ -499,7 +495,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_new_puller",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image",
@@ -509,7 +505,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_old_puller",
     format = "Docker",
     image = "@alpine_linux_armv6//image",
@@ -519,7 +515,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_tar",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -529,7 +525,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_old_puller_tar",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -539,7 +535,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_oci_tag_file",
     format = "OCI",
     image = ":alpine_with_custom_attr",
@@ -549,7 +545,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_tag_file",
     format = "Docker",
     image = ":set_cmd",
@@ -559,7 +555,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_stamped_test_legacy",
     format = "Docker",
     image = ":set_cmd",
@@ -569,7 +565,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_stamped_test_oci",
     format = "OCI",
     image = "@alpine_linux_amd64//image",

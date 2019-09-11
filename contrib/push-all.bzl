@@ -22,6 +22,10 @@ load(
     "//skylib:path.bzl",
     "runfile",
 )
+load(
+    "//container:layer_tools.bzl",
+    _gen_img_args = "generate_args_for_image",
+)
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
@@ -42,38 +46,13 @@ def _impl(ctx):
     for index, tag in enumerate(images.keys()):
         image = images[tag]
 
-        # Leverage our efficient intermediate representation to push.
-        legacy_base_arg = ""
-        if image.get("legacy"):
-            print("Pushing an image based on a tarball can be very " +
-                  "expensive.  If the image is the output of a " +
-                  "docker_build, consider dropping the '.tar' extension. " +
-                  "If the image is checked in, consider using " +
-                  "docker_import instead.")
-            legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
-            runfiles += [image["legacy"]]
-
-        blobsums = image.get("blobsum", [])
-        digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
-        blobs = image.get("zipped_layer", [])
-        layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
-        config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
-
-        runfiles += [image["config"]] + blobsums + blobs
-
+        pusher_args, pusher_inputs = _gen_img_args(ctx, image, _get_runfile_path)
+        pusher_args += ["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs]
         out = ctx.actions.declare_file("%s.%d.push" % (ctx.label.name, index))
         ctx.actions.expand_template(
             template = ctx.file._tag_tpl,
             substitutions = {
-                "%{args}": "%s --name=%s %s %s %s %s %s" % (
-                    "--oci" if ctx.attr.format == "OCI" else "",
-                    ctx.expand_make_variables("tag", tag, {}),
-                    stamp_arg,
-                    legacy_base_arg,
-                    config_arg,
-                    digest_arg,
-                    layer_arg,
-                ),
+                "%{args}": " ".join(pusher_args),
                 "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
             },
             output = out,
@@ -82,6 +61,7 @@ def _impl(ctx):
 
         scripts += [out]
         runfiles += [out]
+        runfiles += pusher_inputs
 
     ctx.actions.expand_template(
         template = ctx.file._all_tpl,
@@ -123,7 +103,7 @@ container_push = rule(
             allow_single_file = True,
         ),
         "_pusher": attr.label(
-            default = Label("@containerregistry//:pusher"),
+            default = Label("//container/go/cmd/pusher"),
             cfg = "host",
             executable = True,
             allow_files = True,

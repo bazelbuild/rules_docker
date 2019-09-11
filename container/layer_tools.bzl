@@ -343,7 +343,7 @@ tools = {
         allow_single_file = True,
     ),
     "use_legacy_join_layers": attr.bool(
-        default = True,
+        default = False,
         doc = "Use the legacy python join_layers.py to build the image tarball." +
               "Uses the experimental Go implementation when set to false.",
     ),

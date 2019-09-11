@@ -71,8 +71,6 @@ func main() {
 
 	flag.Parse()
 
-	log.Println("Running the Image Config creator...")
-
 	if *outputConfig == "" {
 		log.Fatalln("Required option -outputConfig was not specified.")
 	}
@@ -88,9 +86,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to successfully parse config file json contents: %v", err)
 		}
-	} else {
-		// write out an empty config file.
-		log.Println("baseConfig is empty!")
 	}
 
 	opts := compat.OverrideConfigOpts{
@@ -120,10 +115,6 @@ func main() {
 		log.Fatalf("Failed to override values in old image config and write to dst %s: %v", err, *outputConfig)
 	}
 
-	log.Printf("Successfully created Image Config at %s.\n", *outputConfig)
-
-	log.Println("Running the Image Manifest creator...")
-
 	var manifestBlob []byte
 	var err error
 	if *baseManifest != "" {
@@ -138,6 +129,4 @@ func main() {
 	if err := ioutil.WriteFile(*outputManifest, manifestBlob, os.ModePerm); err != nil {
 		log.Fatalf("Writing manifest to %s was unsuccessful: %v", *outputManifest, err)
 	}
-
-	log.Printf("Successfully created Image Manifest at %s.\n", *outputManifest)
 }

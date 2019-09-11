@@ -57,6 +57,7 @@ load(
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
+    _gen_img_args = "generate_args_for_image",
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
@@ -144,9 +145,11 @@ def _add_go_args(
         args += ["-labels", "%s" % "=".join([key, value])]
 
     for key, value in env.items():
+        key = ctx.expand_make_variables("env", key, {})
+        value = ctx.expand_make_variables("env", value, {})
         args += ["-env", "%s" % "=".join([
-            ctx.expand_make_variables("env", key, {}),
-            ctx.expand_make_variables("env", value, {}),
+            key,
+            value,
         ])]
 
     if ctx.attr.user:
@@ -374,23 +377,16 @@ def _repository_name(ctx):
     return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
-    blobsums = image.get("blobsum", [])
-    digest_args = ["--digest=%s" % f.path for f in blobsums]
-    blobs = image.get("zipped_layer", [])
-    layer_args = ["--layer=%s" % f.path for f in blobs]
-    config_arg = "--config=%s" % image["config"].path
-    output_digest_arg = "--output-digest=%s" % output_digest.path
-
-    arguments = [config_arg, output_digest_arg] + layer_args + digest_args
-    if image.get("legacy"):
-        arguments.append("--tarball=%s" % image["legacy"].path)
+    args, inputs = _gen_img_args(ctx, image)
+    args.append("--dst=%s" % output_digest.path)
+    args.append("--format=Docker")
 
     ctx.actions.run(
         outputs = [output_digest],
-        inputs = [image["config"]] + blobsums + blobs,
+        inputs = inputs,
         tools = ([image["legacy"]] if image.get("legacy") else []),
         executable = ctx.executable._digester,
-        arguments = arguments,
+        arguments = args,
         mnemonic = "ImageDigest",
         progress_message = "Extracting image digest of %s" % image_tarball.short_path,
     )
@@ -547,7 +543,7 @@ def _impl(
         )
 
     # Construct a temporary name based on the build target.
-    tag_name = _repository_name(ctx) + ":" + name
+    tag_name = "{}:{}".format(_repository_name(ctx), name)
 
     # These are the constituent parts of the Container image, which each
     # rule in the chain must preserve.
@@ -655,7 +651,7 @@ _attrs = dicts.add(_layer.attrs, {
     "launcher_args": attr.string_list(default = []),
     "layers": attr.label_list(providers = [LayerInfo]),
     "legacy_create_image_config": attr.bool(
-        default = True,
+        default = False,
         doc = ("If set to False, the Go create_image_config binary will be run instead."),
     ),
     "legacy_repository_naming": attr.bool(default = False),
@@ -674,13 +670,13 @@ _attrs = dicts.add(_layer.attrs, {
     "null_cmd": attr.bool(default = False),
     "null_entrypoint": attr.bool(default = False),
     "ports": attr.string_list(),  # Skylark doesn't support int_list...
-    "repository": attr.string(default = "bazel"),
+    "repository": attr.string(default = "bazel.build/bazel"),
     "stamp": attr.bool(default = False),
     "user": attr.string(),
     "volumes": attr.string_list(),
     "workdir": attr.string(),
     "_digester": attr.label(
-        default = "@containerregistry//:digester",
+        default = "//container/go/cmd/digester",
         cfg = "host",
         executable = True,
     ),

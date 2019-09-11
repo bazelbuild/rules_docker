@@ -74,7 +74,7 @@ container_flatten = rule(
         ),
         # TODO (smukherj1): Remove once migration in #580 is done.
         "use_legacy_flattener": attr.bool(
-            default = True,
+            default = False,
             doc = "Use the legacy python flattener to generate the image " +
                   "filesystem tarball. Uses the experimental Go implementation" +
                   "when set to false.",
