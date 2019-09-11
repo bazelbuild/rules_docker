@@ -180,6 +180,26 @@ func (s *Stamper) StampAll(vals []string) []string {
 	return result
 }
 
+// uniquify uniquifies the substitutions in the given stamper. If a key appears
+// multiple times, the latest entry for the key will be preserved and the
+// earlier entries discarded.
+func (s *Stamper) uniquify() {
+	lookup := make(map[string]bool)
+	reverseSubs := []stampSubstitution{}
+	// Scan in reverse order rejecting duplicates.
+	for i := len(s.subs) - 1; i >= 0; i-- {
+		if _, ok := lookup[s.subs[i].key]; ok {
+			continue
+		}
+		lookup[s.subs[i].key] = true
+		reverseSubs = append(reverseSubs, s.subs[i])
+	}
+	s.subs = reverseSubs
+	for i, j := 0, len(s.subs)-1; i <= j; i, j = i+1, j-1 {
+		s.subs[i], s.subs[j] = s.subs[j], s.subs[i]
+	}
+}
+
 // NewStamper creates a Stamper object initialized to stamp strings with the key
 // value pairs in the given stamp info files.
 func NewStamper(stampInfoFiles []string) (*Stamper, error) {
@@ -203,6 +223,7 @@ func NewStamper(stampInfoFiles []string) (*Stamper, error) {
 			})
 		}
 	}
+	result.uniquify()
 	return result, nil
 }
 
