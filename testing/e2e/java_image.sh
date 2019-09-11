@@ -43,14 +43,14 @@ function test_java_simple_image() {
   cd "${ROOT}"
   clear_docker
   bazel run tests/container/java:simple_java_image
-  docker run -d --rm bazel/tests/container/java:simple_java_image
+  docker run -d --rm bazel.build/bazel/tests/container/java:simple_java_image
 }
 
 function test_java_image_arg_echo() {
   cd "${ROOT}"
   clear_docker
   EXPECT_CONTAINS_ONCE "$(bazel run "$@" testdata:java_image_arg_echo)" "arg0"
-  id=$(docker run -d bazel/testdata:java_image_arg_echo | tr '\r' '\n')
+  id=$(docker run -d bazel.build/bazel/testdata:java_image_arg_echo | tr '\r' '\n')
   docker wait $id
   logs=$(docker logs $id)
   EXPECT_CONTAINS_ONCE $logs "arg0"

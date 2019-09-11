@@ -31,7 +31,7 @@ function test_go_image_busybox() {
   clear_docker
   bazel run -c dbg tests/container/go:go_image -- --norun
   local number=$RANDOM
-  id=$(docker run -d  --entrypoint=sh bazel/tests/container/go:go_image -c "echo aa${number}bb")
+  id=$(docker run -d  --entrypoint=sh bazel.build/bazel/tests/container/go:go_image -c "echo aa${number}bb")
   docker wait $id
   logs=$(docker logs $id)
   EXPECT_CONTAINS $logs "aa${number}bb"

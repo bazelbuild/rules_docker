@@ -194,12 +194,12 @@ func NewStamper(stampInfoFiles []string) (*Stamper, error) {
 		sc := bufio.NewScanner(f)
 		for sc.Scan() {
 			line := strings.Split(sc.Text(), " ")
-			if len(line) != 2 {
-				return nil, errors.Wrapf(err, "line %q in stamp info file %s did not split into expected number of tokens, got %d, want 2", sc.Text(), s, len(line))
+			if len(line) < 2 {
+				return nil, errors.Errorf("line %q in stamp info file %s did not split into expected number of tokens, got %d, want >=2", sc.Text(), s, len(line))
 			}
 			result.subs = append(result.subs, stampSubstitution{
 				key:   fmt.Sprintf("{%s}", line[0]),
-				value: line[1],
+				value: strings.Join(line[1:], " "),
 			})
 		}
 	}
@@ -483,7 +483,9 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 		}
 	}
 
-	overrideInfo.ConfigFile.Config.WorkingDir = stamper.Stamp(overrideInfo.Workdir)
+	if overrideInfo.Workdir != "" {
+		overrideInfo.ConfigFile.Config.WorkingDir = stamper.Stamp(overrideInfo.Workdir)
+	}
 
 	// layerDigests are diffIDs extracted from each layer file.
 	layerDigests := []string{}

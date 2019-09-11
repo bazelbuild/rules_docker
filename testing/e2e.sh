@@ -74,7 +74,7 @@ function test_war_image() {
   clear_docker_full
   bazel build testdata:war_image.tar
   docker load -i bazel-bin/testdata/war_image.tar
-  ID=$(docker run -d -p 8080:8080 bazel/testdata:war_image)
+  ID=$(docker run -d -p 8080:8080 bazel.build/bazel/testdata:war_image)
   sleep 5
   EXPECT_CONTAINS "$(curl localhost:8080)" "Hello World"
   docker rm -f "${ID}"
