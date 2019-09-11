@@ -117,7 +117,7 @@ function test_container_push_tag_file() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/container:push_tag_file_test
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_tag_file_test)" '--name=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_tag_file_test)" '--dst=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
@@ -208,7 +208,7 @@ function test_new_container_push_legacy_tag_file() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/container:new_push_test_legacy_tag_file
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_legacy_tag_file)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_legacy_tag_file)" '--dst=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
@@ -250,7 +250,7 @@ function test_new_container_push_oci_tag_file() {
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   bazel build tests/container:new_push_test_oci_tag_file
-  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_oci_tag_file)" '-dst localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/new_push_test_oci_tag_file)" '--dst=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.tag)'
 
   docker stop -t 0 $cid
 }
@@ -306,7 +306,7 @@ function test_container_push_with_auth() {
   cd "${ROOT}/testing/custom_toolchain_auth"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting authenticated container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_test)" "localhost:5000/docker/test:test was published"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_test 2>&1)" "Successfully pushed Docker image to localhost:5000/docker/test:test"
   bazel clean
 
   # Run the container_push test in the Bazel workspace that uses the default
@@ -315,7 +315,7 @@ function test_container_push_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT} --host_force_python=PY2"
   echo "Attempting unauthenticated container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_test  2>&1)" "Error publishing localhost:5000/docker/test:test"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_test  2>&1)" "unable to push image to localhost:5000/docker/test:test"
   bazel clean
 }
 

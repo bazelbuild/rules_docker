@@ -78,12 +78,12 @@ def _impl(ctx):
               "If the image is checked in, consider using " +
               "container_import instead.")
 
-    pusher_args += ["--format", str(ctx.attr.format)]
-    pusher_args += ["--dst", "{registry}/{repository}:{tag}".format(
+    pusher_args.append("--format={}".format(ctx.attr.format))
+    pusher_args.append("--dst={registry}/{repository}:{tag}".format(
         registry = registry,
         repository = repository,
         tag = tag,
-    )]
+    ))
 
     if ctx.attr.skip_unchanged_digest:
         pusher_args += ["-skip-unchanged-digest"]

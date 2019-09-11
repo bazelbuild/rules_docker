@@ -48,6 +48,8 @@ def _impl(ctx):
 
         pusher_args, pusher_inputs = _gen_img_args(ctx, image, _get_runfile_path)
         pusher_args += ["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs]
+        pusher_args.append("--dst={}".format(tag))
+        pusher_args.append("--format={}".format(ctx.attr.format))
         out = ctx.actions.declare_file("%s.%d.push" % (ctx.label.name, index))
         ctx.actions.expand_template(
             template = ctx.file._tag_tpl,

@@ -607,13 +607,13 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:0d91921356df81fd2015764032b380fd97315b08967c6e7c5829b8729ac670d2",
+    content = "sha256:64ef1b4c9159060d6415f28b659732b65bf30f40999e3653b088f93fae40e81e",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:0200c2c330733d6d71f94a642849517cfae8b3467d1712689779a7f0438a119d",
+    content = "sha256:d058484da4f5424b2d162bf0abe54ae509b6553089552777c2e9a13f1c8c58de",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
