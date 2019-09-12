@@ -459,7 +459,9 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 	} else if len(overrideInfo.Command) > 0 {
 		overrideInfo.ConfigFile.Config.Cmd = stamper.StampAll(overrideInfo.Command)
 	}
-	overrideInfo.ConfigFile.Config.User = stamper.Stamp(overrideInfo.User)
+	if overrideInfo.User != "" {
+		overrideInfo.ConfigFile.Config.User = stamper.Stamp(overrideInfo.User)
+	}
 
 	var environMap map[string]string
 	if environMap, err = keyValueToMap(overrideInfo.Env); err != nil {
