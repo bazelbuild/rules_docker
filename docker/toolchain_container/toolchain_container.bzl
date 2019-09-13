@@ -97,9 +97,9 @@ def _language_tool_layer_impl(
     env = env or ctx.attr.env
     tars = tars or ctx.files.tars
     files = files or ctx.files.files
-    packages = packages or ctx.attr.packages
-    additional_repos = additional_repos or ctx.attr.additional_repos
-    keys = keys or ctx.files.keys
+    packages = depset(packages or ctx.attr.packages)
+    additional_repos = depset(additional_repos or ctx.attr.additional_repos)
+    keys = depset(keys or ctx.files.keys)
     installables_tars = installables_tars or []
     installation_cleanup_commands = installation_cleanup_commands or ctx.attr.installation_cleanup_commands
 
@@ -295,9 +295,9 @@ def _toolchain_container_impl(ctx):
         files = depset(direct = layer[LanguageToolLayerInfo].input_files, transitive = [files])
         env.update(layer[LanguageToolLayerInfo].env)
         symlinks.update(layer[LanguageToolLayerInfo].symlinks)
-        packages = depset(direct = layer[LanguageToolLayerInfo].packages, transitive = [packages])
-        additional_repos = depset(direct = layer[LanguageToolLayerInfo].additional_repos, transitive = [additional_repos])
-        keys = depset(direct = layer[LanguageToolLayerInfo].keys, transitive = [keys])
+        packages = depset(transitive = [packages, layer[LanguageToolLayerInfo].packages])
+        additional_repos = depset(transitive = [additional_repos, layer[LanguageToolLayerInfo].additional_repos])
+        keys = depset(transitive = [keys, layer[LanguageToolLayerInfo].keys])
         if layer[LanguageToolLayerInfo].installables_tar:
             installables_tars.append(layer[LanguageToolLayerInfo].installables_tar)
         if layer[LanguageToolLayerInfo].installation_cleanup_commands:
