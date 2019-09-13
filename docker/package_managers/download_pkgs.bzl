@@ -17,7 +17,7 @@
 def _generate_add_additional_repo_commands(ctx, additional_repos):
     return """printf "{repos}" >> /etc/apt/sources.list.d/{name}_repos.list""".format(
         name = ctx.attr.name,
-        repos = "\n".join(additional_repos),
+        repos = "\n".join(additional_repos.to_list()),
     )
 
 def _generate_download_commands(ctx, packages, additional_repos):
@@ -62,7 +62,7 @@ done;
 # Tar command to only include all the *.deb files and ignore other directories placed in the cache dir.
 tar -cpf {installables}_packages.tar --mtime='1970-01-01' --directory /tmp/install/. `cd /tmp/install/. && ls *.deb`""".format(
         installables = ctx.attr.name,
-        packages = " ".join(packages),
+        packages = " ".join(packages.to_list()),
         add_additional_repo_commands = _generate_add_additional_repo_commands(ctx, additional_repos),
     )
 
@@ -80,14 +80,14 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         output_metadata: File, overrides ctx.outputs.metadata_csv
     """
     image_tar = image_tar or ctx.file.image_tar
-    packages = packages or ctx.attr.packages
-    additional_repos = additional_repos or ctx.attr.additional_repos
+    packages = depset(packages or ctx.attr.packages)
+    additional_repos = depset(additional_repos or ctx.attr.additional_repos)
     output_executable = output_executable or ctx.outputs.executable
     output_tar = output_tar or ctx.outputs.pkg_tar
     output_script = output_script or ctx.outputs.build_script
     output_metadata = output_metadata or ctx.outputs.metadata_csv
 
-    if len(packages) == 0:
+    if not packages:
         fail("attribute 'packages' given to download_pkgs rule by {} was empty.".format(attr.label))
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
