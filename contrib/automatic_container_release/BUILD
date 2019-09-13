@@ -21,6 +21,11 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["run_checker.sh.tpl"])
 
 bzl_library(
+    name = "configs_test",
+    srcs = ["configs_test.bzl"],
+)
+
+bzl_library(
     name = "packages_metadata",
     srcs = [
         "metadata_merge.bzl",
