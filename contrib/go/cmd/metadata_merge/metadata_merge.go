@@ -47,6 +47,12 @@ func (l *strArgList) Set(value string) error {
 	return nil
 }
 
+// Get returns an empty interface that may be type-asserted to the underlying
+// value of type []string.
+func (l *strArgList) Get() interface{} {
+	return l.Args
+}
+
 // metadataYAML stores the contents of one or more YAML file with the following
 // top level keys:
 // 1. "tags" (list of strings).
