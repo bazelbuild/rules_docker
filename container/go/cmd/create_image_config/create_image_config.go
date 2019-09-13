@@ -18,7 +18,7 @@
 package main
 
 import (
-	"bytes"
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -26,7 +26,6 @@ import (
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 var (
@@ -75,15 +74,14 @@ func main() {
 		log.Fatalln("Required option -outputConfig was not specified.")
 	}
 
-	configFile := &v1.ConfigFile{}
+	configFile := &compat.ConfigFile{}
 	if *baseConfig != "" {
-		configPath, err := ioutil.ReadFile(*baseConfig)
+		configBlob, err := ioutil.ReadFile(*baseConfig)
 		if err != nil {
 			log.Fatalf("Failed to read the base image's config file: %v", err)
 		}
 
-		configFile, err = v1.ParseConfigFile(bytes.NewReader(configPath))
-		if err != nil {
+		if err := json.Unmarshal(configBlob, &configFile); err != nil {
 			log.Fatalf("Failed to successfully parse config file json contents: %v", err)
 		}
 	}
