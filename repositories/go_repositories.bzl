@@ -46,3 +46,10 @@ def go_deps():
             commit = "27936f6d90f9c8e1145f11ed52ffffbfdb9e0af7",
             importpath = "github.com/pkg/errors",
         )
+
+    if "in_gopkg_yaml_v2" not in excludes:
+        go_repository(
+            name = "in_gopkg_yaml_v2",
+            commit = "51d6538a90f86fe93ac480b35f37b2be17fef232",  # v2.2.2
+            importpath = "gopkg.in/yaml.v2",
+        )

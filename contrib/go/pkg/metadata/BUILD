@@ -11,24 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])  # Apache 2.0
-
-exports_files(["run_checker.sh.tpl"])
-
-bzl_library(
-    name = "configs_test",
-    srcs = ["configs_test.bzl"],
-)
-
-bzl_library(
-    name = "packages_metadata",
-    srcs = [
-        "metadata_merge.bzl",
-        "packages_metadata.bzl",
-    ],
+go_library(
+    name = "go_default_library",
+    srcs = ["packages.go"],
+    importpath = "github.com/bazelbuild/rules_docker/contrib/go/pkg/metadata",
+    visibility = ["//visibility:public"],
 )
