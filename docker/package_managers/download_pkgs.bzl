@@ -141,7 +141,8 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
                 output_script,
                 output_metadata,
                 ctx.executable._extract_image_id,
-            ] + ctx.attr._extract_image_id.files.to_list(),
+            ],
+            transitive_files = ctx.attr._extract_image_id.files,
         ),
         files = depset([output_executable]),
     )

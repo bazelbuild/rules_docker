@@ -149,18 +149,18 @@ def _aggregate_debian_pkgs_impl(ctx):
       ctx: ctx only has name, base, and language_layers attributes
     """
 
-    packages = []
-    additional_repos = []
-    keys = []
+    packages = depset()
+    additional_repos = depset()
+    keys = depset()
 
     for layer in ctx.attr.language_layers:
-        packages.extend(layer.packages)
-        additional_repos.extend(layer.additional_repos)
-        keys.extend(layer.keys)
+        packages = depset(direct = layer.packages, transitive = [packages])
+        additional_repos = depset(direct = layer.additional_repos, transitive = [additional_repos])
+        keys = depset(direct = layer.keys, transitive = [keys])
 
-    packages = depset(packages).to_list()
-    additional_repos = depset(additional_repos).to_list()
-    keys = depset(keys).to_list()
+    packages = packages.to_list()
+    additional_repos = additional_repos.to_list()
+    keys = keys.to_list()
 
     return _generate_deb_tar(
         ctx,
