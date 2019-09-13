@@ -53,7 +53,7 @@ def go_deps():
             commit = "51d6538a90f86fe93ac480b35f37b2be17fef232",  # v2.2.2
             importpath = "gopkg.in/yaml.v2",
         )
-    if "in_gopkg_yaml_v2" not in excludes:
+    if "com_github_kylelemons_godebug" not in excludes:
         go_repository(
             name = "com_github_kylelemons_godebug",
             commit = "9ff306d4fbead574800b66369df5b6144732d58e",
