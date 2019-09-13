@@ -26,6 +26,7 @@ import (
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/utils"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 var (
@@ -51,9 +52,11 @@ var (
 )
 
 const (
-	// createdBy default
-	createdBy = "bazel build..."
-	// author default
+	// defaultCreatedBy default entry for the createdBy field in the image
+	// config.
+	defaultCreatedBy = "bazel build ..."
+	// defaultAuthor is the default author for the author field in the image
+	// config.
 	defaultAuthor = "Bazel"
 )
 
@@ -74,7 +77,7 @@ func main() {
 		log.Fatalln("Required option -outputConfig was not specified.")
 	}
 
-	configFile := &compat.ConfigFile{}
+	configFile := &v1.ConfigFile{}
 	if *baseConfig != "" {
 		configBlob, err := ioutil.ReadFile(*baseConfig)
 		if err != nil {
@@ -95,7 +98,7 @@ func main() {
 		NullEntryPoint:     *nullEntryPoint,
 		NullCmd:            *nullCmd,
 		OperatingSystem:    *operatingSystem,
-		CreatedBy:          createdBy,
+		CreatedBy:          defaultCreatedBy,
 		Author:             defaultAuthor,
 		LabelsArray:        labelsArray[:],
 		Ports:              ports[:],

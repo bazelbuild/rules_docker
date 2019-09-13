@@ -46,7 +46,7 @@ const (
 // OverrideConfigOpts holds all configuration settings for the newly outputted config file.
 type OverrideConfigOpts struct {
 	// ConfigFile is the base config.json file.
-	ConfigFile *ConfigFile
+	ConfigFile *v1.ConfigFile
 	// OutputConfig is where to write the modified config file to.
 	OutputConfig string
 	// CreationTimeString is the creation timestamp.
@@ -64,7 +64,8 @@ type OverrideConfigOpts struct {
 	NullCmd bool
 	// OperatingSystem is the operating system to creater docker image for.
 	OperatingSystem string
-	// CreatedBy is the command that generated the image. Default bazel build...
+	// CreatedBy is the command that generated the image. Default
+	// "bazel build ...".
 	CreatedBy string
 	// Author is the author of the image. Default bazel.
 	Author string
@@ -535,7 +536,7 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 }
 
 // writeConfig writes a json representation of a config file to outPath.
-func writeConfig(configFile *ConfigFile, outPath string) error {
+func writeConfig(configFile *v1.ConfigFile, outPath string) error {
 	rawConfig, err := json.Marshal(configFile)
 	if err != nil {
 		return errors.Wrap(err, "unable to read config struct into json object")
