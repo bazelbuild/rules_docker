@@ -97,9 +97,9 @@ def _language_tool_layer_impl(
     env = env or ctx.attr.env
     tars = tars or ctx.files.tars
     files = files or ctx.files.files
-    packages = depset(packages or ctx.attr.packages)
-    additional_repos = depset(additional_repos or ctx.attr.additional_repos)
-    keys = depset(keys or ctx.files.keys)
+    packages = packages or ctx.attr.packages
+    additional_repos = additional_repos or ctx.attr.additional_repos
+    keys = keys or ctx.files.keys
     installables_tars = installables_tars or []
     installation_cleanup_commands = installation_cleanup_commands or ctx.attr.installation_cleanup_commands
 
@@ -278,26 +278,26 @@ def _toolchain_container_impl(ctx):
            https://github.com/bazelbuild/rules_docker#container_image
     """
 
-    tars = depset()
-    files = depset()
+    tars = []
+    files = []
     env = {}
     symlinks = {}
-    packages = depset()
-    additional_repos = depset()
-    keys = depset()
-    installables_tars = depset()
+    packages = []
+    additional_repos = []
+    keys = []
+    installables_tars = []
     installation_cleanup_commands = "cd ."
 
     # TODO(ngiraldo): we rewrite env and symlinks if there are conficts,
     # warn the user of conflicts or error out.
     for layer in ctx.attr.language_layers:
-        tars = depset(direct = layer[LanguageToolLayerInfo].tars, transitive = [tars])
-        files = depset(direct = layer[LanguageToolLayerInfo].input_files, transitive = [files])
+        tars.extend(layer[LanguageToolLayerInfo].tars)
+        files.extend(layer[LanguageToolLayerInfo].input_files)
         env.update(layer[LanguageToolLayerInfo].env)
         symlinks.update(layer[LanguageToolLayerInfo].symlinks)
-        packages = depset(transitive = [packages, layer[LanguageToolLayerInfo].packages])
-        additional_repos = depset(transitive = [additional_repos, layer[LanguageToolLayerInfo].additional_repos])
-        keys = depset(transitive = [keys, layer[LanguageToolLayerInfo].keys])
+        packages.extend(layer[LanguageToolLayerInfo].packages)
+        additional_repos.extend(layer[LanguageToolLayerInfo].additional_repos)
+        keys.extend(layer[LanguageToolLayerInfo].keys)
         if layer[LanguageToolLayerInfo].installables_tar:
             installables_tars.append(layer[LanguageToolLayerInfo].installables_tar)
         if layer[LanguageToolLayerInfo].installation_cleanup_commands:
