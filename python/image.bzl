@@ -72,7 +72,7 @@ def py_layer(name, deps, filter = "", **kwargs):
     native.py_library(name = binary_name, deps = deps, **kwargs)
     filter_layer(name = name, dep = binary_name, filter = filter)
 
-def py_image(name, base = None, deps = [], layers = [], **kwargs):
+def py_image(name, base = None, deps = [], layers = [], entrypoint = None, **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
     Args:
@@ -106,7 +106,7 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     app_layer(
         name = name,
         base = base,
-        entrypoint = ["/usr/bin/python"],
+        entrypoint = [entrypoint or "/usr/bin/python"],
         binary = binary_name,
         visibility = visibility,
         tags = tags,
