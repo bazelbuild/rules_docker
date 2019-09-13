@@ -157,7 +157,8 @@ platforms:
     # Disable the configs_test targets for automatic container release tests on
     # RBE as the RBE bots don't have the necessary permissions to pull the
     # checker images.
-    - "-//tests/contrib/automatic_container_release/configs_test"
+    - "-//tests/contrib/automatic_container_release:configs_test"
+    - "-//tests/contrib/automatic_container_release:configs_test_deps_spec_only"
     test_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
     - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
