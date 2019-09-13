@@ -278,26 +278,26 @@ def _toolchain_container_impl(ctx):
            https://github.com/bazelbuild/rules_docker#container_image
     """
 
-    tars = []
-    files = []
+    tars = depset()
+    files = depset()
     env = {}
     symlinks = {}
-    packages = []
-    additional_repos = []
-    keys = []
-    installables_tars = []
+    packages = depset()
+    additional_repos = depset()
+    keys = depset()
+    installables_tars = depset()
     installation_cleanup_commands = "cd ."
 
     # TODO(ngiraldo): we rewrite env and symlinks if there are conficts,
     # warn the user of conflicts or error out.
     for layer in ctx.attr.language_layers:
-        tars.extend(layer[LanguageToolLayerInfo].tars)
-        files.extend(layer[LanguageToolLayerInfo].input_files)
+        tars = depset(direct = layer[LanguageToolLayerInfo].tars, transitive = [tars])
+        files = depset(direct = layer[LanguageToolLayerInfo].input_files, transitive = [files])
         env.update(layer[LanguageToolLayerInfo].env)
         symlinks.update(layer[LanguageToolLayerInfo].symlinks)
-        packages.extend(layer[LanguageToolLayerInfo].packages)
-        additional_repos.extend(layer[LanguageToolLayerInfo].additional_repos)
-        keys.extend(layer[LanguageToolLayerInfo].keys)
+        packages = depset(direct = layer[LanguageToolLayerInfo].packages, transitive = [packages])
+        additional_repos = depset(direct = layer[LanguageToolLayerInfo].additional_repos, transitive = [additional_repos])
+        keys = depset(direct = layer[LanguageToolLayerInfo].keys, transitive = [keys])
         if layer[LanguageToolLayerInfo].installables_tar:
             installables_tars.append(layer[LanguageToolLayerInfo].installables_tar)
         if layer[LanguageToolLayerInfo].installation_cleanup_commands:
