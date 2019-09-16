@@ -23,6 +23,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"os"
@@ -32,9 +33,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
-
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -65,7 +65,8 @@ type OverrideConfigOpts struct {
 	NullCmd bool
 	// OperatingSystem is the operating system to creater docker image for.
 	OperatingSystem string
-	// CreatedBy is the command that generated the image. Default bazel build...
+	// CreatedBy is the command that generated the image. Default
+	// "bazel build ...".
 	CreatedBy string
 	// Author is the author of the image. Default bazel.
 	Author string
@@ -85,8 +86,8 @@ type OverrideConfigOpts struct {
 	Entrypoint []string
 	// Layer is the list of layer sha256 hashes that compose the image for which the config is written.
 	Layer []string
-	// StampInfoFile is a list of files from which to read substitutions of variables from.
-	StampInfoFile []string
+	// Stamper will be used to stamp values in the image config.
+	Stamper *Stamper
 }
 
 // validate ensures that CreatedBy and Author are set.
@@ -180,6 +181,43 @@ func (s *Stamper) StampAll(vals []string) []string {
 	return result
 }
 
+// uniquify uniquifies the substitutions in the given stamper. If a key appears
+// multiple times, the latest entry for the key will be preserved and the
+// earlier entries discarded.
+func (s *Stamper) uniquify() {
+	lookup := make(map[string]bool)
+	reverseSubs := []stampSubstitution{}
+	// Scan in reverse order rejecting duplicates.
+	for i := len(s.subs) - 1; i >= 0; i-- {
+		if _, ok := lookup[s.subs[i].key]; ok {
+			continue
+		}
+		lookup[s.subs[i].key] = true
+		reverseSubs = append(reverseSubs, s.subs[i])
+	}
+	s.subs = reverseSubs
+	for i, j := 0, len(s.subs)-1; i <= j; i, j = i+1, j-1 {
+		s.subs[i], s.subs[j] = s.subs[j], s.subs[i]
+	}
+}
+
+// loadSubs loads key value substitutions from the reader representing a
+// Bazel stamp file.
+func (s *Stamper) loadSubs(r io.Reader) error {
+	sc := bufio.NewScanner(r)
+	for sc.Scan() {
+		line := strings.Split(sc.Text(), " ")
+		if len(line) < 2 {
+			return errors.Errorf("line %q in stamp info file did not split into expected number of tokens, got %d, want >=2", sc.Text(), len(line))
+		}
+		s.subs = append(s.subs, stampSubstitution{
+			key:   fmt.Sprintf("{%s}", line[0]),
+			value: strings.Join(line[1:], " "),
+		})
+	}
+	return nil
+}
+
 // NewStamper creates a Stamper object initialized to stamp strings with the key
 // value pairs in the given stamp info files.
 func NewStamper(stampInfoFiles []string) (*Stamper, error) {
@@ -191,18 +229,11 @@ func NewStamper(stampInfoFiles []string) (*Stamper, error) {
 		}
 		defer f.Close()
 
-		sc := bufio.NewScanner(f)
-		for sc.Scan() {
-			line := strings.Split(sc.Text(), " ")
-			if len(line) != 2 {
-				return nil, errors.Wrapf(err, "line %q in stamp info file %s did not split into expected number of tokens, got %d, want 2", sc.Text(), s, len(line))
-			}
-			result.subs = append(result.subs, stampSubstitution{
-				key:   fmt.Sprintf("{%s}", line[0]),
-				value: line[1],
-			})
+		if err := result.loadSubs(f); err != nil {
+			return nil, errors.Wrapf(err, "error loading stamp info from %s", s)
 		}
 	}
+	result.uniquify()
 	return result, nil
 }
 
@@ -222,12 +253,21 @@ func mapToKeyValue(kvMap map[string]string) []string {
 // It handles formats like "PATH=$PATH:..."
 func expandEnvVars(val string, env map[string]string) string {
 	return os.Expand(val, func(k string) string {
-		return env[k]
+		v, ok := env[k]
+		// If the variable doesn't exist, return the key as is which mimics the
+		// behavior of the legacy python config creator.
+		// If the key was specified was "${k}", this will actually change it to
+		// "$k" while the old python code would have retained the curly braces.
+		// However, functionally, this shouldn't be a problem.
+		if !ok {
+			return "$" + k
+		}
+		return v
 	})
 }
 
 // getCreationTime returns the correct creation time for which to override the current config file.
-func getCreationTime(overrideInfo *OverrideConfigOpts, s *Stamper) (time.Time, error) {
+func getCreationTime(overrideInfo *OverrideConfigOpts) (time.Time, error) {
 	var creationTime time.Time
 	var err error
 	if overrideInfo.CreationTimeString == "" {
@@ -239,7 +279,7 @@ func getCreationTime(overrideInfo *OverrideConfigOpts, s *Stamper) (time.Time, e
 	}
 	// Parse for specific time formats.
 	var unixTime float64
-	stampedTime := s.Stamp(overrideInfo.CreationTimeString)
+	stampedTime := overrideInfo.Stamper.Stamp(overrideInfo.CreationTimeString)
 	// If creationTime is parsable as a floating point type, assume unix epoch timestamp.
 	// otherwise, assume RFC 3339 date/time format.
 	unixTime, err = strconv.ParseFloat(stampedTime, 64)
@@ -287,7 +327,7 @@ func resolveEnvironment(overrideInfo *OverrideConfigOpts, environMap map[string]
 }
 
 // resolveLabels returns a map of labels to their extracted and stamped formats.
-func resolveLabels(overrideInfo *OverrideConfigOpts, stamper *Stamper) (map[string]string, error) {
+func resolveLabels(overrideInfo *OverrideConfigOpts) (map[string]string, error) {
 	var labels = make(map[string]string)
 	labels, err := keyValueToMap(overrideInfo.LabelsArray)
 	if err != nil {
@@ -303,7 +343,7 @@ func resolveLabels(overrideInfo *OverrideConfigOpts, stamper *Stamper) (map[stri
 			continue
 		}
 		if strings.Contains(value, "{") {
-			labels[label] = stamper.Stamp(value)
+			labels[label] = overrideInfo.Stamper.Stamp(value)
 		}
 	}
 
@@ -376,17 +416,14 @@ func updateConfigLayers(overrideInfo *OverrideConfigOpts, layerDigests []string,
 		var historyToAdd v1.History
 
 		for _, l := range layerDigests {
-			var createdBy = overrideInfo.CreatedBy
-			var authorToAdd = overrideInfo.Author
-
 			if err := overrideInfo.validate(); err != nil {
 				return errors.Wrapf(err, "unable to create a new config because the given options to override the existing image config/generate new config failed validation")
 			}
 
 			historyToAdd = v1.History{
-				Author:    authorToAdd,
+				Author:    overrideInfo.Author,
 				Created:   v1.Time{creationTime},
-				CreatedBy: createdBy,
+				CreatedBy: overrideInfo.CreatedBy,
 			}
 			if l == emptySHA256Digest() {
 				historyToAdd.EmptyLayer = true
@@ -400,20 +437,16 @@ func updateConfigLayers(overrideInfo *OverrideConfigOpts, layerDigests []string,
 	return nil
 }
 
-// OverrideImageConfig updates the current image config file to reflect the given changes.
-func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
-	overrideInfo.ConfigFile.Author = "Bazel"
+// updateConfig updates the image config specified in the given
+// OverrideConfigOpts using the options specified in the OverrideConfigOpts.
+func updateConfig(overrideInfo *OverrideConfigOpts) error {
+	overrideInfo.ConfigFile.Author = overrideInfo.Author
 	overrideInfo.ConfigFile.OS = overrideInfo.OperatingSystem
 	overrideInfo.ConfigFile.Architecture = defaultProcArch
 
-	stamper, err := NewStamper(overrideInfo.StampInfoFile)
-	if err != nil {
-		return errors.Wrap(err, "unable to initialize stamper")
-	}
-
-	var creationTime time.Time
+	creationTime, err := getCreationTime(overrideInfo)
 	// creationTime is the RFC 3339 formatted time derived from createTime input.
-	if creationTime, err = getCreationTime(overrideInfo, stamper); err != nil {
+	if err != nil {
 		return errors.Wrap(err, "failed to parse creation time from config")
 	}
 	overrideInfo.ConfigFile.Created = v1.Time{creationTime}
@@ -421,22 +454,24 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 	if overrideInfo.NullEntryPoint {
 		overrideInfo.ConfigFile.Config.Entrypoint = nil
 	} else if len(overrideInfo.Entrypoint) > 0 {
-		overrideInfo.ConfigFile.Config.Entrypoint = stamper.StampAll(overrideInfo.Entrypoint)
+		overrideInfo.ConfigFile.Config.Entrypoint = overrideInfo.Stamper.StampAll(overrideInfo.Entrypoint)
 	}
 
 	if overrideInfo.NullCmd {
 		overrideInfo.ConfigFile.Config.Cmd = nil
 	} else if len(overrideInfo.Command) > 0 {
-		overrideInfo.ConfigFile.Config.Cmd = stamper.StampAll(overrideInfo.Command)
+		overrideInfo.ConfigFile.Config.Cmd = overrideInfo.Stamper.StampAll(overrideInfo.Command)
 	}
-	overrideInfo.ConfigFile.Config.User = stamper.Stamp(overrideInfo.User)
+	if overrideInfo.User != "" {
+		overrideInfo.ConfigFile.Config.User = overrideInfo.Stamper.Stamp(overrideInfo.User)
+	}
 
-	var environMap map[string]string
-	if environMap, err = keyValueToMap(overrideInfo.Env); err != nil {
+	environMap, err := keyValueToMap(overrideInfo.Env)
+	if err != nil {
 		return errors.Wrapf(err, "error converting env array %v to map", overrideInfo.Env)
 	}
 	for k, v := range environMap {
-		environMap[k] = stamper.Stamp(v)
+		environMap[k] = overrideInfo.Stamper.Stamp(v)
 	}
 	// perform any substitutions of $VAR or ${VAR} with environment variables.
 	if len(environMap) != 0 {
@@ -447,8 +482,8 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 		overrideInfo.ConfigFile.Config.Env = overrideEnv
 	}
 
-	var labels = make(map[string]string)
-	if labels, err = resolveLabels(overrideInfo, stamper); err != nil {
+	labels, err := resolveLabels(overrideInfo)
+	if err != nil {
 		return errors.Wrap(err, "failed to resolve labels from config")
 	}
 	if len(overrideInfo.LabelsArray) > 0 {
@@ -460,7 +495,7 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 		if len(overrideInfo.ConfigFile.Config.ExposedPorts) == 0 {
 			overrideInfo.ConfigFile.Config.ExposedPorts = make(map[string]struct{})
 		}
-		if err = updateExposedPorts(overrideInfo); err != nil {
+		if err := updateExposedPorts(overrideInfo); err != nil {
 			return errors.Wrap(err, "failed to update exposed ports from config")
 		}
 	}
@@ -469,12 +504,14 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 		if len(overrideInfo.ConfigFile.Config.Volumes) == 0 {
 			overrideInfo.ConfigFile.Config.Volumes = make(map[string]struct{})
 		}
-		if err = updateVolumes(overrideInfo); err != nil {
+		if err := updateVolumes(overrideInfo); err != nil {
 			return errors.Wrap(err, "failed to update volumes from config")
 		}
 	}
 
-	overrideInfo.ConfigFile.Config.WorkingDir = stamper.Stamp(overrideInfo.Workdir)
+	if overrideInfo.Workdir != "" {
+		overrideInfo.ConfigFile.Config.WorkingDir = overrideInfo.Stamper.Stamp(overrideInfo.Workdir)
+	}
 
 	// layerDigests are diffIDs extracted from each layer file.
 	layerDigests := []string{}
@@ -485,7 +522,7 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 		}
 		layerDigests = append(layerDigests, newLayer)
 	}
-	if err = updateConfigLayers(overrideInfo, layerDigests, creationTime); err != nil {
+	if err := updateConfigLayers(overrideInfo, layerDigests, creationTime); err != nil {
 		return errors.Wrap(err, "failed to correctly update layers from config")
 	}
 
@@ -493,8 +530,17 @@ func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
 		newEntrypoint := append(overrideInfo.ConfigFile.Config.Entrypoint, overrideInfo.EntrypointPrefix...)
 		overrideInfo.ConfigFile.Config.Entrypoint = newEntrypoint
 	}
+	return nil
+}
 
-	if err = writeConfig(overrideInfo.ConfigFile, overrideInfo.OutputConfig); err != nil {
+// OverrideImageConfig updates the current image config file to reflect the
+// given changes and writes out the updated image config to the file specified
+// in the given options.
+func OverrideImageConfig(overrideInfo *OverrideConfigOpts) error {
+	if err := updateConfig(overrideInfo); err != nil {
+		return errors.Wrap(err, "failed to create/update image config")
+	}
+	if err := writeConfig(overrideInfo.ConfigFile, overrideInfo.OutputConfig); err != nil {
 		return errors.Wrap(err, "failed to create updated Image Config.")
 	}
 

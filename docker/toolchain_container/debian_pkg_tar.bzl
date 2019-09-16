@@ -104,7 +104,7 @@ def _generate_deb_tar(
             ctx,
             name = image_with_keys,
             image_tar = ctx.files.base[0],
-            keys = keys,
+            keys = keys.to_list(),
             output_executable = image_with_keys_output_executable,
             output_tarball = image_with_keys_output_tarball,
             output_layer = image_with_keys_output_layer,
@@ -158,9 +158,9 @@ def _aggregate_debian_pkgs_impl(ctx):
         additional_repos.extend(layer.additional_repos)
         keys.extend(layer.keys)
 
-    packages = depset(packages).to_list()
-    additional_repos = depset(additional_repos).to_list()
-    keys = depset(keys).to_list()
+    packages = depset(transitive = packages)
+    additional_repos = depset(transitive = additional_repos)
+    keys = depset(transitive = keys)
 
     return _generate_deb_tar(
         ctx,

@@ -109,7 +109,7 @@ def _language_tool_layer_impl(
         # Otherwise, download packages if packages list is not empty, and add the tar of downloaded
         # debs to installables_tars.
 
-    elif packages != []:
+    elif packages:
         download_pkgs_output_tar = ctx.attr.name + "_output_tar.tar"
         download_pkgs_output_script = ctx.attr.name + "_script.sh"
         download_pkgs_output_metadata = ctx.attr.name + "_metadata.csv"
@@ -302,20 +302,14 @@ def _toolchain_container_impl(ctx):
             installables_tars.append(layer[LanguageToolLayerInfo].installables_tar)
         if layer[LanguageToolLayerInfo].installation_cleanup_commands:
             installation_cleanup_commands += (" && " + layer[LanguageToolLayerInfo].installation_cleanup_commands)
-    tars.extend(ctx.files.tars)
+    tars = depset(direct = ctx.files.tars, transitive = tars)
     env.update(ctx.attr.env)
     symlinks.update(ctx.attr.symlinks)
-    packages.extend(ctx.attr.packages)
-    additional_repos.extend(ctx.attr.additional_repos)
-    keys.extend(ctx.files.keys)
+    packages = depset(direct = ctx.attr.packages + packages)
+    additional_repos = depset(direct = ctx.attr.additional_repos + additional_repos)
+    keys = depset(direct = ctx.files.keys + keys)
     if ctx.attr.installation_cleanup_commands:
         installation_cleanup_commands += (" && " + ctx.attr.installation_cleanup_commands)
-
-    files = depset(files).to_list()
-    packages = depset(packages).to_list()
-    additional_repos = depset(additional_repos).to_list()
-    keys = depset(keys).to_list()
-    installables_tars = depset(installables_tars).to_list()
 
     return _language_tool_layer_impl(
         ctx,
