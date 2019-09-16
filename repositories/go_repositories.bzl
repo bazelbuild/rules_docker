@@ -56,6 +56,6 @@ def go_deps():
     if "com_github_kylelemons_godebug" not in excludes:
         go_repository(
             name = "com_github_kylelemons_godebug",
-            commit = "9ff306d4fbead574800b66369df5b6144732d58e",
+            commit = "9ff306d4fbead574800b66369df5b6144732d58e",  # v1.1.0
             importpath = "github.com/kylelemons/godebug",
         )
