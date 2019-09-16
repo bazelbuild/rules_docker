@@ -305,7 +305,7 @@ def _toolchain_container_impl(ctx):
     tars = depset(direct = ctx.files.tars, transitive = tars)
     env.update(ctx.attr.env)
     symlinks.update(ctx.attr.symlinks)
-    packages = depset(direct = ctx.attr.packages +  packages)
+    packages = depset(direct = ctx.attr.packages + packages)
     additional_repos = depset(direct = ctx.attr.additional_repos + additional_repos)
     keys = depset(direct = ctx.files.keys + keys)
     if ctx.attr.installation_cleanup_commands:
