@@ -154,7 +154,7 @@ def _aggregate_debian_pkgs_impl(ctx):
     keys = []
 
     for layer in ctx.attr.language_layers:
-        packages = packages.extend(layer.packages)
+        packages.extend(layer.packages)
         additional_repos.extend(layer.additional_repos)
         keys.extend(layer.keys)
 
