@@ -171,6 +171,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         for f in runfiles_list
         if filepath(ctx, f) not in available and layer_file_path(ctx, f) not in available
     }
+
     # emptyfiles(dep) can be `depset` or `list`. Convert it to list only if needed.
     emptyfiles_list = emptyfiles(dep).to_list() if type(emptyfiles(dep)) == "depset" else emptyfiles(dep)
     empty_files = [
