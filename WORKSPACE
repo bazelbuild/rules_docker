@@ -219,20 +219,20 @@ _py_image_repos()
 # base_images_docker is needed as ubuntu1604/debian9 is used in package_manager tests
 http_archive(
     name = "base_images_docker",
-    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
 
 http_archive(
     name = "ubuntu1604",
-    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/ubuntu1604",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/ubuntu1604",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
 
 http_archive(
     name = "debian9",
-    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/debian9",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/debian9",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
 
 load("@ubuntu1604//:deps.bzl", ubuntu1604_deps = "deps")
@@ -405,11 +405,11 @@ register_toolchains("//toolchains/python:container_py_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "ab0d8aaeaeeef413ddb03922dbdb99bbae9e1b2c157a87c77d70d45a830be5b0",
-    strip_prefix = "bazel-toolchains-0.29.1",
+    sha256 = "1411f2648185b0e7d8c2bb88b25cc8f2c477cc4223133461652ddce2b3154ac4",
+    strip_prefix = "bazel-toolchains-0.29.3",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.1.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.3.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.3.tar.gz",
     ],
 )
 
