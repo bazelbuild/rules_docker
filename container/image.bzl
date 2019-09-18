@@ -110,80 +110,73 @@ def _add_go_args(
         base_config,
         base_manifest,
         operating_system):
-    args += [
-        "-outputConfig",
-        "%s" % config.path,
-    ] + [
-        "-outputManifest",
-        "%s" % manifest.path,
-    ]
+    args.add("-outputConfig", config)
+    args.add("-outputManifest", manifest)
 
     if null_entrypoint:
-        args += ["-nullEntryPoint"]
+        args.add("-nullEntryPoint")
 
     if null_cmd:
-        args += ["-nullCmd"]
+        args.add("-nullCmd")
 
-    for x in entrypoint:
-        args += ["-entrypoint", "%s" % x]
-    for x in cmd:
-        args += ["-command", "%s" % x]
-    for x in ctx.attr.ports:
-        args += ["-ports", "%s" % x]
-    for x in ctx.attr.volumes:
-        args += ["-volumes", "%s" % x]
+    args.add_all(entrypoint, before_each = "-entrypoint")
+    args.add_all(cmd, before_each = "-command")
+    args.add_all(ctx.attr.ports, before_each = "-ports")
+    args.add_all(ctx.attr.volumes, before_each = "-volumes")
 
     if creation_time:
-        args += ["-creationTime", "%s" % creation_time]
+        args.add("-creationTime", creation_time)
     elif ctx.attr.stamp:
         # If stamping is enabled, and the creation_time is not manually defined,
         # default to '{BUILD_TIMESTAMP}'.
-        args += ["-creationTime", "{BUILD_TIMESTAMP}"]
+        args.add("-creationTime", "{BUILD_TIMESTAMP}")
 
-    for key, value in labels.items():
-        args += ["-labels", "%s" % "=".join([key, value])]
+    args.add_all(labels.items(), map_each = _format_go_label)
 
     for key, value in env.items():
-        args += ["-env", "%s" % "=".join([
+        args.add("-env", "%s" % "=".join([
             ctx.expand_make_variables("env", key, {}),
             ctx.expand_make_variables("env", value, {}),
-        ])]
+        ]))
 
     if ctx.attr.user:
-        args += ["-user", ctx.attr.user]
+        args.add("-user", ctx.attr.user)
     if workdir:
-        args += ["-workdir", workdir]
+        args.add("-workdir", workdir)
 
     inputs += layer_names
-    for layer_name in layer_names:
-        args += ["-layerDigestFile", "@" + layer_name.path]
+    args.add_all(layer_names, before_each = "-layerDigestFile", format_each = "@%s")
 
     if ctx.attr.label_files:
         inputs += ctx.files.label_files
 
     if base_config:
-        args += ["-baseConfig", "%s" % base_config.path]
+        args.add("-baseConfig", base_config)
         inputs += [base_config]
 
     if base_manifest:
-        args += ["-baseManifest", "%s" % base_manifest.path]
+        args.add("-baseManifest", base_manifest)
         inputs += [base_manifest]
 
     if operating_system:
-        args += ["-operatingSystem", "%s" % operating_system]
+        args.add("-operatingSystem", operating_system)
 
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
-        for f in stamp_inputs:
-            args += ["-stampInfoFile", "%s" % f.path]
+        args.add_all(stamp_inputs, before_each = "-stampInfoFile")
         inputs += stamp_inputs
 
     if ctx.attr.launcher_args and not ctx.attr.launcher:
         fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
     if ctx.attr.launcher:
-        for x in ["/" + ctx.file.launcher.basename]:
-            args += ["-entrypointPrefix", "%s" % x]
-        args += ctx.attr.launcher_args
+        args.add("-entrypointPrefix", ctx.file.launcher.basename, format = "/%s")
+        args.add_all(ctx.attr.launcher_args)
+
+def _format_go_label(t):
+    return ("-labels %s=%s" % (t[0], t[1]))
+
+def _format_legacy_label(t):
+    return ("--labels=%s=%s" % (t[0], t[1]))
 
 def _add_legacy_args(
         ctx,
@@ -203,75 +196,60 @@ def _add_legacy_args(
         base_config,
         base_manifest,
         operating_system):
-    args += [
-        "--output=%s" % config.path,
-    ] + [
-        "--manifestoutput=%s" % manifest.path,
-    ] + [
-        "--entrypoint=%s" % x
-        for x in entrypoint
-    ] + [
-        "--command=%s" % x
-        for x in cmd
-    ] + [
-        "--ports=%s" % x
-        for x in ctx.attr.ports
-    ] + [
-        "--volumes=%s" % x
-        for x in ctx.attr.volumes
-    ] + [
-        "--null_entrypoint=%s" % null_entrypoint,
-    ] + [
-        "--null_cmd=%s" % null_cmd,
-    ]
+    args.add(config, format = "--output=%s")
+    args.add(manifest, format = "--manifestoutput=%s")
+    args.add_all(entrypoint, format_each = "--entrypoint=%s")
+    args.add_all(cmd, format_each = "--command=%s")
+    args.add_all(ctx.attr.ports, format_each = "--ports=%s")
+    args.add_all(ctx.attr.volumes, format_each = "--volumes=%s")
+    args.add("--null_entrypoint=%s" % null_entrypoint)
+    args.add("--null_cmd=%s" % null_cmd)
+
     if creation_time:
-        args += ["--creation_time=%s" % creation_time]
+        args.add(creation_time, format = "--creation_time=%s")
     elif ctx.attr.stamp:
         # If stamping is enabled, and the creation_time is not manually defined,
         # default to '{BUILD_TIMESTAMP}'.
-        args += ["--creation_time={BUILD_TIMESTAMP}"]
+        args.add("{BUILD_TIMESTAMP}", format = "--creation_time=%s")
 
-    args += ["--labels=%s" % "=".join([key, value]) for key, value in labels.items()]
-    args += ["--env=%s" % "=".join([
+    args.add_all(labels.items(), map_each = _format_legacy_label)
+
+    args.add_all(["--env=%s" % "=".join([
         ctx.expand_make_variables("env", key, {}),
         ctx.expand_make_variables("env", value, {}),
-    ]) for key, value in env.items()]
+    ]) for key, value in env.items()])
 
     if ctx.attr.user:
-        args += ["--user=" + ctx.attr.user]
+        args.add(ctx.attr.user, format = "--user=%s")
     if workdir:
-        args += ["--workdir=" + workdir]
+        args.add(workdir, format = "--workdir=%s")
 
     inputs += layer_names
-    for layer_name in layer_names:
-        args += ["--layer=@" + layer_name.path]
+    args.add_all(layer_names, format_each = "--layer=@%s")
 
     if ctx.attr.label_files:
         inputs += ctx.files.label_files
 
     if base_config:
-        args += ["--base=%s" % base_config.path]
+        args.add(base_config, format = "--base=%s")
         inputs += [base_config]
 
     if base_manifest:
-        args += ["--basemanifest=%s" % base_manifest.path]
+        args.add(base_manifest, format = "--basemanifest=%s")
         inputs += [base_manifest]
 
     if operating_system:
-        args += ["--operating_system=%s" % operating_system]
+        args.add(operating_system, format = "--operating_system=%s")
 
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
-        args += ["--stamp-info-file=%s" % f.path for f in stamp_inputs]
+        args.add_all(stamp_inputs, format_each = "--stamp-info-file=%s")
         inputs += stamp_inputs
 
     if ctx.attr.launcher_args and not ctx.attr.launcher:
         fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
     if ctx.attr.launcher:
-        args += [
-            "--entrypoint_prefix=%s" % x
-            for x in ["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args
-        ]
+        args.add_all(["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args, format_each = "--entrypoint_prefix=%s")
 
 def _image_config(
         ctx,
@@ -305,7 +283,7 @@ def _image_config(
         else:
             labels[label] = fname
 
-    args = []
+    args = ctx.actions.args()
     inputs = []
     executable = None
     if ctx.attr.legacy_create_image_config:
@@ -353,7 +331,7 @@ def _image_config(
 
     ctx.actions.run(
         executable = executable,
-        arguments = args,
+        arguments = [args],
         inputs = inputs,
         outputs = [config, manifest],
         use_default_shell_env = True,
