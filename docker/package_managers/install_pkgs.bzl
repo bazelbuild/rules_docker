@@ -118,12 +118,14 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         executable = script,
         use_default_shell_env = True,
     )
-
+    args = ctx.actions.args()
+    args.add(unstripped_tar, format = "--in_tar_path=%s")
+    args.add(output_tar, format = "--out_tar_path=%s")
     ctx.actions.run(
         outputs = [output_tar],
         inputs = [unstripped_tar],
         executable = ctx.executable._config_stripper,
-        arguments = ["--in_tar_path=%s" % unstripped_tar.path, "--out_tar_path=%s" % output_tar.path],
+        arguments = [args],
         use_default_shell_env = True,
     )
 
