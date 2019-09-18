@@ -119,10 +119,10 @@ def _add_go_args(
     if null_cmd:
         args.add("-nullCmd")
 
-    args.add_all(entrypoint, before_each="-entrypoint")
-    args.add_all(cmd, before_each = "-command", )
-    args.add_all(ctx.attr.ports, before_each = "-ports" )
-    args.add_all(ctx.attr.volumes, before_each = "-volumes", )
+    args.add_all(entrypoint, before_each = "-entrypoint")
+    args.add_all(cmd, before_each = "-command")
+    args.add_all(ctx.attr.ports, before_each = "-ports")
+    args.add_all(ctx.attr.volumes, before_each = "-volumes")
 
     if creation_time:
         args.add("-creationTime", creation_time)
@@ -145,7 +145,7 @@ def _add_go_args(
         args.add("-workdir", workdir)
 
     inputs += layer_names
-    args.add_all(layer_names, before_each = "-layerDigestFile", format_each="@%s")
+    args.add_all(layer_names, before_each = "-layerDigestFile", format_each = "@%s")
 
     if ctx.attr.label_files:
         inputs += ctx.files.label_files
