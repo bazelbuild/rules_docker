@@ -99,14 +99,13 @@ def build_layer(
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     layer = output_layer
     build_layer_exec = ctx.executable.build_layer
-    args = [
-        "--output=" + layer.path,
-        "--directory=" + directory,
-        "--mode=" + ctx.attr.mode,
-    ]
+    args = ctx.actions.args()
+    args.add(layer, format = "--output=%s")
+    args.add(directory, format = "--directory=%s")
+    args.add(ctx.attr.mode, format = "--mode=%s")
 
     if toolchain_info.xz_path != "":
-        args += ["--xz_path=%s" % toolchain_info.xz_path]
+        args.add(toolchain_info.xz_path, format = "--xz_path=%s")
 
     # Windows layer.tar require two separate root directories instead of just 1
     # 'Files' is the equivalent of '.' in Linux images.
@@ -115,7 +114,7 @@ def build_layer(
     # directory is required for compatibility on Windows.
     empty_root_dirs = []
     if (operating_system == "windows"):
-        args += ["--root_directory=Files"]
+        args.add("--root_directory=Files")
         empty_root_dirs = ["Files", "Hives"]
 
     all_files = [struct(src = f.path, dst = _magic_path(ctx, f, layer)) for f in files]
@@ -131,11 +130,11 @@ def build_layer(
     )
     manifest_file = ctx.actions.declare_file(name + "-layer.manifest")
     ctx.actions.write(manifest_file, manifest.to_json())
-    args += ["--manifest=" + manifest_file.path]
+    args.add(manifest_file, format = "--manifest=%s")
 
     ctx.actions.run(
         executable = build_layer_exec,
-        arguments = args,
+        arguments = [args],
         tools = files + file_map.values() + tars + debs + [manifest_file],
         outputs = [layer],
         use_default_shell_env = True,
