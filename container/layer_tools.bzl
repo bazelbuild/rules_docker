@@ -26,13 +26,16 @@ load(
 def _extract_layers(ctx, name, artifact):
     config_file = ctx.actions.declare_file(name + "." + artifact.basename + ".config")
     manifest_file = ctx.actions.declare_file(name + "." + artifact.basename + ".manifest")
-    args = ctx.actions.args()
-    args.add("-imageTar", artifact)
-    args.add("-outputConfig", config_file)
-    args.add("-outputManifest", manifest_file)
     ctx.actions.run(
         executable = ctx.executable.extract_config,
-        arguments = [args],
+        arguments = [
+            "-imageTar",
+            artifact.path,
+            "-outputConfig",
+            config_file.path,
+            "-outputManifest",
+            manifest_file.path,
+        ],
         tools = [artifact],
         outputs = [config_file, manifest_file],
         mnemonic = "ExtractConfig",
@@ -131,30 +134,33 @@ def _add_join_layers_py_args(args, inputs, images):
     """
     for tag in images:
         image = images[tag]
-        args.add(image["config"], format = "--tags=" + tag + "=@%s")
+        args += [
+            "--tags=" + tag + "=@" + image["config"].path,
+        ]
         inputs += [image["config"]]
 
         if image.get("manifest"):
-            args.add(image["manifest"], format = "--manifests=" + tag + "=@%s")
+            args += [
+                "--manifests=" + tag + "=@" + image["manifest"].path,
+            ]
             inputs += [image["manifest"]]
 
         for i in range(0, len(image["diff_id"])):
-            # There's no way to do this with attrs w/o resolving paths here afaik
-            args.add(
+            args += [
                 "--layer=" +
                 "@" + image["diff_id"][i].path +
                 "=@" + image["blobsum"][i].path +
                 # No @, not resolved through utils, always filename.
                 "=" + image["unzipped_layer"][i].path +
                 "=" + image["zipped_layer"][i].path,
-            )
+            ]
         inputs += image["unzipped_layer"]
         inputs += image["diff_id"]
         inputs += image["zipped_layer"]
         inputs += image["blobsum"]
 
         if image.get("legacy"):
-            args.add(image["legacy"], format = "--legacy=%s")
+            args += ["--legacy=" + image["legacy"].path]
             inputs += [image["legacy"]]
 
 def _add_join_layers_go_args(args, inputs, images):
@@ -162,30 +168,33 @@ def _add_join_layers_go_args(args, inputs, images):
     """
     for tag in images:
         image = images[tag]
-        args.add(image["config"], format = "--tag=" + tag + "=%s")
+        args += [
+            "--tag=" + tag + "=" + image["config"].path,
+        ]
         inputs += [image["config"]]
 
         if image.get("manifest"):
-            args.add(image["manifest"], format = "--basemanifest=" + tag + "=%s")
+            args += [
+                "--basemanifest=" + tag + "=" + image["manifest"].path,
+            ]
             inputs += [image["manifest"]]
 
         for i in range(0, len(image["diff_id"])):
-            # There's no way to do this with attrs w/o resolving paths here afaik
-            args.add(
+            args += [
                 "--layer={},{},{},{}".format(
                     image["zipped_layer"][i].path,
                     image["unzipped_layer"][i].path,
                     image["blobsum"][i].path,
                     image["diff_id"][i].path,
                 ),
-            )
+            ]
         inputs += image["diff_id"]
         inputs += image["zipped_layer"]
         inputs += image["unzipped_layer"]
         inputs += image["blobsum"]
 
         if image.get("legacy"):
-            args.add(image["legacy"], "--tarball=%s")
+            args += ["--tarball=" + image["legacy"].path]
             inputs += [image["legacy"]]
 
 def assemble(
@@ -201,11 +210,12 @@ def assemble(
        output: The output path for the image tar
        stamp: Whether to stamp the produced image
     """
-    args = ctx.actions.args()
-    args.add(output, format = "--output=%s")
+    args = [
+        "--output=" + output.path,
+    ]
     inputs = []
     if stamp:
-        args.add_all([ctx.info_file, ctx.version_file], format_each = "--stamp-info-file=%s")
+        args += ["--stamp-info-file=%s" % f.path for f in (ctx.info_file, ctx.version_file)]
         inputs += [ctx.info_file, ctx.version_file]
     if ctx.attr.use_legacy_join_layers:
         _add_join_layers_py_args(args, inputs, images)
@@ -214,7 +224,7 @@ def assemble(
 
     ctx.actions.run(
         executable = ctx.executable._join_layers_py if ctx.attr.use_legacy_join_layers else ctx.executable._join_layers_go,
-        arguments = [args],
+        arguments = args,
         tools = inputs,
         outputs = [output],
         mnemonic = "JoinLayers",
