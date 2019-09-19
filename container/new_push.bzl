@@ -40,7 +40,7 @@ def _impl(ctx):
 
     pusher_args = []
     pusher_input = []
-    digester_args = []
+    digester_args = ctx.actions.args()
     digester_input = []
 
     # Parse and get destination registry to be pushed to
@@ -70,7 +70,7 @@ def _impl(ctx):
     pusher_input += pusher_img_inputs
     digester_img_args, digester_img_inputs = _gen_img_args(ctx, image)
     digester_input += digester_img_inputs
-    digester_args += digester_img_args
+    digester_args.add_all(digester_img_args)
     tarball = image.get("legacy")
     if tarball:
         print("Pushing an image based on a tarball can be very " +
@@ -88,12 +88,13 @@ def _impl(ctx):
 
     if ctx.attr.skip_unchanged_digest:
         pusher_args += ["-skip-unchanged-digest"]
-    digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
+    digester_args.add("--dst", ctx.outputs.digest)
+    digester_args.add("--format", ctx.attr.format)
     ctx.actions.run(
         inputs = digester_input,
         outputs = [ctx.outputs.digest],
         executable = ctx.executable._digester,
-        arguments = digester_args,
+        arguments = [digester_args],
         tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
         mnemonic = "NewContainerPushDigest",
     )

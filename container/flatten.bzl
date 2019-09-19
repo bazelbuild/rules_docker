@@ -28,36 +28,36 @@ def _impl(ctx):
     image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
 
     # Leverage our efficient intermediate representation to push.
-    img_args = []
+    img_args = ctx.actions.args()
     img_inputs = []
     if ctx.attr.use_legacy_flattener:
         if image.get("legacy"):
             img_inputs += [image["legacy"]]
-            img_args = ["--tarball=%s" % image["legacy"].path]
+            img_args.add(image["legacy"], format = "--tarball=%s")
 
         blobsums = image.get("blobsum", [])
-        img_args += ["--digest=" + f.path for f in blobsums]
+        img_args.add_all(blobsums, format_each = "--digest=%s")
         img_inputs += blobsums
         blobs = image.get("zipped_layer", [])
-        img_args += ["--layer=" + f.path for f in blobs]
+        img_args.add_all(blobs, format_each = "--layer=%s")
         img_inputs += blobs
         uncompressed_blobs = image.get("unzipped_layer", [])
-        img_args += ["--uncompressed_layer=" + f.path for f in uncompressed_blobs]
+        img_args.add_all(uncompressed_blobs, format_each = "--uncompressed_layer=%s")
         img_inputs += uncompressed_blobs
         diff_ids = image.get("diff_id", [])
-        img_args += ["--diff_id=%s" % f.path for f in diff_ids]
+        img_args.add_all(diff_ids, format_each = "--diff_id=%s")
         img_inputs += diff_ids
-        img_args += ["--config=%s" % image["config"].path]
+        img_args.add(image["config"], format = "--config=%s")
         img_inputs += [image["config"]]
     else:
-        img_args, img_inputs = _gen_img_args(ctx, image)
+        args, img_inputs = _gen_img_args(ctx, image)
+        img_args.add_all(args)
 
+    img_args.add(ctx.outputs.filesystem, format = "--filesystem=%s")
+    img_args.add(ctx.outputs.metadata, format = "--metadata=%s")
     ctx.actions.run(
         executable = ctx.executable._flattener if ctx.attr.use_legacy_flattener else ctx.executable._go_flattener,
-        arguments = img_args + [
-            "--filesystem=" + ctx.outputs.filesystem.path,
-            "--metadata=" + ctx.outputs.metadata.path,
-        ],
+        arguments = [img_args],
         inputs = img_inputs,
         outputs = [ctx.outputs.filesystem, ctx.outputs.metadata],
         use_default_shell_env = True,
