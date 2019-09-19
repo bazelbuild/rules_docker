@@ -154,7 +154,7 @@ def _add_join_layers_py_args(args, inputs, images):
         inputs += image["blobsum"]
 
         if image.get("legacy"):
-            args.add(image["legacy"], format = "--legacy=%s")
+            args.add(image["legacy"].path, format = "--legacy=%s")
             inputs += [image["legacy"]]
 
 def _add_join_layers_go_args(args, inputs, images):
@@ -185,7 +185,7 @@ def _add_join_layers_go_args(args, inputs, images):
         inputs += image["blobsum"]
 
         if image.get("legacy"):
-            args.add(image["legacy"], "--tarball=%s")
+            args.add(image["legacy"].path, "--tarball=%s")
             inputs += [image["legacy"]]
 
 def assemble(

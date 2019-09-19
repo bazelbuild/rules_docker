@@ -33,7 +33,7 @@ def _impl(ctx):
     if ctx.attr.use_legacy_flattener:
         if image.get("legacy"):
             img_inputs += [image["legacy"]]
-            img_args.add(image["legacy"], format = "--tarball=%s")
+            img_args.add(image["legacy"].path, format = "--tarball=%s")
 
         blobsums = image.get("blobsum", [])
         img_args.add_all(blobsums, format_each = "--digest=%s")

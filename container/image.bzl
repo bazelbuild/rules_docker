@@ -361,7 +361,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     args.add(output_digest, format = "--output-digest=%s")
 
     if image.get("legacy"):
-        args.add(image["legacy"], format = "--tarball=%s")
+        args.add(image["legacy"].path, format = "--tarball=%s")
 
     ctx.actions.run(
         outputs = [output_digest],
