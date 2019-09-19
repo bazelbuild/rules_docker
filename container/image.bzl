@@ -352,23 +352,23 @@ def _repository_name(ctx):
     return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
-    args = ctx.actions.args()
     blobsums = image.get("blobsum", [])
-    args.add_all(blobsums, format_each = "--digest=%s")
+    digest_args = ["--digest=%s" % f.path for f in blobsums]
     blobs = image.get("zipped_layer", [])
-    args.add_all(blobs, format_each = "--layer=%s")
-    args.add(image["config"], format = "--config=%s")
-    args.add(output_digest, format = "--output-digest=%s")
+    layer_args = ["--layer=%s" % f.path for f in blobs]
+    config_arg = "--config=%s" % image["config"].path
+    output_digest_arg = "--output-digest=%s" % output_digest.path
 
+    arguments = [config_arg, output_digest_arg] + layer_args + digest_args
     if image.get("legacy"):
-        args.add(image["legacy"], format = "--tarball=%s")
+        arguments.append("--tarball=%s" % image["legacy"].path)
 
     ctx.actions.run(
         outputs = [output_digest],
         inputs = [image["config"]] + blobsums + blobs,
         tools = ([image["legacy"]] if image.get("legacy") else []),
         executable = ctx.executable._digester,
-        arguments = [args],
+        arguments = arguments,
         mnemonic = "ImageDigest",
         progress_message = "Extracting image digest of %s" % image_tarball.short_path,
     )
