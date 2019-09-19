@@ -52,17 +52,15 @@ def _impl(ctx):
     yaml_files = ctx.files.srcs
     if len(yaml_files) == 0:
         fail("Attribute yamls to {} did not specify any YAML files.".format(ctx.label))
-    args = []
+    args = ctx.actions.args()
     for yaml_file in yaml_files:
-        args.append("-yamlFile")
-        args.append(yaml_file.path)
-    args.append("-outFile")
-    args.append(ctx.outputs.yaml.path)
+        args.add("-yamlFile", yaml_file)
+    args.add("-outFile", ctx.outputs.yaml)
     ctx.actions.run(
         inputs = yaml_files,
         outputs = [ctx.outputs.yaml],
         executable = ctx.executable._merger,
-        arguments = args,
+        arguments = [args],
         mnemonic = "MetadataYAMLMerge",
     )
 
