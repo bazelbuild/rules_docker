@@ -58,6 +58,9 @@ def _passwd_file_impl(ctx):
     ctx.actions.write(output = passwd_file, content = f)
     return DefaultInfo(files = depset([passwd_file]))
 
+def _format_onwer(t):
+    return ("--owners=%s=%s" % (t[0], t[1]))
+
 def _build_homedirs_tar(ctx, passwd_file):
     homedirs = []
     owners_map = {}
@@ -73,20 +76,20 @@ def _build_homedirs_tar(ctx, passwd_file):
         ctx.attr.passwd_file_pkg_dir,
         ctx.label.name,
     )
-    args = [
-        "--output=" + ctx.outputs.passwd_tar.path,
-        "--mode=0o700",
-        "--file=%s=%s" % (passwd_file.path, dest_file),
-        "--modes=%s=%s" % (dest_file, ctx.attr.passwd_file_mode),
-    ]
-    args += ["--empty_dir=%s" % homedir for homedir in homedirs]
-    args += ["--owners=%s=%s" % (key, owners_map[key]) for key in owners_map]
+    args = ctx.actions.args()
+    args.add(ctx.outputs.passwd_tar, format = "--output=%s")
+    args.add("--mode=0o700")
+    args.add(passwd_file, format = "--file=%s=" + dest_file)
+    args.add(dest_file, format = "--modes=%s=" + ctx.attr.passwd_file_mode)
+
+    args.add_all(homedirs, format_each = "--empty_dir=%s")
+    args.add_all(owners_map.items(), map_each = _format_onwer)
     ctx.actions.run(
         executable = ctx.executable.build_tar,
         inputs = [passwd_file],
         outputs = [ctx.outputs.passwd_tar],
         mnemonic = "PasswdTar",
-        arguments = args,
+        arguments = [args],
     )
 
 def _passwd_tar_impl(ctx):

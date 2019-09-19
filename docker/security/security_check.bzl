@@ -17,13 +17,10 @@
 def _impl(ctx):
     _security_check = ctx.executable._security_check
     output_yaml = ctx.outputs.yaml
-    args = [
-        ctx.attr.image,
-        "--output-yaml",
-        ctx.outputs.yaml.path,
-        "--severity",
-        ctx.attr.severity,
-    ]
+    args = ctx.actions.args()
+    args.add(ctx.attr.image)
+    args.add("--output-yaml", ctx.outputs.yaml)
+    args.add("--severity", ctx.attr.severity)
     if ctx.attr.whitelist != None:
         files = ctx.attr.whitelist.files.to_list()
         if len(files) != 1:
@@ -34,11 +31,10 @@ def _impl(ctx):
                     ctx.label,
                 ),
             )
-        args.append("--whitelist-file")
-        args.append(files[0].path)
+        args.add("--whitelist-file", files[0])
     ctx.actions.run(
         executable = ctx.executable._security_check,
-        arguments = args,
+        arguments = [args],
         outputs = [ctx.outputs.yaml],
         mnemonic = "ImageSecurityCheck",
         use_default_shell_env = True,
