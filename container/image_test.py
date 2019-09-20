@@ -260,7 +260,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_env(self):
     with TestBundleImage(
-        'with_env', 'bazel.build/bazel/%s:with_env' % TEST_DATA_TARGET_BASE) as img:
+        'with_env', 'bazel/%s:with_env' % TEST_DATA_TARGET_BASE) as img:
       self.assertDigest(img, 'dee53e65c09c5de80b1683e5853bb0978785e4cdd17e9ba2e731e3c7fe13b62b')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Env', ['bar=blah blah blah', 'foo=/asdf'])

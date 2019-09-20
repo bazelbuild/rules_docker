@@ -25,7 +25,7 @@ function test_docker_run_flags_use_default() {
   clear_docker
   bazel build testdata:docker_run_flags_use_default
   # This depends on the generated image name to ensure no _additional_ flags other than the default were included
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_use_default)" "-i --rm --network=host bazel.build/bazel/testdata:docker_run_flags_use_default"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_use_default)" "-i --rm --network=host bazel/testdata:docker_run_flags_use_default"
 }
 
 function test_docker_run_flags_override_default() {

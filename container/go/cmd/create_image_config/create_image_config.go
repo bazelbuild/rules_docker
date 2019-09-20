@@ -18,7 +18,7 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -51,15 +51,6 @@ var (
 	stampInfoFile      utils.ArrayStringFlags
 )
 
-const (
-	// defaultCreatedBy default entry for the createdBy field in the image
-	// config.
-	defaultCreatedBy = "bazel build ..."
-	// defaultAuthor is the default author for the author field in the image
-	// config.
-	defaultAuthor = "Bazel"
-)
-
 func main() {
 	flag.Var(&labelsArray, "labels", "Augment the Label of the previous layer.")
 	flag.Var(&ports, "ports", "Augment the ExposedPorts of the previous layer.")
@@ -84,9 +75,15 @@ func main() {
 			log.Fatalf("Failed to read the base image's config file: %v", err)
 		}
 
-		if err := json.Unmarshal(configBlob, &configFile); err != nil {
+		configFile, err = v1.ParseConfigFile(bytes.NewReader(configBlob))
+		if err != nil {
 			log.Fatalf("Failed to successfully parse config file json contents: %v", err)
 		}
+	}
+
+	stamper, err := compat.NewStamper(stampInfoFile)
+	if err != nil {
+		log.Fatalf("Failed to initialize the stamper: %v", err)
 	}
 
 	opts := compat.OverrideConfigOpts{
@@ -98,17 +95,17 @@ func main() {
 		NullEntryPoint:     *nullEntryPoint,
 		NullCmd:            *nullCmd,
 		OperatingSystem:    *operatingSystem,
-		CreatedBy:          defaultCreatedBy,
-		Author:             defaultAuthor,
-		LabelsArray:        labelsArray[:],
-		Ports:              ports[:],
-		Volumes:            volumes[:],
-		EntrypointPrefix:   entrypointPrefix[:],
-		Env:                env[:],
-		Command:            command[:],
-		Entrypoint:         entrypoint[:],
-		Layer:              layerDigestFile[:],
-		StampInfoFile:      stampInfoFile[:],
+		CreatedBy:          "bazel build ...",
+		Author:             "Bazel",
+		LabelsArray:        labelsArray,
+		Ports:              ports,
+		Volumes:            volumes,
+		EntrypointPrefix:   entrypointPrefix,
+		Env:                env,
+		Command:            command,
+		Entrypoint:         entrypoint,
+		Layer:              layerDigestFile,
+		Stamper:            stamper,
 	}
 
 	// write out the updated config after overriding config content.
@@ -116,16 +113,13 @@ func main() {
 		log.Fatalf("Failed to override values in old image config and write to dst %s: %v", err, *outputConfig)
 	}
 
-	var manifestBlob []byte
-	var err error
+	manifestBlob := []byte("{}")
 	if *baseManifest != "" {
+		var err error
 		manifestBlob, err = ioutil.ReadFile(*baseManifest)
 		if err != nil {
 			log.Fatalf("Failed to read manifest file from %s: %v", *baseManifest, err)
 		}
-	} else {
-		// generating an empty manifest.
-		manifestBlob = []byte("{}")
 	}
 	if err := ioutil.WriteFile(*outputManifest, manifestBlob, os.ModePerm); err != nil {
 		log.Fatalf("Writing manifest to %s was unsuccessful: %v", *outputManifest, err)
