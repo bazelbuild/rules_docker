@@ -39,5 +39,8 @@ go_test(
     name = "go_default_test",
     srcs = ["config_test.go"],
     embed = [":go_default_library"],
-    deps = ["@com_github_kylelemons_godebug//pretty:go_default_library"],
+    deps = [
+        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
+        "@com_github_kylelemons_godebug//pretty:go_default_library",
+    ],
 )

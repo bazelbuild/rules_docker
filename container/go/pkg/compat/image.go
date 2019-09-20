@@ -235,6 +235,11 @@ func (li *legacyImage) RawManifest() ([]byte, error) {
 	return li.rawManifest, nil
 }
 
+// Size returns the size of the raw manifest.
+func (li *legacyImage) Size() (int64, error) {
+	return int64(len(li.rawManifest)), nil
+}
+
 // RawConfigFile returns the serialized bytes of config.json metadata.
 func (li *legacyImage) RawConfigFile() ([]byte, error) {
 	return li.rawConfig, nil
