@@ -132,7 +132,8 @@ def _add_go_args(
         # default to '{BUILD_TIMESTAMP}'.
         args.add("-creationTime", "{BUILD_TIMESTAMP}")
 
-    args.add_all(labels.items(), map_each = _format_go_label)
+    for key, value in labels.items():
+        args.add("-labels", "{}={}".format(key, value))
 
     for key, value in env.items():
         args.add("-env", "%s" % "=".join([
@@ -172,9 +173,6 @@ def _add_go_args(
     if ctx.attr.launcher:
         args.add("-entrypointPrefix", ctx.file.launcher.basename, format = "/%s")
         args.add_all(ctx.attr.launcher_args)
-
-def _format_go_label(t):
-    return ("-labels %s=%s" % (t[0], t[1]))
 
 def _format_legacy_label(t):
     return ("--labels=%s=%s" % (t[0], t[1]))

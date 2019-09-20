@@ -71,19 +71,19 @@ class ImageTest(unittest.TestCase):
 
   def test_files_base(self):
     with TestImage('files_base') as img:
-      self.assertDigest(img, '4fec1457d392ae22256731a2751488e493ce728519cdaf1a9fcbaba5a19b6fa7')
+      self.assertDigest(img, '1d62b59d5148de83529891d20bbaab459d6d2d907f9e9fe601f12033adfc8eb2')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
 
   def test_files_with_file_base(self):
     with TestImage('files_with_files_base') as img:
-      self.assertDigest(img, 'f964089bd474ab3897e90da5f8bb12dc6e1d24aed32113e7e4e352f6848c49e5')
+      self.assertDigest(img, '663959daa657db3c5514ccca71ad19ef58dacea1c6c4c0c4e22350afa812bcaf')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './bar'])
 
   def test_files_in_layer_with_file_base(self):
     with TestImage('files_in_layer_with_files_base') as img:
-      self.assertDigest(img, '6c0d012020fb67d410d1eb48c10878d399b23611604810ba3b0c78714260cff3')
+      self.assertDigest(img, '7847e90b5b59366125eaf7d5924d8753552c2d546d72d61a6686e552bcf2c896')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertLayerNContains(img, 2, ['.', './foo'])
       self.assertLayerNContains(img, 1, ['.', './baz'])
@@ -91,7 +91,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tar_base(self):
     with TestImage('tar_base') as img:
-      self.assertDigest(img, '5085c51e31a398a6df6c733b6ff44a3af370894dafadf3378326ea2ceb16639c')
+      self.assertDigest(img, '882f98422db36b0f1ff5535c8b085c541634a12c104676a0815f3bd68075bca4')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './usr', './usr/bin', './usr/bin/unremarkabledeath'])
@@ -100,7 +100,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tar_with_tar_base(self):
     with TestImage('tar_with_tar_base') as img:
-      self.assertDigest(img, '63039733657557b1c8dea2dc334cd562f80fe0508ab7125f495a39bedb90ad5e')
+      self.assertDigest(img, '1c9876ed89f199015b8781f576c565ac9fbb7a180aac509891a5ba67ea6b30be')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './asdf', './usr', './usr/bin',
@@ -108,7 +108,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tars_in_layer_with_tar_base(self):
     with TestImage('tars_in_layer_with_tar_base') as img:
-      self.assertDigest(img, '6a599c18b98222a914559491a54e44d728eb64ba2e0ad99c3910ce1d3ace330b')
+      self.assertDigest(img, 'd8c029b5b3c735ed3c4a1418e25422a467976fe81908dd116765ec4fdfb8e6d7')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './asdf', './usr', './usr/bin',
@@ -119,7 +119,7 @@ class ImageTest(unittest.TestCase):
 
   def test_directory_with_tar_base(self):
     with TestImage('directory_with_tar_base') as img:
-      self.assertDigest(img, '3da71fa3fc0d44814daddc198111fae0c18509a29667dc52685679069424e804')
+      self.assertDigest(img, '201cf477701537f8dfe9c36c21ed4ef42221bc31359623d8101ab8515f918a1f')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         '.', './foo', './foo/asdf', './foo/usr',
@@ -127,13 +127,13 @@ class ImageTest(unittest.TestCase):
 
   def test_files_with_tar_base(self):
     with TestImage('files_with_tar_base') as img:
-      self.assertDigest(img, 'e0f3aa9744d53fda7979a70952dc7484efed02eea331795d475d367b1907c293')
+      self.assertDigest(img, 'c124a38342aca13578834a3e5ac0ff3a8105b09f91ac230e23eb568edc5bb59b')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './bar'])
 
   def test_workdir_with_tar_base(self):
     with TestImage('workdir_with_tar_base') as img:
-      self.assertDigest(img, '12faa452b7db64f4f2e0bc525dce6a2801aca6f0b6d9f99e6555c34a8c2d6140')
+      self.assertDigest(img, 'f36dee90974e6669c00694efc21ee05ac930f9f90c95a94d5e87137f10cd909b')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [])
       # Check that the working directory property has been properly configured.
@@ -141,7 +141,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tar_with_files_base(self):
     with TestImage('tar_with_files_base') as img:
-      self.assertDigest(img, 'cfa1216283bb50c248130d701000b1827ee2a3710fdb2c1021547c32697529aa')
+      self.assertDigest(img, '727dd95ad27c05331c3b4df6e28604815e0870165dce9f66f25c5c4c6b94319c')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './asdf', './usr', './usr/bin',
@@ -149,13 +149,13 @@ class ImageTest(unittest.TestCase):
 
   def test_docker_tarball_base(self):
     with TestImage('docker_tarball_base') as img:
-      self.assertDigest(img, '7147dfb29ecbc50f4e7fda74914ba506f0bb953aa08aff4f35dd6c48e879c614')
+      self.assertDigest(img, '497da624de028b9e7b8c40de2ab89b2ad52a9cc266d804bbdfb108532aa1bca8')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
 
   def test_layers_with_docker_tarball_base(self):
     with TestImage('layers_with_docker_tarball_base') as img:
-      self.assertDigest(img, 'e191a8e4486200fda4ab0a3e8acd5063373b362602228ec40f5ba68c8f3757a3')
+      self.assertDigest(img, 'ebcce6c0dd4a62f7cbade41e3a20372230c8f66d4609e132ae0bb7c739ffbb8a')
       self.assertEqual(5, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
       self.assertLayerNContains(img, 1, ['.', './three', './three/three'])
@@ -163,20 +163,20 @@ class ImageTest(unittest.TestCase):
 
   def test_base_with_entrypoint(self):
     with TestImage('base_with_entrypoint') as img:
-      self.assertDigest(img, '2254811e65407388ac7fc63e0e070923e08da45fe1257daeaab44cf35b371388')
+      self.assertDigest(img, 'f9c36390f068fe22bc26fe4348c1ec654e686de767b30df63719b5ed84c1df19')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Entrypoint', ['/bar'])
       self.assertConfigEqual(img, 'ExposedPorts', {'8080/tcp': {}})
 
   def test_dashdash_entrypoint(self):
     with TestImage('dashdash_entrypoint') as img:
-      self.assertDigest(img, '3e297ecc20f1da36c71cf857cad46b0b3ade7acd76fc55358211c3f61b647825')
+      self.assertDigest(img, '4a8a8ce2d77129d22b8386daf6f62be9e86cd8908542aee18120bc8ff2abb626')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Entrypoint', ['/bar', '--'])
 
   def test_derivative_with_cmd(self):
     with TestImage('derivative_with_cmd') as img:
-      self.assertDigest(img, 'bfcd7c33e5cedf329ae9d6c6fe92b582654d29ac0fa9bd89d0cd239982fef237')
+      self.assertDigest(img, '28fdfb929a22d7660f67cdf9e3a17eb9bb5325ac99335acc5c4c9d27d62727e4')
       self.assertEqual(3, len(img.fs_layers()))
 
       self.assertConfigEqual(img, 'Entrypoint', ['/bar'])
@@ -186,7 +186,7 @@ class ImageTest(unittest.TestCase):
 
   def test_derivative_with_volume(self):
     with TestImage('derivative_with_volume') as img:
-      self.assertDigest(img, '6b47b2b13686b00dc61ae13c45dd191bab86af9d22c3dbca1719ec1349aa0386')
+      self.assertDigest(img, '9929dab88d5a8d51678d33d1b186c9abf08fbd307fd68ea1644f99e324ca35ea')
       self.assertEqual(2, len(img.fs_layers()))
 
       # Check that the topmost layer has the volumes exposed by the bottom
@@ -197,21 +197,21 @@ class ImageTest(unittest.TestCase):
 
   def test_with_unix_epoch_creation_time(self):
     with TestImage('with_unix_epoch_creation_time') as img:
-      self.assertDigest(img, 'e96a2c4e8708036e27ca664b860fe55afcc2201d970f55396686c59da127332b')
+      self.assertDigest(img, '692d305823a8736e33efbe463c8ef4946fb944efdc7d1dc3621fd8fade3ff56e')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
       self.assertEqual('2009-02-13T23:31:30.119999885Z', cfg.get('created', ''))
 
   def test_with_millisecond_unix_epoch_creation_time(self):
     with TestImage('with_millisecond_unix_epoch_creation_time') as img:
-      self.assertDigest(img, '92c0693ea78743e87184e1f59190b19f65d3dfec871c47958f6f6e182ace4924')
+      self.assertDigest(img, 'e3633f83aede25b03697cd0736c3cf80a0a28daf57b196543dd06cf6a5ab98b4')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
       self.assertEqual('2009-02-13T23:31:30.12345004Z', cfg.get('created', ''))
 
   def test_with_rfc_3339_creation_time(self):
     with TestImage('with_rfc_3339_creation_time') as img:
-      self.assertDigest(img, '00b41239d8927b23c61b5e071d622ff08fc6e3494be030cb80ed6cdef639feee')
+      self.assertDigest(img, '6205c92a6477b7d6986f4dff267500ec84086258889545b4f25607af04f56f0b')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
       self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
@@ -261,13 +261,13 @@ class ImageTest(unittest.TestCase):
   def test_with_env(self):
     with TestBundleImage(
         'with_env', 'bazel/%s:with_env' % TEST_DATA_TARGET_BASE) as img:
-      self.assertDigest(img, 'dee53e65c09c5de80b1683e5853bb0978785e4cdd17e9ba2e731e3c7fe13b62b')
+      self.assertDigest(img, 'd79563f1ece830aba31e50a038dbc5488a925266d26295bffe3c4331ee54da1c')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Env', ['bar=blah blah blah', 'foo=/asdf'])
 
   def test_layers_with_env(self):
     with TestImage('layers_with_env') as img:
-      self.assertDigest(img, '4eac1194bc795eeca8af317b4e39ea39d77e3c63af285e011c6e4ca3d163eae2')
+      self.assertDigest(img, '7d9695fede51782d36b08ea90d27f0aca8eb25a6cb723e60aa5bcd940936e718')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Env', [u'PATH=$PATH:/tmp/a:/tmp/b:/tmp/c', u'a=b', u'x=y'])
 
@@ -276,13 +276,13 @@ class ImageTest(unittest.TestCase):
     # to prefix their image names.
     name = 'gcr.io/dummy/%s:dummy_repository' % TEST_DATA_TARGET_BASE
     with TestBundleImage('dummy_repository', name) as img:
-      self.assertDigest(img, '263c21a78525a72767e07918115c78778e1880bd287c588135f3e73c22eb6fec')
+      self.assertDigest(img, 'a3eebb4b8da904a659f76e8e411add48641abb611e63820f4d0726bf3b8570b6')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
 
   def test_with_double_env(self):
     with TestImage('with_double_env') as img:
-      self.assertDigest(img, '909c654164cc0aee13d90bf45b8ea018c83c31d63e2f2281ec44293fcc37a3f1')
+      self.assertDigest(img, '1221ba0aacbf4c3ee5831354bbbe7ec9dd9a0029fa562909bd8fa2db2c40dbd6')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Env', [
         'bar=blah blah blah',
@@ -291,7 +291,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_label(self):
     with TestImage('with_label') as img:
-      self.assertDigest(img, 'b0b8cd5f747bb300639fc1da1c3cf91efc35e21b3beb7719d94a415689e5b16a')
+      self.assertDigest(img, 'ff712f14eaa870941a4f5bf6744e394db902cf03e4df5cd443f107b95cc4ba26')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Labels', {
         'com.example.bar': '{"name": "blah"}',
@@ -301,7 +301,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_double_label(self):
     with TestImage('with_double_label') as img:
-      self.assertDigest(img, 'e76e73489265fc49f14f00488a468f7757da03a6b7ab150281bb028df873d824')
+      self.assertDigest(img, '653ab1fec0084a9b4827a128fe35e6dbcf0953ef99748b47619131751fe25ebc')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Labels', {
         'com.example.bar': '{"name": "blah"}',
@@ -312,7 +312,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_user(self):
     with TestImage('with_user') as img:
-      self.assertDigest(img, 'c26736d5b9bb34f7b909505891c4c8c57ab7c2fea672ede181a34d56c4f72382')
+      self.assertDigest(img, '0d94630809cbfcb9c6478e14f83a0bd5cceb8c8d9cabc3b4b180ac55c7b7da2c')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertConfigEqual(img, 'User', 'nobody')
 
@@ -322,11 +322,11 @@ class ImageTest(unittest.TestCase):
     # the file will be inserted relatively to the testdata package
     # (so `./test/test`).
     with TestImage('no_data_path_image') as img:
-      self.assertDigest(img, 'b503bec6abb42484126bbe48e6e4d812d3226d3cdcc4ab9f058cf7eda2678a5d')
+      self.assertDigest(img, '0dc6634f90911dfa6ff368135ea2d13ae4136a16cfc6c2d00f62d1fe949ea333')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './test'])
     with TestImage('data_path_image') as img:
-      self.assertDigest(img, '7f1e0cfcdf487fe110b8c3856937e76266b4117bf1818b9bffda53cbeccf5db6')
+      self.assertDigest(img, '21dfb114bca23f4615b93c64ee5ac2e3187870e446cb0225dcb357302e33e1b2')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './test', './test/test'])
 
@@ -336,14 +336,14 @@ class ImageTest(unittest.TestCase):
     # "/tools/build_defs", we should have `docker` as the top-level
     # directory.
     with TestImage('absolute_data_path_image') as img:
-      self.assertDigest(img, 'd9a9dc07993b14f3e1831468681452dae408e7ef64c0da3c1c062737a7af7be9')
+      self.assertDigest(img, '54769a89c86321d6daf162ce0dedf2c9b457c1c773e9bcc27bb6b221c16550e5')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         '.', './testdata', './testdata/test', './testdata/test/test'])
       # With data_path = "/", we expect the entire path from the repository
       # root.
     with TestImage('root_data_path_image') as img:
-      self.assertDigest(img, 'd9a9dc07993b14f3e1831468681452dae408e7ef64c0da3c1c062737a7af7be9')
+      self.assertDigest(img, '54769a89c86321d6daf162ce0dedf2c9b457c1c773e9bcc27bb6b221c16550e5')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         '.', './testdata', './testdata/test', './testdata/test/test'])
@@ -374,17 +374,17 @@ class ImageTest(unittest.TestCase):
     with TestBundleImage('stamped_bundle_test', "example.com/aaaaa{BUILD_USER}:stamped".format(
         BUILD_USER=STAMP_DICT['BUILD_USER']
     )) as img:
-        self.assertDigest(img, 'c26736d5b9bb34f7b909505891c4c8c57ab7c2fea672ede181a34d56c4f72382')
-    with TestBundleImage('bundle_test', 'index.docker.io/library/ubuntu:latest') as img:
-      self.assertDigest(img, '2254811e65407388ac7fc63e0e070923e08da45fe1257daeaab44cf35b371388')
+        self.assertDigest(img, '0d94630809cbfcb9c6478e14f83a0bd5cceb8c8d9cabc3b4b180ac55c7b7da2c')
+    with TestBundleImage('bundle_test', 'docker.io/ubuntu:latest') as img:
+      self.assertDigest(img, 'f9c36390f068fe22bc26fe4348c1ec654e686de767b30df63719b5ed84c1df19')
       self.assertEqual(1, len(img.fs_layers()))
     with TestBundleImage(
         'bundle_test', 'us.gcr.io/google-appengine/base:fresh') as img:
-      self.assertDigest(img, 'f36023b46dd68219d987e3ea08c8d33348030c53181563d5f167ddc658591790')
+      self.assertDigest(img, 'fa1d816340ea2b89fe174edc13f5b4e5f26f069aa392ec782fff30568cc092cb')
       self.assertEqual(2, len(img.fs_layers()))
     with TestBundleImage(
         'bundle_test', 'gcr.io/google-containers/pause:2.0') as img:
-      self.assertDigest(img, '909c654164cc0aee13d90bf45b8ea018c83c31d63e2f2281ec44293fcc37a3f1')
+      self.assertDigest(img, '1221ba0aacbf4c3ee5831354bbbe7ec9dd9a0029fa562909bd8fa2db2c40dbd6')
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_with_stamped_label(self):
@@ -394,26 +394,26 @@ class ImageTest(unittest.TestCase):
 
   def test_pause_based(self):
     with TestImage('pause_based') as img:
-      self.assertDigest(img, '237c4891b3967fb542902f1ef68a7e22fb172fc79b4968fa946e2c966af4f8da')
+      self.assertDigest(img, '3ade3b396cd3a2517ad202e4f840b5bbb8c69558622059be48ff02a9ec1b4f1e')
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_pause_piecemeal(self):
     with TestImage('pause_piecemeal/image') as img:
-      self.assertDigest(img, 'e0dc994f5572c640b3518f95627310b3c50b23caccd75a6ba54fa14c54b65a78')
+      self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
       self.assertEqual(2, len(img.fs_layers()))
 
   def test_pause_piecemeal_gz(self):
     with TestImage('pause_piecemeal_gz/image') as img:
-      self.assertDigest(img, 'e0dc994f5572c640b3518f95627310b3c50b23caccd75a6ba54fa14c54b65a78')
+      self.assertDigest(img, 'ca362da80137d6e22de45cac9705271c694e63d87d4f98f1485288e83bda7334')
 
   def test_build_with_tag(self):
     with TestBundleImage('build_with_tag', 'gcr.io/build/with:tag') as img:
-      self.assertDigest(img, 'c759e4c48d4cc96cdadd94ff3531236ae46ccaf52d405da34eb48c0008c15f8c')
+      self.assertDigest(img, '78dd776b7c25bc6f79ec898a875aaa070c5b54be746b3f30bf9af1f7830b4b67')
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_with_passwd(self):
     with TestImage('with_passwd') as img:
-      self.assertDigest(img, 'bd6437cae7fcf0e4808a07eb152882016a9270be8bb3f10a1eca10b79871f614')
+      self.assertDigest(img, 'd4c2d7ed264877c09fd9b6b040486a710aad0b7e5586ccc9efab5fb5d0772c48')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
 
@@ -427,7 +427,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_passwd_tar(self):
     with TestImage('with_passwd_tar') as img:
-      self.assertDigest(img, '66d16db1c8f48c5248b7e9d07cd8b1079112914db1a810db1cfaf6b99d91a90a')
+      self.assertDigest(img, '6732c72d50b1a0ec521588cf26f5ceb84ae4fd9b31558409293449d9d37fad6d')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
 
@@ -444,7 +444,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_group(self):
     with TestImage('with_group') as img:
-      self.assertDigest(img, 'ca3c702c26b4f6ba8fe6ed66dcf3f636ea8b6722c549f59af3d24cc383fda854')
+      self.assertDigest(img, '262961fb06c25bdd658ed34454f944c8baaa8f40f54b2bea3b4e3ffff3a16449')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/group'])
 
@@ -455,7 +455,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_empty_files(self):
     with TestImage('with_empty_files') as img:
-      self.assertDigest(img, '106f67a7f34217493cba0096b52298169447a5e84508e9fcc8047be6cbc17ef5')
+      self.assertDigest(img, '0c7ddfa4c797219b23ac377a07a16ecac28881151483b02040c16f0569c11cdc')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './file1', './file2'])
 
@@ -468,7 +468,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_empty_dirs(self):
     with TestImage('with_empty_dirs') as img:
-      self.assertDigest(img, '0f1783465bf13737f21c3230155da73a461ca445b2d4f7679d0e5bd868f4fed2')
+      self.assertDigest(img, '4b131d8dcc456c6e9b87162f7167251ea8cc45cced3db91b038693b781de987d')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './foo', './bar'])
 

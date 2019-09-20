@@ -81,7 +81,7 @@ compare_ids_test(
 
 compare_ids_test(
     name = "test_id_compare_ids_test",
-    id = "sha256:d86477c0011ee23ba00c9d2ffce09d15a0a9282e9af1f54309ecbb7b2c6736cc",
+    id = "d86477c0011ee23ba00c9d2ffce09d15a0a9282e9af1f54309ecbb7b2c6736cc",
     images = ["@distroless_fixed_id//image"],
 )
 
