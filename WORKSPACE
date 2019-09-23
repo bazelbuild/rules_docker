@@ -280,9 +280,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "9623666b8cc4dcc6ce62cd7f0aea02293d15bc80c2227e33baa78768a59d4651",
-    strip_prefix = "rules_scala-f4a24fe2f76e1b1f2b24757f7740a2699692951f",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/f4a24fe2f76e1b1f2b24757f7740a2699692951f.tar.gz"],
+    sha256 = "e08cb802b420ba26dc1cd759e17debd5c6ccdc72328c5e05764fe54d8f0750a9",
+    strip_prefix = "rules_scala-177e2eeb665899a0f116d20876c8c77b4ef27b98",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/177e2eeb665899a0f116d20876c8c77b4ef27b98.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
