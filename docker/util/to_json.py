@@ -17,4 +17,4 @@
 import json
 import sys
 
-print json.dumps(sys.stdin.read().strip().split())
+print(json.dumps(sys.stdin.read().strip().split()))
