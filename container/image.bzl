@@ -354,7 +354,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     img_args, inputs = _gen_img_args(ctx, image)
     args = ctx.actions.args()
     args.add_all(img_args)
-    args.add("--dst=%s", output_digest)
+    args.add("--dst", output_digest)
     args.add("--format=Docker")
 
     ctx.actions.run(
