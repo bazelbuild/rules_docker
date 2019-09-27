@@ -351,7 +351,9 @@ def _repository_name(ctx):
     return _join_path(ctx.attr.repository, ctx.label.package)
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
-    args, inputs = _gen_img_args(ctx, image)
+    img_args, inputs = _gen_img_args(ctx, image)
+    args = ctx.actions.args()
+    args.add_all(img_args)
     args.add("--dst=%s", output_digest)
     args.add("--format=Docker")
 
@@ -360,7 +362,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
         inputs = inputs,
         tools = ([image["legacy"]] if image.get("legacy") else []),
         executable = ctx.executable._digester,
-        arguments = args,
+        arguments = [args],
         mnemonic = "ImageDigest",
         progress_message = "Extracting image digest of %s" % image_tarball.short_path,
     )
