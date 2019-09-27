@@ -352,8 +352,8 @@ def _repository_name(ctx):
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     args, inputs = _gen_img_args(ctx, image)
-    args.append("--dst=%s" % output_digest.path)
-    args.append("--format=Docker")
+    args.add("--dst=%s", output_digest)
+    args.add("--format=Docker")
 
     ctx.actions.run(
         outputs = [output_digest],

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An new implementation of container_push based on google/go-containerregistry.
+"""An implementation of container_push based on google/go-containerregistry.
 This wraps the rules_docker.container.go.cmd.pusher.pusher executable in a
 Bazel rule for publishing images.
 """
@@ -143,7 +143,7 @@ container_push = rule(
             doc = "The form to push: Docker or OCI, default to 'Docker'.",
         ),
         "image": attr.label(
-            allow_files = True,
+            allow_single_file = [".tar"],
             mandatory = True,
             doc = "The label of the image to push.",
         ),
