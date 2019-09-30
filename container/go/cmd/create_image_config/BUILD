@@ -13,7 +13,7 @@
 # limitations under the License.
 # ###
 # Build file for new create image config binary for creating and writing
-# new config and manifest json files using the go-containerregistry as backend.
+# new config and manifest json files using the go-containerregistry as backend
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 

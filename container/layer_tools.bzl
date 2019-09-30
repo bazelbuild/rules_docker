@@ -185,7 +185,7 @@ def _add_join_layers_go_args(args, inputs, images):
         inputs += image["blobsum"]
 
         if image.get("legacy"):
-            args.add(image["legacy"].path, "--tarball=%s")
+            args.add("--tarball", image["legacy"])
             inputs += [image["legacy"]]
 
 def assemble(
@@ -333,7 +333,7 @@ tools = {
         allow_single_file = True,
     ),
     "use_legacy_join_layers": attr.bool(
-        default = True,
+        default = False,
         doc = "Use the legacy python join_layers.py to build the image tarball." +
               "Uses the experimental Go implementation when set to false.",
     ),
