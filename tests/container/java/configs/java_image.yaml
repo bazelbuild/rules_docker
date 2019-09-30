@@ -8,7 +8,6 @@ metadataTest:
         '/usr/bin/java',
         '-cp',
         '/app/io_bazel_rules_docker/tests/container/java/libjava_image_library.jar:/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:/app/io_bazel_rules_docker/tests/container/java/java_image.binary.jar:/app/io_bazel_rules_docker/tests/container/java/java_image.binary:/app/io_bazel_rules_docker/tests/container/java/BUILD',
-        '-XX:MaxPermSize=128M',
         '-Dbuild.location=tests/container/java/BUILD',
         'examples.images.Binary',
         'arg0',

@@ -836,7 +836,6 @@ java_image(
     ],
     data = [":BUILD"],
     jvm_flags = [
-        "-XX:MaxPermSize=128M",
         "-Dbuild.location=$(location :BUILD)",
     ],
     layers = [":java_image_library"],
