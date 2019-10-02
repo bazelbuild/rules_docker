@@ -161,9 +161,9 @@ platforms:
     - "-//tests/contrib/automatic_container_release:configs_test_deps_spec_only"
     test_flags:
     - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--extra_execution_platforms=//toolchains/python:container_rbe_platform"
+    - "--host_platform=//toolchains/python:container_rbe_platform"
+    - "--platforms=//toolchains/python:container_rbe_platform"
     - "--keep_going"
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"

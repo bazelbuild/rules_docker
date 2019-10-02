@@ -53,8 +53,8 @@ toolchain(
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
 
-# Default host platform that set the
-# ":run_in_container" constraint
+# Default host platform that has constraint_value set for the
+# "@io_bazel_rules_docker//toolchains/python:run_in_container" constraint
 platform(
     name = "container_host_platform",
     constraint_values = [
@@ -75,6 +75,14 @@ platform(
         "@platforms//os:linux",
         "@platforms//os:windows",
     ],
+)
+
+platform(
+    name = "container_rbe_platform",
+    constraint_values = [
+        "@io_bazel_rules_docker//toolchains/python:run_in_container",
+    ],
+    parents = ["@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"],
 )
 
 # Constraints used to describe docker compatible toolchains.
