@@ -43,7 +43,7 @@ def repositories():
 
     # Register the default py_toolchain / platform for containerized execution
     native.register_toolchains("@io_bazel_rules_docker//toolchains/python:container_py_toolchain")
-    native.register_execution_platforms("@io_bazel_rules_docker//toolchains/python:container_host_platform")
+    native.register_execution_platforms("@io_bazel_rules_docker//toolchains/python:local_container_platform")
 
     excludes = native.existing_rules().keys()
     if "py_image_base" not in excludes:

@@ -14,6 +14,8 @@
 
 load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
 
+load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -56,7 +58,7 @@ toolchain(
 # Default host platform that has constraint_value set for the
 # "@io_bazel_rules_docker//toolchains/python:run_in_container" constraint
 platform(
-    name = "container_host_platform",
+    name = "local_container_platform",
     constraint_values = [
         "@io_bazel_rules_docker//toolchains/python:run_in_container",
     ],
@@ -78,11 +80,18 @@ platform(
 )
 
 platform(
-    name = "container_rbe_platform",
+    name = "rbe_container_platform",
     constraint_values = [
         "@io_bazel_rules_docker//toolchains/python:run_in_container",
     ],
-    parents = ["@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"],
+    parents = ["@buildkite_config//config:platform"],
+    exec_properties = DOCKER_SIBLINGS_CONTAINERS,
+)
+
+platform(
+    name = "rbe_platform",
+    parents = ["@buildkite_config//config:platform"],
+    exec_properties = DOCKER_SIBLINGS_CONTAINERS,
 )
 
 # Constraints used to describe docker compatible toolchains.

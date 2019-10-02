@@ -403,15 +403,14 @@ dockerfile_image(
 # Register the default py_toolchain / platform for containerized execution
 register_toolchains("//toolchains/python:container_py_toolchain")
 
-register_execution_platforms("//toolchains/python:container_host_platform")
+register_execution_platforms("//toolchains/python:local_container_platform")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "1411f2648185b0e7d8c2bb88b25cc8f2c477cc4223133461652ddce2b3154ac4",
-    strip_prefix = "bazel-toolchains-0.29.3",
+    sha256 = "4cd2e510c8153a6a8e4bba85d27e270cd402d05bed9cc9dad1490ec34d789d7c",
+    strip_prefix = "bazel-toolchains-cc6aa72358302e908d3358bc1408636edaac2f51",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.3.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.3.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/cc6aa72358302e908d3358bc1408636edaac2f51.tar.gz",
     ],
 )
 
@@ -422,3 +421,11 @@ rbe_autoconfig(
 )
 
 # gazelle:repo bazel_gazelle
+
+# Define several exec property repo rules to be used in testing.
+load("@bazel_toolchains//rules/experimental/rbe:exec_properties.bzl", "rbe_exec_properties")
+
+# A standard RBE execution property set repo rule.
+rbe_exec_properties(
+    name = "exec_properties",
+)
