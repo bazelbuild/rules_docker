@@ -91,9 +91,13 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
 
-    # TODO(ngiraldo): Add exec_compatible_with=["@io_bazel_rules_docker//toolchains/pythin:run_in_container"]
-    # once py_binary targets support it.
-    native.py_binary(name = binary_name, python_version = "PY2", deps = deps + layers, **kwargs)
+    native.py_binary(
+        name = binary_name,
+        python_version = "PY2",
+        deps = deps + layers,
+        exec_compatible_with = ["@io_bazel_rules_docker//toolchains/python:run_in_container"],
+        **kwargs
+    )
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.

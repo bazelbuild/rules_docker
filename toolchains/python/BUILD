@@ -46,9 +46,7 @@ py_runtime_pair(
 # registration of this one in @io_bazel_rules_docker//python:image.bzl
 toolchain(
     name = "container_py_toolchain",
-    # TODO(ngiraldo): Uncomment the line below once py_binary targets
-    # support using 'exec_compatible_with'
-    #target_compatible_with = [":run_in_container"],
+    target_compatible_with = [":run_in_container"],
     toolchain = ":default_container_py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
