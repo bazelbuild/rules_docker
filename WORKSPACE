@@ -403,6 +403,8 @@ dockerfile_image(
 # Register the default py_toolchain for containerized execution
 register_toolchains("//toolchains/python:container_py_toolchain")
 
+register_execution_platforms("//toolchains/python:container_host_platform")
+
 http_archive(
     name = "bazel_toolchains",
     sha256 = "1411f2648185b0e7d8c2bb88b25cc8f2c477cc4223133461652ddce2b3154ac4",

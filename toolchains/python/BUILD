@@ -46,9 +46,35 @@ py_runtime_pair(
 # registration of this one in @io_bazel_rules_docker//python:image.bzl
 toolchain(
     name = "container_py_toolchain",
-    target_compatible_with = [":run_in_container"],
+    target_compatible_with = [
+        ":run_in_container",
+    ],
     toolchain = ":default_container_py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+)
+
+# Default host platform that set the
+# ":run_in_container" constraint
+platform(
+    name = "container_host_platform",
+    constraint_values = [
+        "@io_bazel_rules_docker//toolchains/python:run_in_container",
+    ],
+    cpu_constraints = [
+        "@platforms//cpu:x86_32",
+        "@platforms//cpu:x86_64",
+        "@platforms//cpu:ppc",
+        "@platforms//cpu:arm",
+        "@platforms//cpu:aarch64",
+        "@platforms//cpu:s390x",
+    ],
+    host_platform = True,
+    os_constraints = [
+        "@platforms//os:osx",
+        "@platforms//os:freebsd",
+        "@platforms//os:linux",
+        "@platforms//os:windows",
+    ],
 )
 
 # Constraints used to describe docker compatible toolchains.
