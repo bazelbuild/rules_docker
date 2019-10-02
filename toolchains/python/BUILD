@@ -46,8 +46,8 @@ py_runtime_pair(
 # registration of this one in @io_bazel_rules_docker//python:image.bzl
 toolchain(
     name = "container_py_toolchain",
-    target_compatible_with = [
-        ":run_in_container",
+    exec_compatible_with = [
+        "@io_bazel_rules_docker//toolchains/python:run_in_container",
     ],
     toolchain = ":default_container_py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",

@@ -400,7 +400,7 @@ dockerfile_image(
     "kaniko_debug",
 ]]
 
-# Register the default py_toolchain for containerized execution
+# Register the default py_toolchain / platform for containerized execution
 register_toolchains("//toolchains/python:container_py_toolchain")
 
 register_execution_platforms("//toolchains/python:container_host_platform")
