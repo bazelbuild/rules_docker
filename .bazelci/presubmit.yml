@@ -127,10 +127,10 @@ platforms:
     # Disabled e2e tests that pull from localhost in nested workspace
     - "-//testing/new_pusher_tests/..."
     build_flags:
-    - "--extra_toolchains=@bazel_toolchains//configs/ubuntu16_04_clang/latest:toolchain_docker"
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/latest:platform_docker"
+    - "--extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_cc_toolchain"
+    - "--extra_execution_platforms=//toolchains:rbe_platform,//toolchains:rbe_container_platform"
+    - "--host_platform=//toolchains:rbe_platform"
+    - "--platforms=//toolchains:rbe_platform"
     - "--keep_going"
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
@@ -160,10 +160,10 @@ platforms:
     - "-//tests/contrib/automatic_container_release:configs_test"
     - "-//tests/contrib/automatic_container_release:configs_test_deps_spec_only"
     test_flags:
-    - "--extra_toolchains=@buildkite_config//cc:toolchain"
-    - "--extra_execution_platforms=//toolchains/python:rbe_platform"
-    - "--host_platform=//toolchains/python:rbe_platform"
-    - "--platforms=//toolchains/python:rbe_platform"
+    - "--extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_cc_toolchain"
+    - "--extra_execution_platforms=//toolchains:rbe_platform,//toolchains:rbe_container_platform"
+    - "--host_platform=//toolchains:rbe_platform"
+    - "--platforms=//toolchains:rbe_platform"
     - "--keep_going"
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"

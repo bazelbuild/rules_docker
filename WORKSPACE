@@ -403,7 +403,7 @@ dockerfile_image(
 # Register the default py_toolchain / platform for containerized execution
 register_toolchains("//toolchains/python:container_py_toolchain")
 
-register_execution_platforms("//toolchains/python:local_container_platform")
+register_execution_platforms("//toolchains:local_container_platform")
 
 http_archive(
     name = "bazel_toolchains",
@@ -418,6 +418,11 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "buildkite_config",
+    base_container_digest = "sha256: 4bfd33aa9ce73e28718385b8c01608a79bc6546906f01cf9329311cace1766a1",
+    digest = "sha256:c20046852a2d7910c55d76e0ec9c182b37532a9f0360d22dd5c9a1451b7c3a15",
+    registry = "marketplace.gcr.io",
+    repository = "google/bazel",
+    use_legacy_platform_definition = False,
 )
 
 # gazelle:repo bazel_gazelle

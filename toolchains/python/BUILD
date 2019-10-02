@@ -14,8 +14,6 @@
 
 load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
 
-load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
-
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -49,56 +47,8 @@ py_runtime_pair(
 toolchain(
     name = "container_py_toolchain",
     exec_compatible_with = [
-        "@io_bazel_rules_docker//toolchains/python:run_in_container",
+        "@io_bazel_rules_docker//toolchains:run_in_container",
     ],
     toolchain = ":default_container_py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
-)
-
-# Default host platform that has constraint_value set for the
-# "@io_bazel_rules_docker//toolchains/python:run_in_container" constraint
-platform(
-    name = "local_container_platform",
-    constraint_values = [
-        "@io_bazel_rules_docker//toolchains/python:run_in_container",
-    ],
-    cpu_constraints = [
-        "@platforms//cpu:x86_32",
-        "@platforms//cpu:x86_64",
-        "@platforms//cpu:ppc",
-        "@platforms//cpu:arm",
-        "@platforms//cpu:aarch64",
-        "@platforms//cpu:s390x",
-    ],
-    host_platform = True,
-    os_constraints = [
-        "@platforms//os:osx",
-        "@platforms//os:freebsd",
-        "@platforms//os:linux",
-        "@platforms//os:windows",
-    ],
-)
-
-platform(
-    name = "rbe_container_platform",
-    constraint_values = [
-        "@io_bazel_rules_docker//toolchains/python:run_in_container",
-    ],
-    parents = ["@buildkite_config//config:platform"],
-    exec_properties = DOCKER_SIBLINGS_CONTAINERS,
-)
-
-platform(
-    name = "rbe_platform",
-    parents = ["@buildkite_config//config:platform"],
-    exec_properties = DOCKER_SIBLINGS_CONTAINERS,
-)
-
-# Constraints used to describe docker compatible toolchains.
-
-constraint_setting(name = "docker")
-
-constraint_value(
-    name = "run_in_container",
-    constraint_setting = ":docker",
 )
