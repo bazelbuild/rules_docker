@@ -38,21 +38,7 @@ platform(
     constraint_values = [
         "@io_bazel_rules_docker//platforms:run_in_container",
     ],
-    cpu_constraints = [
-        "@platforms//cpu:x86_32",
-        "@platforms//cpu:x86_64",
-        "@platforms//cpu:ppc",
-        "@platforms//cpu:arm",
-        "@platforms//cpu:aarch64",
-        "@platforms//cpu:s390x",
-    ],
-    host_platform = True,
-    os_constraints = [
-        "@platforms//os:osx",
-        "@platforms//os:freebsd",
-        "@platforms//os:linux",
-        "@platforms//os:windows",
-    ],
+    parents = ["@bazel_tools//platforms:host_platform"]
 )
 
 # Default RBE platform that has constraint_value set for the
