@@ -401,13 +401,13 @@ dockerfile_image(
 ]]
 
 # Register the default py_toolchain / platform for containerized execution
-register_toolchains("//toolchains/python:container_py_toolchain")
+register_toolchains("//toolchains:container_py_toolchain")
 
-register_execution_platforms("//toolchains:local_container_platform")
+register_execution_platforms("//platforms:local_container_platform")
 
 http_archive(
     name = "bazel_toolchains",
-    #sha256 = "4cd2e510c8153a6a8e4bba85d27e270cd402d05bed9cc9dad1490ec34d789d7c",
+    sha256 = "b0c426d36826554f34e433e96dbd9b271e7f5b248a750f080a12534dcb944f48",
     strip_prefix = "bazel-toolchains-0.29.8",
     urls = [
         "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.8.tar.gz",

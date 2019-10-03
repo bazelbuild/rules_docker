@@ -41,8 +41,8 @@ def repositories():
     _go_deps()
 
     # Register the default py_toolchain / platform for containerized execution
-    native.register_toolchains("@io_bazel_rules_docker//toolchains/python:container_py_toolchain")
-    native.register_execution_platforms("@io_bazel_rules_docker//toolchains:local_container_platform")
+    native.register_toolchains("@io_bazel_rules_docker//toolchains:container_py_toolchain")
+    native.register_execution_platforms("@io_bazel_rules_docker//platforms:local_container_platform")
 
     excludes = native.existing_rules().keys()
     if "py3_image_base" not in excludes:
@@ -90,7 +90,7 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         name = binary_name,
         python_version = "PY3",
         deps = deps + layers,
-        exec_compatible_with = ["@io_bazel_rules_docker//toolchains:run_in_container"],
+        exec_compatible_with = ["@io_bazel_rules_docker//platforms:run_in_container"],
         **kwargs
     )
 
