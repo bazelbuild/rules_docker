@@ -128,9 +128,9 @@ platforms:
     - "-//testing/new_pusher_tests/..."
     build_flags:
     - "--extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_container_cc_toolchain"
-    - "--extra_execution_platforms=//platforms:rbe_platform,//platforms:rbe_container_platform"
-    - "--host_platform=//platforms:rbe_platform"
-    - "--platforms=//platforms:rbe_platform"
+    - "--extra_execution_platforms=@buildkite_config//config:platform,//platforms:rbe_container_platform"
+    - "--host_platform=@buildkite_config//config:platform"
+    - "--platforms=@buildkite_config//config:platform"
     - "--keep_going"
     # For tests/container:set_env_make_vars
     - "--define=ENV_KEY=my_key"
@@ -161,9 +161,9 @@ platforms:
     - "-//tests/contrib/automatic_container_release:configs_test_deps_spec_only"
     test_flags:
     - "--extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_container_cc_toolchain"
-    - "--extra_execution_platforms=//platforms:rbe_platform,//platforms:rbe_container_platform"
-    - "--host_platform=//platforms:rbe_platform"
-    - "--platforms=//platforms:rbe_platform"
+    - "--extra_execution_platforms=@buildkite_config//config:platform,//platforms:rbe_container_platform"
+    - "--host_platform=@buildkite_config//config:platform"
+    - "--platforms=@buildkite_config//config:platform"
     - "--keep_going"
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"

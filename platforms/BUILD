@@ -56,10 +56,3 @@ platform(
     ],
     parents = ["@buildkite_config//config:platform"],
 )
-
-# Default RBE platform for all other targets (i.e., that dont need
-# custom toolchain(s)).
-platform(
-    name = "rbe_platform",
-    parents = ["@buildkite_config//config:platform"],
-)
