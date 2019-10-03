@@ -37,10 +37,6 @@ py_runtime_pair(
 )
 
 # A toolchain to run python outputs inside a container.
-# If you are using --incompatible_use_python_toolchains this toolchain must
-# be used to indicate the location of python tools inside the container as
-# the auto-detected toolchain relies on using "which", which is not present
-# in the default python containers.
 # If you are using a custom base for py_image which has python tools in a
 # different location, you must register that toolchain prior to the
 # registration of this one in @io_bazel_rules_docker//python:image.bzl
