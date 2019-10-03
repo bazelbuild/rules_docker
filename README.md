@@ -12,7 +12,6 @@ Travis CI | Bazel CI
 * [container_load](#container_load)
 * [container_pull](#container_pull-1) ([example](#container_pull))
 * [container_push](#container_push-1) ([example](#container_push))
-* [new_container_push](#new_container_push)
 
 These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
 these (mostly) legacy names still exist largely for backwards-compatibility.  We
@@ -1287,100 +1286,6 @@ update all of the dependencies, please run (from the root of the repository):
 Image references should not be updated individually because these images have
 shared layers and letting them diverge could result in sub-optimal push and pull
  performance.
-
-<a name="new_container_push"></a>
-## new_container_push
-
-```python
-new_container_push(name, image, registry, repository, tag)
-```
-
-An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
-
-**NOTE:** `new_container_push` supports authentication using custom docker client
-configuration. See [here](#container_push-custom-client-configuration) for details.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>image</code></td>
-      <td>
-        <p><code>Label; required</code></p>
-        <p>The label containing a Docker image to publish.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>registry</code></td>
-      <td>
-        <p><code>Registry Domain; required</code></p>
-        <p>The registry to which to publish the image.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>repository</code></td>
-      <td>
-        <p><code>Repository; required</code></p>
-        <p>The `repository` of images to which to push.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>format</code></td>
-      <td>
-        <p><code>Kind, required</code></p>
-        <p>The desired format of the published image. Currently, this supports
-	   <code>Docker</code> and <code>OCI</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tag</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>The `tag` of the Docker image to push to the specified `repository`.
-           This attribute defaults to `latest`.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tag_file</code></td>
-      <td>
-        <p><code>File; optional</code></p>
-        <p>The label of the file with tag value. Overrides `tag` if provided.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>stamp</code></td>
-      <td>
-        <p><code>Bool; optional</code></p>
-        <p>Deprecated: it is now automatically inferred.</p>
-        <p>If true, enable use of workspace status variables
-        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
-        and custom values set using <code>--workspace_status_command</code>)
-        in tags.</p>
-        <p>These fields are specified in the tag using Python format
-        syntax, e.g.
-        <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
 
 <a name="container_pull"></a>
 ## container_pull
