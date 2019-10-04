@@ -1257,13 +1257,6 @@ python tools installed in a different location to those defined in
 toolchain that points to these paths and register it _before_ the call to
 `py*_images/image.bzl:deps` in your `WORKSPACE`.
 
-Until Bazel 0.26.0 is relesed, registration of the default python toolchain
-will result in all python targets using that same toolchain, which might
-result in errors if any of those targets need to run locally.
-Once Bazel 0.26.0 is out, this default toolchain will only be compatible with
-python targets that run inside a container and will not interfere with
-other python targets.
-
 Use of python toolchain features, currently, only supports picking one
 version of python for execution of host tools. `rules_docker` heavily depends
 on execution of python host tools that are only compatible with python 2.

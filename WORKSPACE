@@ -194,8 +194,8 @@ container_pull(
 
 # This image is used by tests/contrib tests.
 container_pull(
-    name = "bazel_0271",
-    digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
+    name = "bazel_0291",
+    digest = "sha256:957c063f1296220c55d640ce82542b4c50d7a75b968fa3fd104e5cf293391ede",
     registry = "l.gcr.io",
     repository = "google/bazel",
 )
@@ -280,9 +280,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "e08cb802b420ba26dc1cd759e17debd5c6ccdc72328c5e05764fe54d8f0750a9",
-    strip_prefix = "rules_scala-177e2eeb665899a0f116d20876c8c77b4ef27b98",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/177e2eeb665899a0f116d20876c8c77b4ef27b98.tar.gz"],
+    sha256 = "127377e5b318aaa7563daca15b4f89c3cc11bb758970c71272d7df65083cca91",
+    strip_prefix = "rules_scala-63cb47fd84f847f2ec2a117109181113bfa73099",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/63cb47fd84f847f2ec2a117109181113bfa73099.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -400,23 +400,39 @@ dockerfile_image(
     "kaniko_debug",
 ]]
 
-# Register the default py_toolchain for containerized execution
-register_toolchains("//toolchains/python:container_py_toolchain")
+# Register the default py_toolchain / platform for containerized execution
+register_toolchains("//toolchains:container_py_toolchain")
+
+register_execution_platforms("//platforms:local_container_platform")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "1411f2648185b0e7d8c2bb88b25cc8f2c477cc4223133461652ddce2b3154ac4",
-    strip_prefix = "bazel-toolchains-0.29.3",
+    sha256 = "b0c426d36826554f34e433e96dbd9b271e7f5b248a750f080a12534dcb944f48",
+    strip_prefix = "bazel-toolchains-0.29.8",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.3.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.3.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.8.tar.gz",
     ],
 )
 
+# Define several exec property repo rules to be used in testing.
+load("@bazel_toolchains//rules/experimental/rbe:exec_properties.bzl", "merge_dicts", "rbe_exec_properties")
+
+# A standard RBE execution property set repo rule.
+rbe_exec_properties(
+    name = "exec_properties",
+)
+
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
 
 rbe_autoconfig(
     name = "buildkite_config",
+    base_container_digest = "sha256:4bfd33aa9ce73e28718385b8c01608a79bc6546906f01cf9329311cace1766a1",
+    digest = "sha256:c20046852a2d7910c55d76e0ec9c182b37532a9f0360d22dd5c9a1451b7c3a15",
+    exec_properties = merge_dicts(DOCKER_SIBLINGS_CONTAINERS, NETWORK_ON),
+    registry = "marketplace.gcr.io",
+    repository = "google/bazel",
+    use_legacy_platform_definition = False,
 )
 
 # gazelle:repo bazel_gazelle
