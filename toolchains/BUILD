@@ -37,27 +37,33 @@ py_runtime_pair(
 )
 
 # A toolchain to run python outputs inside a container.
-# If you are using --incompatible_use_python_toolchains this toolchain must
-# be used to indicate the location of python tools inside the container as
-# the auto-detected toolchain relies on using "which", which is not present
-# in the default python containers.
 # If you are using a custom base for py_image which has python tools in a
 # different location, you must register that toolchain prior to the
 # registration of this one in @io_bazel_rules_docker//python:image.bzl
 toolchain(
     name = "container_py_toolchain",
-    # TODO(ngiraldo): Uncomment the line below once py_binary targets
-    # support using 'exec_compatible_with'
-    #target_compatible_with = [":run_in_container"],
+    exec_compatible_with = [
+        "@io_bazel_rules_docker//platforms:run_in_container",
+    ],
     toolchain = ":default_container_py_runtime_pair",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
 
-# Constraints used to describe docker compatible toolchains.
-
-constraint_setting(name = "docker")
-
-constraint_value(
-    name = "run_in_container",
-    constraint_setting = ":docker",
+# Toolchain required for xx_image targets that rely on xx_binary
+# which transitively require a C/C++ toolchain (currently only
+# py_binary). This is only needed for remote execution.
+toolchain(
+    name = "rbe_container_cc_toolchain",
+    exec_compatible_with = [
+        "@io_bazel_rules_docker//platforms:run_in_container",
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//platforms:linux",
+        "@bazel_tools//tools/cpp:clang",
+    ],
+    target_compatible_with = [
+        "@bazel_tools//platforms:linux",
+        "@bazel_tools//platforms:x86_64",
+    ],
+    toolchain = "@buildkite_config//cc:cc-compiler-k8",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
