@@ -90,25 +90,6 @@ def repositories():
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-darwin-amd64")],
         )
 
-    # Legacy Python binaries.
-    if "puller" not in excludes:
-        http_file(
-            name = "puller",
-            executable = True,
-            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
-            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
-        )
-
-    if "importer" not in excludes:
-        http_file(
-            name = "importer",
-            executable = True,
-            sha256 = "4516a7bf62b052693001fd2b649080c4bb5228dcf698f31e77481fcb37b82ab4",
-            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-                     CONTAINERREGISTRY_RELEASE + "/importer.par")],
-        )
-
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
