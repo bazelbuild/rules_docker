@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("//contrib:test.bzl", "container_test")
 load(
     "//docker/toolchain_container:toolchain_container.bzl",
@@ -96,4 +97,31 @@ container_test(
     ],
     image = ":rbe-test-xenial-with-pkgs",
     verbose = True,
+)
+
+# a dummy tar file (contents are not relevant) to test
+# toolchain_container with language_tool_layer with tars
+pkg_tar(
+    name = "test_tar",
+    files = [
+        "@launchpad_openjdk_gpg//file",
+    ],
+)
+
+language_tool_layer(
+    name = "layer_w_tar",
+    base = "@official_xenial//image",
+    tars = [
+        ":test_tar",
+    ],
+)
+
+# A simple toolchain_container target with a layer
+# that contains a tar.
+toolchain_container(
+    name = "image_w_layer_w_tar",
+    base = "@official_xenial//image",
+    language_layers = [
+        ":layer_w_tar",
+    ],
 )
