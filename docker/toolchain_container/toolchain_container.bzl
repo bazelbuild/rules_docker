@@ -302,7 +302,7 @@ def _toolchain_container_impl(ctx):
             installables_tars.append(layer[LanguageToolLayerInfo].installables_tar)
         if layer[LanguageToolLayerInfo].installation_cleanup_commands:
             installation_cleanup_commands += (" && " + layer[LanguageToolLayerInfo].installation_cleanup_commands)
-    tars = depset(direct = ctx.files.tars, transitive = tars)
+    tars += ctx.files.tars
     env.update(ctx.attr.env)
     symlinks.update(ctx.attr.symlinks)
     packages = depset(direct = ctx.attr.packages + packages)
