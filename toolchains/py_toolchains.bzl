@@ -42,6 +42,10 @@ alias(
         if cpu_value == "x64_windows":
             # Note this is not well tested
             cpu_value = "x64_windows_msys"
+        toolchain = "@local_config_cc//:cc-compiler-%s" % cpu_value
+        if cpu_value == "darwin":
+            # This needs further testing too.
+            toolchain = "@bazel_tools//tools/cpp:cc-compiler-local"
 
         repository_ctx.file("BUILD", content = ("""# Toolchain required for xx_image targets that rely on xx_binary
 # which transitively require a C/C++ toolchain (currently only
@@ -57,10 +61,10 @@ toolchain(
     name = "container_cc_toolchain",
     exec_compatible_with = HOST_CONSTRAINTS + ["@io_bazel_rules_docker//platforms:run_in_container"],
     target_compatible_with = HOST_CONSTRAINTS,
-    toolchain = "@local_config_cc//:cc-compiler-%s",
+    toolchain = "%s",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 ) 
-""") % get_cpu_value(repository_ctx), executable = False)
+""") % toolchain, executable = False)
 
 py_toolchains = repository_rule(
     attrs = {},
