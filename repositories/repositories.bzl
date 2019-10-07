@@ -133,9 +133,9 @@ def repositories():
     if "rules_python" not in excludes:
         http_archive(
             name = "rules_python",
-            sha256 = "43c007823228f88d6afe1580d00f349564c97e103309a234fa20a5a10a9ff85b",
-            strip_prefix = "rules_python-54d1cb35cd54318d59bf38e52df3e628c07d4bbc",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/54d1cb35cd54318d59bf38e52df3e628c07d4bbc.tar.gz"],
+            sha256 = "6211ea2f2e0a8f74d00876d602584d3dbe207247fd688bd77ecccca23b0c0c97",
+            strip_prefix = "rules_python-e953b0ad875b6b5dc786b71d431775a7daf75607",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/e953b0ad875b6b5dc786b71d431775a7daf75607.tar.gz"],
         )
 
     if "httplib2" not in excludes:
