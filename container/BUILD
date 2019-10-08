@@ -26,51 +26,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-py_binary(
-    name = "extract_config",
-    srcs = ["extract_config.py"],
-    legacy_create_init = False,
-    python_version = "PY2",
-    visibility = ["//visibility:public"],
-    deps = [
-        "@containerregistry",
-    ],
-)
-
-py_library(
-    name = "utils",
-    srcs = [
-        "__init__.py",
-        "utils.py",
-    ],
-)
-
-py_binary(
-    name = "join_layers",
-    srcs = ["join_layers.py"],
-    legacy_create_init = False,
-    python_version = "PY2",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":utils",
-        "@containerregistry",
-        "@six",
-    ],
-)
-
-py_binary(
-    name = "create_image_config",
-    srcs = ["create_image_config.py"],
-    legacy_create_init = False,
-    python_version = "PY2",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":utils",
-        "@containerregistry",
-        "@six",
-    ],
-)
-
 # TODO(xingao): Flip legacy_create_init to False if possible.
 py_binary(
     name = "build_tar",
@@ -156,7 +111,6 @@ TEST_TARGETS = [
     ":py_image_complex",
     ":war_image",
     ":flat",
-    ":flat_go",
     ":flatten_with_tarball_base",
 ]
 
@@ -166,7 +120,7 @@ TEST_DATA = [
 ] + [
     "//testdata:stamped_bundle_test",
     "//testdata:stamp_info_file.txt",
-    "//tests/container:basic_windows_image_go_join_layers.tar",
+    "//tests/container:basic_windows_image.tar",
 ]
 
 py_test(

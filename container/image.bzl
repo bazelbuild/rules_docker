@@ -93,7 +93,7 @@ def _get_base_manifest(ctx, name, base):
         return layer.get("manifest")
     return None
 
-def _add_go_args(
+def _add_create_image_config_args(
         ctx,
         args,
         inputs,
@@ -111,6 +111,9 @@ def _add_go_args(
         base_config,
         base_manifest,
         operating_system):
+    """
+    Add args for the create_image_config Go binary.
+    """
     args.add("-outputConfig", config)
     args.add("-outputManifest", manifest)
 
@@ -177,79 +180,6 @@ def _add_go_args(
 def _format_legacy_label(t):
     return ("--labels=%s=%s" % (t[0], t[1]))
 
-def _add_legacy_args(
-        ctx,
-        args,
-        inputs,
-        manifest,
-        config,
-        labels,
-        entrypoint,
-        cmd,
-        null_cmd,
-        null_entrypoint,
-        creation_time,
-        env,
-        workdir,
-        layer_names,
-        base_config,
-        base_manifest,
-        operating_system):
-    args.add(config, format = "--output=%s")
-    args.add(manifest, format = "--manifestoutput=%s")
-    args.add_all(entrypoint, format_each = "--entrypoint=%s")
-    args.add_all(cmd, format_each = "--command=%s")
-    args.add_all(ctx.attr.ports, format_each = "--ports=%s")
-    args.add_all(ctx.attr.volumes, format_each = "--volumes=%s")
-    args.add("--null_entrypoint=%s" % null_entrypoint)
-    args.add("--null_cmd=%s" % null_cmd)
-
-    if creation_time:
-        args.add(creation_time, format = "--creation_time=%s")
-    elif ctx.attr.stamp:
-        # If stamping is enabled, and the creation_time is not manually defined,
-        # default to '{BUILD_TIMESTAMP}'.
-        args.add("{BUILD_TIMESTAMP}", format = "--creation_time=%s")
-
-    args.add_all(labels.items(), map_each = _format_legacy_label)
-
-    args.add_all(["--env=%s" % "=".join([
-        ctx.expand_make_variables("env", key, {}),
-        ctx.expand_make_variables("env", value, {}),
-    ]) for key, value in env.items()])
-
-    if ctx.attr.user:
-        args.add(ctx.attr.user, format = "--user=%s")
-    if workdir:
-        args.add(workdir, format = "--workdir=%s")
-
-    inputs += layer_names
-    args.add_all(layer_names, format_each = "--layer=@%s")
-
-    if ctx.attr.label_files:
-        inputs += ctx.files.label_files
-
-    if base_config:
-        args.add(base_config, format = "--base=%s")
-        inputs += [base_config]
-
-    if base_manifest:
-        args.add(base_manifest, format = "--basemanifest=%s")
-        inputs += [base_manifest]
-
-    if operating_system:
-        args.add(operating_system, format = "--operating_system=%s")
-
-    if ctx.attr.stamp:
-        stamp_inputs = [ctx.info_file, ctx.version_file]
-        args.add_all(stamp_inputs, format_each = "--stamp-info-file=%s")
-        inputs += stamp_inputs
-
-    if ctx.attr.launcher_args and not ctx.attr.launcher:
-        fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
-    if ctx.attr.launcher:
-        args.add_all(["/" + ctx.file.launcher.basename] + ctx.attr.launcher_args, format_each = "--entrypoint_prefix=%s")
-
 def _image_config(
         ctx,
         name,
@@ -285,51 +215,28 @@ def _image_config(
     args = ctx.actions.args()
     inputs = []
     executable = None
-    if ctx.attr.legacy_create_image_config:
-        _add_legacy_args(
-            ctx,
-            args,
-            inputs,
-            manifest,
-            config,
-            labels,
-            entrypoint,
-            cmd,
-            null_cmd,
-            null_entrypoint,
-            creation_time,
-            env,
-            workdir,
-            layer_names,
-            base_config,
-            base_manifest,
-            operating_system,
-        )
-        executable = ctx.executable.create_image_config
-    else:
-        _add_go_args(
-            ctx,
-            args,
-            inputs,
-            manifest,
-            config,
-            labels,
-            entrypoint,
-            cmd,
-            null_cmd,
-            null_entrypoint,
-            creation_time,
-            env,
-            workdir,
-            layer_names,
-            base_config,
-            base_manifest,
-            operating_system,
-        )
-        executable = ctx.executable.go_create_image_config
+    _add_create_image_config_args(
+        ctx,
+        args,
+        inputs,
+        manifest,
+        config,
+        labels,
+        entrypoint,
+        cmd,
+        null_cmd,
+        null_entrypoint,
+        creation_time,
+        env,
+        workdir,
+        layer_names,
+        base_config,
+        base_manifest,
+        operating_system,
+    )
 
     ctx.actions.run(
-        executable = executable,
+        executable = ctx.executable.create_image_config,
         arguments = [args],
         inputs = inputs,
         outputs = [config, manifest],
@@ -603,7 +510,7 @@ _attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
     "create_image_config": attr.label(
-        default = Label("//container:create_image_config"),
+        default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
@@ -611,12 +518,6 @@ _attrs = dicts.add(_layer.attrs, {
     "creation_time": attr.string(),
     "docker_run_flags": attr.string(),
     "entrypoint": attr.string_list(),
-    "go_create_image_config": attr.label(
-        default = Label("//container/go/cmd/create_image_config:create_image_config"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
-    ),
     "label_file_strings": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
@@ -626,10 +527,6 @@ _attrs = dicts.add(_layer.attrs, {
     "launcher": attr.label(allow_single_file = True),
     "launcher_args": attr.string_list(default = []),
     "layers": attr.label_list(providers = [LayerInfo]),
-    "legacy_create_image_config": attr.bool(
-        default = False,
-        doc = ("If set to False, the Go create_image_config binary will be run instead."),
-    ),
     "legacy_repository_naming": attr.bool(default = False),
     "legacy_run_behavior": attr.bool(
         # TODO(mattmoor): Default this to False.
