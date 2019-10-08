@@ -509,15 +509,15 @@ def _impl(
 _attrs = dicts.add(_layer.attrs, {
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
-    "creation_time": attr.string(),
-    "docker_run_flags": attr.string(),
-    "entrypoint": attr.string_list(),
     "create_image_config": attr.label(
         default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
+    "creation_time": attr.string(),
+    "docker_run_flags": attr.string(),
+    "entrypoint": attr.string_list(),
     "label_file_strings": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
