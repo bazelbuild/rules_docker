@@ -67,6 +67,9 @@ platforms:
   macos:
     environment:
       USE_BAZEL_VERSION: last_green
+    shell_commands:
+    - bazel query --output=build @local_config_cc//...
+    - cat $(bazel info output_base)/external/local_config_cc/BUILD
     build_targets:
     - "--"
     - "//tests/container/..."
