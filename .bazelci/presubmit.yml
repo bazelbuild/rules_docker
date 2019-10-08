@@ -9,6 +9,8 @@ buildifier:
   warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
 platforms:
   ubuntu1604:
+    environment:
+      USE_BAZEL_VERSION: last_green
     test_targets:
     - "--"
     - "..."
@@ -35,6 +37,8 @@ platforms:
     - "--define=ENV_VALUE=my_value"
     - "--test_output=errors"
   ubuntu1804:
+    environment:
+      USE_BAZEL_VERSION: last_green
     test_targets:
     - "--"
     - "..."
@@ -61,6 +65,8 @@ platforms:
     - "--define=ENV_VALUE=my_value"
     - "--test_output=errors"
   macos:
+    environment:
+      USE_BAZEL_VERSION: last_green
     build_targets:
     - "--"
     - "//tests/container/..."
