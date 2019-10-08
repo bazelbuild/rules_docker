@@ -123,41 +123,7 @@ def get_from_target(ctx, name, attr_target, file_target = None):
         target = attr_target.files.to_list()[0]
         return _extract_layers(ctx, name, target)
 
-def _add_join_layers_py_args(args, inputs, images):
-    """Add args & inputs needed to call join_layers.py for the given images.
-
-    TODO(smukherj1): Remove this when the migration to go-containerregistry is
-    complete.
-    """
-    for tag in images:
-        image = images[tag]
-        args.add(image["config"], format = "--tags=" + tag + "=@%s")
-        inputs += [image["config"]]
-
-        if image.get("manifest"):
-            args.add(image["manifest"], format = "--manifests=" + tag + "=@%s")
-            inputs += [image["manifest"]]
-
-        for i in range(0, len(image["diff_id"])):
-            # There's no way to do this with attrs w/o resolving paths here afaik
-            args.add(
-                "--layer=" +
-                "@" + image["diff_id"][i].path +
-                "=@" + image["blobsum"][i].path +
-                # No @, not resolved through utils, always filename.
-                "=" + image["unzipped_layer"][i].path +
-                "=" + image["zipped_layer"][i].path,
-            )
-        inputs += image["unzipped_layer"]
-        inputs += image["diff_id"]
-        inputs += image["zipped_layer"]
-        inputs += image["blobsum"]
-
-        if image.get("legacy"):
-            args.add(image["legacy"].path, format = "--legacy=%s")
-            inputs += [image["legacy"]]
-
-def _add_join_layers_go_args(args, inputs, images):
+def _add_join_layers_args(args, inputs, images):
     """Add args & inputs needed to call the Go join_layers for the given images
     """
     for tag in images:
@@ -207,13 +173,10 @@ def assemble(
     if stamp:
         args.add_all([ctx.info_file, ctx.version_file], format_each = "--stamp-info-file=%s")
         inputs += [ctx.info_file, ctx.version_file]
-    if ctx.attr.use_legacy_join_layers:
-        _add_join_layers_py_args(args, inputs, images)
-    else:
-        _add_join_layers_go_args(args, inputs, images)
+    _add_join_layers_args(args, inputs, images)
 
     ctx.actions.run(
-        executable = ctx.executable._join_layers_py if ctx.attr.use_legacy_join_layers else ctx.executable._join_layers_go,
+        executable = ctx.executable._join_layers,
         arguments = [args],
         tools = inputs,
         outputs = [output],
@@ -332,20 +295,9 @@ tools = {
         default = Label("//container:incremental_load_template"),
         allow_single_file = True,
     ),
-    "use_legacy_join_layers": attr.bool(
-        default = False,
-        doc = "Use the legacy python join_layers.py to build the image tarball." +
-              "Uses the experimental Go implementation when set to false.",
-    ),
-    "_join_layers_go": attr.label(
+    "_join_layers": attr.label(
         default = Label("//container/go/cmd/join_layers"),
         cfg = "host",
         executable = True,
-    ),
-    "_join_layers_py": attr.label(
-        default = Label("//container:join_layers"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
     ),
 }
