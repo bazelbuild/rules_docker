@@ -50,7 +50,7 @@ alias(
             should_use_xcode = "BAZEL_USE_XCODE_TOOLCHAIN" in env and env["BAZEL_USE_XCODE_TOOLCHAIN"] == "1"
             xcode_toolchains = []
             paths = resolve_labels(repository_ctx, [
-               "@bazel_tools//tools/osx:xcode_locator.m",
+                "@bazel_tools//tools/osx:xcode_locator.m",
             ])
             if not should_use_xcode:
                 (xcode_toolchains, _xcodeloc_err) = run_xcode_locator(
