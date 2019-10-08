@@ -17,7 +17,9 @@
 load(
     "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
     "get_cpu_value",
+    "resolve_labels",
 )
+load("@bazel_tools//tools/osx:xcode_configure.bzl", "run_xcode_locator")
 
 def _impl(repository_ctx):
     """Core implementation of _py_toolchains."""
@@ -44,8 +46,21 @@ alias(
             cpu_value = "x64_windows_msys"
         toolchain = "@local_config_cc//:cc-compiler-%s" % cpu_value
         if cpu_value == "darwin":
-            # This needs further testing too.
-            toolchain = "@bazel_tools//tools/cpp:cc-compiler-local"
+            # This needs to be carefully kept in sync with bazel/tools/cpp/cc_configure.bzl
+            should_use_xcode = "BAZEL_USE_XCODE_TOOLCHAIN" in env and env["BAZEL_USE_XCODE_TOOLCHAIN"] == "1"
+            xcode_toolchains = []
+            paths = resolve_labels(repository_ctx, [
+                "@bazel_tools//tools/osx:xcode_locator.m",
+            ])
+            if not should_use_xcode:
+                (xcode_toolchains, _xcodeloc_err) = run_xcode_locator(
+                    repository_ctx,
+                    paths["@bazel_tools//tools/osx:xcode_locator.m"],
+                )
+            if should_use_xcode or xcode_toolchains:
+                toolchain = "@local_config_cc//:cc-compiler-darwin_x86_64"
+            else:
+                toolchain = "@local_config_cc//:cc-compiler-darwin"
 
         repository_ctx.file("BUILD", content = ("""# Toolchain required for xx_image targets that rely on xx_binary
 # which transitively require a C/C++ toolchain (currently only
