@@ -29,34 +29,13 @@ def _impl(ctx):
 
     # Leverage our efficient intermediate representation to push.
     img_args = ctx.actions.args()
-    img_inputs = []
-    if ctx.attr.use_legacy_flattener:
-        if image.get("legacy"):
-            img_inputs += [image["legacy"]]
-            img_args.add(image["legacy"].path, format = "--tarball=%s")
-
-        blobsums = image.get("blobsum", [])
-        img_args.add_all(blobsums, format_each = "--digest=%s")
-        img_inputs += blobsums
-        blobs = image.get("zipped_layer", [])
-        img_args.add_all(blobs, format_each = "--layer=%s")
-        img_inputs += blobs
-        uncompressed_blobs = image.get("unzipped_layer", [])
-        img_args.add_all(uncompressed_blobs, format_each = "--uncompressed_layer=%s")
-        img_inputs += uncompressed_blobs
-        diff_ids = image.get("diff_id", [])
-        img_args.add_all(diff_ids, format_each = "--diff_id=%s")
-        img_inputs += diff_ids
-        img_args.add(image["config"], format = "--config=%s")
-        img_inputs += [image["config"]]
-    else:
-        args, img_inputs = _gen_img_args(ctx, image)
-        img_args.add_all(args)
+    args, img_inputs = _gen_img_args(ctx, image)
+    img_args.add_all(args)
 
     img_args.add(ctx.outputs.filesystem, format = "--filesystem=%s")
     img_args.add(ctx.outputs.metadata, format = "--metadata=%s")
     ctx.actions.run(
-        executable = ctx.executable._flattener if ctx.attr.use_legacy_flattener else ctx.executable._go_flattener,
+        executable = ctx.executable._flattener,
         arguments = [img_args],
         inputs = img_inputs,
         outputs = [ctx.outputs.filesystem, ctx.outputs.metadata],
@@ -72,20 +51,7 @@ container_flatten = rule(
             allow_single_file = [".tar"],
             mandatory = True,
         ),
-        # TODO (smukherj1): Remove once migration in #580 is done.
-        "use_legacy_flattener": attr.bool(
-            default = False,
-            doc = "Use the legacy python flattener to generate the image " +
-                  "filesystem tarball. Uses the Go implementation when set to" +
-                  " false.",
-        ),
         "_flattener": attr.label(
-            default = Label("@containerregistry//:flatten"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        ),
-        "_go_flattener": attr.label(
             default = Label("//container/go/cmd/flattener"),
             cfg = "host",
             executable = True,

@@ -414,12 +414,6 @@ container_flatten(
     image = ":link_with_files_base",
 )
 
-container_flatten(
-    name = "flat_go",
-    image = ":link_with_files_base",
-    use_legacy_flattener = False,
-)
-
 container_image(
     name = "image_with_bar",
     files = [
@@ -440,7 +434,6 @@ container_image(
 container_flatten(
     name = "flatten_with_tarball_base",
     image = ":image_with_bar_and_baz",
-    use_legacy_flattener = False,
 )
 
 docker_push(

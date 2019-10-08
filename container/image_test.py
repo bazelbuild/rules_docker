@@ -355,12 +355,6 @@ class ImageTest(unittest.TestCase):
       self.assertTarballContains(tar, [
         '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
 
-  def test_flattened_go(self):
-    # Test the flattened tarball produced by the Go flattener binary.
-    with tarfile.open(TestData('flat_go.tar'), mode='r') as tar:
-      self.assertTarballContains(tar, [
-        '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
-
   def test_flattened_from_tarball_base(self):
     # Test the flattened tarball produced by the Go flattener where the
     # image being flattened derived from an image specified as a tarball.
@@ -525,7 +519,7 @@ class ImageTest(unittest.TestCase):
       ])
 
   def test_windows_image_manifest_with_foreign_layers(self):
-    imgPath = TestRunfilePath("tests/container/basic_windows_image_go_join_layers.tar")
+    imgPath = TestRunfilePath("tests/container/basic_windows_image.tar")
     with v2_2_image.FromTarball(imgPath) as img:
       # Ensure the image manifest in the tarball includes the foreign layer.
       self.assertIn("https://go.microsoft.com/fwlink/?linkid=873595",
