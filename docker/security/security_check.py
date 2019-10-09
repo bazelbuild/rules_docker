@@ -19,7 +19,6 @@ import json
 import subprocess
 import sys
 import logging
-import yaml
 
 import distutils.version as ver
 
@@ -265,17 +264,17 @@ def _get_version_number(version_obj):
 
   return ''.join([str(epoch), delimiter1, name, delimiter2, str(revision)])
 
-def _generate_yaml_output(output_yaml, vulnerabilities):
-  """Generate a YAML file mapping the key "tags" to the list of types of
+def _generate_json_output(output_json, vulnerabilities):
+  """Generate a JSON file mapping the key "tags" to the list of types of
   vulnerabilities found.
 
   Args:
-    output_yaml: Path to the output YAML file to generate.
+    output_json: Path to the output JSON file to generate.
     vulnerabilities: A dictionary mapping the name of the CVE entry to details
                      about the vulnerability.
   """
   tags = set()
-  for v in vulnerabilities.itervalues():
+  for v in vulnerabilities.values():
     details = v["vulnerabilityDetails"]
     # The service that consumes the metadata expects the tags as follows:
     # LOW -> cveLow
@@ -284,19 +283,19 @@ def _generate_yaml_output(output_yaml, vulnerabilities):
     sev = str(details['severity'])
     tags.add("cve{}".format(sev.lower().capitalize()))
   result = {"tags": list(tags)}
-  logging.info("Creating YAML output {}".format(output_yaml))
-  with open(output_yaml, "w") as ofp:
-    ofp.write(yaml.dump(result))
+  logging.info("Creating YAML output {}".format(output_json))
+  with open(output_json, "w") as ofp:
+    json.dump(result, ofp)
 
 def security_check(image, severity=_MEDIUM, whitelist_file='whitelist.json',
-                   output_yaml=None):
+                   output_json=None):
   """Main security check function.
 
   Args:
     image: full name of the docker image
     severity: the severity of vulnerability to trigger failure
     whitelist_file: file with list of whitelisted CVE
-    output_yaml: Output file which will be populated with a list of types of
+    output_json: Output file which will be populated with a list of types of
                  vulnerability that exist for the given image.
 
   Returns:
@@ -312,9 +311,9 @@ def security_check(image, severity=_MEDIUM, whitelist_file='whitelist.json',
 
   result = _check_for_vulnz(_sub_image(image), severity, whitelist)
 
-  if output_yaml:
-    logging.info("Creating YAML output {}".format(output_yaml))
-    _generate_yaml_output(output_yaml, result)
+  if output_json:
+    logging.info("Creating JSON output {}".format(output_json))
+    _generate_json_output(output_json, result)
   return result
 
 
@@ -330,13 +329,13 @@ def _main():
   parser.add_argument('--whitelist-file', dest='whitelist',
                       help='The path to the whitelist json file',
                       default='whitelist.json')
-  parser.add_argument('--output-yaml', dest='output_yaml',
-                      help='The path to the output YAML file to'+\
+  parser.add_argument('--output-json', dest='output_json',
+                      help='The path to the output JSON file to'+\
                       ' generate with a list of tags indicating the types of'+\
                       ' vulnerability fixes available for the given image.')
   args = parser.parse_args()
   security_check(args.image, args.severity, args.whitelist,
-                            args.output_yaml)
+                            args.output_json)
 
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ def _impl(ctx):
     output_yaml = ctx.outputs.yaml
     args = ctx.actions.args()
     args.add(ctx.attr.image)
-    args.add("--output-yaml", ctx.outputs.yaml)
+    args.add("--output-json", ctx.outputs.json)
     args.add("--severity", ctx.attr.severity)
     if ctx.attr.whitelist != None:
         files = ctx.attr.whitelist.files.to_list()
@@ -35,7 +35,7 @@ def _impl(ctx):
     ctx.actions.run(
         executable = ctx.executable._security_check,
         arguments = [args],
-        outputs = [ctx.outputs.yaml],
+        outputs = [ctx.outputs.json],
         mnemonic = "ImageSecurityCheck",
         use_default_shell_env = True,
         execution_requirements = {
@@ -45,6 +45,16 @@ def _impl(ctx):
             # CLOUDSDK_CONFIG if set.
             "no-sandbox": "True",
         },
+    )
+    args = ctx.actions.args()
+    args.add("--in-json", ctx.outputs.json)
+    args.add("--out-yaml", ctx.outputs.yaml)
+    ctx.actions.run(
+        executable = ctx.executable._json_to_yaml,
+        arguments = [args],
+        inputs = [ctx.outputs.json],
+        outputs = [ctx.outputs.yaml],
+        mnemonic = "JSONToYAML",
     )
 
 # Run the security_check.py script on the given docker image to generate a
@@ -75,8 +85,16 @@ security_check = rule(
             executable = True,
             allow_files = True,
         ),
+        # JSON to YAML converter.
+        "_json_to_yaml": attr.label(
+            default = Label("@io_bazel_rules_docker//docker/security/cmd/json_to_yaml"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        )
     },
     outputs = {
         "yaml": "%{name}.yaml",
+        "json": "%{name}.json",
     },
 )

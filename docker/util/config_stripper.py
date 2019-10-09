@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import argparse
-import cStringIO
+import io
 import hashlib
 import json
 import os
@@ -38,6 +38,8 @@ def main():
                         help='Path to output stripped tarball',
                         required=True)
     args = parser.parse_args()
+
+    os.environ["PYTHONIOENCODING"] = "utf-8"
 
     return strip_tar(args.in_tar_path, args.out_tar_path)
 
@@ -101,14 +103,14 @@ def strip_layer(path):
     # working directory is one level up from where layer.tar is.
     original_dir = os.path.normpath(os.path.join(os.path.dirname(path), '..'))
 
-    buf = cStringIO.StringIO()
+    buf = io.BytesIO()
 
     # Go through each file/dir in the layer
     # Set its mtime to 0
     # If it's a file, add its content to the running buffer
     # Add it to the new gzip'd tar.
     with tarfile.open(name=path, mode='r') as it:
-      with tarfile.open(fileobj=buf, mode='w') as ot:
+      with tarfile.open(fileobj=buf, encoding='utf-8', mode='w') as ot:
         for tarinfo in it:
           # Use a deterministic mtime that doesn't confuse other programs,
           # e.g. Python.
@@ -137,7 +139,7 @@ def strip_layer(path):
     # Calculate sha of layer
     sha = hashlib.sha256(gz).hexdigest()
     new_name = 'sha256:%s' % sha
-    with open(os.path.join(original_dir, new_name), 'w') as out:
+    with open(os.path.join(original_dir, new_name), 'wb') as out:
       out.write(gz)
 
     shutil.rmtree(os.path.dirname(path))
@@ -169,7 +171,7 @@ def strip_config(path, new_diff_ids):
         f.write(config_str)
 
     # Calculate the new file path
-    sha = hashlib.sha256(config_str).hexdigest()
+    sha = hashlib.sha256(config_str.encode("utf-8")).hexdigest()
     new_path = 'sha256:%s' % sha
     os.rename(path, os.path.join(os.path.dirname(path), new_path))
     return new_path
