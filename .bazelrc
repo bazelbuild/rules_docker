@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # The following flags are set to test use of new features for python toolchains
-# These flags will only work with Bazel 0.25.0 or above.
-build --incompatible_use_python_toolchains
+# These flags will only work with Bazel 0.25.0 or above and are only needed for
+#  //tests/docker/security/...
 test --incompatible_use_python_toolchains
-run --incompatible_use_python_toolchains
+test --host_force_python=PY2
