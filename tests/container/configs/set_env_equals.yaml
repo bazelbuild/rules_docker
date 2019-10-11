@@ -1,0 +1,8 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+  - key: JAVA_OPTS
+    value: -Dloader.main=com.sample.app.SampleApp
+  - key: CUDA_PKG_VERSION
+    value: -10-0=10.0.130-1

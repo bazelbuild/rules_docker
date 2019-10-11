@@ -262,6 +262,22 @@ container_test(
     image = ":set_env_csv",
 )
 
+container_image(
+    name = "set_env_equals",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+    env = {
+        "CUDA_PKG_VERSION": "-10-0=10.0.130-1",
+        "JAVA_OPTS": "-Dloader.main=com.sample.app.SampleApp",
+    },
+)
+
+container_test(
+    name = "set_env_equals_test",
+    configs = ["//tests/container/configs:set_env_equals.yaml"],
+    image = ":set_env_equals",
+)
+
 # Image with Bazel Make variables in the env field.
 container_image(
     name = "set_env_make_vars",
