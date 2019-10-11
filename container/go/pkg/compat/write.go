@@ -26,8 +26,13 @@ import (
 	"path"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 )
+
+func isCompressed(m types.MediaType) bool {
+	return m == types.DockerLayer || m == types.OCILayer
+}
 
 // writeImageMetadata generates the following files in the given directory
 // for the given image:
@@ -63,6 +68,45 @@ func writeImageMetadata(img v1.Image, outDir string) error {
 	return nil
 }
 
+// writeImageLayer writes the given image layer with the given index to the
+// given directory.
+func writeImageLayer(l v1.Layer, idx int, outDir string) error {
+	d, err := l.Digest()
+	if err != nil {
+		return errors.Wrapf(err, "unable to get digest from layer %d", idx)
+	}
+	outDigestFile := path.Join(outDir, fmt.Sprintf("%03d.sha256", idx))
+	if err := ioutil.WriteFile(outDigestFile, []byte(d.Hex), os.ModePerm); err != nil {
+		return errors.Wrapf(err, "unable to write the digest of layer %d to %s", idx, outDigestFile)
+	}
+	m, err := l.MediaType()
+	if err != nil {
+		return errors.Wrap(err, "unable to get the media type of layer")
+	}
+	var contents io.ReadCloser
+	var outLayerFile string
+	if isCompressed(m) {
+		contents, err = l.Compressed()
+		outLayerFile = path.Join(outDir, fmt.Sprintf("%03d.tar.gz", idx))
+	} else {
+		contents, err = l.Uncompressed()
+		outLayerFile = path.Join(outDir, fmt.Sprintf("%03d.tar", idx))
+
+	}
+	if err != nil {
+		return errors.Wrapf(err, "unable to get the contents of layer %d", idx)
+	}
+	defer contents.Close()
+	o, err := os.Create(outLayerFile)
+	if err != nil {
+		return errors.Wrapf(err, "unable to create %s to write layer %d", outLayerFile, idx)
+	}
+	if _, err := io.Copy(o, contents); err != nil {
+		return errors.Wrapf(err, "unable to write the contents of layer %d to %s", idx, outLayerFile)
+	}
+	return nil
+}
+
 // writeImageLayers generates the following files in the given directory
 // for the given image:
 // directory/
@@ -77,26 +121,8 @@ func writeImageLayers(img v1.Image, outDir string) error {
 		return errors.Wrap(err, "unable to get layers from image")
 	}
 	for i, l := range layers {
-		d, err := l.Digest()
-		if err != nil {
-			return errors.Wrapf(err, "unable to get digest from layer %d", i)
-		}
-		outDigestFile := path.Join(outDir, fmt.Sprintf("%03d.sha256", i))
-		if err := ioutil.WriteFile(outDigestFile, []byte(d.Hex), os.ModePerm); err != nil {
-			return errors.Wrapf(err, "unable to write the digest of layer %d to %s", i, outDigestFile)
-		}
-		blob, err := l.Compressed()
-		if err != nil {
-			return errors.Wrapf(err, "unable to get the compressed blob from layer %d", i)
-		}
-		defer blob.Close()
-		outLayerFile := path.Join(outDir, fmt.Sprintf("%03d.tar.gz", i))
-		o, err := os.Create(outLayerFile)
-		if err != nil {
-			return errors.Wrapf(err, "unable to create %s to write layer %d", outLayerFile, i)
-		}
-		if _, err := io.Copy(o, blob); err != nil {
-			return errors.Wrapf(err, "unable to write the contents of layer %d to %s", i, outLayerFile)
+		if err := writeImageLayer(l, i, outDir); err != nil {
+			return errors.Wrap(err, "unable to write image layer")
 		}
 	}
 	return nil
