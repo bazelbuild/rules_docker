@@ -406,7 +406,6 @@ register_toolchains(
 )
 
 register_execution_platforms(
-    "@local_config_platform//:host",
     "//platforms:local_container_platform",
 )
 
