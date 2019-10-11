@@ -29,10 +29,6 @@ load(
     "//repositories:go_repositories.bzl",
     _go_deps = "go_deps",
 )
-load(
-    "//toolchains:py_toolchains.bzl",
-    _py_toolchains = "py_toolchains",
-)
 
 # Load the resolved digests.
 load(":python.bzl", "DIGESTS")
@@ -46,13 +42,14 @@ def repositories():
     _go_deps()
 
     # Register the default py_toolchain / platform for containerized execution
-    if "container_py_toolchain" not in native.existing_rules().keys():
-        _py_toolchains(name = "container_py_toolchain")
     native.register_toolchains(
         "@io_bazel_rules_docker//toolchains:container_py_toolchain",
-        "@container_py_toolchain//:container_cc_toolchain",
+        "@bazel_tools//tools/python:autodetecting_toolchain",
     )
-    native.register_execution_platforms("@io_bazel_rules_docker//platforms:local_container_platform")
+    native.register_execution_platforms(
+        "@local_config_platform//:host",
+        "@io_bazel_rules_docker//platforms:local_container_platform",
+    )
 
     excludes = native.existing_rules().keys()
     if "py_image_base" not in excludes:

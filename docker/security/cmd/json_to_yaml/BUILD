@@ -11,32 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])  # Apache 2.0
-
-py_binary(
-    name = "config_stripper",
-    srcs = ["config_stripper.py"],
-    python_version = "PY3",
+go_library(
+    name = "go_default_library",
+    srcs = ["json_to_yaml.go"],
+    importpath = "github.com/bazelbuild/rules_docker/docker/security/cmd/json_to_yaml",
+    visibility = ["//visibility:private"],
+    deps = ["@com_github_ghodss_yaml//:go_default_library"],
 )
 
-py_binary(
-    name = "to_json",
-    srcs = ["to_json.py"],
-    python_version = "PY3",
-)
-
-exports_files([
-    "commit.sh.tpl",
-    "extract.sh.tpl",
-    "image_util.sh",
-])
-
-bzl_library(
-    name = "util",
-    srcs = ["run.bzl"],
+go_binary(
+    name = "json_to_yaml",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
 )
