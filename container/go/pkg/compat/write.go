@@ -30,6 +30,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// isCompressed returns if the given media type represents a compressed layer.
 func isCompressed(m types.MediaType) bool {
 	return m == types.DockerLayer || m == types.OCILayer
 }
