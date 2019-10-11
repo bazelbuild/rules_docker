@@ -403,11 +403,9 @@ dockerfile_image(
 # Register the default py_toolchain / platform for containerized execution
 register_toolchains(
     "//toolchains:container_py_toolchain",
-    "@bazel_tools//tools/python:autodetecting_toolchain",
 )
 
 register_execution_platforms(
-    "@local_config_platform//:host",
     "//platforms:local_container_platform",
 )
 

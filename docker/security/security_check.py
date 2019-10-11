@@ -212,7 +212,7 @@ def _check_image(image, severity, whitelist):
 
 
 def _get_relevant_severities(severity):
-  return [k for k, v in _SEV_MAP.iteritems()
+  return [k for k, v in _SEV_MAP.items()
           if v >= _SEV_MAP.get(severity, 1)]
 
 

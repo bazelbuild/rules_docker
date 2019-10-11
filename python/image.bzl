@@ -44,10 +44,8 @@ def repositories():
     # Register the default py_toolchain / platform for containerized execution
     native.register_toolchains(
         "@io_bazel_rules_docker//toolchains:container_py_toolchain",
-        "@bazel_tools//tools/python:autodetecting_toolchain",
     )
     native.register_execution_platforms(
-        "@local_config_platform//:host",
         "@io_bazel_rules_docker//platforms:local_container_platform",
     )
 
