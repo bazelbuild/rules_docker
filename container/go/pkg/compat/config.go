@@ -129,7 +129,7 @@ func keyValueToMap(value []string) (map[string]string, error) {
 	convMap := make(map[string]string)
 	var temp []string
 	for _, kvpair := range value {
-		temp = strings.Split(kvpair, "=")
+		temp = strings.SplitN(kvpair, "=", 2)
 		if len(temp) != 2 {
 			return convMap, errors.New(fmt.Sprintf("%q is not of format key=value", kvpair))
 		}
