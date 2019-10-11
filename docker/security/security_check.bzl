@@ -78,6 +78,13 @@ security_check = rule(
             default = Label("@io_bazel_rules_docker//docker/security:security_check_whitelist.json"),
             allow_single_file = True,
         ),
+        # JSON to YAML converter.
+        "_json_to_yaml": attr.label(
+            default = Label("@io_bazel_rules_docker//docker/security/cmd/json_to_yaml"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
         # The security checker python executable.
         "_security_check": attr.label(
             default = Label("@io_bazel_rules_docker//docker/security:security_check"),
@@ -85,16 +92,9 @@ security_check = rule(
             executable = True,
             allow_files = True,
         ),
-        # JSON to YAML converter.
-        "_json_to_yaml": attr.label(
-            default = Label("@io_bazel_rules_docker//docker/security/cmd/json_to_yaml"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
-        )
     },
     outputs = {
-        "yaml": "%{name}.yaml",
         "json": "%{name}.json",
+        "yaml": "%{name}.yaml",
     },
 )
