@@ -74,8 +74,7 @@ load("@local_config_platform//:constraints.bzl", "HOST_CONSTRAINTS")
 
 toolchain(
     name = "container_cc_toolchain",
-    exec_compatible_with = HOST_CONSTRAINTS + ["@io_bazel_rules_docker//platforms:run_in_container"],
-    target_compatible_with = HOST_CONSTRAINTS,
+    exec_compatible_with = ["@io_bazel_rules_docker//platforms:run_in_container"],
     toolchain = "%s",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 ) 

@@ -38,7 +38,6 @@ platform(
     constraint_values = [
         "@io_bazel_rules_docker//platforms:run_in_container",
     ],
-    parents = ["@local_config_platform//:host"],
 )
 
 # Default RBE platform that has constraint_value set for the

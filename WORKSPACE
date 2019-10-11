@@ -407,10 +407,11 @@ py_toolchains(name = "container_py_toolchain")
 
 register_toolchains(
     "//toolchains:container_py_toolchain",
+    "@bazel_tools//tools/python:autodetecting_toolchain",
     "@container_py_toolchain//:container_cc_toolchain",
 )
 
-register_execution_platforms("//platforms:local_container_platform")
+register_execution_platforms("@local_config_platform//:host", "//platforms:local_container_platform")
 
 http_archive(
     name = "bazel_toolchains",

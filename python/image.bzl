@@ -50,9 +50,13 @@ def repositories():
         _py_toolchains(name = "container_py_toolchain")
     native.register_toolchains(
         "@io_bazel_rules_docker//toolchains:container_py_toolchain",
+        "@bazel_tools//tools/python:autodetecting_toolchain",
         "@container_py_toolchain//:container_cc_toolchain",
     )
-    native.register_execution_platforms("@io_bazel_rules_docker//platforms:local_container_platform")
+    native.register_execution_platforms(
+        "@local_config_platform//:host",
+        "@io_bazel_rules_docker//platforms:local_container_platform",
+    )
 
     excludes = native.existing_rules().keys()
     if "py_image_base" not in excludes:
