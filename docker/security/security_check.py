@@ -283,7 +283,7 @@ def _generate_json_output(output_json, vulnerabilities):
     sev = str(details['severity'])
     tags.add("cve{}".format(sev.lower().capitalize()))
   result = {"tags": list(tags)}
-  logging.info("Creating YAML output {}".format(output_json))
+  logging.info("Creating JSON output {}".format(output_json))
   with open(output_json, "w") as ofp:
     json.dump(result, ofp)
 
