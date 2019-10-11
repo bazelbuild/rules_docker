@@ -71,7 +71,7 @@ def _run_gcloud(cmd):
   full_cmd = [gcloud_path(), 'alpha', 'container', 'images',
               '--format=json'] + cmd
   output = subprocess.check_output(full_cmd)
-  return json.loads(output)
+  return json.loads(output.decode('utf-8'))
 
 
 def _find_base_image(image):
