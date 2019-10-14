@@ -411,10 +411,10 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "b0c426d36826554f34e433e96dbd9b271e7f5b248a750f080a12534dcb944f48",
-    strip_prefix = "bazel-toolchains-0.29.8",
+    sha256 = "e9bab54199722935f239cb1cd56a80be2ac3c3843e1a6d3492e2bc11f9c21daf",
+    strip_prefix = "bazel-toolchains-1.0.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.8.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/1.0.0.tar.gz",
     ],
 )
 
