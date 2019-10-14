@@ -45,11 +45,11 @@ http_archive(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "b0c426d36826554f34e433e96dbd9b271e7f5b248a750f080a12534dcb944f48",
-    strip_prefix = "bazel-toolchains-0.29.8",
+    sha256 = "388da5cc148a43081c30c260ce1167747d8fb0968ee220e4ee1d1b1b8212eaa3",
+    strip_prefix = "bazel-toolchains-0.29.9",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.8.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.8.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.9.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.9.tar.gz",
     ],
 )
 
