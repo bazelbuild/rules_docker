@@ -167,7 +167,7 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
             images = {
                 loaded_name: image,
             },
-            **kwargs
+            testonly = True,
         )
 
     _container_test(
