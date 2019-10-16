@@ -59,3 +59,10 @@ def go_deps():
             commit = "9ff306d4fbead574800b66369df5b6144732d58e",  # v1.1.0
             importpath = "github.com/kylelemons/godebug",
         )
+    if "com_github_ghodss_yaml" not in excludes:
+        go_repository(
+            name = "com_github_ghodss_yaml",
+            importpath = "github.com/ghodss/yaml",
+            sum = "h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=",
+            version = "v1.0.0",
+        )

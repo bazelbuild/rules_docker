@@ -71,7 +71,7 @@ platforms:
     # For tests/container:set_env_make_vars_test
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
-    # Needed because register_toolchains is apparently not respecting order of
+    # Needed because register_platforms is apparently not respecting order of
     # platforms passed:
     - "--extra_execution_platforms=@local_config_platform//:host,@io_bazel_rules_docker//platforms:local_container_platform"
     test_targets:
@@ -114,7 +114,7 @@ platforms:
     - "--define=ENV_KEY=my_key"
     - "--define=ENV_VALUE=my_value"
     - "--test_output=errors"
-    # Needed because register_toolchains is apparently not respecting order of
+    # Needed because register_platforms is apparently not respecting order of
     # platforms passed:
     - "--extra_execution_platforms=@local_config_platform//:host,@io_bazel_rules_docker//platforms:local_container_platform"
   rbe_ubuntu1604:

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@pip_deps//:requirements.bzl", "requirement")
 load("@subpar//:subpar.bzl", "par_binary")
 
 package(default_visibility = ["//visibility:public"])
@@ -26,11 +25,8 @@ par_binary(
     name = "security_check",
     srcs = ["security_check.py"],
     main = "security_check.py",
-    python_version = "PY2",
+    python_version = "PY3",
     visibility = ["//visibility:public"],
-    deps = [
-        requirement("PyYaml"),
-    ],
 )
 
 bzl_library(
