@@ -160,7 +160,7 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
         # Include the package name in the new image tag to avoid conflicts on naming
         # when running multiple container_test on images with the same target name
         # from different packages.
-        sanitized_name = (native.package_name() + image).replace(":", "").replace("@", "").replace("/", "")
+        sanitized_name = (native.package_name() + image).replace(":", "").replace("@", "").replace("/", "").lower()
         loaded_name = "%s:intermediate" % sanitized_name
         container_bundle(
             name = image_loader,
