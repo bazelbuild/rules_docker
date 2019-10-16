@@ -45,7 +45,7 @@ def repositories():
         "@io_bazel_rules_docker//toolchains:container_py_toolchain",
     )
     native.register_execution_platforms(
-        "//platforms:local_container_platform",
+        "@io_bazel_rules_docker//platforms:local_container_platform",
     )
 
     excludes = native.existing_rules().keys()
