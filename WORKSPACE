@@ -103,6 +103,13 @@ container_pull(
     repository = "distroless/cc",
 )
 
+container_pull(
+    name = "large_image_timeout_test",
+    digest = "sha256:8f995ea7676177aebdb7fc1c8f7d285c290e6e1247b35356ade0e9e8ec628828",
+    registry = "l.gcr.io",
+    repository = "google/bazel",
+)
+
 # These are for package_manager testing.
 http_file(
     name = "bazel_gpg",
