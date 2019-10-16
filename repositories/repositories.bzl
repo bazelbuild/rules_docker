@@ -25,7 +25,7 @@ load(
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.36"
-RULES_DOCKER_GO_BINARY_RELEASE = "5591caf4324ea2e147f8b7c811e07336faea9f0d"
+RULES_DOCKER_GO_BINARY_RELEASE = "db8af45b844ed6ee5150984986b3f1ba9292e3a1"
 
 _local_tool_build_template = """
 sh_binary(
@@ -62,7 +62,7 @@ def repositories():
         http_file(
             name = "go_puller_linux",
             executable = True,
-            sha256 = "ef6cfd34fa30779f180ca86ee63caf72f4b69d57d59131de5b17e136069877ba",
+            sha256 = "6e7265ac5353fe802aea5070e80a2ade13404325bae4aca33387d833c9f7ac8a",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-amd64")],
         )
 
@@ -70,7 +70,7 @@ def repositories():
         http_file(
             name = "go_puller_darwin",
             executable = True,
-            sha256 = "c7542b5790c6b1c89c24eaaaf68f543c887137a75334f82fb4234e35ae9d1a7a",
+            sha256 = "342c0d9f320fd383aafc6a102c752d7f2736ef6ce535e29e4779df69dc70c659",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-darwin-amd64")],
         )
 
@@ -78,7 +78,7 @@ def repositories():
         http_file(
             name = "loader_linux",
             executable = True,
-            sha256 = "6ad59fbfa35c3ed61baeba5c5551967d4434a519b90843838cd30c5801ebc59b",
+            sha256 = "963bcf309a2750f59576d02cb5cf158b77c5b160b22bdff2853eab5fb03e7197",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-amd64")],
         )
 
@@ -86,7 +86,7 @@ def repositories():
         http_file(
             name = "loader_darwin",
             executable = True,
-            sha256 = "1f60672cb6986f0d98fb9397215cd81376dcaf0c94aa2e1620c8c69470aba82f",
+            sha256 = "e88232c335961bccd0efba967307a1f4307ce1c0edffbf5782590a7b012d48bd",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-darwin-amd64")],
         )
 
@@ -114,9 +114,9 @@ def repositories():
     if "rules_python" not in excludes:
         http_archive(
             name = "rules_python",
-            sha256 = "6211ea2f2e0a8f74d00876d602584d3dbe207247fd688bd77ecccca23b0c0c97",
-            strip_prefix = "rules_python-e953b0ad875b6b5dc786b71d431775a7daf75607",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/e953b0ad875b6b5dc786b71d431775a7daf75607.tar.gz"],
+            sha256 = "e220053c4454664c09628ffbb33f245e65f5fe92eb285fbd0bc3a26f173f99d0",
+            strip_prefix = "rules_python-5aa465d5d91f1d9d90cac10624e3d2faf2057bd5",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/5aa465d5d91f1d9d90cac10624e3d2faf2057bd5.tar.gz"],
         )
 
     if "httplib2" not in excludes:
