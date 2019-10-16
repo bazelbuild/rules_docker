@@ -21,11 +21,13 @@ licenses(["notice"])  # Apache 2.0
 py_binary(
     name = "config_stripper",
     srcs = ["config_stripper.py"],
+    python_version = "PY3",
 )
 
 py_binary(
     name = "to_json",
     srcs = ["to_json.py"],
+    python_version = "PY3",
 )
 
 exports_files([
