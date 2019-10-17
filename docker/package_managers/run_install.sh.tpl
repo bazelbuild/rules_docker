@@ -11,7 +11,7 @@ fi
 
 # Setup tools and load utils
 TO_JSON_TOOL="%{to_json_tool}"
-source %{util_script}
+DOCKER=$DOCKER source %{util_script}
 
 # Load the image and remember its name
 image_id=$(%{image_id_extractor_path} %{base_image_tar})
