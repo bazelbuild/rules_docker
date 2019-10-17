@@ -11,7 +11,7 @@ fi
 
 # Setup tools and load utils
 TO_JSON_TOOL="%{to_json_tool}"
-DOCKER=$DOCKER source %{util_script}
+source %{util_script}
 
 # Load the image and remember its name
 image_id=$(%{image_id_extractor_path} %{base_image_tar})
@@ -22,6 +22,6 @@ cid=$($DOCKER run -d -v $(pwd)/%{installables_tar}:/tmp/%{installables_tar} -v $
 
 $DOCKER attach $cid || true
 
-reset_cmd $image_id $cid %{output_image_name}
+reset_cmd $image_id $cid %{output_image_name} $DOCKER
 $DOCKER save %{output_image_name} > %{output_file_name}
 $DOCKER rm $cid

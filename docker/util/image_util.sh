@@ -6,6 +6,7 @@ reset_cmd() {
     local original_image_name=$1
     local container_id=$2
     local output_image_name=$3
+    local docker_command=$4
 
     local old_cmd
     # docker inspect input cannot be piped into docker commit directly, we need to JSON format it.
@@ -17,5 +18,5 @@ reset_cmd() {
         fmt_cmd='["/bin/sh", "-c"]'
     fi
 
-    $DOCKER commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
+    $docker_command commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
 }
