@@ -142,7 +142,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
     return [
         DefaultInfo(
             executable = output_executable,
-            files = depset([output_executable], transitive = [ctx.attr._extract_image_id.files]),
+            files = depset([output_executable]),
             runfiles = ctx.runfiles(
                 files = [
                     image_tar,
