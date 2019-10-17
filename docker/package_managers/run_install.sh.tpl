@@ -22,6 +22,6 @@ cid=$($DOCKER run -d -v $(pwd)/%{installables_tar}:/tmp/%{installables_tar} -v $
 
 $DOCKER attach $cid || true
 
-reset_cmd $image_id $cid %{output_image_name} $DOCKER
+reset_cmd $image_id $cid %{output_image_name} "$DOCKER"
 $DOCKER save %{output_image_name} > %{output_file_name}
 $DOCKER rm $cid
