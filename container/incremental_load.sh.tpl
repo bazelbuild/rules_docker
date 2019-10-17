@@ -33,7 +33,7 @@ RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
 DOCKER="%{docker_tool_path}"
 
-if [[ -z "${DOCKER}" ]]; then
+if [[ -z ${DOCKER} ]]; then
     echo >&2 "error: docker not found; do you need to manually configure the docker toolchain?"
     exit 1
 fi
@@ -43,7 +43,7 @@ TEMP_FILES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_files')"
 TEMP_IMAGES="$(mktemp -t 2>/dev/null || mktemp -t 'rules_docker_images')"
 function cleanup() {
   cat "${TEMP_FILES}" | xargs rm -rf> /dev/null 2>&1 || true
-  cat "${TEMP_IMAGES}" | xargs "${DOCKER}" rmi > /dev/null 2>&1 || true
+  cat "${TEMP_IMAGES}" | xargs ${DOCKER} rmi > /dev/null 2>&1 || true
 
   rm -rf "${TEMP_FILES}"
   rm -rf "${TEMP_IMAGES}"
@@ -56,7 +56,7 @@ function load_legacy() {
 
   # docker load has elision of preloaded layers built in.
   echo "Loading legacy tarball base $1..."
-  "${DOCKER}" load -i "${tarball}"
+  ${DOCKER} load -i "${tarball}"
 }
 
 function join_by() {
@@ -97,7 +97,7 @@ EOF
 EOF
 
   set -o pipefail
-  tar c config.json manifest.json | "${DOCKER}" load 2>/dev/null | cut -d':' -f 2- >> "${TEMP_IMAGES}"
+  tar c config.json manifest.json | ${DOCKER} load 2>/dev/null | cut -d':' -f 2- >> "${TEMP_IMAGES}"
 }
 
 function find_diffbase() {
@@ -204,7 +204,7 @@ EOF
   # We minimize reads / writes by symlinking the layers above
   # and then streaming exactly the layers we've established are
   # needed into the Docker daemon.
-  tar cPh "${MISSING[@]}" | tee image.tar | "${DOCKER}" load
+  tar cPh "${MISSING[@]}" | tee image.tar | ${DOCKER} load
 }
 
 function tag_layer() {
@@ -212,7 +212,7 @@ function tag_layer() {
 
   local TAG="$1"
   echo "Tagging ${name} as ${TAG}"
-  "${DOCKER}" tag sha256:${name} ${TAG}
+  ${DOCKER} tag sha256:${name} ${TAG}
 }
 
 function read_variables() {
