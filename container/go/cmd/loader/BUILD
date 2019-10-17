@@ -18,7 +18,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["loader.go"],
+    srcs = [
+        "gzip.go",
+        "loader.go",
+    ],
     importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/loader",
     visibility = ["//visibility:private"],
     deps = [
