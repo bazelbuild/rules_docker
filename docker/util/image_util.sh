@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Resolve the docker tool path
-DOCKER="%{docker_tool_path}"
 
 reset_cmd() {
     local original_image_name=$1
