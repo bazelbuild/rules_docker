@@ -222,6 +222,13 @@ container_image(
 )
 
 container_image(
+    name = "docker_gz_tarball_base",
+    base = "@pause_tar_gz//image",
+    files = ["foo"],
+    mode = "0o644",
+)
+
+container_image(
     name = "layers_with_docker_tarball_base",
     base = "@pause_tar//image",
     files = ["foo"],

@@ -123,6 +123,11 @@ container_load(
     file = "//testdata:pause.tar",
 )
 
+container_load(
+    name = "pause_tar_gz",
+    file = "//testdata:pause.tar.gz",
+)
+
 container_pull(
     name = "alpine_linux_amd64",
     registry = "index.docker.io",
