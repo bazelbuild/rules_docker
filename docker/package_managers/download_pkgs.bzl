@@ -14,6 +14,11 @@
 
 """Rule for downloading apt packages and tar them in a .tar file."""
 
+load(
+    "//skylib:path.bzl",
+    "runfile",
+)
+
 def _generate_add_additional_repo_commands(ctx, additional_repos):
     return """printf "{repos}" >> /etc/apt/sources.list.d/{name}_repos.list""".format(
         name = ctx.attr.name,
@@ -125,7 +130,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
-            "%{image_id_extractor_path}": "./" + ctx.executable._extract_image_id.short_path,
+            "%{image_id_extractor_path}": "${RUNFILES}/%s" % runfile(ctx, ctx.executable._extract_image_id),
             "%{image_tar}": image_tar.short_path,
             "%{installables}": ctx.attr.name,
             "%{output_metadata}": output_metadata.short_path,
@@ -134,18 +139,21 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         is_executable = True,
     )
 
-    return struct(
-        runfiles = ctx.runfiles(
-            files = [
-                image_tar,
-                output_script,
-                output_metadata,
-                ctx.executable._extract_image_id,
-            ],
-            transitive_files = ctx.attr._extract_image_id.files,
+    return [
+        DefaultInfo(
+            executable = output_executable,
+            files = depset([output_executable], transitive = [ctx.attr._extract_image_id.files]),
+            runfiles = ctx.runfiles(
+                files = [
+                    image_tar,
+                    output_script,
+                    output_metadata,
+                    ctx.executable._extract_image_id,
+                ],
+                transitive_files = ctx.attr._extract_image_id[DefaultInfo].default_runfiles.files,
+            ),
         ),
-        files = depset([output_executable]),
-    )
+    ]
 
 _attrs = {
     "additional_repos": attr.string_list(
