@@ -13,10 +13,8 @@
 # limitations under the License.
 """Rule for bundling Container images into a tarball."""
 
-load(
-    "//skylib:label.bzl",
-    _string_to_label = "string_to_label",
-)
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
@@ -24,7 +22,10 @@ load(
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
-load("//container:providers.bzl", "BundleInfo")
+load(
+    "//skylib:label.bzl",
+    _string_to_label = "string_to_label",
+)
 
 def _container_bundle_impl(ctx):
     """Implementation for the container_bundle rule."""
@@ -37,62 +38,73 @@ def _container_bundle_impl(ctx):
 
     images = {}
     runfiles = []
+    if ctx.attr.stamp:
+        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
+    stamp = False
     for unresolved_tag in ctx.attr.images:
         # Allow users to put make variables into the tag name.
         tag = ctx.expand_make_variables("images", unresolved_tag, {})
 
+        # If any tag contains python format syntax (which is how users
+        # configure stamping), we enable stamping.
+        if "{" in tag:
+            stamp = True
+
         target = ctx.attr.images[unresolved_tag]
 
-        l = _get_layers(ctx, ctx.label.name, image_target_dict[target])
-        images[tag] = l
-        runfiles += [l.get("config")]
-        runfiles += [l.get("config_digest")]
-        runfiles += l.get("unzipped_layer", [])
-        runfiles += l.get("diff_id", [])
+        layer = _get_layers(ctx, ctx.label.name, image_target_dict[target])
+        images[tag] = layer
+        runfiles += [layer.get("config")]
+        runfiles += [layer.get("config_digest")]
+        runfiles += layer.get("unzipped_layer", [])
+        runfiles += layer.get("diff_id", [])
+        if layer.get("legacy"):
+            runfiles += [layer.get("legacy")]
 
     _incr_load(
         ctx,
         images,
         ctx.outputs.executable,
-        stamp = ctx.attr.stamp,
+        stamp = stamp,
     )
-    _assemble_image(ctx, images, ctx.outputs.out, stamp = ctx.attr.stamp)
-
-    stamp_files = []
-    if ctx.attr.stamp:
-        stamp_files = [ctx.info_file, ctx.version_file]
-
-    return struct(
-        container_images = images,
-        stamp = ctx.attr.stamp,
-        providers = [
-            BundleInfo(
-                container_images = images,
-                stamp = ctx.attr.stamp,
-            ),
-            DefaultInfo(
-                files = depset(),
-                executable = ctx.outputs.executable,
-                runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
-            ),
-        ],
+    _assemble_image(
+        ctx,
+        images,
+        ctx.outputs.tar_output,
+        stamp = stamp,
     )
+
+    stamp_files = [ctx.info_file, ctx.version_file] if stamp else []
+
+    return [
+        BundleInfo(
+            container_images = images,
+            stamp = stamp,
+        ),
+        DefaultInfo(
+            executable = ctx.outputs.executable,
+            files = depset(),
+            runfiles = ctx.runfiles(files = (stamp_files + runfiles)),
+        ),
+        OutputGroupInfo(
+            tar = depset([ctx.outputs.tar_output]),
+        ),
+    ]
 
 container_bundle_ = rule(
-    attrs = dict({
-        "images": attr.string_dict(),
+    attrs = dicts.add({
+        "image_target_strings": attr.string_list(),
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
-        "image_target_strings": attr.string_list(),
+        "images": attr.string_dict(),
         "stamp": attr.bool(
             default = False,
             mandatory = False,
         ),
-    }.items() + _layer_tools.items()),
+        "tar_output": attr.output(),
+    }, _layer_tools),
     executable = True,
-    outputs = {
-        "out": "%{name}.tar",
-    },
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _container_bundle_impl,
 )
 
@@ -122,4 +134,7 @@ def container_bundle(**kwargs):
         kwargs["image_targets"] = values
         kwargs["image_target_strings"] = values
 
+    name = kwargs["name"]
+    tar_output = kwargs.pop("tar_output", name + ".tar")
+    kwargs["tar_output"] = tar_output
     container_bundle_(**kwargs)

@@ -26,3 +26,13 @@ def generate_deb(name, args = [], metadata_compression_type = "none"):
         ),
         tools = [":gen_deb"],
     )
+
+def _rule_with_symlinks_impl(ctx):
+    f = ctx.actions.declare_file("foo.txt")
+    ctx.actions.write(f, "test content")
+    runfiles = ctx.runfiles(files = [f], symlinks = {"foo-symlink.txt": f})
+    return DefaultInfo(runfiles = runfiles)
+
+rule_with_symlinks = rule(
+    implementation = _rule_with_symlinks_impl,
+)

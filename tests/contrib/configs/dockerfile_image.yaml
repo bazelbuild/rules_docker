@@ -1,0 +1,52 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: ['echo']
+  cmd: ['Hello World!']
+  env:
+    - key: "envVar"
+      value: "My environment variable"
+    - key: "xyz"
+      value: "321"
+  labels:
+    - key: "version"
+      value: "7.7"
+    - key: "desc"
+      value: "Description for version 7.7"
+  exposedPorts: ["8080", "9876"]
+  volumes: ["/myVol1", "/usr/myVol2"]
+
+fileExistenceTests:
+  - name: 'txt_file_exists'
+    path: '/Data_file.txt'
+    shouldExist: true
+  - name: 'usr_txt_file_exists'
+    path: '/usr/More_data.txt'
+    shouldExist: true
+  - name: 'copy_txt_file_exists'
+    path: '/file_to_copy.txt'
+    shouldExist: true
+
+fileContentTests:
+  - name: "Alpine version check"
+    path: "/etc/alpine-release"
+    expectedContents: ["3.9*"]
+  - name: 'txt_file_contains'
+    path: '/Data_file.txt'
+    expectedContents: ['Some data\.\.\.\s']
+  - name: 'usr_txt_file_contains'
+    path: '/usr/More_data.txt'
+    expectedContents: ['Additional data']
+  - name: 'copy_txt_file_contains'
+    path: '/file_to_copy.txt'
+    expectedContents: ['Another file to copy']
+
+commandTests:
+  - name: "gcc_test"
+    command: "gcc"
+    args: ["--version"]
+    expectedOutput: ["gcc \\(Alpine .*"]
+  - name: "python2_test"
+    command: "python"
+    args: ["-V"]
+    expectedError: ["Python 2\\..*"]

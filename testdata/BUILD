@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@pip_deps//:requirements.bzl", "requirement")
+load("//cc:image.bzl", "cc_image")
 load(
     "//container:container.bzl",
     "container_bundle",
@@ -21,9 +23,55 @@ load(
     "container_image",
     "container_layer",
 )
-load("//testdata:utils.bzl", "generate_deb")
+load("//contrib:group.bzl", "group_entry", "group_file")
+load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
+load(
+    "//contrib:push-all.bzl",
+    docker_pushall = "docker_push",
+    oci_pushall = "oci_push",
+)
+load(
+    "//contrib:with-tag.bzl",
+    container_image_with_tag = "container_image",
+)
+load("//d:image.bzl", "d_image")
+load("//docker:docker.bzl", "docker_push")
+load("//groovy:image.bzl", "groovy_image")
+load(
+    "//java:image.bzl",
+    "java_image",
+    "war_image",
+)
+load("//oci:oci.bzl", "oci_push")
+load("//python:image.bzl", "py_image", "py_layer")
+load("//python3:image.bzl", "py3_image")
+load("//scala:image.bzl", "scala_image")
+load("//testdata:utils.bzl", "generate_deb", "rule_with_symlinks")
+load(":stamp_info.bzl", "stamp_info")
 
-exports_files(["pause.tar"])
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "pause.tar",
+    "bar",
+    "foo",
+])
+
+exports_files(["BUILD"])
+
+exports_files([
+    "Binary.groovy",
+    "cc_image_library.cc",
+    "cc_image_library.h",
+    "Library.groovy",
+    "Library.java",
+    "Library.scala",
+    "main.go",
+    "main.rs",
+    "nodejs_image.js",
+    "py_image_library.py",
+    "Runfiles.java",
+])
 
 genrule(
     name = "gen",
@@ -40,47 +88,47 @@ container_image(
 container_image(
     name = "no_data_path_image",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "data_path_image",
     data_path = ".",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "absolute_data_path_image",
     data_path = "/tools/build_defs",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "root_data_path_image",
     data_path = "/",
     files = ["//testdata/test:test-data"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "gen_image",
     files = [":gen"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "files_base",
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
     name = "files_with_files_base",
     base = ":files_base",
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -88,13 +136,13 @@ container_image(
     base = ":files_base",
     files = ["bar"],
     layers = [":files_in_layer"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_layer(
     name = "files_in_layer",
     files = ["baz"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -138,7 +186,7 @@ container_image(
     name = "files_with_tar_base",
     base = ":tar_base",
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -151,7 +199,7 @@ container_image(
     name = "docker_tarball_base",
     base = "@pause_tar//image",
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -162,7 +210,7 @@ container_image(
         ":files_in_layer",
         ":tars_in_layer",
     ],
-    mode = "0644",
+    mode = "0o644",
 )
 
 # TODO(mattmoor): Test scalar entrypoint
@@ -170,7 +218,7 @@ container_image(
     name = "base_with_entrypoint",
     entrypoint = ["/bar"],
     files = ["bar"],
-    mode = "0644",
+    mode = "0o644",
     ports = ["8080"],
     tars = ["two.tar"],
 )
@@ -189,7 +237,7 @@ container_image(
     base = ":base_with_entrypoint",
     cmd = ["shadowed-arg"],
     files = ["foo"],
-    mode = "0644",
+    mode = "0o644",
 )
 
 container_image(
@@ -209,7 +257,7 @@ container_image(
         "bar",
         "foo",
     ],
-    mode = "0644",
+    mode = "0o644",
     volumes = ["/logs"],
 )
 
@@ -280,8 +328,8 @@ container_image(
     name = "with_env",
     base = ":base_with_volume",
     env = {
-        "foo": "/asdf",
         "bar": "blah blah blah",
+        "foo": "/asdf",
     },
 )
 
@@ -289,7 +337,7 @@ container_image(
     name = "with_double_env",
     base = ":with_env",
     env = {
-        "baz": "${foo} $bar",
+        "baz": "$${foo} $$bar",
     },
 )
 
@@ -297,7 +345,7 @@ container_image(
     name = "layers_with_env",
     base = ":base_with_volume",
     env = {
-        "PATH": "$PATH:/tmp/b:/tmp/c",
+        "PATH": "$$PATH:/tmp/b:/tmp/c",
         "x": "y",
     },
     layers = [":env_layer"],
@@ -306,7 +354,7 @@ container_image(
 container_layer(
     name = "env_layer",
     env = {
-        "PATH": "$PATH:/tmp/a",
+        "PATH": "$$PATH:/tmp/a",
         "a": "b",
     },
 )
@@ -315,9 +363,9 @@ container_image(
     name = "with_label",
     base = ":base_with_volume",
     labels = {
-        "com.example.foo": "@blah.json",
         "com.example.bar": "@blah.json",
         "com.example.baz": "qux",
+        "com.example.foo": "@blah.json",
     },
 )
 
@@ -366,25 +414,41 @@ container_flatten(
     image = ":link_with_files_base",
 )
 
-load("//docker:docker.bzl", "docker_push")
+container_image(
+    name = "image_with_bar",
+    files = [
+        ":bar",
+    ],
+)
+
+container_image(
+    name = "image_with_bar_and_baz",
+    # Deriving from the base as a tar tests for the case where the base image
+    # is specified as a tarball to image reader.
+    base = ":image_with_bar.tar",
+    files = [
+        ":baz",
+    ],
+)
+
+container_flatten(
+    name = "flatten_with_tarball_base",
+    image = ":image_with_bar_and_baz",
+)
 
 docker_push(
     name = "push_stamp",
     image = ":link_with_files_base",
     registry = "gcr.io",
     repository = "convoy-adapter/bazel-oci-test",
-    stamp = True,
     tag = "{BUILD_USER}",
 )
-
-load("//oci:oci.bzl", "oci_push")
 
 oci_push(
     name = "push_stamp_oci",
     image = ":link_with_files_base",
     registry = "gcr.io",
     repository = "convoy-adapter/bazel-oci-test",
-    stamp = True,
     tag = "{BUILD_USER}",
 )
 
@@ -416,8 +480,8 @@ container_bundle(
     name = "bundle_test",
     images = {
         "docker.io/ubuntu:latest": ":base_with_entrypoint",
-        "us.gcr.io/google-appengine/base:fresh": ":link_with_files_base",
         "gcr.io/google-containers/pause:2.0": ":with_double_env",
+        "us.gcr.io/google-appengine/base:fresh": ":link_with_files_base",
     },
 )
 
@@ -427,13 +491,13 @@ container_bundle(
         # Pad username so that it is long enough.
         "example.com/aaaaa{BUILD_USER}:stamped": ":with_user",
     },
-    stamp = True,
 )
 
 # Generate a dummy debian package with a test/ directory
 py_binary(
     name = "gen_deb",
     srcs = ["gen_deb.py"],
+    python_version = "PY2",
 )
 
 generate_deb(
@@ -450,11 +514,6 @@ generate_deb(
 #     tars = ["extras.tar"],
 # )
 
-load(
-    "//contrib:with-tag.bzl",
-    container_image_with_tag = "container_image",
-)
-
 container_image_with_tag(
     name = "build_with_tag",
     base = ":with_user",
@@ -462,22 +521,15 @@ container_image_with_tag(
     tag = "gcr.io/build/with:tag",
 )
 
-load(
-    "//contrib:push-all.bzl",
-    docker_pushall = "docker_push",
-    oci_pushall = "oci_push",
-)
-
 # This bundles up a bunch of images into a single tarball,
 # which is pushed as a unit below.
 container_bundle(
     name = "bundle_to_push",
     images = {
-        "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
-        "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
         "asia.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:baz": ":with_user",
+        "eu.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:bar": ":with_double_env",
+        "us.gcr.io/convoy-adapter/bazel-test/{BUILD_USER}:foo": ":with_env",
     },
-    stamp = True,
 )
 
 docker_pushall(
@@ -489,8 +541,6 @@ oci_pushall(
     name = "push_bundle_oci",
     bundle = ":bundle_to_push",
 )
-
-load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
 
 passwd_entry(
     name = "root_user",
@@ -512,18 +562,30 @@ passwd_entry(
     username = "foobar",
 )
 
+passwd_entry(
+    name = "nobody_user",
+    create_home = False,
+    gid = 65534,
+    home = "/nonexistent",
+    info = "nobody with no home",
+    shell = "/sbin/nologin",
+    uid = 65534,
+    username = "nobody",
+)
+
 passwd_file(
     name = "passwd",
     entries = [
         ":root_user",
         ":foobar_user",
+        ":nobody_user",
     ],
 )
 
 pkg_tar(
     name = "passwd_tar",
     srcs = [":passwd"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 
@@ -532,6 +594,7 @@ passwd_tar(
     entries = [
         ":root_user",
         ":foobar_user",
+        ":nobody_user",
     ],
     passwd_file_pkg_dir = "etc",
 )
@@ -547,8 +610,6 @@ container_image(
         ":password",
     ],
 )
-
-load("//contrib:group.bzl", "group_entry", "group_file")
 
 group_entry(
     name = "root_group",
@@ -578,7 +639,7 @@ group_file(
 pkg_tar(
     name = "group_tar",
     srcs = [":group"],
-    mode = "0644",
+    mode = "0o644",
     package_dir = "etc",
 )
 
@@ -622,13 +683,6 @@ container_image(
     base = "@distroless_cc//image",
 )
 
-load("//python:image.bzl", "py_image")
-
-py_library(
-    name = "py_image_library",
-    srcs = ["py_image_library.py"],
-)
-
 py_image(
     name = "py_image",
     srcs = ["py_image.py"],
@@ -639,7 +693,7 @@ py_image(
     ],
     data = [":BUILD"],
     layers = [
-        ":py_image_library",
+        "//tests/container/python:py_image_library",
     ],
 )
 
@@ -647,44 +701,87 @@ py_image(
     name = "py_image_with_main",
     srcs = ["py_image.py"],
     layers = [
-        ":py_image_library",
+        "//tests/container/python:py_image_library",
     ],
     main = "py_image.py",
 )
 
-load("//python3:image.bzl", "py3_image")
+rule_with_symlinks(
+    name = "data_with_symlinks",
+)
 
-py3_image(
-    name = "py3_image",
-    srcs = ["py3_image.py"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
+py_image(
+    name = "py_image_with_symlinks_in_data",
+    srcs = ["py_image.py"],
+    data = [
+        ":data_with_symlinks",
     ],
-    data = [":BUILD"],
     layers = [
-        ":py_image_library",
+        "//tests/container/python:py_image_library",
     ],
+    main = "py_image.py",
+)
+
+py_library(
+    name = "py_image_library_using_six",
+    srcs = ["py_image_library_using_six.py"],
+    deps = [requirement("six")],
+)
+
+py_library(
+    name = "py_image_complex_library",
+    srcs = ["py_image_complex_library.py"],
+    deps = [
+        ":py_image_library_using_six",
+        "//testdata/test:py_image_library_using_addict",
+    ],
+)
+
+py_layer(
+    name = "py_image_complex_filter_by_path",
+    filter = "//testdata/test",
+    deps = [":py_image_complex_library"],
+)
+
+py_layer(
+    name = "py_image_complex_filter_by_path_external_deps",
+    filter = "@",
+    deps = [":py_image_complex_filter_by_path"],
+)
+
+py_layer(
+    name = "py_image_complex_external_deps",
+    filter = "@",
+    deps = [":py_image_complex_library"],
+)
+
+py_image(
+    name = "py_image_complex",
+    srcs = ["py_image_complex.py"],
+    layers = [
+        ":py_image_complex_filter_by_path_external_deps",  # addict
+        ":py_image_complex_external_deps",  # six
+        ":py_image_complex_filter_by_path",  # py_image_library_using_addict
+        ":py_image_complex_library",  # py_image_complex_library + py_image_library_using_six
+    ],
+    main = "py_image_complex.py",
 )
 
 py3_image(
     name = "py3_image_with_main",
     srcs = ["py3_image.py"],
     layers = [
-        ":py_image_library",
+        "//tests/container/python:py_image_library",
     ],
     main = "py3_image.py",
 )
 
 # The following `container_image` and `py3_image` combination shows how to set
 # custom `docker_run_flags` in `py3_image`.
-# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
 container_image(
     name = "py3_image_base_with_custom_run_flags",
     base = "@py3_image_base//image",
     docker_run_flags = "-i --rm --network=host -e ABC=ABC",
-    legacy_run_behavior = False,
 )
 
 py3_image(
@@ -692,36 +789,15 @@ py3_image(
     srcs = ["py3_image.py"],
     base = ":py3_image_base_with_custom_run_flags",
     layers = [
-        ":py_image_library",
+        "//tests/container/python:py_image_library",
     ],
     main = "py3_image.py",
-)
-
-load("//cc:image.bzl", "cc_image")
-
-cc_library(
-    name = "cc_image_library",
-    srcs = ["cc_image_library.cc"],
-    hdrs = ["cc_image_library.h"],
-)
-
-cc_image(
-    name = "cc_image",
-    srcs = ["cc_image.cc"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
-    # This creates an empty layer, due to linking.
-    layers = [":cc_image_library"],
 )
 
 cc_binary(
     name = "cc_binary",
     srcs = ["cc_image.cc"],
-    deps = [":cc_image_library"],
+    deps = ["//tests/container/cc:cc_image_library"],
 )
 
 cc_image(
@@ -729,10 +805,12 @@ cc_image(
     binary = ":cc_binary",
 )
 
-load(
-    "//java:image.bzl",
-    "java_image",
-    "war_image",
+# Test that we can also load image from within another script.
+sh_binary(
+    name = "cc_image_wrapper",
+    srcs = ["cc_image_wrapper.sh"],
+    args = ["$(location //tests/container/cc:cc_image)"],
+    data = ["//tests/container/cc:cc_image"],
 )
 
 java_library(
@@ -751,7 +829,6 @@ java_image(
     ],
     data = [":BUILD"],
     jvm_flags = [
-        "-XX:MaxPermSize=128M",
         "-Dbuild.location=$(location :BUILD)",
     ],
     layers = [":java_image_library"],
@@ -759,39 +836,38 @@ java_image(
 )
 
 java_image(
-    name = "java_sandwich_image",
+    name = "java_partial_entrypoint_image",
     srcs = ["Binary.java"],
-    layers = [":scala_image_library"],
-    main_class = "examples.images.Binary",
-)
-
-java_library(
-    name = "java_bin_as_lib",
-    srcs = ["Binary.java"],
-    deps = [":java_image_library"],
+    layers = [":java_image_library"],
 )
 
 java_image(
-    name = "java_bin_as_lib_image",
+    name = "java_sandwich_image",
+    srcs = ["Binary.java"],
+    layers = ["//tests/container/scala:scala_image_library"],
     main_class = "examples.images.Binary",
-    runtime_deps = [":java_bin_as_lib"],
 )
 
 # The following `container_image` and `java_image` combination shows how to set
 # custom `docker_run_flags` in `java_image`.
-# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
 container_image(
     name = "java_image_base_with_custom_run_flags",
     base = "@java_image_base//image",
     docker_run_flags = "-i --rm --network=host -e ABC=ABC",
-    legacy_run_behavior = False,
 )
 
 java_image(
     name = "java_image_with_custom_run_flags",
     base = ":java_image_base_with_custom_run_flags",
     main_class = "examples.images.Binary",
-    runtime_deps = [":java_bin_as_lib"],
+    runtime_deps = ["//tests/container/java:java_bin_as_lib"],
+)
+
+java_image(
+    name = "java_image_arg_echo",
+    srcs = ["ArgEcho.java"],
+    args = ["arg0"],
+    main_class = "examples.images.ArgEcho",
 )
 
 war_image(
@@ -805,12 +881,10 @@ war_image(
 
 # The following `container_image` and `war_image` combination shows how to set
 # custom `docker_run_flags` in `war_image`.
-# Note that `docker_run_flags` is only used when `legacy_run_behavior` is False.
 container_image(
     name = "war_image_base_with_custom_run_flags",
     base = "@jetty_image_base//image",
     docker_run_flags = "-i --rm --network=host -e ABC=ABC",
-    legacy_run_behavior = False,
 )
 
 war_image(
@@ -823,29 +897,6 @@ war_image(
     ],
 )
 
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
-load("//scala:image.bzl", "scala_image")
-
-scala_library(
-    name = "scala_image_library",
-    srcs = ["Library.scala"],
-    deps = ["@com_google_guava_guava//jar"],
-)
-
-scala_image(
-    name = "scala_image",
-    srcs = ["Binary.scala"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
-    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
-    layers = [":scala_image_library"],
-    main_class = "examples.images.Binary",
-)
-
 scala_image(
     name = "scala_sandwich_image",
     srcs = ["Binary.scala"],
@@ -853,91 +904,37 @@ scala_image(
     main_class = "examples.images.Binary",
 )
 
-load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
-load("//groovy:image.bzl", "groovy_image")
-
-groovy_library(
-    name = "groovy_image_library",
-    srcs = ["Library.groovy"],
-    deps = ["@com_google_guava_guava//jar"],
-)
-
-groovy_image(
-    name = "groovy_image",
-    srcs = ["Binary.groovy"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
-    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
-    layers = [":groovy_image_library"],
-    main_class = "examples.images.Binary",
-)
-
 # This calls from Groovy -> Scala -> Java :)
 groovy_image(
     name = "groovy_scala_image",
     srcs = ["Binary.groovy"],
-    layers = [":scala_image_library"],
+    layers = ["//tests/container/scala:scala_image_library"],
     main_class = "examples.images.Binary",
 )
 
-load("//go:image.bzl", "go_image")
-
-go_image(
-    name = "go_image",
-    srcs = ["main.go"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
-    importpath = "github.com/bazelbuild/rules_docker/docker/testdata",
-    tags = [
-        "tag1",
-        "tag2",
-    ],
+go_binary(
+    name = "launcher",
+    srcs = ["launcher_main.go"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
 )
 
-load("//rust:image.bzl", "rust_image")
-
-rust_image(
-    name = "rust_image",
-    srcs = ["main.rs"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
+container_image(
+    name = "launcher_image",
+    base = "//tests/container/go:go_image",
+    launcher = ":launcher",
+    launcher_args = ["-env=CUSTOM_MESSAGE=Launched via launcher!"],
+    legacy_run_behavior = False,
 )
 
-load("//d:image.bzl", "d_image")
-
-# Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
-#d_image(
-#    name = "d_image",
-#    srcs = ["main.d"],
-#    args = [
-#        "arg0",
-#        "arg1",
-#    ],
-#)
-
-load("//nodejs:image.bzl", "nodejs_image")
-
-nodejs_image(
-    name = "nodejs_image",
+d_image(
+    name = "d_image",
+    srcs = ["main.d"],
     args = [
         "arg0",
         "arg1",
     ],
-    data = [":nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
 )
 
 generate_deb(
@@ -956,4 +953,37 @@ generate_deb(
 generate_deb(
     name = "pkg_control_xz",
     metadata_compression_type = "xz",
+)
+
+# Make the Bazel stamp file available in tests.
+stamp_info(name = "stamp_info_file")
+
+# Auto-generated by Go linter.
+go_binary(
+    name = "main",
+    srcs = ["main.go"],
+)
+
+container_image(
+    name = "docker_run_flags_use_default",
+    legacy_run_behavior = False,
+)
+
+container_image(
+    name = "docker_run_flags_overrides_default",
+    docker_run_flags = "-i --rm --network=host -e ABC=ABC",
+    legacy_run_behavior = False,
+)
+
+container_image(
+    name = "docker_run_flags_inherits_base",
+    base = ":docker_run_flags_overrides_default",
+    legacy_run_behavior = False,
+)
+
+container_image(
+    name = "docker_run_flags_overrides_base",
+    base = ":docker_run_flags_overrides_default",
+    docker_run_flags = "-i --rm --network=host -e ABC=DEF",
+    legacy_run_behavior = False,
 )

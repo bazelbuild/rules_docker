@@ -1,0 +1,85 @@
+schemaVersion: '2.0.0'
+fileExistenceTests:
+- name: 'Dpkg status file for Pkg1'
+  path: '/var/lib/dpkg/status.d/pkg1'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+- name: 'pkg1 package files'
+  path: '/usr/pkg1'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+- name: 'Dpkg status file for Pkg2'
+  path: '/var/lib/dpkg/status.d/pkg2'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+- name: 'pkg2 package files'
+  path: '/usr/pkg2'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+- name: 'dpkg status file for pkg_control_gz'
+  path: '/var/lib/dpkg/status.d/pkg_control_gz'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+- name: 'pkg_control_gz package files'
+  path: '/usr/pkg_control_gz'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+- name: 'dpkg status file for pkg_control_xz'
+  path: '/var/lib/dpkg/status.d/pkg_control_xz'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+- name: 'pkg_control_xz package files'
+  path: '/usr/pkg_control_xz'
+  shouldExist: true
+  permissions: '-rw-r--r--'
+
+fileContentTests:
+- name: 'Dpkg status file for Pkg1 contents'
+  expectedContents: ['Package: pkg1',
+                     'Description:.*pkg1.*']
+  path: '/var/lib/dpkg/status.d/pkg1'
+
+- name: 'pkg1 package files contents'
+  expectedContents: ['toto.*']
+  path: '/usr/pkg1'
+
+- name: 'Dpkg status file for Pkg2 contents'
+  expectedContents: ['Package: pkg2',
+                     'Description:.*pkg2.*']
+  path: '/var/lib/dpkg/status.d/pkg2'
+
+- name: 'pkg2 package files contents'
+  expectedContents: ['toto.*']
+  path: '/usr/pkg2'
+
+- name: 'Dpkg status file for pkg_control_gz contents'
+  expectedContents: ['Package: pkg_control_gz',
+                     'Description:.*pkg_control_gz.*']
+  path: '/var/lib/dpkg/status.d/pkg_control_gz'
+
+- name: 'Dpkg status file for pkg_control_xz contents'
+  expectedContents: ['Package: pkg_control_xz',
+                     'Description:.*pkg_control_xz.*']
+  path: '/var/lib/dpkg/status.d/pkg_control_xz'
+
+# TODO: (tejaldesai) Bring this test back in when we can figure out disabling tests
+#- name: 'Dpkg status file for busybox'
+#  expectedContents: ['Package: busybox-static',
+#                     'Version: 1:1.22.0-15ubuntu1']
+#  path: '/var/lib/dpkg/status.d/busybox'
+# TODO: Uncomment this when commandTests are enabled in container_test rul
+#commandTests:
+#  - name: "busy_box"
+#    command: "busybox"
+#    args: ["echo", "test"]
+#    expectedOutput: ["busybox"]
+
+metadataTest:
+  workdir: "/test"

@@ -17,6 +17,11 @@ This variant of container_push accepts a container_bundle target and publishes
 the embedded image references.
 """
 
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
+load(
+    "//container:layer_tools.bzl",
+    _gen_img_args = "generate_args_for_image",
+)
 load(
     "//skylib:path.bzl",
     "runfile",
@@ -27,8 +32,8 @@ def _get_runfile_path(ctx, f):
 
 def _impl(ctx):
     """Core implementation of container_push."""
-    stamp = ctx.attr.bundle.stamp
-    images = ctx.attr.bundle.container_images
+    stamp = ctx.attr.bundle[BundleInfo].stamp
+    images = ctx.attr.bundle[BundleInfo].container_images
 
     stamp_inputs = []
     if stamp:
@@ -41,48 +46,26 @@ def _impl(ctx):
     for index, tag in enumerate(images.keys()):
         image = images[tag]
 
-        # Leverage our efficient intermediate representation to push.
-        legacy_base_arg = ""
-        if image.get("legacy"):
-            print("Pushing an image based on a tarball can be very " +
-                  "expensive.  If the image is the output of a " +
-                  "docker_build, consider dropping the '.tar' extension. " +
-                  "If the image is checked in, consider using " +
-                  "docker_import instead.")
-            legacy_base_arg = "--tarball=%s" % _get_runfile_path(ctx, image["legacy"])
-            runfiles += [image["legacy"]]
-
-        blobsums = image.get("blobsum", [])
-        digest_arg = " ".join(["--digest=%s" % _get_runfile_path(ctx, f) for f in blobsums])
-        blobs = image.get("zipped_layer", [])
-        layer_arg = " ".join(["--layer=%s" % _get_runfile_path(ctx, f) for f in blobs])
-        config_arg = "--config=%s" % _get_runfile_path(ctx, image["config"])
-
-        runfiles += [image["config"]] + blobsums + blobs
-
-        out = ctx.new_file("%s.%d.push" % (ctx.label.name, index))
-        ctx.template_action(
+        pusher_args, pusher_inputs = _gen_img_args(ctx, image, _get_runfile_path)
+        pusher_args += ["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs]
+        pusher_args.append("--dst={}".format(tag))
+        pusher_args.append("--format={}".format(ctx.attr.format))
+        out = ctx.actions.declare_file("%s.%d.push" % (ctx.label.name, index))
+        ctx.actions.expand_template(
             template = ctx.file._tag_tpl,
             substitutions = {
-                "%{stamp}": stamp_arg,
-                "%{tag}": ctx.expand_make_variables("tag", tag, {}),
-                "%{image}": "%s %s %s %s" % (
-                    legacy_base_arg,
-                    config_arg,
-                    digest_arg,
-                    layer_arg,
-                ),
-                "%{format}": "--oci" if ctx.attr.format == "OCI" else "",
+                "%{args}": " ".join(pusher_args),
                 "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
             },
             output = out,
-            executable = True,
+            is_executable = True,
         )
 
         scripts += [out]
         runfiles += [out]
+        runfiles += pusher_inputs
 
-    ctx.template_action(
+    ctx.actions.expand_template(
         template = ctx.file._all_tpl,
         substitutions = {
             "%{push_statements}": "\n".join([
@@ -91,52 +74,52 @@ def _impl(ctx):
             ]),
         },
         output = ctx.outputs.executable,
-        executable = True,
+        is_executable = True,
     )
 
-    return struct(runfiles = ctx.runfiles(files = [
-        ctx.executable._pusher,
-    ] + stamp_inputs + runfiles + list(ctx.attr._pusher.default_runfiles.files)))
+    return [
+        DefaultInfo(
+            runfiles = ctx.runfiles(
+                files = [ctx.executable._pusher] + stamp_inputs + runfiles,
+                transitive_files = ctx.attr._pusher[DefaultInfo].default_runfiles.files,
+            ),
+        ),
+    ]
 
 container_push = rule(
     attrs = {
-        "bundle": attr.label(mandatory = True),
+        "bundle": attr.label(
+            mandatory = True,
+            doc = "The bundle of tagged images to publish.",
+        ),
         "format": attr.string(
             mandatory = True,
             values = [
                 "OCI",
                 "Docker",
             ],
+            doc = "The form to push: Docker or OCI.",
         ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),
-            single_file = True,
+            allow_single_file = True,
+        ),
+        "_pusher": attr.label(
+            default = Label("//container/go/cmd/pusher"),
+            cfg = "host",
+            executable = True,
             allow_files = True,
         ),
         "_tag_tpl": attr.label(
             default = Label("//container:push-tag.sh.tpl"),
-            single_file = True,
-            allow_files = True,
-        ),
-        "_pusher": attr.label(
-            default = Label("@containerregistry//:pusher"),
-            cfg = "host",
-            executable = True,
-            allow_files = True,
+            allow_single_file = True,
         ),
     },
     executable = True,
     implementation = _impl,
 )
 
-"""Pushes a bundle of container images.
-
-Args:
-  name: name of the rule.
-  bundle: the bundle of tagged images to publish.
-  format: the form to push: Docker or OCI.
-"""
-
+# Pushes a bundle of container images.
 def docker_push(*args, **kwargs):
     if "format" in kwargs:
         fail(

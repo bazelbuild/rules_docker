@@ -17,23 +17,28 @@ The signature of this rule is compatible with cc_binary.
 """
 
 load(
-    "//lang:image.bzl",
-    "app_layer",
-    "dep_layer",
-)
-load(
     "//container:container.bzl",
     "container_pull",
-    _repositories = "repositories",
+)
+load(
+    "//lang:image.bzl",
+    "app_layer",
+)
+load(
+    "//repositories:go_repositories.bzl",
+    _go_deps = "go_deps",
 )
 
 # Load the resolved digests.
 load(":cc.bzl", "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
-    _repositories()
+    """Import the dependencies for the cc_image rule.
+
+    Call the core "go_deps" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
+    _go_deps()
 
     excludes = native.existing_rules().keys()
     if "cc_image_base" not in excludes:
@@ -52,8 +57,8 @@ def repositories():
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@cc_image_base//image",
     "@io_bazel_rules_docker//:debug": "@cc_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@cc_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@cc_image_base//image",
     "//conditions:default": "@cc_image_base//image",
 })
@@ -62,6 +67,9 @@ def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     """Constructs a container image wrapping a cc_binary target.
 
   Args:
+    name: Name of the cc_image target.
+    base: Base image to use for the cc_image.
+    deps: Dependencies of the cc_image.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
@@ -78,9 +86,8 @@ def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
 
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
-        this_name = "%s.%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
-        base = this_name
+        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
+        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
@@ -88,9 +95,9 @@ def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
         name = name,
         base = base,
         binary = binary,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )

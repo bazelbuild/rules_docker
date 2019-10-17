@@ -16,25 +16,29 @@
 The signature of this rule is compatible with d_binary.
 """
 
-load(
-    "//lang:image.bzl",
-    "app_layer",
-    "dep_layer",
-)
+load("@io_bazel_rules_d//d:d.bzl", "d_binary")
 load(
     "//cc:image.bzl",
     "DEFAULT_BASE",
     _repositories = "repositories",
 )
-load("@io_bazel_rules_d//d:d.bzl", "d_binary")
+load(
+    "//lang:image.bzl",
+    "app_layer",
+)
 
 def repositories():
+    """Import the dependencies of the d_image rule.
+    """
     _repositories()
 
 def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     """Constructs a container image wrapping a d_binary target.
 
   Args:
+    name: Name of the d_image target.
+    base: Base image to use for the d_image.
+    deps: Dependencies of the d_image target.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
@@ -51,9 +55,8 @@ def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
 
     base = base or DEFAULT_BASE
     for index, dep in enumerate(layers):
-        this_name = "%s_%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
-        base = this_name
+        base = app_layer(name = "%s_%d" % (name, index), base = base, dep = dep)
+        base = app_layer(name = "%s_%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
@@ -61,9 +64,9 @@ def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
         name = name,
         base = base,
         binary = binary,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
     )

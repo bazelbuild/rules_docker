@@ -1,0 +1,6 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+  - key: NO_PROXY
+    value: 127.0.0.1,localhost

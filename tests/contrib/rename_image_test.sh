@@ -26,7 +26,7 @@ function extract_image_name () {
     do
     if [ "$(cut -d '"' -f$i manifest.json)" = "RepoTags" ]
         then
-        image_name=$(cut -d '"' -f$(expr $i + 2) manifest.json | cut -d "." -f1)
+        image_name=$(cut -d '"' -f$(expr $i + 2) manifest.json)
         break
     fi
     i=$(expr $i + 1)

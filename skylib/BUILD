@@ -11,33 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
-
-skylark_library(
+bzl_library(
     name = "filetype",
     srcs = ["filetype.bzl"],
 )
 
-skylark_library(
+bzl_library(
     name = "label",
     srcs = ["label.bzl"],
 )
 
-skylark_library(
+bzl_library(
     name = "path",
     srcs = ["path.bzl"],
 )
 
-skylark_library(
-    name = "serialize",
-    srcs = ["serialize.bzl"],
-)
-
-skylark_library(
+bzl_library(
     name = "zip",
     srcs = ["zip.bzl"],
 )

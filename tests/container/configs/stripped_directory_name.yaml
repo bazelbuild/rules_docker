@@ -1,0 +1,5 @@
+schemaVersion: '2.0.0'
+fileExistenceTests:
+- name: Output file that is placed in directory structure
+  path: /pear/grape
+  shouldExist: true

@@ -1,0 +1,5 @@
+# Disable targets that are part of an embedded bazel project as buildkite
+# only recognizes a single top level WORKSPACE file.
+testing/examples
+testing/java_image
+testing/download_pkgs_at_root

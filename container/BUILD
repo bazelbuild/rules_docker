@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
 
 exports_files(["push-tag.sh.tpl"])
 
@@ -25,53 +26,25 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+# TODO(xingao): Flip legacy_create_init to False if possible.
 py_binary(
-    name = "extract_config",
-    srcs = ["extract_config.py"],
+    name = "build_tar",
+    srcs = ["build_tar.py"],
+    legacy_create_init = True,
+    python_version = "PY2",
+    srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = [
-        "@containerregistry",
-    ],
+    deps = [":build_tar_lib"],
 )
 
 py_library(
-    name = "utils",
-    srcs = [
-        "__init__.py",
-        "utils.py",
-    ],
-)
-
-py_binary(
-    name = "join_layers",
-    srcs = ["join_layers.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":utils",
-        "@bazel_tools//third_party/py/six",
-        "@containerregistry",
-    ],
-)
-
-py_binary(
-    name = "create_image_config",
-    srcs = ["create_image_config.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":utils",
-        "@bazel_tools//third_party/py/six",
-        "@containerregistry",
-    ],
-)
-
-py_binary(
-    name = "build_tar",
+    name = "build_tar_lib",
     srcs = ["build_tar.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "@bazel_source//tools/build_defs/pkg:archive",
         "@bazel_tools//third_party/py/gflags",
+        "@bazel_tools//tools/build_defs/pkg:archive",
     ],
 )
 
@@ -130,19 +103,15 @@ TEST_TARGETS = [
     ":cc_based_warning",
     "/pause_piecemeal:image",
     "/pause_piecemeal_gz:image",
-    ":cc_image",
     # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
     # "d_image",
-    ":go_image",
-    ":groovy_image",
     ":java_image",
-    ":nodejs_image",
-    ":py3_image",
     ":py_image",
-    ":rust_image",
-    ":scala_image",
+    ":py_image_with_symlinks_in_data",
+    ":py_image_complex",
     ":war_image",
     ":flat",
+    ":flatten_with_tarball_base",
 ]
 
 TEST_DATA = [
@@ -150,6 +119,8 @@ TEST_DATA = [
     for t in TEST_TARGETS
 ] + [
     "//testdata:stamped_bundle_test",
+    "//testdata:stamp_info_file.txt",
+    "//tests/container:basic_windows_image.tar",
 ]
 
 py_test(
@@ -157,19 +128,22 @@ py_test(
     size = "medium",
     srcs = ["image_test.py"],
     data = TEST_DATA,
+    python_version = "PY2",
     deps = ["@containerregistry"],
 )
 
-skylark_library(
+bzl_library(
     name = "bundle",
     srcs = ["bundle.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:label",
+        "@bazel_skylib//lib:dicts",
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "container",
     srcs = ["container.bzl"],
     deps = [
@@ -178,38 +152,41 @@ skylark_library(
         ":image",
         ":import",
         ":layer",
+        ":load",
         ":push",
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "flatten",
     srcs = ["flatten.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:label",
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "image",
     srcs = ["image.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
-        "//skylib:serialize",
         "//skylib:zip",
         "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "import",
     srcs = ["import.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
@@ -217,11 +194,12 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "layer",
     srcs = ["layer.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
@@ -229,28 +207,34 @@ skylark_library(
     ],
 )
 
-skylark_library(
+bzl_library(
     name = "layer_tools",
     srcs = ["layer_tools.bzl"],
     deps = ["//skylib:path"],
 )
 
-skylark_library(
+bzl_library(
     name = "load",
     srcs = ["load.bzl"],
     deps = [":pull"],
 )
 
-skylark_library(
+bzl_library(
+    name = "providers",
+    srcs = ["providers.bzl"],
+)
+
+bzl_library(
     name = "pull",
     srcs = ["pull.bzl"],
 )
 
-skylark_library(
+bzl_library(
     name = "push",
     srcs = ["push.bzl"],
     deps = [
         ":layer_tools",
+        ":providers",
         "//skylib:path",
     ],
 )

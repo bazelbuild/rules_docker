@@ -16,16 +16,24 @@
 load(
     "//container:container.bzl",
     "container_push",
-    docker_build = "container_image",
-    docker_bundle = "container_bundle",
-    docker_flatten = "container_flatten",
-    docker_image = "container_image",
-    docker_import = "container_import",
-    docker_layer = "container_layer",
-    docker_load = "container_load",
-    docker_pull = "container_pull",
-    docker_repositories = "repositories",
+    _docker_build = "container_image",
+    _docker_bundle = "container_bundle",
+    _docker_flatten = "container_flatten",
+    _docker_image = "container_image",
+    _docker_import = "container_import",
+    _docker_layer = "container_layer",
+    _docker_load = "container_load",
+    _docker_pull = "container_pull",
 )
+
+docker_pull = _docker_pull
+docker_load = _docker_load
+docker_layer = _docker_layer
+docker_import = _docker_import
+docker_image = _docker_image
+docker_flatten = _docker_flatten
+docker_bundle = _docker_bundle
+docker_build = _docker_build
 
 def docker_push(*args, **kwargs):
     if "format" in kwargs:

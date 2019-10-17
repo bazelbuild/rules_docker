@@ -1,7 +1,829 @@
+# Copyright 2017 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load(
+    "@bazel_tools//tools/build_rules:test_rules.bzl",
+    "file_test",
+)
+load("//container:bundle.bzl", "container_bundle")
+load(
+    "//container:container.bzl",
+    "container_image",
+    "container_import",
+    "container_push",
+)
+load("//contrib:push-all.bzl", docker_push_all = "docker_push")
+load("//contrib:test.bzl", "container_test")
+load(":apple.bzl", "create_banana_directory")
+load(":empty_layers.bzl", "empty_layers")
+
 package(default_visibility = ["//visibility:public"])
+
+# Build an image with 11 layers to create an end to end test for the scenario
+# where the puller can download an image and name the layer files such that
+# sorting the layer files by their names produces the same order as the order
+# of the layers in the image manifest.
+empty_layers(
+    name = "empty_layer",
+    num_layers = 11,
+)
+
+container_image(
+    name = "image_with_11_layers",
+    layers = [
+        ":empty_layer_{}".format(i)
+        for i in range(11)
+    ],
+)
+
+container_test(
+    name = "structure_test",
+    configs = ["//tests/container/configs:test.yaml"],
+    image = "//testdata:link_with_files_base",
+)
+
+container_image(
+    name = "deb_image_with_dpkgs",
+    debs = [
+        "//testdata:pkg1.deb",
+        "//testdata:pkg2.deb",
+        "//testdata:pkg_control_gz.deb",
+        "//testdata:pkg_control_xz.deb",
+        # TODO: (tejaldesai) Once we figure out how to selectively disable tests using build_tag_filters
+        # ":busybox-static_ubuntu1_amd64.deb",
+    ],
+    workdir = "/test",
+)
+
+container_test(
+    name = "deb_image_with_dpkgs_test",
+    configs = ["//tests/container/configs:deb_image_with_dpkgs.yaml"],
+    image = ":deb_image_with_dpkgs",
+)
+
+container_image(
+    name = "set_cmd",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+)
+
+container_test(
+    name = "set_cmd_test",
+    configs = ["//tests/container/configs:set_cmd.yaml"],
+    image = ":set_cmd",
+)
+
+container_test(
+    name = "set_cmd_test_host",
+    configs = ["//tests/container/configs:set_cmd.yaml"],
+    driver = "host",
+    image = ":set_cmd",
+)
+
+container_image(
+    name = "set_entrypoint",
+    base = "@distroless_fixed_id//image",
+    entrypoint = ["bar"],
+)
+
+container_test(
+    name = "set_entrypoint_test",
+    configs = ["//tests/container/configs:set_entrypoint.yaml"],
+    image = ":set_entrypoint",
+)
+
+container_image(
+    name = "set_cmd_and_entrypoint",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+    entrypoint = ["bar"],
+)
+
+container_test(
+    name = "set_cmd_and_entrypoint_test",
+    configs = ["//tests/container/configs:set_cmd_and_entrypoint.yaml"],
+    image = ":set_cmd_and_entrypoint",
+)
+
+container_image(
+    name = "base_with_cmd_and_entrypoint",
+    base = ":set_cmd_and_entrypoint",
+)
+
+container_test(
+    name = "base_with_cmd_and_entrypoint_test",
+    configs = ["//tests/container/configs:set_cmd_and_entrypoint.yaml"],
+    image = ":base_with_cmd_and_entrypoint",
+)
+
+container_image(
+    name = "null_cmd_and_entrypoint_none",
+    base = ":set_cmd_and_entrypoint",
+    cmd = None,
+    entrypoint = None,
+)
+
+container_test(
+    name = "null_cmd_and_entrypoint_none_test",
+    configs = ["//tests/container/configs:null_cmd_and_entrypoint.yaml"],
+    image = ":null_cmd_and_entrypoint_none",
+)
+
+container_image(
+    name = "null_cmd_and_entrypoint_empty_str",
+    base = ":set_cmd_and_entrypoint",
+    cmd = "",
+    entrypoint = "",
+)
+
+container_test(
+    name = "null_cmd_and_entrypoint_empty_str_test",
+    configs = ["//tests/container/configs:null_cmd_and_entrypoint.yaml"],
+    image = ":null_cmd_and_entrypoint_empty_str",
+)
+
+container_image(
+    name = "null_cmd_and_entrypoint_empty_list",
+    base = ":set_cmd_and_entrypoint",
+    cmd = [],
+    entrypoint = [],
+)
+
+container_test(
+    name = "null_cmd_and_entrypoint_empty_list_test",
+    configs = ["//tests/container/configs:null_cmd_and_entrypoint.yaml"],
+    image = ":null_cmd_and_entrypoint_empty_list",
+)
+
+container_image(
+    name = "set_cmd_and_entrypoint_null_on_base",
+    base = ":null_cmd_and_entrypoint_none",
+    cmd = ["foo"],
+    entrypoint = ["bar"],
+)
+
+container_test(
+    name = "set_cmd_and_entrypoint_null_on_base_test",
+    configs = ["//tests/container/configs:set_cmd_and_entrypoint.yaml"],
+    image = ":set_cmd_and_entrypoint_null_on_base",
+)
+
+container_import(
+    name = "import_windows_base_image",
+    config = "windowsservercore.1803.config.json",
+    layers = [],
+    manifest = "windowsservercore.1803.manifest.json",
+)
+
+container_image(
+    name = "basic_windows_image",
+    base = ":import_windows_base_image",
+    cmd = ["echo bar"],
+    operating_system = "windows",
+)
+
+container_test(
+    name = "basic_windows_image_test",
+    configs = ["//tests/container/configs:windows_image.yaml"],
+    driver = "tar",
+    image = ":basic_windows_image",
+)
+
+# The following targets are not imported.
+# These images are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+container_test(
+    name = "alpine_amd64_image_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = "@alpine_linux_amd64//image",
+)
+
+container_test(
+    name = "alpine_arm_image_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = "@alpine_linux_armv6//image",
+)
+
+container_test(
+    name = "alpine_ppc64le_image_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = "@alpine_linux_ppc64le//image",
+)
+
+container_push(
+    name = "push_image_with_11_layers",
+    format = "Docker",
+    image = ":image_with_11_layers",
+    registry = "localhost:5000",
+    repository = "tests/container/image_with_11_layers",
+    tag = "latest",
+)
+# END_DO_NOT_IMPORT
+
+# The following targets are not imported.
+# Digest outputs are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+file_test(
+    name = "test_digest_output1",
+    content = "sha256:b17eeb809b87bf5ad734369f1ef6aa4a13e6ea850cb745d8d64b17ef13c54f4f",
+    file = ":deb_image_with_dpkgs.digest",
+)
+
+file_test(
+    name = "test_digest_output2",
+    content = "sha256:8da7a9421c68be888336492184d54b42db91a0b1f2096d85f4eaf3a25b7f234e",
+    file = ":null_cmd_and_entrypoint_none.digest",
+)
+# END_DO_NOT_IMPORT
+
+container_image(
+    name = "set_env_csv",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+    env = {
+        "NO_PROXY": "127.0.0.1,localhost",
+    },
+)
+
+container_test(
+    name = "set_env_csv_test",
+    configs = ["//tests/container/configs:set_env_csv.yaml"],
+    image = ":set_env_csv",
+)
+
+container_image(
+    name = "set_env_equals",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+    env = {
+        "CUDA_PKG_VERSION": "-10-0=10.0.130-1",
+        "JAVA_OPTS": "-Dloader.main=com.sample.app.SampleApp",
+    },
+)
+
+container_test(
+    name = "set_env_equals_test",
+    configs = ["//tests/container/configs:set_env_equals.yaml"],
+    image = ":set_env_equals",
+)
+
+# Image with Bazel Make variables in the env field.
+container_image(
+    name = "set_env_make_vars",
+    base = "@distroless_fixed_id//image",
+    env = {
+        "$(ENV_KEY)": "$(ENV_VALUE)",
+    },
+)
+
+# This test checks that Bazel Make variables are expanded in the env field.
+container_test(
+    name = "set_env_make_vars_test",
+    configs = ["//tests/container/configs:set_env_make_vars.yaml"],
+    image = ":set_env_make_vars",
+)
+
+# The following targets are not imported.
+# Targets using special characters are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+genrule(
+    name = "special_characters_file",
+    outs = ["gen= foo.out"],
+    cmd = "echo generated > \"$@\"",
+)
+
+container_image(
+    name = "special_characters",
+    base = "@distroless_fixed_id//image",
+    directory = "root= dir",
+    empty_dirs = ["/empty= dir"],
+    empty_files = ["/empty= file"],
+    files = [":special_characters_file"],
+    symlinks = {"foo= symlink": "root= dir/gen= foo.out"},
+)
+# END_DO_NOT_IMPORT
+
+container_test(
+    name = "special_characters_test",
+    configs = ["//tests/container/configs:special_characters.yaml"],
+    driver = "tar",
+    image = ":special_characters",
+)
+
+container_push(
+    name = "push_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "push_tag_file",
+    srcs = [],
+    outs = ["test.tag"],
+    cmd = """echo test > $@""",
+    output_to_bindir = 1,
+)
+
+container_push(
+    name = "push_tag_file_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "push_stamped_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+container_image(
+    name = "alpine_with_custom_attr",
+    base = "@alpine_linux_amd64//image",
+    cmd = ["Hello World!"],
+    entrypoint = ["echo"],
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+    layers = [
+        "//testdata:env_layer",
+        "//testdata:tars_in_layer",
+        "//testdata:files_in_layer",
+    ],
+)
+
+create_banana_directory(
+    name = "banana_directory",
+)
+
+container_image(
+    name = "stripped_directory_name",
+    data_path = "banana",
+    files = [":banana_directory"],
+)
+
+container_test(
+    name = "stripped_directory_name_test",
+    configs = ["//tests/container/configs:stripped_directory_name.yaml"],
+    image = ":stripped_directory_name",
+)
+
+container_bundle(
+    name = "three_images_bundle",
+    images = {
+        "localhost:5000/image0:latest": "//testdata:base_with_entrypoint",
+        "localhost:5000/image1:latest": "//testdata:link_with_files_base",
+        "localhost:5000/image2:latest": "//testdata:with_double_env",
+    },
+)
+
+docker_push_all(
+    name = "test_docker_push_three_images_bundle",
+    bundle = ":three_images_bundle",
+)
 
 py_test(
     name = "build_tar_test",
     srcs = ["build_tar_test.py"],
-    deps = ["//container:build_tar"],
+    python_version = "PY2",
+    deps = ["//container:build_tar_lib"],
 )
+
+# The following targets are not imported.
+# container_push targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+
+container_push(
+    name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
+    format = "Docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "unchanged_tag1",
+)
+
+container_push(
+    name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
+    format = "Docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "unchanged_tag2",
+)
+
+container_push(
+    name = "new_push_test_skip_unchanged_digest_changed_tag_1",
+    format = "Docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "changed_tag1",
+)
+
+container_push(
+    name = "new_push_test_skip_unchanged_digest_changed_tag_2",
+    format = "Docker",
+    image = "@alpine_linux_amd64//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    skip_unchanged_digest = True,
+    tag = "changed_tag2",
+)
+
+container_push(
+    name = "new_push_test_oci",
+    format = "OCI",
+    image = ":set_cmd_and_entrypoint",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_oci_from_new_puller",
+    format = "OCI",
+    image = "@alpine_linux_amd64//image",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_legacy_from_container_img",
+    format = "Docker",
+    image = ":alpine_with_custom_attr",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_legacy_from_container_img_with_auth",
+    format = "Docker",
+    image = ":set_cmd_and_entrypoint",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_legacy_from_new_puller",
+    format = "Docker",
+    image = "@alpine_linux_ppc64le//image",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_legacy_from_old_puller",
+    format = "Docker",
+    image = "@alpine_linux_armv6//image",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_tar",
+    format = "Docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_old_puller_tar",
+    format = "Docker",
+    image = "@alpine_linux_ppc64le//image:image.tar",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_oci_tag_file",
+    format = "OCI",
+    image = ":alpine_with_custom_attr",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_test_legacy_tag_file",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":test.tag",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_stamped_test_legacy",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "new_push_stamped_test_oci",
+    format = "OCI",
+    image = "@alpine_linux_amd64//image",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+# END_DO_NOT_IMPORT
+
+# The following targets are not imported.
+# Digest outputs are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+file_test(
+    name = "test_push_digest_output",
+    content = "sha256:0149d475d8e25903446311d3da4a4aa54f348103b84c43b6ad3351484fdaff67",
+    file = ":push_test.digest",
+)
+
+# The following four digest tests for puller should be identical. "image.digest" is symlinked from image/digest.
+file_test(
+    name = "distroless_fixed_id_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@distroless_fixed_id//image:digest",
+)
+
+file_test(
+    name = "distroless_fixed_id_image_digest_test",
+    content = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    file = "@distroless_fixed_id//image:image.digest",
+)
+
+file_test(
+    name = "k8s_pause_arm64_digest_test",
+    content = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
+    file = "@k8s_pause_arm64//image:digest",
+)
+
+file_test(
+    name = "alpine_custom_attr_digest_test",
+    content = "sha256:2344eeb6732c5610ad8a5ccd2b32f866bf2335ce500a286e9250fe4369b3fa5e",
+    file = ":new_push_test_legacy_from_container_img.digest",
+)
+
+file_test(
+    name = "new_alpine_linux_armv6_image_tar_digest_test",
+    content = "sha256:1e38c6d0f6364fb9ea2c4efb34b8fe00e8ed9bc696b6dfcc6fa6eac2708466f9",
+    file = ":new_alpine_linux_armv6_image_tar.digest",
+)
+
+# END_DO_NOT_IMPORT
+
+# The following targets are not imported.
+# new_container_pull targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+
+# Merely testing for the presence of the pulled image.tar for now.
+file_test(
+    name = "alpine_linux_armv6_tar_test_image_tar",
+    file = "@alpine_linux_armv6_tar//image:image.tar",
+    regexp = ".*",
+)
+
+# Testing for content of downloaded image artifacts.
+file_test(
+    name = "new_distroless_base_oci_test_config",
+    file = "@alpine_linux_armv6_fixed_id//image:config.json",
+    regexp = "{\"architecture\":\"arm\",.*",
+)
+
+file_test(
+    name = "new_distroless_base_oci_test_0_tar_gz",
+    file = "@alpine_linux_armv6_fixed_id//image:000.tar.gz",
+    regexp = ".*",
+)
+
+# Testing all new_container_pull invocations with container_tests
+# We are testing for 3 cases: 1) Presence of OCI image format only
+#                             2) Presence of image.tar via container_import target
+#                             3) Presence of image.tar via "docker" format option
+#
+# Three cases for alpine armv6 distro
+container_image(
+    name = "new_alpine_linux_armv6_image_tar",
+    base = "@alpine_linux_armv6_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_armv6_image_oci_tar",
+    base = "@alpine_linux_armv6_fixed_id//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_armv6_image_oci",
+    base = "@alpine_linux_armv6_fixed_id//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_tar_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_armv6_image_oci_test",
+    configs = ["//tests/container/configs:alpine_arm.yaml"],
+    image = ":new_alpine_linux_armv6_image_oci",
+)
+
+# Three cases for alpine amd64 distro
+container_image(
+    name = "alpine_linux_amd64_image_tar",
+    base = "@alpine_linux_amd64_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "alpine_linux_amd64_image_oci_tar",
+    base = "@alpine_linux_amd64//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "alpine_linux_amd64_image_oci",
+    base = "@alpine_linux_amd64//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "alpine_linux_amd64_image_tar_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":alpine_linux_amd64_image_tar",
+)
+
+container_test(
+    name = "alpine_linux_amd64_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":alpine_linux_amd64_image_oci_tar",
+)
+
+container_test(
+    name = "alpine_linux_amd64_image_oci_test",
+    configs = ["//tests/container/configs:alpine_amd64.yaml"],
+    image = ":alpine_linux_amd64_image_oci",
+)
+
+# Three cases for alpine ppc64le distro
+container_image(
+    name = "new_alpine_linux_ppc64le_image_tar",
+    base = "@alpine_linux_ppc64le_tar//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci_tar",
+    base = "@alpine_linux_ppc64le//image:image.tar",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci",
+    base = "@alpine_linux_ppc64le//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+# Build a container image configured to use the Go join_layers.
+container_image(
+    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers",
+    base = "@alpine_linux_ppc64le//image:image",
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_tar_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_tar_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_oci_tar",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    image = ":new_alpine_linux_ppc64le_image_oci",
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    # Using the tar driver to force using the Go join layers implementation.
+    driver = "tar",
+    image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
+)
+# END_DO_NOT_IMPORT
+
+# The following targets are not imported.
+# new_container_load targets are only available and tested on GitHub.
+# BEGIN_DO_NOT_IMPORT
+file_test(
+    name = "pause_tar_test_config",
+    file = "@pause_tar//image:config.json",
+    regexp = "{\"architecture\":\"amd64\",.*",
+)
+
+file_test(
+    name = "pause_tar_test_0_tar_gz",
+    file = "@pause_tar//image:000.tar.gz",
+    regexp = ".*",
+)
+
+file_test(
+    name = "pause_tar_test_1_tar_gz",
+    file = "@pause_tar//image:001.tar.gz",
+    regexp = ".*",
+)
+# END_DO_NOT_IMPORT

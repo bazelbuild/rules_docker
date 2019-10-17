@@ -16,6 +16,7 @@
 from contextlib import contextmanager
 import gzip
 import io
+import json
 import os
 import os.path
 import subprocess
@@ -24,13 +25,15 @@ import re
 import tarfile
 import tempfile
 
-from bazel_source.tools.build_defs.pkg import archive
+from tools.build_defs.pkg import archive
 from third_party.py import gflags
 
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
 gflags.MarkFlagAsRequired('output')
 
 gflags.DEFINE_multistring('file', [], 'A file to add to the layer')
+
+gflags.DEFINE_string('manifest', None, 'JSON manifest of contents to add to the layer')
 
 gflags.DEFINE_multistring('empty_file', [], 'An empty file to add to the layer')
 
@@ -67,7 +70,7 @@ gflags.DEFINE_string(
 gflags.DEFINE_multistring(
     'modes', None,
     'Specific mode to apply to specific file (from the file argument),'
-    ' e.g., path/to/file=0455.')
+    ' e.g., path/to/file=0o455.')
 
 gflags.DEFINE_multistring('owners', None,
                           'Specify the numeric owners of individual files, '
@@ -87,6 +90,10 @@ gflags.DEFINE_multistring('owner_names', None,
 gflags.DEFINE_string(
     'root_directory', './', 'Default root directory is named "."'
     'Windows docker images require this be named "Files" instead of "."')
+
+gflags.DEFINE_string('xz_path', None,
+                     'Specify the path to xz as a fallback when the Python '
+                     'lzma module is unavailable.')
 
 FLAGS = gflags.FLAGS
 
@@ -119,7 +126,8 @@ class TarFile(object):
     self.tarfile = archive.TarFileWriter(
         self.output,
         self.compression,
-        self.root_directory
+        self.root_directory,
+        default_mtime=0
     )
     return self
 
@@ -329,11 +337,11 @@ class TarFile(object):
   @staticmethod
   def _xzcat_decompress(data):
     """Decompresses the xz-encrypted bytes in data by piping to xz."""
-    if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
+    if not FLAGS.xz_path:
       raise RuntimeError('Cannot handle .xz compression: xz not found.')
 
     xz_proc = subprocess.Popen(
-      ['xz', '--decompress', '--stdout'],
+      [FLAGS.xz_path, '--decompress', '--stdout'],
       stdin=subprocess.PIPE,
       stdout=subprocess.PIPE)
     return xz_proc.communicate(data)[0]
@@ -393,13 +401,31 @@ def main(unused_argv):
   # Add objects to the tar file
   with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory) as output:
     def file_attributes(filename):
-      if filename[0] == '/':
+      if filename.startswith('/'):
         filename = filename[1:]
       return {
           'mode': mode_map.get(filename, default_mode),
           'ids': ids_map.get(filename, default_ids),
           'names': names_map.get(filename, default_ownername),
       }
+
+    if FLAGS.manifest:
+      with open(FLAGS.manifest, 'r') as f:
+        manifest = json.load(f)
+        for f in manifest.get('files', []):
+          output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
+        for f in manifest.get('empty_files', []):
+          output.add_empty_file(f, **file_attributes(f))
+        for d in manifest.get('empty_dirs', []):
+          output.add_empty_dir(d, **file_attributes(d))
+        for d in manifest.get('empty_root_dirs', []):
+          output.add_empty_root_dir(d, **file_attributes(d))
+        for f in manifest.get('symlinks', []):
+          output.add_link(f['linkname'], f['target'])
+        for tar in manifest.get('tars', []):
+          output.add_tar(tar)
+        for deb in manifest.get('debs', []):
+          output.add_deb(deb)
 
     for f in FLAGS.file:
       (inf, tof) = f.split('=', 1)

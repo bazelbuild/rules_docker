@@ -1,161 +1,175 @@
 ---
+buildifier:
+  version: 0.22.0
+  # Check for issues with the format of our bazel config files.
+  # All warnings from https://github.com/bazelbuild/buildtools/blob/master/WARNINGS.md
+  # are enabled except:
+  # rule-impl-return, uninitialized, return-value, rule-impl-return
+  # TODO (suvanjan): Re-enable once issues are fixed.
+  warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
 platforms:
-  ubuntu1404:
-    build_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//docker/..."
-    - "-//skylib/..."
-    - "-//tools/..."
-    test_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//tests/container/..."
-    - "-//tests/docker/..."
   ubuntu1604:
-    build_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//docker/..."
-    - "-//skylib/..."
-    - "-//tools/..."
-    test_targets:
-    # We are running the skipped targets remotely only.
-    - "--"
-    - "..."
-    - "-//tests/container/..."
-    - "-//tests/docker/..."
-  macos:
-    build_targets:
-    - "..."
     test_targets:
     - "--"
     - "..."
-    - "-//tests/docker/..."
-  # We are selecting to test only the targets that build on RBE
-  # because the default image does not support `docker`.
-  rbe_ubuntu1604:
-    build_targets:
-    - "--"
-    - "//docker/..."
-    - "//skylib/..."
-    - "//container/..."
-    - "//testdata/test:srcs"
-    - "//testdata:workdir_with_tar_base"
-    - "//testdata:with_unix_epoch_creation_time"
-    - "//testdata:with_stamped_creation_time"
-    - "//testdata:with_stamp_label"
-    - "//testdata:with_rfc_3339_creation_time"
-    - "//testdata:with_passwd_tar"
-    - "//testdata:with_passwd"
-    - "//testdata:with_millisecond_unix_epoch_creation_time"
-    - "//testdata:with_group"
-    - "//testdata:with_empty_files"
-    - "//testdata:with_empty_dirs"
-    - "//testdata:with_double_label"
-    - "//testdata:with_label"
-    - "//testdata:with_default_stamped_creation_time"
-    - "//testdata:war_image"
-    - "//testdata:tars_in_layer_with_tar_base"
-    - "//testdata:tar_with_tar_base"
-    - "//testdata:tar_with_files_base"
-    - "//testdata:stamped_bundle_test"
-    - "//testdata:rust_image"
-    - "//testdata:rust_image_binary"
-    - "//testdata:root_data_path_image"
-    - "//testdata:py_image_with_main"
-    - "//testdata:py_image"
-    - "//testdata:py3_image_with_main"
-    - "//testdata:py3_image"
-    - "//testdata:py_image_library"
-    - "//testdata:push_stamp_oci"
-    - "//testdata:push_stamp"
-    - "//testdata:push_legacy_base"
-    - "//testdata:push_inadvertent_legacy_base"
-    - "//testdata:push_bundle_oci"
-    - "//testdata:push_bundle"
-    - "//testdata:pkg_control_gz"
-    - "//testdata:pkg2"
-    - "//testdata:pkg1"
-    - "//testdata:pause_based"
-    - "//testdata:password"
-    - "//testdata:passwd_tar"
-    - "//testdata:passwd"
-    - "//testdata:root_user"
-    - "//testdata:nodejs_image"
-    - "//testdata:no_data_path_image"
-    - "//testdata:layers_with_env"
-    - "//testdata:layers_with_docker_tarball_base"
-    - "//testdata:tars_in_layer"
-    - "//testdata:label-blah-blah"
-    - "//testdata:label-blah"
-    - "//testdata:java_sandwich_image"
-    - "//testdata:java_image"
-    - "//testdata:java_bin_as_lib_image"
-    - "//testdata:java_bin_as_lib_image.binary"
-    - "//testdata:java_bin_as_lib"
-    - "//testdata:java_image_library"
-    - "//testdata:group_tar"
-    - "//testdata:group"
-    - "//testdata:root_group"
-    - "//testdata:go_image"
-    - "//testdata:go_image.binary"
-    - "//testdata:gen_image"
-    - "//testdata:gen"
-    - "//testdata:foobar_user"
-    - "//testdata:foobar_group"
-    - "//testdata:flat"
-    - "//testdata:files_with_tar_base"
-    - "//testdata:files_with_files_base"
-    - "//testdata:files_in_layer_with_files_base"
-    - "//testdata:files_in_layer"
-    - "//testdata:extras_deb"
-    - "//testdata:gen_deb"
-    - "//testdata:env_layer"
-    - "//testdata:dummy_repository"
-    - "//testdata:docker_tarball_base"
-    - "//testdata:directory_with_tar_base"
-    - "//testdata:tar_base"
-    - "//testdata:derivative_with_volume"
-    - "//testdata:derivative_with_cmd"
-    - "//testdata:derivative_with_shadowed_cmd"
-    - "//testdata:data_path_image"
-    - "//testdata:dashdash_entrypoint"
-    - "//testdata:cc_image"
-    - "//testdata:cc_binary_as_image"
-    - "//testdata:cc_binary"
-    - "//testdata:cc_image_library"
-    - "//testdata:cc_based_warning"
-    - "//testdata:cc_based"
-    - "//testdata:bundle_to_push"
-    - "//testdata:bundle_test"
-    - "//testdata:with_double_env"
-    - "//testdata:with_env"
-    - "//testdata:link_with_files_base"
-    - "//testdata:files_base"
-    - "//testdata:build_with_tag"
-    - "//testdata:build_with_tag-internal"
-    - "//testdata:with_user"
-    - "//testdata:base_with_volume"
-    - "//testdata:base_with_entrypoint"
-    - "//testdata:base_based_warning"
-    - "//testdata:absolute_data_path_image"
-    - "//testdata/test:test-data"
-    - "//tools/..."
-    - "-//container:image_test"
-    test_targets:
-    - "--"
-    - "//tests/..."
+    # Disabled tests that do not run in BuildKite CI.
+    - "-//tests/docker/security/..."
+    # tests/docker/security require gcloud
+    - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:random_file_img_non_repro_test"
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
     - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
     - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
     - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
     - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
     - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    # Disabled e2e tests that pull from localhost in nested workspace
+    - "-//testing/new_pusher_tests/..."
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
-    - "--extra_execution_platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
-    - "--host_platform=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
-    - "--platforms=@bazel_toolchains//configs/ubuntu16_04_clang/1.0:nosla_xenial_docker"
+    - "--action_env=PATH"
+    # For tests/container:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
+  ubuntu1804:
+    test_targets:
+    - "--"
+    - "..."
+    # Disabled tests that do not run in BuildKite CI.
+    - "-//tests/docker/security/..."
+    # tests/docker/security require gcloud
+    - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:random_file_img_non_repro_test"
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
+    - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
+    - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    # Disabled e2e tests that pull from localhost in nested workspace
+    - "-//testing/new_pusher_tests/..."
+    # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
+    test_flags:
+    - "--action_env=PATH"
+    # For tests/container:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
+  macos:
+    build_targets:
+    - "--"
+    - "//tests/container/..."
+    # Disabled e2e tests that pull from localhost in nested workspace
+    - "-//testing/new_pusher_tests/..."
+    build_flags:
+    - "--action_env=PATH"
+    # For tests/container:set_env_make_vars_test
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
+    # Needed because register_platforms is apparently not respecting order of
+    # platforms passed:
+    - "--extra_execution_platforms=@local_config_platform//:host,@io_bazel_rules_docker//platforms:local_container_platform"
+    test_targets:
+    - "--"
+    - "//tests/container:alpine_custom_attr_digest_test"
+    - "//tests/container:alpine_linux_armv6_tar_test_image_tar"
+    - "//tests/container:basic_windows_image_test"
+    - "//tests/container:build_tar_test"
+    - "//tests/container:distroless_fixed_id_digest_test"
+    - "//tests/container:distroless_fixed_id_image_digest_test"
+    - "//tests/container:k8s_pause_arm64_digest_test"
+    - "//tests/container:new_alpine_linux_armv6_image_tar_digest_test"
+    - "//tests/container:new_alpine_linux_ppc64le_image_oci_go_join_layers_test"
+    - "//tests/container:new_distroless_base_oci_test_0_tar_gz"
+    - "//tests/container:new_distroless_base_oci_test_config"
+    - "//tests/container:pause_tar_test_0_tar_gz"
+    - "//tests/container:pause_tar_test_1_tar_gz"
+    - "//tests/container:pause_tar_test_config"
+    - "//tests/container:set_cmd_test_host"
+    - "//tests/container:special_characters_test"
+    - "//tests/container:test_digest_output1"
+    - "//tests/container:test_digest_output2"
+    - "//tests/container:test_push_digest_output"
+    - "//tests/contrib:rename_image_test"
+    - "//tests/contrib:test_compare_ids_test"
+    - "//tests/contrib:test_compare_ids_test_diff_ids_fails_no_regex"
+    - "//tests/contrib:test_id_compare_ids_test"
+    - "//tests/docker/package_managers:test_download_pkgs_docker_cp"
+    - "//tests/docker/package_managers:test_download_pkgs_docker_run"
+    - "//tests/docker/package_managers:test_download_pkgs_rule"
+    - "//tests/docker/package_managers:test_install_pkgs_rule"
+    - "//tests/docker/util:test_container_commit_rule"
+    - "//tests/docker/util:test_container_extract_rule"
+    - "//tests/docker/util:test_extract_script"
+    # Disabled e2e tests that pull from localhost in nested workspace
+    - "-//testing/new_pusher_tests/..."
+    test_flags:
+    - "--action_env=PATH"
+    # For tests/container:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"
+    # Needed because register_platforms is apparently not respecting order of
+    # platforms passed:
+    - "--extra_execution_platforms=@local_config_platform//:host,@io_bazel_rules_docker//platforms:local_container_platform"
+  rbe_ubuntu1604:
+    build_targets:
+    - "--"
+    - "..."
+    # tests/docker/security require gcloud setup to access asci-toolchains images
+    - "-//tests/docker/security/..."
+    # contrib targets are not compatible with remote exec
+    - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:random_file_img_non_repro_test"
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
+    # Disabled e2e tests that pull from localhost in nested workspace
+    - "-//testing/new_pusher_tests/..."
+    build_flags:
+    - "--extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_container_cc_toolchain"
+    - "--extra_execution_platforms=@buildkite_config//config:platform,//platforms:rbe_container_platform"
+    - "--host_platform=@buildkite_config//config:platform"
+    - "--platforms=@buildkite_config//config:platform"
+    - "--keep_going"
+    # For tests/container:set_env_make_vars
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
+    test_targets:
+    - "--"
+    - "//:structure_test_at_workspace_root"
+    - "//tests/..."
+    # tests/docker/security require gcloud setup to access asci-toolchains images
+    - "-//tests/docker/security/..."
+    # contrib tests are not compatible with remote exec
+    - "-//tests/contrib:derivative_with_volume_repro_test"
+    - "-//tests/contrib:random_file_img_non_repro_test"
+    - "-//tests/contrib:rbe-test-xenial_repro_test"
+    - "-//tests/contrib:set_cmd_repro_test"
+    - "-//tests/contrib:test_compare_ids_test_diff_ids_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails"
+    - "-//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex"
+    - "-//tests/contrib:test_compare_ids_test_no_images_with_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_one_tar_no_id_fails"
+    - "-//tests/contrib:test_compare_ids_test_wrong_id_fails"
+    # Disabled e2e tests that pull from localhost in nested workspace
+    - "-//testing/new_pusher_tests/..."
+    # Disable the configs_test targets for automatic container release tests on
+    # RBE as the RBE bots don't have the necessary permissions to pull the
+    # checker images.
+    - "-//tests/contrib/automatic_container_release:configs_test"
+    - "-//tests/contrib/automatic_container_release:configs_test_deps_spec_only"
+    test_flags:
+    - "--extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_container_cc_toolchain"
+    - "--extra_execution_platforms=@buildkite_config//config:platform,//platforms:rbe_container_platform"
+    - "--host_platform=@buildkite_config//config:platform"
+    - "--platforms=@buildkite_config//config:platform"
+    - "--keep_going"
+    # For tests/container:set_env_make_vars_test
+    - "--define=ENV_KEY=my_key"
+    - "--define=ENV_VALUE=my_value"
+    - "--test_output=errors"

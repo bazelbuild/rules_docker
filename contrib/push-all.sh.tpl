@@ -14,11 +14,15 @@
 # limitations under the License.
 
 set -eu
-
 function guess_runfiles() {
-    pushd ${BASH_SOURCE[0]}.runfiles > /dev/null 2>&1
-    pwd
-    popd > /dev/null 2>&1
+    if [ -d ${BASH_SOURCE[0]}.runfiles ]; then
+        # Runfiles are adjacent to the current script.
+        echo "$( cd ${BASH_SOURCE[0]}.runfiles && pwd )"
+    else
+        # The current script is within some other script's runfiles.
+        mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        echo $mydir | sed -e 's|\(.*\.runfiles\)/.*|\1|'
+    fi
 }
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
@@ -33,6 +37,8 @@ function async() {
 %{push_statements}
 
 # Wait for all of the subprocesses, failing the script if any of them failed.
-for pid in ${PIDS[@]}; do
-    wait ${pid}
-done
+if [ "${#PIDS[@]}" != 0 ]; then
+    for pid in ${PIDS[@]}; do
+        wait ${pid}
+    done
+fi

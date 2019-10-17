@@ -25,15 +25,27 @@ exports_files(["compare_ids_test.bzl"])
 
 exports_files(["extract_image_id.py"])
 
+exports_files(["cmp_images.sh.tpl"])
+
 py_binary(
     name = "extract_image_id",
+    srcs = [":extract_image_id.py"],
+    legacy_create_init = False,
+    python_version = "PY2",
+    deps = [":extract_image_id_lib"],
+)
+
+py_library(
+    name = "extract_image_id_lib",
     srcs = [":extract_image_id.py"],
 )
 
 py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
-    deps = ["extract_image_id"],
+    legacy_create_init = False,
+    python_version = "PY2",
+    deps = [":extract_image_id_lib"],
 )
 
 alias(
@@ -43,9 +55,4 @@ alias(
         "@bazel_tools//src/conditions:darwin_x86_64": "@structure_test_darwin//file",
         "//conditions:default": "@structure_test_linux//file",
     }),
-)
-
-py_binary(
-    name = "idd",
-    srcs = ["idd.py"],
 )

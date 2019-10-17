@@ -1,0 +1,12 @@
+version: 0.1
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+    maxthreads: 12
+http:
+  addr: :5000
+  secret: foo
+auth:
+  htpasswd:
+    realm: basic-realm
+    path: /.htpasswd

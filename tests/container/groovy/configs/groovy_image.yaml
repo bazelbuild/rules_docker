@@ -1,0 +1,13 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: [
+    '/usr/bin/java',
+    '-cp',
+    '/app/io_bazel_rules_docker/tests/container/groovy/libgroovy_image_library-impl.jar:/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:/app/io_bazel_rules_docker/../groovy_sdk_artifact/groovy-2.5.8/lib/groovy-2.5.8.jar:/app/io_bazel_rules_docker/tests/container/groovy/libgroovy_image.binary-lib-impl.jar:/app/io_bazel_rules_docker/tests/container/groovy/groovy_image.binary.jar:/app/io_bazel_rules_docker/tests/container/groovy/groovy_image.binary:/app/io_bazel_rules_docker/tests/container/groovy/BUILD',
+    '-Dbuild.location=tests/container/groovy/BUILD',
+    'examples.images.Binary',
+    'arg0',
+    'arg1',
+    'tests/container/groovy/BUILD',
+  ]

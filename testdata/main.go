@@ -15,8 +15,15 @@
 // Package main tells the linter to shut up.
 package main
 
-import "fmt"
+import (
+    "fmt"
+    "os"
+)
 
 func main() {
-    fmt.Println("Hello, world!")
+    message := "Hello, world!"
+    if v, ok := os.LookupEnv("CUSTOM_MESSAGE"); ok {
+        message = v
+    }
+    fmt.Println(message)
 }

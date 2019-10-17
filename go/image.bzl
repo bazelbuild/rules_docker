@@ -16,29 +16,34 @@
 The signature of this rule is compatible with go_binary.
 """
 
-load(
-    "//lang:image.bzl",
-    "app_layer",
-    "dep_layer",
-)
-load(
-    "//container:container.bzl",
-    "container_pull",
-    _repositories = "repositories",
-)
-
 # It is expected that the Go rules have been properly
 # initialized before loading this file to initialize
 # go_image.
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load(
+    "//container:container.bzl",
+    "container_pull",
+)
+load(
+    "//lang:image.bzl",
+    "app_layer",
+)
+load(
+    "//repositories:go_repositories.bzl",
+    _go_deps = "go_deps",
+)
 
 # Load the resolved digests.
-load(":go.bzl", "DIGESTS")
+load(":go.bzl", BASE_DIGESTS = "DIGESTS")
+load(":static.bzl", STATIC_DIGESTS = "DIGESTS")
 
 def repositories():
-    # Call the core "repositories" function to reduce boilerplate.
-    # This is idempotent if folks call it themselves.
-    _repositories()
+    """Import the dependencies of the go_image rule.
+
+    Call the core "go_deps" function to reduce boilerplate. This is
+    idempotent if folks call it themselves.
+    """
+    _go_deps()
 
     excludes = native.existing_rules().keys()
     if "go_image_base" not in excludes:
@@ -46,27 +51,51 @@ def repositories():
             name = "go_image_base",
             registry = "gcr.io",
             repository = "distroless/base",
-            digest = DIGESTS["latest"],
+            digest = BASE_DIGESTS["latest"],
         )
     if "go_debug_image_base" not in excludes:
         container_pull(
             name = "go_debug_image_base",
             registry = "gcr.io",
             repository = "distroless/base",
-            digest = DIGESTS["debug"],
+            digest = BASE_DIGESTS["debug"],
+        )
+    if "go_image_static" not in excludes:
+        container_pull(
+            name = "go_image_static",
+            registry = "gcr.io",
+            repository = "distroless/static",
+            digest = STATIC_DIGESTS["latest"],
+        )
+    if "go_debug_image_static" not in excludes:
+        container_pull(
+            name = "go_debug_image_static",
+            registry = "gcr.io",
+            repository = "distroless/static",
+            digest = STATIC_DIGESTS["debug"],
         )
 
 DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
     "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
     "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
     "//conditions:default": "@go_image_base//image",
+})
+
+STATIC_DEFAULT_BASE = select({
+    "@io_bazel_rules_docker//:debug": "@go_debug_image_static//image",
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_static//image",
+    "@io_bazel_rules_docker//:optimized": "@go_image_static//image",
+    "//conditions:default": "@go_image_static//image",
 })
 
 def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     """Constructs a container image wrapping a go_binary target.
 
   Args:
+    name: Name of the go_image target.
+    base: Base image to use to build the go_image.
+    deps: Dependencies of the go image target.
     binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into their own layers.
     **kwargs: See go_binary.
@@ -80,21 +109,26 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     elif deps:
         fail("kwarg does nothing when binary is specified", "deps")
 
-    base = base or DEFAULT_BASE
+    if not base:
+        base = STATIC_DEFAULT_BASE if kwargs.get("pure") == "on" else DEFAULT_BASE
+
     for index, dep in enumerate(layers):
-        this_name = "%s.%d" % (name, index)
-        dep_layer(name = this_name, base = base, dep = dep)
-        base = this_name
+        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
+        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
+    restricted_to = kwargs.get("restricted_to", None)
+    compatible_with = kwargs.get("compatible_with", None)
     app_layer(
         name = name,
         base = base,
         binary = binary,
-        lang_layers = layers,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
+        testonly = kwargs.get("testonly"),
+        restricted_to = restricted_to,
+        compatible_with = compatible_with,
     )

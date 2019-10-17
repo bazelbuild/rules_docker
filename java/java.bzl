@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+""" Generated file with dependencies for language rule."""
 
 # !!!! THIS IS A GENERATED FILE TO NOT EDIT IT BY HAND !!!!
 #
@@ -18,8 +19,8 @@
 # git repository.
 
 DIGESTS = {
-    # "gcr.io/distroless/java:debug" circa 2018-08-03 14:02 -0400
-    "debug": "sha256:32fae75009e74831c8e2f7309c2c7897a4f0def41abe3a309ec11cd615b81b59",
-    # "gcr.io/distroless/java:latest" circa 2018-08-03 14:02 -0400
-    "latest": "sha256:d8a0b83f7e586673b746cc9cff2838e9e7eae5ad452280a0fb2224d1121c208f",
+    # "gcr.io/distroless/java:debug" circa 2019-10-11 13:46 -0400
+    "debug": "sha256:d5e1e6c9378f7eb7b9f0c2a131cf31ab94030f187da4faaefd6fde2a3b875336",
+    # "gcr.io/distroless/java:latest" circa 2019-10-11 13:46 -0400
+    "latest": "sha256:ae0eb3d54fb9172fe0f0c2158ef21501c090333c336ccaefa816bbe326c8716e",
 }

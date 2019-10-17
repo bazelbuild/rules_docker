@@ -1,0 +1,24 @@
+schemaVersion: 2.0.0
+
+commandTests:
+  - name: "bazel_test"
+    command: "bazel"
+    args: ["version"]
+    expectedError: ["Extracting Bazel installation.*"]
+    expectedOutput: ["Build label: \\d+\\.\\d+.*"]
+  - name: "gcloud_test"
+    command: "gcloud"
+    args: ["version"]
+    expectedOutput: ["Google Cloud SDK \\d+\\..*"]
+  - name: "kubectl_test"
+    command: "kubectl"
+    args: ["--help"]
+    expectedOutput: ["kubectl controls the Kubernetes cluster manager.*"]
+  - name: "pip_test"
+    command: "pip"
+    args: ["-V"]
+    expectedOutput: ["pip \\d+.*"]
+  - name: "wheel_test"
+    command: "wheel"
+    args: ["version"]
+    expectedOutput: ["wheel \\d+.*"]
