@@ -1108,7 +1108,7 @@ docker_toolchain_configure(
   # in the client configuration JSON file.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="/path/to/docker/client/config",
+  client_config="/path/to/docker/client/config-dir",
 )
 ```
 In `BUILD` file:
