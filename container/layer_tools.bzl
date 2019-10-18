@@ -261,7 +261,7 @@ def incremental_load(
         if run:
             # Args are embedded into the image, so omitted here.
             run_statements += [
-                "\"${DOCKER}\" run %s %s" % (run_flags, tag_reference),
+                "${DOCKER} run %s %s" % (run_flags, tag_reference),
             ]
 
     ctx.actions.expand_template(
