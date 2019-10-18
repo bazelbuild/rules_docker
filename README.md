@@ -107,12 +107,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.11.1
+# Download the rules_docker repository at release v0.12.0
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "d0b345518236e240d513fe0f59f6d3da274f035480273a7eb00af7d216ae2a06",
-    strip_prefix = "rules_docker-0.11.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.11.1/rules_docker-v0.11.1.tar.gz"],
+    sha256 = "413bb1ec0895a8d3249a01edf24b82fd06af3c8633c9fb833a0cb1d4b234d46d",
+    strip_prefix = "rules_docker-0.12.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.12.0/rules_docker-v0.12.0.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -180,15 +180,6 @@ error, make sure to import rules_docker before other libraries, so that
 _six_ can be patched properly.
 
   See https://github.com/bazelbuild/rules_docker/issues/1022 for more details.
-
-* Starting with Bazel 0.27.0, you also need to add to your .bazelrc
-file the following:
-
-```
-build --host_force_python=PY2
-```
-See https://github.com/bazelbuild/rules_docker/issues/842 for more
-details.
 
 * Ensure your project has a `BUILD` or `BUILD.bazel` file at the top level. This
 can be a blank file if necessary. Otherwise you might see and error that looks

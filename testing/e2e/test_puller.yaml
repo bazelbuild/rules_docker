@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-build --host_force_python=PY2
-test --host_force_python=PY2
-run --host_force_python=PY2
+# Tests for the container puller.
+
+steps:
+- name: "l.gcr.io/google/bazel"
+  entrypoint: "bash"
+  args:
+  - -c
+  - ./testing/e2e/puller.sh

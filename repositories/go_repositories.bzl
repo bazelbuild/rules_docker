@@ -37,7 +37,7 @@ def go_deps():
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            commit = "2be26e624e32c4b3de62287e153e5e382a79b7c5",
+            commit = "d30598c4fd374f6b1b56e70dfa52c06a90a8ce75",
             importpath = "github.com/google/go-containerregistry",
         )
     if "com_github_pkg_errors" not in excludes:
@@ -58,4 +58,11 @@ def go_deps():
             name = "com_github_kylelemons_godebug",
             commit = "9ff306d4fbead574800b66369df5b6144732d58e",  # v1.1.0
             importpath = "github.com/kylelemons/godebug",
+        )
+    if "com_github_ghodss_yaml" not in excludes:
+        go_repository(
+            name = "com_github_ghodss_yaml",
+            importpath = "github.com/ghodss/yaml",
+            sum = "h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=",
+            version = "v1.0.0",
         )
