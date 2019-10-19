@@ -45,6 +45,24 @@ var (
 	stampInfoFile       utils.ArrayStringFlags
 )
 
+// checkClientConfig ensures the given string represents a valid docker client
+// config by ensuring:
+// 1. It's a valid filesystem path.
+// 2. It's a directory.
+func checkClientConfig(configDir string) error {
+	if configDir == "" {
+		return nil
+	}
+	s, err := os.Stat(configDir)
+	if err != nil {
+		return errors.Wrapf(err, "unable to stat %q", configDir)
+	}
+	if !s.IsDir() {
+		return errors.Errorf("%q is not a directory", configDir)
+	}
+	return nil
+}
+
 func main() {
 	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer.tar.gz,layer.tar,<file with digest>,<file with diffID>.")
 	flag.Var(&stampInfoFile, "stamp-info-file", "The list of paths to the stamp info files used to substitute supported attribute when a python format placeholder is provivided in dst, e.g., {BUILD_USER}.")
@@ -60,8 +78,12 @@ func main() {
 		log.Fatalln("Option --config is required.")
 	}
 
-	// If the user provided a client config directory, instruct the keychain resolver
-	// to use it to look for the docker client config.
+	// If the user provided a client config directory, ensure it's a valid
+	// directory and instruct the keychain resolver to use it to look for the
+	// docker client config.
+	if err := checkClientConfig(*clientConfigDir); err != nil {
+		log.Fatalf("Failed to validate the Docker client config dir %q specified via --client-config-dir: %v", *clientConfigDir, err)
+	}
 	if *clientConfigDir != "" {
 		os.Setenv("DOCKER_CONFIG", *clientConfigDir)
 	}
