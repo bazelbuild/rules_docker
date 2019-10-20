@@ -76,6 +76,7 @@ def _toolchain_configure_impl(repository_ctx):
     xz_path = repository_ctx.which("xz") or ""
     docker_flags = []
     docker_flags += repository_ctx.attr.docker_flags
+
     # If client_config is not set we need to pass an empty string to the
     # template.
     client_config = repository_ctx.attr.client_config or ""
@@ -123,7 +124,7 @@ toolchain_configure = repository_rule(
         ),
         "docker_flags": attr.string_list(
             mandatory = False,
-            doc = "List of additional flag arguments to the docker command."
+            doc = "List of additional flag arguments to the docker command.",
         ),
     },
     implementation = _toolchain_configure_impl,
