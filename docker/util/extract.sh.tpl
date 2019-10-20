@@ -13,7 +13,7 @@ fi
 
 # Load the image and remember its name
 image_id=$(%{image_id_extractor_path} %{image_tar})
-$DOCKER l$DOCKER_FLAGS oad -i %{image_tar}
+$DOCKER $DOCKER_FLAGS load -i %{image_tar}
 
 id=$($DOCKER $DOCKER_FLAGS run -d %{docker_run_flags} $image_id %{commands})
 
