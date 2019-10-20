@@ -23,8 +23,8 @@ DockerToolchainInfo = provider(
                          "the value of the DOCKER_CONFIG environment variable" +
                          " will be used. DOCKER_CONFIG is not defined, the" +
                          " home directory will be used.",
-        "tool_path": "Path to the docker executable",
         "docker_flags": "Additional flags to the docker command",
+        "tool_path": "Path to the docker executable",
         "xz_path": "Optional path to the xz binary. This is used by " +
                    "build_tar.py when the Python lzma module is unavailable.",
     },
@@ -54,11 +54,11 @@ docker_toolchain = rule(
                   " DOCKER_CONFIG is not defined, the home directory will be" +
                   " used.",
         ),
-        "tool_path": attr.string(
-            doc = "Path to the docker binary.",
-        ),
         "docker_flags": attr.string_list(
             doc = "Additional flags to the docker command",
+        ),
+        "tool_path": attr.string(
+            doc = "Path to the docker binary.",
         ),
         "xz_path": attr.string(
             doc = "Optional path to the xz binary. This is used by " +
@@ -85,8 +85,8 @@ def _toolchain_configure_impl(repository_ctx):
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{DOCKER_CONFIG}": "%s" % client_config,
-            "%{DOCKER_TOOL}": "%s" % tool_path,
             "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
+            "%{DOCKER_TOOL}": "%s" % tool_path,
             "%{XZ_TOOL_PATH}": "%s" % xz_path,
         },
         False,
@@ -116,15 +116,15 @@ toolchain_configure = repository_rule(
                   " docker tool (typically, the home directory) will be" +
                   " used.",
         ),
+        "docker_flags": attr.string_list(
+            mandatory = False,
+            doc = "List of additional flag arguments to the docker command.",
+        ),
         "docker_path": attr.string(
             mandatory = False,
             doc = "The full path to the docker binary. If not specified, it will" +
                   "be searched for in the path. If not available, running commands" +
                   "that require docker (e.g., incremental load) will fail.",
-        ),
-        "docker_flags": attr.string_list(
-            mandatory = False,
-            doc = "List of additional flag arguments to the docker command.",
         ),
     },
     implementation = _toolchain_configure_impl,
