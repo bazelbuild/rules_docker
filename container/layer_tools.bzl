@@ -261,13 +261,14 @@ def incremental_load(
         if run:
             # Args are embedded into the image, so omitted here.
             run_statements += [
-                "${DOCKER} run %s %s" % (run_flags, tag_reference),
+                "\"${DOCKER}\" ${DOCKER_FLAGS} run %s %s" % (run_flags, tag_reference),
             ]
 
     ctx.actions.expand_template(
         template = ctx.file.incremental_load_template,
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_flags}": " ".join(toolchain_info.docker_flags), 
             "%{load_statements}": "\n".join(load_statements),
             "%{run_statements}": "\n".join(run_statements),
             "%{run}": str(run),
