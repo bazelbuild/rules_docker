@@ -1108,7 +1108,7 @@ docker_toolchain_configure(
   # in the client configuration JSON file.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="/path/to/docker/client/config",
+  client_config="/path/to/docker/client/config-dir",
 )
 ```
 In `BUILD` file:
@@ -2241,6 +2241,7 @@ creates a `container_import` target. The created target can be referenced as
 
 ## Adopters
 Here's a (non-exhaustive) list of companies that use `rules_docker` in production. Don't see yours? [You can add it in a PR!](https://github.com/bazelbuild/rules_docker/edit/master/README.md)
+  * [Amaiz](https://github.com/amaizfinance)
   * [Aura Devices](https://auradevices.io/)
   * [Button](https://usebutton.com)
   * [Etsy](https://www.etsy.com)

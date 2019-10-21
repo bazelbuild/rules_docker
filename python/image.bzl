@@ -46,6 +46,7 @@ def repositories():
         "@io_bazel_rules_docker//toolchains:container_py_toolchain",
     )
     native.register_execution_platforms(
+        "@local_config_platform//:host",
         "@io_bazel_rules_docker//platforms:local_container_platform",
     )
 
