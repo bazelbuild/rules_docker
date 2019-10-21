@@ -419,15 +419,19 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "e9bab54199722935f239cb1cd56a80be2ac3c3843e1a6d3492e2bc11f9c21daf",
-    strip_prefix = "bazel-toolchains-1.0.0",
+    sha256 = "1e16833a9f0e32b292568c0dfee7bd48133c2038605757d3a430551394310006",
+    strip_prefix = "bazel-toolchains-1.1.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/1.0.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/1.1.0.tar.gz",
     ],
 )
 
 # Define several exec property repo rules to be used in testing.
-load("@bazel_toolchains//rules/experimental/rbe:exec_properties.bzl", "merge_dicts", "rbe_exec_properties")
+load(
+    "@bazel_toolchains//rules/exec_properties:exec_properties.bzl",
+    "merge_dicts",
+    "rbe_exec_properties",
+)
 
 # A standard RBE execution property set repo rule.
 rbe_exec_properties(
