@@ -105,18 +105,18 @@ def repositories():
     if "io_bazel_rules_go" not in excludes:
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "513c12397db1bc9aa46dd62f02dd94b49a9b5d17444d49b5a04c5a89f3053c1c",
+            sha256 = "842ec0e6b4fbfdd3de6150b61af92901eeb73681fd4d185746644c338f51d4c0",
             urls = [
-                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.19.5/rules_go-v0.19.5.tar.gz",
-                "https://github.com/bazelbuild/rules_go/releases/download/0.19.5/rules_go-0.19.5.tar.gz",
+                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.20.1/rules_go-v0.20.1.tar.gz",
+                "https://github.com/bazelbuild/rules_go/releases/download/0.20.1/rules_go-0.20.1.tar.gz",
             ],
         )
     if "rules_python" not in excludes:
         http_archive(
             name = "rules_python",
-            sha256 = "e220053c4454664c09628ffbb33f245e65f5fe92eb285fbd0bc3a26f173f99d0",
-            strip_prefix = "rules_python-5aa465d5d91f1d9d90cac10624e3d2faf2057bd5",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/5aa465d5d91f1d9d90cac10624e3d2faf2057bd5.tar.gz"],
+            sha256 = "4ef098d1c89e25f2e14bde2714a1f2f1899009d4b6ccab864f347252ff1ef746",
+            strip_prefix = "rules_python-f46e953f6e0315a3f884154f9395a32ec9999eab",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/f46e953f6e0315a3f884154f9395a32ec9999eab.tar.gz"],
         )
 
     if "httplib2" not in excludes:
@@ -236,9 +236,9 @@ py_library(
     if "bazel_skylib" not in excludes:
         http_archive(
             name = "bazel_skylib",
-            sha256 = "2ea8a5ed2b448baf4a6855d3ce049c4c452a6470b1efd1504fdb7c1c134d220a",
-            strip_prefix = "bazel-skylib-0.8.0",
-            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.8.0.tar.gz"],
+            sha256 = "e5d90f0ec952883d56747b7604e2a15ee36e288bb556c3d0ed33e818a4d971f2",
+            strip_prefix = "bazel-skylib-1.0.2",
+            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/1.0.2.tar.gz"],
         )
 
     if "gzip" not in excludes:
