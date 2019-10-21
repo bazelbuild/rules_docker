@@ -23,6 +23,7 @@ DockerToolchainInfo = provider(
                          "the value of the DOCKER_CONFIG environment variable" +
                          " will be used. DOCKER_CONFIG is not defined, the" +
                          " home directory will be used.",
+        "docker_flags": "Additional flags to the docker command",
         "tool_path": "Path to the docker executable",
         "xz_path": "Optional path to the xz binary. This is used by " +
                    "build_tar.py when the Python lzma module is unavailable.",
@@ -33,6 +34,7 @@ def _docker_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         info = DockerToolchainInfo(
             tool_path = ctx.attr.tool_path,
+            docker_flags = ctx.attr.docker_flags,
             client_config = ctx.attr.client_config,
             xz_path = ctx.attr.xz_path,
         ),
@@ -52,6 +54,9 @@ docker_toolchain = rule(
                   " DOCKER_CONFIG is not defined, the home directory will be" +
                   " used.",
         ),
+        "docker_flags": attr.string_list(
+            doc = "Additional flags to the docker command",
+        ),
         "tool_path": attr.string(
             doc = "Path to the docker binary.",
         ),
@@ -69,6 +74,8 @@ def _toolchain_configure_impl(repository_ctx):
     elif repository_ctx.which("docker"):
         tool_path = repository_ctx.which("docker")
     xz_path = repository_ctx.which("xz") or ""
+    docker_flags = []
+    docker_flags += repository_ctx.attr.docker_flags
 
     # If client_config is not set we need to pass an empty string to the
     # template.
@@ -78,6 +85,7 @@ def _toolchain_configure_impl(repository_ctx):
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{DOCKER_CONFIG}": "%s" % client_config,
+            "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
             "%{DOCKER_TOOL}": "%s" % tool_path,
             "%{XZ_TOOL_PATH}": "%s" % xz_path,
         },
@@ -107,6 +115,10 @@ toolchain_configure = repository_rule(
                   " DOCKER_CONFIG is not defined, the default set for the " +
                   " docker tool (typically, the home directory) will be" +
                   " used.",
+        ),
+        "docker_flags": attr.string_list(
+            mandatory = False,
+            doc = "List of additional flag arguments to the docker command.",
         ),
         "docker_path": attr.string(
             mandatory = False,

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Resolve the docker tool path
-
 reset_cmd() {
     local original_image_name=$1
     local container_id=$2
@@ -18,5 +16,5 @@ reset_cmd() {
         fmt_cmd='["/bin/sh", "-c"]'
     fi
 
-    $docker_command commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
+    ${docker_command} commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
 }

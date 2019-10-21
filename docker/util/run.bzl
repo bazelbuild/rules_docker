@@ -64,6 +64,7 @@ def _extract_impl(
         output = script,
         substitutions = {
             "%{commands}": _process_commands(commands),
+            "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{extract_file}": extract_file,
@@ -176,6 +177,7 @@ def _commit_impl(
         output = script,
         substitutions = {
             "%{commands}": _process_commands(commands),
+            "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
