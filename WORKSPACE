@@ -287,9 +287,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "8f6acb535126b327dafdbcc7a73a0fee9c5f425ef757f3f6cba2edfc002b1a99",
-    strip_prefix = "rules_scala-b2273e7a90eac81132c9cdb8b2ca05fdbba74e46",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/b2273e7a90eac81132c9cdb8b2ca05fdbba74e46.tar.gz"],
+    sha256 = "050a484981eb8fd1ca6c3bac8223f80121b4ee384e30c969926a1afbd32aefad",
+    strip_prefix = "rules_scala-0f89c210ade8f4320017daf718a61de3c1ac4773",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/0f89c210ade8f4320017daf718a61de3c1ac4773.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -419,15 +419,19 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "e9bab54199722935f239cb1cd56a80be2ac3c3843e1a6d3492e2bc11f9c21daf",
-    strip_prefix = "bazel-toolchains-1.0.0",
+    sha256 = "1e16833a9f0e32b292568c0dfee7bd48133c2038605757d3a430551394310006",
+    strip_prefix = "bazel-toolchains-1.1.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/1.0.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/1.1.0.tar.gz",
     ],
 )
 
 # Define several exec property repo rules to be used in testing.
-load("@bazel_toolchains//rules/experimental/rbe:exec_properties.bzl", "merge_dicts", "rbe_exec_properties")
+load(
+    "@bazel_toolchains//rules/exec_properties:exec_properties.bzl",
+    "merge_dicts",
+    "rbe_exec_properties",
+)
 
 # A standard RBE execution property set repo rule.
 rbe_exec_properties(
