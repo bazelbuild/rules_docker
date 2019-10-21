@@ -1619,7 +1619,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
       <td><code>empty_dirs</code></td>
       <td>
         <code>List of directories, optional</code>
-        <p>Directory to add to the layer</p>
+        <p>Directory to add to the layer.</p>
         <p>
           A list of empty directories that should be created in the Docker image.
         </p>
