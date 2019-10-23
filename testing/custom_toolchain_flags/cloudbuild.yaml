@@ -18,5 +18,5 @@
 steps:
   # Test the download_pkgs examples.
   - name: "l.gcr.io/google/bazel"
-    args: ["test", "//..."]
+    args: ["test", "--host_force_python=PY2", "//..."]
     dir: "testing/custom_toolchain_flags"
