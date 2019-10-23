@@ -19,7 +19,6 @@ local_repository(
     path = "../../",
 )
 
-
 load(
     "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
@@ -28,8 +27,8 @@ load(
 docker_toolchain_configure(
     name = "docker_config",
     docker_flags = [
-        "--log-level=info"
-    ]
+        "--log-level=info",
+    ],
 )
 
 # This is NOT needed when going through the language lang_image

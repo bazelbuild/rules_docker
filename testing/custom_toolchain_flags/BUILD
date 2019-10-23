@@ -17,10 +17,13 @@ load(
     "file_test",
     "rule_test",
 )
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs")
+load("@io_bazel_rules_docker//docker/package_managers:install_pkgs.bzl", "install_pkgs")
+load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_extract")
 
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs")
 download_pkgs(
     name = "test_download_pkgs",
     image_tar = "@debian_base//image",
@@ -30,7 +33,6 @@ download_pkgs(
     ],
 )
 
-load("@io_bazel_rules_docker//docker/package_managers:install_pkgs.bzl", "install_pkgs")
 install_pkgs(
     name = "test_install_pkgs",
     image_tar = "@debian_base//image",
@@ -39,13 +41,11 @@ install_pkgs(
     output_image_name = "test_install_pkgs",
 )
 
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 container_image(
     name = "test_container_image",
-    base = ":test_install_pkgs.tar"
+    base = ":test_install_pkgs.tar",
 )
 
-load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_extract")
 container_run_and_extract(
     name = "test_container_run_and_extract",
     commands = [
@@ -101,7 +101,7 @@ rule_test(
 rule_test(
     name = "test_container_run_and_extract_rule",
     generates = [
-        "test_container_run_and_extract.build", 
+        "test_container_run_and_extract.build",
         "test_container_run_and_extract/foo",
     ],
     rule = "test_container_run_and_extract",
