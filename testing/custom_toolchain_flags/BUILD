@@ -20,7 +20,7 @@ load(
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs")
 load("@io_bazel_rules_docker//docker/package_managers:install_pkgs.bzl", "install_pkgs")
-load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_extract")
+load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_commit", "container_run_and_extract")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -52,6 +52,14 @@ container_run_and_extract(
         "touch /foo",
     ],
     extract_file = "/foo",
+    image = "@debian_base//image",
+)
+
+container_run_and_commit(
+    name = "test_container_run_and_commit",
+    commands = [
+        "touch /foo",
+    ],
     image = "@debian_base//image",
 )
 
@@ -92,11 +100,11 @@ rule_test(
     rule = "test_container_image",
 )
 
-# file_test(
-#     name = "test_custom_flag_container_image",
-#     file = ":test_container_image",
-#     regexp = "DOCKER_FLAGS=\"--log-level=info\"",
-# )
+file_test(
+    name = "test_custom_flag_container_image",
+    file = ":test_container_image.executable",
+    regexp = "DOCKER_FLAGS=\"--log-level=info\"",
+)
 
 rule_test(
     name = "test_container_run_and_extract_rule",
@@ -107,8 +115,23 @@ rule_test(
     rule = "test_container_run_and_extract",
 )
 
-# file_test(
-#     name = "test_container_run_and_extract",
-#     file = ":test_container_run_and_extract.build",
-#     regexp = "DOCKER_FLAGS=\"--log-level=info\"",
-# )
+file_test(
+    name = "test_custom_flag_container_run_and_extract",
+    file = ":test_container_run_and_extract.build",
+    regexp = "DOCKER_FLAGS=\"--log-level=info\"",
+)
+
+rule_test(
+    name = "test_container_run_and_commit_rule",
+    generates = [
+        "test_container_run_and_commit.build",
+        "test_container_run_and_commit_commit.tar",
+    ],
+    rule = "test_container_run_and_commit",
+)
+
+file_test(
+    name = "test_custom_flag_container_run_and_commit",
+    file = ":test_container_run_and_commit.build",
+    regexp = "DOCKER_FLAGS=\"--log-level=info\"",
+)
