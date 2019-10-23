@@ -334,7 +334,7 @@ def _impl(
     cmd = cmd or ctx.attr.cmd
     operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
-    output_executable = output_executable or ctx.outputs.executable
+    output_executable = output_executable or ctx.outputs.build_script
     output_tarball = output_tarball or ctx.outputs.out
     output_digest = output_digest or ctx.outputs.digest
     output_config = output_config or ctx.outputs.config
@@ -562,6 +562,8 @@ _outputs["out"] = "%{name}.tar"
 _outputs["digest"] = "%{name}.digest"
 
 _outputs["config"] = "%{name}.json"
+
+_outputs["build_script"] = "%{name}.executable"
 
 image = struct(
     attrs = _attrs,

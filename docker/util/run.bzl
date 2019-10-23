@@ -244,6 +244,7 @@ _commit_attrs = {
 }
 _commit_outputs = {
     "out": "%{name}_commit.tar",
+    "build": "%{name}.build",
 }
 
 container_run_and_commit = rule(
