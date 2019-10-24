@@ -131,6 +131,17 @@ docker_toolchain_configure(
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
   client_config="<enter absolute path to your docker config directory here>",
+
+  # OPTIONAL: List of additional flags to pass to the docker command.
+  docker_flags = [
+    "--tls",
+    "--log-level=info",
+  ],
+
+  # OPTIONAL: The full path to the docker binary. If not specified, it will
+  # be searched for in the path. If not available, running commands
+  # that require docker (e.g., incremental load) will fail.
+  docker_path = "<enter absolute path to the docker cli command",
 )
 # End of OPTIONAL segment.
 
@@ -1542,7 +1553,7 @@ configuration. See [here](#container_push-custom-client-configuration) for detai
 ## container_layer
 
 ```python
-container_layer(data_path, directory, files, mode, tars, debs, symlinks, env)
+container_layer(data_path, directory, empty_dirs, files, mode, tars, debs, symlinks, env)
 ```
 
 A rule that assembles data into a tarball which can be use as in `layers` attr in `container_image` rule.
@@ -1612,6 +1623,16 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
         <p>
           The directory in which to expand the specified files, defaulting to '/'.
           Only makes sense accompanying one of files/tars/debs.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>empty_dirs</code></td>
+      <td>
+        <code>List of directories, optional</code>
+        <p>Directory to add to the layer.</p>
+        <p>
+          A list of empty directories that should be created in the Docker image.
         </p>
       </td>
     </tr>
@@ -2248,7 +2269,6 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
   * [Kubernetes Container Image Promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter)
-  * [Nordstrom](https://nordstrom.com)
   * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
   * [Tink](https://www.tink.com)
   * [Wix](https://www.wix.com)
