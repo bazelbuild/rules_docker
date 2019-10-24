@@ -334,11 +334,12 @@ def _impl(
     cmd = cmd or ctx.attr.cmd
     operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
-    output_executable = output_executable or ctx.outputs.build_script
+    output_executable = output_executable or ctx.outputs.executable
     output_tarball = output_tarball or ctx.outputs.out
     output_digest = output_digest or ctx.outputs.digest
     output_config = output_config or ctx.outputs.config
     output_layer = output_layer or ctx.outputs.layer
+    build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
 
@@ -473,6 +474,7 @@ def _impl(
         run = not ctx.attr.legacy_run_behavior,
         run_flags = docker_run_flags,
     )
+
     _assemble_image(
         ctx,
         images,
@@ -486,6 +488,14 @@ def _impl(
         outputs = [output_config],
         inputs = [config_file],
         command = "ln -s %s %s" % (ln_path, output_config.path),
+    )
+
+    # Symlink executable file for usage in structure tests
+    script_path = output_executable.path.split("/")[-1]
+    ctx.actions.run_shell(
+        outputs = [build_script],
+        inputs = [config_file],
+        command = "ln -s %s %s" % (script_path, build_script.path),
     )
 
     runfiles = ctx.runfiles(

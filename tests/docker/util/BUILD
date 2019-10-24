@@ -79,6 +79,7 @@ container_run_and_commit(
 rule_test(
     name = "test_container_commit_rule",
     generates = [
+        "test_container_commit.build",
         "test_container_commit_commit.tar",
     ],
     rule = "test_container_commit",
