@@ -558,7 +558,7 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_nodejs/archive/{HEAD}.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
 
 # Download Node toolchain, etc.
 node_repositories(package_json = ["//:package.json"])

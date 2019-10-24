@@ -352,18 +352,18 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "9b72bb0aea72d7cbcfc82a01b1e25bf3d85f791e790ddec16c65e2d906382ee0",
-    strip_prefix = "rules_nodejs-0.16.2",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.16.2.zip"],
+    sha256 = "3d7296d834208792fa3b2ded8ec04e75068e3de172fae79db217615bd75a6ff7",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.39.1/rules_nodejs-0.39.1.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
 
 node_repositories(package_json = ["//testdata:package.json"])
 
 npm_install(
     name = "npm_deps",
     package_json = "//testdata:package.json",
+    package_lock_json = "//testdata:package-lock.json",
 )
 
 load(
