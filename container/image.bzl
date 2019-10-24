@@ -494,7 +494,7 @@ def _impl(
     script_path = output_executable.path.split("/")[-1]
     ctx.actions.run_shell(
         outputs = [build_script],
-        inputs = [config_file],
+        inputs = [output_executable],
         command = "ln -s %s %s" % (script_path, build_script.path),
     )
 
