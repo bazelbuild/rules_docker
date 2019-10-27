@@ -21,7 +21,7 @@ load(
 
 docker_toolchain_configure(
     name = "docker_config",
-    docker_path = "/usr/bin/docker",
+    docker_path = "/usr/local/bin/docker",
 )
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
