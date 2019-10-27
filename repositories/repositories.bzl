@@ -108,7 +108,7 @@ def repositories():
             sha256 = "842ec0e6b4fbfdd3de6150b61af92901eeb73681fd4d185746644c338f51d4c0",
             urls = [
                 "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.20.1/rules_go-v0.20.1.tar.gz",
-                "https://github.com/bazelbuild/rules_go/releases/download/0.20.1/rules_go-0.20.1.tar.gz",
+                "https://github.com/bazelbuild/rules_go/releases/download/v0.20.1/rules_go-v0.20.1.tar.gz",
             ],
         )
     if "rules_python" not in excludes:
