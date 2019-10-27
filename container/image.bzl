@@ -334,7 +334,7 @@ def _impl(
     cmd = cmd or ctx.attr.cmd
     operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
-    output_executable = output_executable or ctx.outputs.executable
+    build_executable = output_executable or ctx.outputs.build_script
     output_tarball = output_tarball or ctx.outputs.out
     output_digest = output_digest or ctx.outputs.digest
     output_config = output_config or ctx.outputs.config
@@ -470,7 +470,7 @@ def _impl(
     _incr_load(
         ctx,
         images,
-        output_executable,
+        build_executable,
         run = not ctx.attr.legacy_run_behavior,
         run_flags = docker_run_flags,
     )
@@ -490,14 +490,6 @@ def _impl(
         command = "ln -s %s %s" % (ln_path, output_config.path),
     )
 
-    # Symlink executable file for usage in structure tests
-    script_path = output_executable.path.split("/")[-1]
-    ctx.actions.run_shell(
-        outputs = [build_script],
-        inputs = [output_executable],
-        command = "ln -s %s %s" % (script_path, build_script.path),
-    )
-
     runfiles = ctx.runfiles(
         files = unzipped_layers + diff_ids + [config_file, config_digest] +
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
@@ -510,7 +502,7 @@ def _impl(
             docker_run_flags = docker_run_flags,
         ),
         DefaultInfo(
-            executable = output_executable,
+            executable = build_executable,
             files = depset([output_layer]),
             runfiles = runfiles,
         ),

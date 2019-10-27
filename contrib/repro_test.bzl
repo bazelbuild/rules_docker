@@ -113,7 +113,7 @@ def _impl(ctx):
         ctx,
         files = [proj_root],
         tars = [proj_tar],
-        output_executable = ctx.actions.declare_file(name + "_load.sh"),
+        output_executable = ctx.outputs.build_script,
         output_tarball = image_tar,
         workdir = "/",
     )
