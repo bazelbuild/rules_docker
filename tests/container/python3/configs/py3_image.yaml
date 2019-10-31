@@ -2,6 +2,7 @@ schemaVersion: 2.0.0
 
 metadataTest:
   entrypoint: [
+    'python',
     '/app/tests/container/python3/py3_image.binary',
   ]
   cmd: [

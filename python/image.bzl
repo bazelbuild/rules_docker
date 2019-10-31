@@ -116,6 +116,7 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     app_layer(
         name = name,
         base = base,
+        entrypoint = ["python"],
         binary = binary_name,
         visibility = visibility,
         tags = tags,
