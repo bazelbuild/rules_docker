@@ -197,12 +197,12 @@ def _commit_impl(
             ),
             "%{output_tar}": output_image_tar.path,
             "%{to_json_tool}": ctx.executable._to_json_tool.path,
-            "%{util_script}": ctx.file.image_utils.path,
+            "%{util_script}": image_utils.path,
         },
         is_executable = True,
     )
 
-    runfiles = [image, ctx.file.image_utils]
+    runfiles = [image, image_utils]
 
     ctx.actions.run(
         outputs = [output_image_tar],
