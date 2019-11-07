@@ -171,6 +171,7 @@ def _commit_impl(
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
     # Generate a shell script to execute the reset cmd
+    image_utils = ctx.actions.declare_file("image_util.sh")
     ctx.actions.expand_template(
         template = ctx.file._image_utils_tpl,
         output = image_utils,
