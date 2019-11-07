@@ -87,10 +87,10 @@ def _impl(ctx):
 
     if ctx.attr.skip_unchanged_digest:
         pusher_args += ["-skip-unchanged-digest"]
-    digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
+    digester_args += ["--dst", str(ctx.outputs.digest_output.path), "--format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
-        outputs = [ctx.outputs.digest],
+        outputs = [ctx.outputs.digest_output],
         executable = ctx.executable._digester,
         arguments = digester_args,
         tools = ctx.attr._digester[DefaultInfo].default_runfiles.files,
@@ -131,9 +131,9 @@ def _impl(ctx):
         ),
     ]
 
-# Pushes a container image to a registry.
-container_push = rule(
+_container_push = rule(
     attrs = dicts.add({
+        "digest_output": attr.output(),
         "format": attr.string(
             mandatory = True,
             values = [
@@ -190,7 +190,11 @@ container_push = rule(
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
-    outputs = {
-        "digest": "%{name}.digest",
-    },
 )
+
+# Pushes a container image to a registry.
+def container_push(**kwargs):
+    name = kwargs["name"]
+    digest_output = kwargs.pop("digest_output", name + ".digest")
+    kwargs["digest_output"] = digest_output
+    _container_push(**kwargs)
