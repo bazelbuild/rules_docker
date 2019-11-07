@@ -82,6 +82,7 @@ def py3_image(name, base = None, deps = [], layers = [],
     deps: Dependencies of the py3_image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    entrypoint: Entrypoint of the app layer
     **kwargs: See py_binary.
   """
     binary_name = name + ".binary"
