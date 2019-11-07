@@ -72,8 +72,13 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py3_image_base//image",
 })
 
-def py3_image(name, base = None, deps = [], layers = [],
-              entrypoint = ["/usr/bin/python"], **kwargs):
+def py3_image(
+        name,
+        base = None,
+        deps = [],
+        layers = [],
+        entrypoint = ["/usr/bin/python"],
+        **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
