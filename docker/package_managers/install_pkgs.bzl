@@ -85,10 +85,20 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
     )
     unstripped_tar = ctx.actions.declare_file(output_tar.basename + ".unstripped")
 
-    script = ctx.actions.declare_file(ctx.label.name + ".build")
-
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
+    # Generate a shell script to execute the reset cmd
+    image_util = ctx.actions.declare_file("image_util.sh")
+    ctx.actions.expand_template(
+        template = ctx.file._image_util_tpl,
+        output = image_util,
+        substitutions = {
+            "%{docker_tool_path}": toolchain_info.tool_path,
+        },
+        is_executable = True,
+    )
+
+    script = ctx.actions.declare_file(ctx.label.name + ".build")
     ctx.actions.expand_template(
         template = ctx.file._run_install_tpl,
         output = script,
@@ -101,7 +111,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
             "%{output_file_name}": unstripped_tar.path,
             "%{output_image_name}": output_image_name,
             "%{to_json_tool}": ctx.executable._to_json_tool.path,
-            "%{util_script}": ctx.file._image_utils.path,
+            "%{util_script}": image_util.path,
         },
         is_executable = True,
     )
@@ -112,7 +122,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
             image_tar,
             install_script,
             installables_tar,
-            ctx.file._image_utils,
+            image_util,
         ],
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         executable = script,
@@ -163,8 +173,8 @@ _attrs = {
         executable = True,
         allow_files = True,
     ),
-    "_image_utils": attr.label(
-        default = "//docker/util:image_util.sh",
+    "_image_util_tpl": attr.label(
+        default = "//docker/util:image_util.sh.tpl",
         allow_single_file = True,
     ),
     "_installer_tpl": attr.label(
