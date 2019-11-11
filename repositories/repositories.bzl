@@ -105,18 +105,18 @@ def repositories():
     if "io_bazel_rules_go" not in excludes:
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "842ec0e6b4fbfdd3de6150b61af92901eeb73681fd4d185746644c338f51d4c0",
+            sha256 = "b9aa86ec08a292b97ec4591cf578e020b35f98e12173bbd4a921f84f583aebd9",
             urls = [
-                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.20.1/rules_go-v0.20.1.tar.gz",
-                "https://github.com/bazelbuild/rules_go/releases/download/v0.20.1/rules_go-v0.20.1.tar.gz",
+                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.20.2/rules_go-v0.20.2.tar.gz",
+                "https://github.com/bazelbuild/rules_go/releases/download/v0.20.2/rules_go-v0.20.2.tar.gz",
             ],
         )
     if "rules_python" not in excludes:
         http_archive(
             name = "rules_python",
-            sha256 = "52197b7445ab0d9fbdec45bf18e90371ead860280de5cd9b2725669d759a3584",
-            strip_prefix = "rules_python-230f6d15b4ab23cd3a46c54023c9e5fb3e1e3542",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/230f6d15b4ab23cd3a46c54023c9e5fb3e1e3542.tar.gz"],
+            sha256 = "43fb8fd1dc950f1def50b04b220eda8a27e0608a5492aa4f164dc5b34803ff5e",
+            strip_prefix = "rules_python-a610acec1653001b736338e4bc2dbe9609ed86b2",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/a610acec1653001b736338e4bc2dbe9609ed86b2.tar.gz"],
         )
 
     if "httplib2" not in excludes:
