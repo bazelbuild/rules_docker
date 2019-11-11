@@ -171,6 +171,17 @@ def _commit_impl(
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
+    # Generate a shell script to execute the reset cmd
+    image_utils = ctx.actions.declare_file("image_util.sh")
+    ctx.actions.expand_template(
+        template = ctx.file._image_utils_tpl,
+        output = image_utils,
+        substitutions = {
+            "%{docker_tool_path}": toolchain_info.tool_path,
+        },
+        is_executable = True,
+    )
+
     # Generate a shell script to execute the run statement
     ctx.actions.expand_template(
         template = ctx.file._run_tpl,
@@ -188,12 +199,12 @@ def _commit_impl(
             ),
             "%{output_tar}": output_image_tar.path,
             "%{to_json_tool}": ctx.executable._to_json_tool.path,
-            "%{util_script}": ctx.file._image_utils.path,
+            "%{util_script}": image_utils.path,
         },
         is_executable = True,
     )
 
-    runfiles = [image, ctx.file._image_utils]
+    runfiles = [image, image_utils]
 
     ctx.actions.run(
         outputs = [output_image_tar],
@@ -227,8 +238,8 @@ _commit_attrs = {
         executable = True,
         allow_files = True,
     ),
-    "_image_utils": attr.label(
-        default = "//docker/util:image_util.sh",
+    "_image_utils_tpl": attr.label(
+        default = "//docker/util:image_util.sh.tpl",
         allow_single_file = True,
     ),
     "_run_tpl": attr.label(

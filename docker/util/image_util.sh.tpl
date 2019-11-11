@@ -4,11 +4,13 @@ reset_cmd() {
     local original_image_name=$1
     local container_id=$2
     local output_image_name=$3
-    local docker_command=$4
+
+    # Resolve the docker tool path
+    DOCKER="%{docker_tool_path}"
 
     local old_cmd
     # docker inspect input cannot be piped into docker commit directly, we need to JSON format it.
-    old_cmd=$(${docker_command} inspect -f "{{range .Config.Cmd}}{{.}} {{end}}" "${original_image_name}")
+    old_cmd=$($DOCKER inspect -f "{{range .Config.Cmd}}{{.}} {{end}}" "${original_image_name}")
     fmt_cmd=$(echo "$old_cmd" | ${TO_JSON_TOOL})
     # If CMD wasn't set, set it to a sane default.
     if [ "$fmt_cmd" == "" ] || [ "$fmt_cmd" == "[]" ];
@@ -16,5 +18,5 @@ reset_cmd() {
         fmt_cmd='["/bin/sh", "-c"]'
     fi
 
-    ${docker_command} commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
+    $DOCKER commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
 }
