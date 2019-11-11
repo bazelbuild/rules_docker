@@ -93,8 +93,8 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         template = ctx.file._image_util_tpl,
         output = image_util,
         substitutions = {
-            "%{docker_tool_path}": toolchain_info.tool_path,
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
+            "%{docker_tool_path}": toolchain_info.tool_path,
         },
         is_executable = True,
     )
