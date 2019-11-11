@@ -17,4 +17,4 @@
 #  //tests/docker/security/... & the docker/package_managers rules.
 build --incompatible_use_python_toolchains
 test --incompatible_use_python_toolchains
-
+build --host_force_python=PY2

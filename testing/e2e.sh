@@ -59,7 +59,7 @@ EOF
   EXPECT_CONTAINS "$(cat output.txt)" "Second: 5"
   EXPECT_CONTAINS "$(cat output.txt)" "Third: 6"
   EXPECT_CONTAINS "$(cat output.txt)" "Fourth: 7"
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/py3_image_with_custom_run_flags.executable)" "-i --rm --network=host -e ABC=ABC"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/py3_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
   rm -f output.txt
 }
 
