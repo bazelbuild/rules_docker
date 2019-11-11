@@ -178,6 +178,7 @@ def _commit_impl(
         output = image_utils,
         substitutions = {
             "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_flags}": " ".join(toolchain_info.docker_flags),
         },
         is_executable = True,
     )
