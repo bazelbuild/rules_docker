@@ -241,11 +241,6 @@ py_library(
             urls = ["https://github.com/bazelbuild/bazel-skylib/archive/1.0.2.tar.gz"],
         )
 
-    if "gzip" not in excludes:
-        local_tool(
-            name = "gzip",
-        )
-
     if "bazel_gazelle" not in excludes:
         http_archive(
             name = "bazel_gazelle",

@@ -39,7 +39,6 @@ load(
 load(
     "//skylib:zip.bzl",
     _gzip = "gzip",
-    _zip_tools = "tools",
 )
 
 def _magic_path(ctx, f, output_layer):
@@ -244,7 +243,7 @@ _layer_attrs = dicts.add({
     ),
     "symlinks": attr.string_dict(),
     "tars": attr.label_list(allow_files = tar_filetype),
-}, _hash_tools, _layer_tools, _zip_tools)
+}, _hash_tools, _layer_tools)
 
 _layer_outputs = {
     "layer": "%{name}-layer.tar",

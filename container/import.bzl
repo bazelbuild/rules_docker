@@ -39,7 +39,6 @@ load(
     "//skylib:zip.bzl",
     _gunzip = "gunzip",
     _gzip = "gzip",
-    _zip_tools = "tools",
 )
 
 def _is_filetype(filename, extensions):
@@ -168,7 +167,7 @@ container_import = rule(
             mandatory = False,
         ),
         "repository": attr.string(default = "bazel"),
-    }, _hash_tools, _layer_tools, _zip_tools),
+    }, _hash_tools, _layer_tools),
     executable = True,
     outputs = {
         "out": "%{name}.tar",
