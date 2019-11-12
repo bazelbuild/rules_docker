@@ -24,6 +24,8 @@ DockerToolchainInfo = provider(
                          " will be used. DOCKER_CONFIG is not defined, the" +
                          " home directory will be used.",
         "gzip_path": "Optional path to the gzip binary. If not set found via which.",
+        "gzip_target": "Optional Bazel target for the gzip tool. " +
+                       "Should only be set if gzip_path is unset.",
         "tool_path": "Path to the docker executable",
         "xz_path": "Optional path to the xz binary. This is used by " +
                    "build_tar.py when the Python lzma module is unavailable. " +
@@ -36,6 +38,7 @@ def _docker_toolchain_impl(ctx):
         info = DockerToolchainInfo(
             client_config = ctx.attr.client_config,
             gzip_path = ctx.attr.gzip_path,
+            gzip_target = ctx.attr.gzip_target,
             tool_path = ctx.attr.tool_path,
             xz_path = ctx.attr.xz_path,
         ),
@@ -56,7 +59,12 @@ docker_toolchain = rule(
                   " used.",
         ),
         "gzip_path": attr.string(
-            doc = "Path to the gzip binary.",
+            doc = "Path to the gzip binary. " +
+                  "Should only be set if gzip_target is unset.",
+        ),
+        "gzip_target": attr.string(
+            doc = "Bazel target for the gzip tool. " +
+                  "Should only be set if gzip_path is unset.",
         ),
         "tool_path": attr.string(
             doc = "Path to the docker binary.",
@@ -69,6 +77,8 @@ docker_toolchain = rule(
 )
 
 def _toolchain_configure_impl(repository_ctx):
+    if repository_ctx.attr.gzip_target and repository_ctx.attr.gzip_path:
+        fail("Only one of gzip_target or gzip_path can be set.")
     tool_path = ""
     if repository_ctx.attr.docker_path:
         tool_path = repository_ctx.attr.docker_path
@@ -81,11 +91,13 @@ def _toolchain_configure_impl(repository_ctx):
     elif repository_ctx.which("xz"):
         xz_path = repository_ctx.which("xz")
 
-    gzip_path = ""
-    if repository_ctx.attr.gzip_path:
-        gzip_path = repository_ctx.attr.gzip_path
+    gzip_attr = ""
+    if repository_ctx.attr.gzip_target:
+        gzip_attr = "gzip_target = \"%s\"," % repository_ctx.attr.gzip_target
+    elif repository_ctx.attr.gzip_path:
+        gzip_attr = "gzip_path = \"%s\"," % repository_ctx.attr.gzip_path
     elif repository_ctx.which("gzip"):
-        gzip_path = repository_ctx.which("gzip")
+        gzip_attr = "gzip_path = \"%s\"," % repository_ctx.which("gzip")
 
     # If client_config is not set we need to pass an empty string to the
     # template.
@@ -96,7 +108,7 @@ def _toolchain_configure_impl(repository_ctx):
         {
             "%{DOCKER_CONFIG}": "%s" % client_config,
             "%{DOCKER_TOOL}": "%s" % tool_path,
-            "%{GZIP_TOOL_PATH}": "%s" % gzip_path,
+            "%{GZIP_ATTR}": "%s" % gzip_attr,
             "%{XZ_TOOL_PATH}": "%s" % xz_path,
         },
         False,
@@ -137,6 +149,11 @@ toolchain_configure = repository_rule(
             doc = "The full path to the gzip binary. If not specified, it will" +
                   "be searched for in the path. If not available, running commands" +
                   "that gzip will fail.",
+        ),
+        "gzip_target": attr.string(
+            mandatory = False,
+            doc = "The bazel target for the gzip tool. " +
+                  "Can only be set if gzip_path is not set.",
         ),
         "xz_path": attr.string(
             mandatory = False,

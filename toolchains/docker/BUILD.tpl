@@ -21,7 +21,7 @@ load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl", "docker_toolchai
 docker_toolchain(
     name = "toolchain",
     client_config = "%{DOCKER_CONFIG}",
-    gzip_path = "%{GZIP_TOOL_PATH}",
+    %{GZIP_ATTR}
     tool_path = "%{DOCKER_TOOL}",
     xz_path = "%{XZ_TOOL_PATH}",
 )

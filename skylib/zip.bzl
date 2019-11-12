@@ -25,7 +25,10 @@ def gzip(ctx, artifact):
     """
     out = ctx.actions.declare_file(artifact.basename + ".gz")
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
-    if toolchain_info.gzip_path == "":
+    tools = []
+    if toolchain_info.gzip_target:
+        tools = toolchain_info.gzip_target.executable
+    elif toolchain_info.gzip_path == "":
         fail("gzip could not be found. Make sure it is in the path or set it " +
              "explicitly in the docker_toolchain_configure")
     ctx.actions.run_shell(
@@ -34,6 +37,7 @@ def gzip(ctx, artifact):
         outputs = [out],
         use_default_shell_env = True,
         mnemonic = "GZIP",
+        tools = tools,
     )
     return out
 
@@ -49,7 +53,10 @@ def gunzip(ctx, artifact):
     """
     out = ctx.actions.declare_file(artifact.basename + ".nogz")
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
-    if toolchain_info.gzip_path == "":
+    tools = []
+    if toolchain_info.gzip_target:
+        tools = toolchain_info.gzip_target.executable
+    elif toolchain_info.gzip_path == "":
         fail("gzip could not be found. Make sure it is in the path or set it " +
              "explicitly in the docker_toolchain_configure")
     ctx.actions.run_shell(
@@ -58,5 +65,6 @@ def gunzip(ctx, artifact):
         outputs = [out],
         use_default_shell_env = True,
         mnemonic = "GUNZIP",
+        tools = tools,
     )
     return out
