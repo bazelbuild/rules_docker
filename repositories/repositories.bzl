@@ -27,32 +27,6 @@ load(
 CONTAINERREGISTRY_RELEASE = "v0.0.36"
 RULES_DOCKER_GO_BINARY_RELEASE = "db8af45b844ed6ee5150984986b3f1ba9292e3a1"
 
-_local_tool_build_template = """
-sh_binary(
-    name = "{name}",
-    srcs = ["bin/{name}"],
-    visibility = ["//visibility:public"],
-)
-"""
-
-def _local_tool(repository_ctx):
-    rctx = repository_ctx
-    realpath = rctx.which(rctx.name)
-    rctx.symlink(realpath, "bin/%s" % rctx.name)
-    rctx.file(
-        "WORKSPACE",
-        'workspace(name = "{}")\n'.format(rctx.name),
-    )
-    rctx.file(
-        "BUILD",
-        _local_tool_build_template.format(name = rctx.name),
-    )
-
-local_tool = repository_rule(
-    local = True,
-    implementation = _local_tool,
-)
-
 def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
@@ -239,11 +213,6 @@ py_library(
             sha256 = "e5d90f0ec952883d56747b7604e2a15ee36e288bb556c3d0ed33e818a4d971f2",
             strip_prefix = "bazel-skylib-1.0.2",
             urls = ["https://github.com/bazelbuild/bazel-skylib/archive/1.0.2.tar.gz"],
-        )
-
-    if "gzip" not in excludes:
-        local_tool(
-            name = "gzip",
         )
 
     if "bazel_gazelle" not in excludes:
