@@ -20,9 +20,9 @@ DockerToolchainInfo = provider(
     fields = {
         "client_config": "A custom directory for the docker client " +
                          "config.json. If DOCKER_CONFIG is not specified, " +
-                         "the value of the DOCKER_CONFIG environment variable" +
-                         " will be used. DOCKER_CONFIG is not defined, the" +
-                         " home directory will be used.",
+                         "the value of the DOCKER_CONFIG environment variable " +
+                         "will be used. DOCKER_CONFIG is not defined, the " +
+                         "home directory will be used.",
         "gzip_path": "Optional path to the gzip binary. If not set found via which.",
         "gzip_target": "Optional Bazel target for the gzip tool. " +
                        "Should only be set if gzip_path is unset.",
@@ -54,9 +54,9 @@ docker_toolchain = rule(
             default = "",
             doc = "A custom directory for the docker client config.json. If " +
                   "DOCKER_CONFIG is not specified, the value of the " +
-                  "DOCKER_CONFIG environment variable will be used." +
-                  " DOCKER_CONFIG is not defined, the home directory will be" +
-                  " used.",
+                  "DOCKER_CONFIG environment variable will be used. " +
+                  "DOCKER_CONFIG is not defined, the home directory will be " +
+                  "used.",
         ),
         "gzip_path": attr.string(
             doc = "Path to the gzip binary. " +
@@ -135,23 +135,23 @@ toolchain_configure = repository_rule(
         "client_config": attr.string(
             mandatory = False,
             doc = "A custom directory for the docker client " +
-                  "config.json. If DOCKER_CONFIG is not specified, the value" +
-                  " of the DOCKER_CONFIG environment variable will be used." +
-                  " DOCKER_CONFIG is not defined, the default set for the " +
-                  " docker tool (typically, the home directory) will be" +
-                  " used.",
+                  "config.json. If DOCKER_CONFIG is not specified, the value " +
+                  "of the DOCKER_CONFIG environment variable will be used. " +
+                  "DOCKER_CONFIG is not defined, the default set for the " +
+                  "docker tool (typically, the home directory) will be " +
+                  "used.",
         ),
         "docker_path": attr.string(
             mandatory = False,
-            doc = "The full path to the docker binary. If not specified, it will" +
-                  "be searched for in the path. If not available, running commands" +
+            doc = "The full path to the docker binary. If not specified, it will " +
+                  "be searched for in the path. If not available, running commands " +
                   "that require docker (e.g., incremental load) will fail.",
         ),
         "gzip_path": attr.string(
             mandatory = False,
-            doc = "The full path to the gzip binary. If not specified, it will" +
-                  "be searched for in the path. If not available, running commands" +
-                  "that gzip will fail.",
+            doc = "The full path to the gzip binary. If not specified, it will " +
+                  "be searched for in the path. If not available, running commands " +
+                  "that use gzip will fail.",
         ),
         "gzip_target": attr.label(
             executable = True,
@@ -163,9 +163,9 @@ toolchain_configure = repository_rule(
         ),
         "xz_path": attr.string(
             mandatory = False,
-            doc = "The full path to the xz binary. If not specified, it will" +
-                  "be searched for in the path. If not available, running commands" +
-                  "that xz will fail.",
+            doc = "The full path to the xz binary. If not specified, it will " +
+                  "be searched for in the path. If not available, running commands " +
+                  "that use xz will fail.",
         ),
     },
     implementation = _toolchain_configure_impl,
