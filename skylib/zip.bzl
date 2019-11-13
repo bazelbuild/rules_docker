@@ -29,7 +29,7 @@ def gzip(ctx, artifact):
     tools = []
     gzip_path = toolchain_info.gzip_path
     if toolchain_info.gzip_target:
-        gzip_path = toolchain_info.gzip_target.files.to_list()[0].path
+        gzip_path = toolchain_info.gzip_target.files_to_run.executable.path
         tools, _, input_manifests = ctx.resolve_command(tools = [toolchain_info.gzip_target])
     elif toolchain_info.gzip_path == "":
         fail("gzip could not be found. Make sure it is in the path or set it " +
@@ -62,13 +62,14 @@ def gunzip(ctx, artifact):
     tools = []
     gzip_path = toolchain_info.gzip_path
     if toolchain_info.gzip_target:
-        gzip_path = toolchain_info.gzip_target.files.to_list()[0].path
+        gzip_path = toolchain_info.gzip_target.files_to_run.executable.path
         tools, _, input_manifests = ctx.resolve_command(tools = [toolchain_info.gzip_target])
     elif toolchain_info.gzip_path == "":
         fail("gzip could not be found. Make sure it is in the path or set it " +
              "explicitly in the docker_toolchain_configure")
     ctx.actions.run_shell(
         command = "%s -d < %s > %s" % (gzip_path, artifact.path, out.path),
+        input_manifests = input_manifests,
         inputs = [artifact],
         outputs = [out],
         use_default_shell_env = True,
