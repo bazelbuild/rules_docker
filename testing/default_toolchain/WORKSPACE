@@ -18,7 +18,7 @@ workspace(name = "e2e_testing")
 # with real path on bazel invocation using --override_repository
 local_repository(
     name = "io_bazel_rules_docker",
-    path = "../../",
+    path = "replace/this/path",
 )
 
 load(
