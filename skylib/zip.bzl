@@ -25,14 +25,20 @@ def gzip(ctx, artifact):
     """
     out = ctx.actions.declare_file(artifact.basename + ".gz")
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+    inputs = []
+    input_manifests = []
     tools = []
+    gzip_path = toolchain_info.gzip_path
     if toolchain_info.gzip_target:
-        tools = toolchain_info.gzip_target.executable
+        gzip_path = toolchain_info.gzip_target.executable.path
+        tools, _, input_manifests = ctx.resolve_command(tools = [toolchain_info.gzip_target])
     elif toolchain_info.gzip_path == "":
         fail("gzip could not be found. Make sure it is in the path or set it " +
              "explicitly in the docker_toolchain_configure")
+
     ctx.actions.run_shell(
         command = "%s -n < %s > %s" % (toolchain_info.gzip_path, artifact.path, out.path),
+        input_manifests = input_manifests,
         inputs = [artifact],
         outputs = [out],
         use_default_shell_env = True,

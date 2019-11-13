@@ -62,9 +62,12 @@ docker_toolchain = rule(
             doc = "Path to the gzip binary. " +
                   "Should only be set if gzip_target is unset.",
         ),
-        "gzip_target": attr.string(
+        "gzip_target": attr.label(
+            allow_files = True,
             doc = "Bazel target for the gzip tool. " +
                   "Should only be set if gzip_path is unset.",
+            cfg = "host",
+            executable = True,
         ),
         "tool_path": attr.string(
             doc = "Path to the docker binary.",
@@ -150,7 +153,10 @@ toolchain_configure = repository_rule(
                   "be searched for in the path. If not available, running commands" +
                   "that gzip will fail.",
         ),
-        "gzip_target": attr.string(
+        "gzip_target": attr.label(
+            executable = True,
+            cfg = "host",
+            allow_files = True,
             mandatory = False,
             doc = "The bazel target for the gzip tool. " +
                   "Can only be set if gzip_path is not set.",

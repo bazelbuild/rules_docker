@@ -18,7 +18,16 @@ workspace(name = "e2e_testing")
 # with real path on bazel invocation using --override_repository
 local_repository(
     name = "io_bazel_rules_docker",
-    path = "replace/this/path",
+    path = "../../",
+)
+
+load(
+    "//:local_tool.bzl",
+    "local_tool",
+)
+
+local_tool(
+    name = "gzip",
 )
 
 load(
@@ -26,7 +35,10 @@ load(
     docker_toolchain_configure = "toolchain_configure",
 )
 
-docker_toolchain_configure(name = "docker_config")
+docker_toolchain_configure(
+    name = "docker_config",
+    gzip_target = "@gzip//:gzip",
+)
 
 load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",
