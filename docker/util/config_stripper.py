@@ -24,10 +24,13 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
 
 _TIMESTAMP = '1970-01-01T00:00:00Z'
 
 WHITELISTED_PREFIXES = ['sha256:', 'manifest', 'repositories']
+
+_BUF_SIZE = 4096
 
 def main():
     parser = argparse.ArgumentParser()
@@ -114,44 +117,97 @@ def strip_layer(path):
     # working directory is one level up from where layer.tar is.
     original_dir = os.path.normpath(os.path.join(os.path.dirname(path), '..'))
 
-    buf = io.BytesIO()
+    # Write compressed tar to a temporary name. We'll rename it to the correct
+    # name after we compute the hash.
+    gz_out = tempfile.NamedTemporaryFile(dir=original_dir, delete=False)
 
-    # Go through each file/dir in the layer
-    # Set its mtime to 0
-    # If it's a file, add its content to the running buffer
-    # Add it to the new gzip'd tar.
-    with tarfile.open(name=path, mode='r') as it:
-      with tarfile.open(fileobj=buf, encoding='utf-8', mode='w') as ot:
-        for tarinfo in it:
-          # Use a deterministic mtime that doesn't confuse other programs,
-          # e.g. Python.
-          # Also see https://github.com/bazelbuild/bazel/issues/1299
-          tarinfo.mtime = 946684800 # 2000-01-01 00:00:00.000 UTC
-          if tarinfo.isfile():
-            f = it.extractfile(tarinfo)
-            ot.addfile(tarinfo, f)
-          else:
-            ot.addfile(tarinfo)
+    # Keep track of sha hash for both the compressed and uncompressed tar
+    uncompressed_sha = hashlib.sha256()
+    compressed_sha = hashlib.sha256()
 
-    # Create the new diff_id for the config
-    tar = buf.getvalue()
-    diffid = hashlib.sha256(tar).hexdigest()
-    diffid = 'sha256:%s' % diffid
-
-    # Compress buf to gz
+    # Start a gzip process that we'll use to compress tar output.
     # Shelling out to bash gzip is noticeably faster than using python's gzip
+    #
+    # This function takes special care to never store the full tar file or
+    # gzip'd tar file in memory. Images can be quite large.
     gzip_process = subprocess.Popen(
         ['gzip', '-nf'],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE)
-    gz = gzip_process.communicate(input=tar)[0]
 
-    # Calculate sha of layer
-    sha = hashlib.sha256(gz).hexdigest()
-    new_name = 'sha256:%s' % sha
-    with open(os.path.join(original_dir, new_name), 'wb') as out:
-      out.write(gz)
+    # Read the gzip'd output and accumulate the sha hash, and save the
+    # compressed copy under the new name.
+    gzip_stdout_exc = []
+    def do_gzip_stdout():
+        try:
+            while True:
+                buf = gzip_process.stdout.read(_BUF_SIZE)
+                if not buf: break
+                compressed_sha.update(buf)
+                gz_out.write(buf)
+        except Exception as e:
+            gzip_stdout_exc.append(e)
+
+    # Read the gzip stderr for error reporting.
+    gzip_stderr_buf = io.BytesIO()
+    def do_gzip_stderr():
+        # Don't bother incrementally reading stderr.
+        gzip_stderr_buf.write(gzip_process.stderr.read())
+
+    # Start all of the threads to prepare for producing the tar file.
+    gzip_stdout = threading.Thread(target=do_gzip_stdout)
+    gzip_stdout.start()
+    gzip_stderr = threading.Thread(target=do_gzip_stderr)
+    gzip_stderr.start()
+    try:
+        # Go through each file/dir in the layer
+        # Set its mtime to 0
+        # If it's a file, add its content to the running buffer
+        # Add it to the new gzip'd tar.
+        with tempfile.TemporaryFile() as t:
+            with tarfile.open(name=path, mode='r') as it:
+                with tarfile.open(fileobj=t, encoding='utf-8', mode='w') as ot:
+                    for tarinfo in it:
+                        # Use a deterministic mtime that doesn't confuse other
+                        # programs,  e.g. Python.  Also see
+                        # https://github.com/bazelbuild/bazel/issues/1299
+                        tarinfo.mtime = 946684800 # 2000-01-01 00:00:00.000 UTC
+                        if tarinfo.isfile():
+                            f = it.extractfile(tarinfo)
+                            ot.addfile(tarinfo, f)
+                        else:
+                            ot.addfile(tarinfo)
+
+            # Read the stripped tarfile. Accumulate a hash of the uncompressed
+            # file and send data on to the gzip process for compression.
+            t.seek(0)
+            while True:
+                buf = t.read(_BUF_SIZE)
+                if not buf: break
+                uncompressed_sha.update(buf)
+                gzip_process.stdin.write(buf)
+    finally:
+        gzip_process.stdin.close() # Causes gzip to terminate.
+        gzip_stdout.join() # Terminates after gzip closes stdout.
+        gzip_stderr.join() # Terminates after gzip closes stderr.
+        gzip_process.wait() # gzip terminated by now.
+
+    # Check if any of our threads or processes failed.
+    if gzip_stdout_exc:
+        raise gzip_stdout_exc[0]
+    if gzip_process.returncode != 0:
+        raise RuntimeError(
+                'Failed to gzip stripped layer %s. '
+                'gzip exited with status %d: %s',
+                path, gzip_process.returncode, gzip_stderr_buf.getvalue())
+
+    # Create the new diff_id for the config
+    diffid = 'sha256:%s' % uncompressed_sha.hexdigest()
+
+    # Rename into correct location now that we know the hash.
+    new_name = 'sha256:%s' % compressed_sha.hexdigest()
+    os.rename(gz_out.name, os.path.join(original_dir, new_name))
 
     shutil.rmtree(os.path.dirname(path))
     return (new_name, diffid)
