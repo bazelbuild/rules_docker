@@ -19,6 +19,17 @@ local_repository(
     path = "../../",
 )
 
+load(
+    "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure = "toolchain_configure",
+)
+
+# Test setting gzip_target
+docker_toolchain_configure(
+    name = "docker_config",
+    gzip_target = "@java_image_example//:gzip",
+)
+
 # java_image rule dependencies.
 load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",

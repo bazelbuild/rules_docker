@@ -11,28 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Rule to load a local tool. Used to test gzip_target."""
 
-load("@io_bazel_rules_docker//java:image.bzl", "java_image")
-
-package(default_visibility = ["//visibility:public"])
-
-java_image(
-    name = "java_image",
-    srcs = [":Runfiles.java"],
-    data = [
-        ":foo",
-    ],
-    main_class = "examples.images.Runfiles",
-    deps = [
-        "@bazel_tools//tools/java/runfiles",
-    ],
-)
-
-# Used to test setting gzip as target.
-java_binary(
-    name = "gzip",
-    srcs = ["Gzip.java"],
-    main_class = "tools.gzip.Gzip",
+_local_tool_build_template = """
+sh_binary(
+    name = "{name}",
+    srcs = ["bin/{name}"],
     visibility = ["//visibility:public"],
-    deps = [],
+)
+"""
+
+def _local_tool(repository_ctx):
+    rctx = repository_ctx
+    realpath = rctx.which(rctx.name)
+    rctx.symlink(realpath, "bin/%s" % rctx.name)
+    rctx.file(
+        "WORKSPACE",
+        'workspace(name = "{}")\n'.format(rctx.name),
+    )
+    rctx.file(
+        "BUILD",
+        _local_tool_build_template.format(name = rctx.name),
+    )
+
+local_tool = repository_rule(
+    local = True,
+    implementation = _local_tool,
 )
