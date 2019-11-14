@@ -27,6 +27,6 @@ if [ $retcode != 0 ]; then
   $DOCKER $DOCKER_FLAGS logs $id && false
 fi
 
-reset_cmd $image_id $id %{output_image} "${DOCKER} ${DOCKER_FLAGS}"
+reset_cmd $image_id $id %{output_image}
 $DOCKER $DOCKER_FLAGS save %{output_image} -o %{output_tar}
 $DOCKER $DOCKER_FLAGS rm $id

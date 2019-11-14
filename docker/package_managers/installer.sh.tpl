@@ -6,6 +6,6 @@ set -ex
 pushd /tmp
 %{install_commands}
 popd
-umount -l /tmp/installer.sh
-umount -l /tmp/%{installables_tar}
+#umount -l /tmp/installer.sh
+ls -la /tmp/%{installables_tar}
 rm -rf /tmp/*

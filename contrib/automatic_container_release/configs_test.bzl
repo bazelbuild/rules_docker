@@ -69,6 +69,7 @@ def _impl(ctx):
         template = ctx.file._tpl,
         substitutions = {
             "%{cmd_args}": " ".join(cmd_args),
+            "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_path}": toolchain_info.tool_path,
             "%{image_name}": ctx.attr._checker + ":" + ctx.attr.checker_tag,
             "%{spec_container_paths}": " ".join(spec_container_paths),
