@@ -74,10 +74,6 @@ load(
     "//skylib:path.bzl",
     _join_path = "join",
 )
-load(
-    "//skylib:zip.bzl",
-    _zip_tools = "tools",
-)
 
 def _get_base_config(ctx, name, base):
     if ctx.files.base or base:
@@ -555,7 +551,7 @@ _attrs = dicts.add(_layer.attrs, {
         cfg = "host",
         executable = True,
     ),
-}, _hash_tools, _layer_tools, _zip_tools)
+}, _hash_tools, _layer_tools)
 
 _outputs = dict(_layer.outputs)
 
