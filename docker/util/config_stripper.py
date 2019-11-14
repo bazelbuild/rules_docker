@@ -129,7 +129,7 @@ def strip_layer(path):
     # Shelling out to bash gzip is noticeably faster than using python's gzip
     #
     # This function takes special care to never store the full tar file or
-    # gzip'd tar file in memory.  Images can be quite large.
+    # gzip'd tar file in memory. Images can be quite large.
     gzip_process = subprocess.Popen(
         ['gzip', '-nf'],
         stdout=subprocess.PIPE,
@@ -197,7 +197,10 @@ def strip_layer(path):
     if gzip_stdout_exc:
         raise gzip_stdout_exc[0]
     if gzip_process.returncode != 0:
-        raise RuntimeError('gzip process failed: %s' % gzip_stderr_buf.getvalue())
+        raise RuntimeError(
+                'Failed to gzip stripped layer %s. '
+                'gzip exited with status %d: %s',
+                path, gzip_process.returncode, gzip_stderr_buf.getvalue())
 
     # Create the new diff_id for the config
     diffid = 'sha256:%s' % uncompressed_sha.hexdigest()
