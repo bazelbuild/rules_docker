@@ -419,19 +419,15 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "eea054525c8b8d9aa129d0e03fc02ef47c85eea2884c4dba3700b63e01f2b192",
-    strip_prefix = "bazel-toolchains-1.1.1",
+    sha256 = "3c1299efcf64a4ecf4f6def7564db28879ad2870632144d77932e7910686d3f3",
+    strip_prefix = "bazel-toolchains-1.1.2",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/1.1.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/1.1.2.tar.gz",
     ],
 )
 
 # Define several exec property repo rules to be used in testing.
-load(
-    "@bazel_toolchains//rules/exec_properties:exec_properties.bzl",
-    "merge_dicts",
-    "rbe_exec_properties",
-)
+load("@bazel_toolchains//rules/exec_properties:exec_properties.bzl", "rbe_exec_properties")
 
 # A standard RBE execution property set repo rule.
 rbe_exec_properties(
@@ -440,12 +436,13 @@ rbe_exec_properties(
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 rbe_autoconfig(
     name = "buildkite_config",
     base_container_digest = "sha256:4bfd33aa9ce73e28718385b8c01608a79bc6546906f01cf9329311cace1766a1",
     digest = "sha256:c20046852a2d7910c55d76e0ec9c182b37532a9f0360d22dd5c9a1451b7c3a15",
-    exec_properties = merge_dicts(DOCKER_SIBLINGS_CONTAINERS, NETWORK_ON),
+    exec_properties = dicts.add(DOCKER_SIBLINGS_CONTAINERS, NETWORK_ON),
     registry = "marketplace.gcr.io",
     repository = "google/bazel",
     use_legacy_platform_definition = False,
