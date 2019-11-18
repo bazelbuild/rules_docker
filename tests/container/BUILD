@@ -47,12 +47,6 @@ container_image(
     ],
 )
 
-container_test(
-    name = "structure_test",
-    configs = ["//tests/container/configs:test.yaml"],
-    image = "//testdata:link_with_files_base",
-)
-
 container_image(
     name = "deb_image_with_dpkgs",
     debs = [
@@ -66,41 +60,16 @@ container_image(
     workdir = "/test",
 )
 
-container_test(
-    name = "deb_image_with_dpkgs_test",
-    configs = ["//tests/container/configs:deb_image_with_dpkgs.yaml"],
-    image = ":deb_image_with_dpkgs",
-)
-
 container_image(
     name = "set_cmd",
     base = "@distroless_fixed_id//image",
     cmd = ["foo"],
 )
 
-container_test(
-    name = "set_cmd_test",
-    configs = ["//tests/container/configs:set_cmd.yaml"],
-    image = ":set_cmd",
-)
-
-container_test(
-    name = "set_cmd_test_host",
-    configs = ["//tests/container/configs:set_cmd.yaml"],
-    driver = "host",
-    image = ":set_cmd",
-)
-
 container_image(
     name = "set_entrypoint",
     base = "@distroless_fixed_id//image",
     entrypoint = ["bar"],
-)
-
-container_test(
-    name = "set_entrypoint_test",
-    configs = ["//tests/container/configs:set_entrypoint.yaml"],
-    image = ":set_entrypoint",
 )
 
 container_image(
@@ -110,21 +79,9 @@ container_image(
     entrypoint = ["bar"],
 )
 
-container_test(
-    name = "set_cmd_and_entrypoint_test",
-    configs = ["//tests/container/configs:set_cmd_and_entrypoint.yaml"],
-    image = ":set_cmd_and_entrypoint",
-)
-
 container_image(
     name = "base_with_cmd_and_entrypoint",
     base = ":set_cmd_and_entrypoint",
-)
-
-container_test(
-    name = "base_with_cmd_and_entrypoint_test",
-    configs = ["//tests/container/configs:set_cmd_and_entrypoint.yaml"],
-    image = ":base_with_cmd_and_entrypoint",
 )
 
 container_image(
@@ -134,23 +91,11 @@ container_image(
     entrypoint = None,
 )
 
-container_test(
-    name = "null_cmd_and_entrypoint_none_test",
-    configs = ["//tests/container/configs:null_cmd_and_entrypoint.yaml"],
-    image = ":null_cmd_and_entrypoint_none",
-)
-
 container_image(
     name = "null_cmd_and_entrypoint_empty_str",
     base = ":set_cmd_and_entrypoint",
     cmd = "",
     entrypoint = "",
-)
-
-container_test(
-    name = "null_cmd_and_entrypoint_empty_str_test",
-    configs = ["//tests/container/configs:null_cmd_and_entrypoint.yaml"],
-    image = ":null_cmd_and_entrypoint_empty_str",
 )
 
 container_image(
@@ -160,23 +105,11 @@ container_image(
     entrypoint = [],
 )
 
-container_test(
-    name = "null_cmd_and_entrypoint_empty_list_test",
-    configs = ["//tests/container/configs:null_cmd_and_entrypoint.yaml"],
-    image = ":null_cmd_and_entrypoint_empty_list",
-)
-
 container_image(
     name = "set_cmd_and_entrypoint_null_on_base",
     base = ":null_cmd_and_entrypoint_none",
     cmd = ["foo"],
     entrypoint = ["bar"],
-)
-
-container_test(
-    name = "set_cmd_and_entrypoint_null_on_base_test",
-    configs = ["//tests/container/configs:set_cmd_and_entrypoint.yaml"],
-    image = ":set_cmd_and_entrypoint_null_on_base",
 )
 
 container_import(
@@ -193,34 +126,9 @@ container_image(
     operating_system = "windows",
 )
 
-container_test(
-    name = "basic_windows_image_test",
-    configs = ["//tests/container/configs:windows_image.yaml"],
-    driver = "tar",
-    image = ":basic_windows_image",
-)
-
 # The following targets are not imported.
 # These images are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
-container_test(
-    name = "alpine_amd64_image_test",
-    configs = ["//tests/container/configs:alpine_amd64.yaml"],
-    image = "@alpine_linux_amd64//image",
-)
-
-container_test(
-    name = "alpine_arm_image_test",
-    configs = ["//tests/container/configs:alpine_arm.yaml"],
-    image = "@alpine_linux_armv6//image",
-)
-
-container_test(
-    name = "alpine_ppc64le_image_test",
-    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
-    image = "@alpine_linux_ppc64le//image",
-)
-
 container_push(
     name = "push_image_with_11_layers",
     format = "Docker",
@@ -256,12 +164,6 @@ container_image(
     },
 )
 
-container_test(
-    name = "set_env_csv_test",
-    configs = ["//tests/container/configs:set_env_csv.yaml"],
-    image = ":set_env_csv",
-)
-
 container_image(
     name = "set_env_equals",
     base = "@distroless_fixed_id//image",
@@ -272,12 +174,6 @@ container_image(
     },
 )
 
-container_test(
-    name = "set_env_equals_test",
-    configs = ["//tests/container/configs:set_env_equals.yaml"],
-    image = ":set_env_equals",
-)
-
 # Image with Bazel Make variables in the env field.
 container_image(
     name = "set_env_make_vars",
@@ -285,13 +181,6 @@ container_image(
     env = {
         "$(ENV_KEY)": "$(ENV_VALUE)",
     },
-)
-
-# This test checks that Bazel Make variables are expanded in the env field.
-container_test(
-    name = "set_env_make_vars_test",
-    configs = ["//tests/container/configs:set_env_make_vars.yaml"],
-    image = ":set_env_make_vars",
 )
 
 # The following targets are not imported.
@@ -313,13 +202,6 @@ container_image(
     symlinks = {"foo= symlink": "root= dir/gen= foo.out"},
 )
 # END_DO_NOT_IMPORT
-
-container_test(
-    name = "special_characters_test",
-    configs = ["//tests/container/configs:special_characters.yaml"],
-    driver = "tar",
-    image = ":special_characters",
-)
 
 container_push(
     name = "push_test",
@@ -383,12 +265,6 @@ container_image(
     name = "stripped_directory_name",
     data_path = "banana",
     files = [":banana_directory"],
-)
-
-container_test(
-    name = "stripped_directory_name_test",
-    configs = ["//tests/container/configs:stripped_directory_name.yaml"],
-    image = ":stripped_directory_name",
 )
 
 container_bundle(
@@ -677,24 +553,6 @@ container_image(
     ],
 )
 
-container_test(
-    name = "new_alpine_linux_armv6_image_tar_test",
-    configs = ["//tests/container/configs:alpine_arm.yaml"],
-    image = ":new_alpine_linux_armv6_image_tar",
-)
-
-container_test(
-    name = "new_alpine_linux_armv6_image_oci_tar_test",
-    configs = ["//tests/container/configs:alpine_arm.yaml"],
-    image = ":new_alpine_linux_armv6_image_oci_tar",
-)
-
-container_test(
-    name = "new_alpine_linux_armv6_image_oci_test",
-    configs = ["//tests/container/configs:alpine_arm.yaml"],
-    image = ":new_alpine_linux_armv6_image_oci",
-)
-
 # Three cases for alpine amd64 distro
 container_image(
     name = "alpine_linux_amd64_image_tar",
@@ -721,24 +579,6 @@ container_image(
         "//testdata:bar",
         "//testdata:foo",
     ],
-)
-
-container_test(
-    name = "alpine_linux_amd64_image_tar_test",
-    configs = ["//tests/container/configs:alpine_amd64.yaml"],
-    image = ":alpine_linux_amd64_image_tar",
-)
-
-container_test(
-    name = "alpine_linux_amd64_image_oci_tar_test",
-    configs = ["//tests/container/configs:alpine_amd64.yaml"],
-    image = ":alpine_linux_amd64_image_oci_tar",
-)
-
-container_test(
-    name = "alpine_linux_amd64_image_oci_test",
-    configs = ["//tests/container/configs:alpine_amd64.yaml"],
-    image = ":alpine_linux_amd64_image_oci",
 )
 
 # Three cases for alpine ppc64le distro
@@ -777,32 +617,6 @@ container_image(
         "//testdata:bar",
         "//testdata:foo",
     ],
-)
-
-container_test(
-    name = "new_alpine_linux_ppc64le_image_tar_test",
-    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
-    image = ":new_alpine_linux_ppc64le_image_tar",
-)
-
-container_test(
-    name = "new_alpine_linux_ppc64le_image_oci_tar_test",
-    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
-    image = ":new_alpine_linux_ppc64le_image_oci_tar",
-)
-
-container_test(
-    name = "new_alpine_linux_ppc64le_image_oci_test",
-    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
-    image = ":new_alpine_linux_ppc64le_image_oci",
-)
-
-container_test(
-    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers_test",
-    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
-    # Using the tar driver to force using the Go join layers implementation.
-    driver = "tar",
-    image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
 )
 # END_DO_NOT_IMPORT
 

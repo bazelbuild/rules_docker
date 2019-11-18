@@ -12,25 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//cc:image.bzl", "cc_image")
+load("//contrib:test.bzl", "container_test")
 
-package(default_visibility = ["//visibility:public"])
-
-cc_library(
-    name = "cc_image_library",
-    srcs = ["//testdata:cc_image_library.cc"],
-    hdrs = ["//testdata:cc_image_library.h"],
-)
-
-cc_image(
-    name = "cc_image",
-    srcs = ["//testdata:cc_image.cc"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
-    # This creates an empty layer, due to linking.
-    layers = [":cc_image_library"],
+container_test(
+    name = "cc_image_test",
+    configs = ["//tests/container/cc/configs:cc_image.yaml"],
+    image = "//tests/container/cc:cc_image",
 )

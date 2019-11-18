@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//contrib:test.bzl", "container_test")
 load("//go:image.bzl", "go_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -34,12 +33,6 @@ go_image(
     ],
 )
 
-container_test(
-    name = "go_image_test",
-    configs = ["//tests/container/go/configs:go_image.yaml"],
-    image = ":go_image",
-)
-
 go_image(
     name = "go_static_image",
     srcs = ["//testdata:main.go"],
@@ -55,10 +48,4 @@ go_image(
         "tag1",
         "tag2",
     ],
-)
-
-container_test(
-    name = "go_static_image_test",
-    configs = ["//tests/container/go/configs:go_static_image.yaml"],
-    image = ":go_static_image",
 )
