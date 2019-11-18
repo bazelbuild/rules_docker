@@ -18,23 +18,8 @@ load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
-load(
-    "//contrib/automatic_container_release:configs_test.bzl",
-    "configs_test",
-)
 load("//contrib/automatic_container_release:metadata_merge.bzl", "metadata_merge")
 load("//contrib/automatic_container_release:packages_metadata.bzl", "packages_metadata")
-
-configs_test(
-    name = "configs_test",
-    dependency_update_specs = ["deps_spec.yaml"],
-    file_update_specs = ["file_updates.yaml"],
-)
-
-configs_test(
-    name = "configs_test_deps_spec_only",
-    dependency_update_specs = ["deps_spec_no_fus_deps.yaml"],
-)
 
 packages_metadata(
     name = "packages_metadata",

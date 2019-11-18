@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
-load("//contrib:test.bzl", "container_test")
 load("//scala:image.bzl", "scala_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -36,10 +35,4 @@ scala_image(
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
-)
-
-container_test(
-    name = "scala_image_test",
-    configs = ["//tests/container/scala/configs:scala_image.yaml"],
-    image = ":scala_image",
 )

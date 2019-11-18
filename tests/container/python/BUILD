@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//contrib:test.bzl", "container_test")
 load("//python:image.bzl", "py_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -34,10 +33,4 @@ py_image(
     layers = [
         ":py_image_library",
     ],
-)
-
-container_test(
-    name = "py_image_test",
-    configs = ["//tests/container/python/configs:py_image.yaml"],
-    image = ":py_image",
 )

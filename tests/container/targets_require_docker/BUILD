@@ -33,13 +33,6 @@ container_test(
 )
 
 container_test(
-    name = "set_cmd_test_host",
-    configs = ["//tests/container/configs:set_cmd.yaml"],
-    driver = "host",
-    image = "//tests/container:set_cmd",
-)
-
-container_test(
     name = "set_entrypoint_test",
     configs = ["//tests/container/configs:set_entrypoint.yaml"],
     image = "//tests/container:set_entrypoint",
@@ -81,13 +74,6 @@ container_test(
     image = "//tests/container:set_cmd_and_entrypoint_null_on_base",
 )
 
-container_test(
-    name = "basic_windows_image_test",
-    configs = ["//tests/container/configs:windows_image.yaml"],
-    driver = "tar",
-    image = "//tests/container:basic_windows_image",
-)
-
 # The following targets are not imported.
 # These images are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
@@ -127,13 +113,6 @@ container_test(
     name = "set_env_make_vars_test",
     configs = ["//tests/container/configs:set_env_make_vars.yaml"],
     image = "//tests/container:set_env_make_vars",
-)
-
-container_test(
-    name = "special_characters_test",
-    configs = ["//tests/container/configs:special_characters.yaml"],
-    driver = "tar",
-    image = "//tests/container:special_characters",
 )
 
 container_test(
@@ -197,13 +176,5 @@ container_test(
     name = "new_alpine_linux_ppc64le_image_oci_test",
     configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
     image = "//tests/container:new_alpine_linux_ppc64le_image_oci",
-)
-
-container_test(
-    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers_test",
-    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
-    # Using the tar driver to force using the Go join layers implementation.
-    driver = "tar",
-    image = "//tests/container:new_alpine_linux_ppc64le_image_oci_go_join_layers",
 )
 # END_DO_NOT_IMPORT

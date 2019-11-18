@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
-load("//contrib:test.bzl", "container_test")
 load("//nodejs:image.bzl", "nodejs_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -90,46 +89,4 @@ nodejs_image(
     ],
     binary = ":my_custom_binary",
     node_modules = "@npm_deps//:node_modules",
-)
-
-container_test(
-    name = "nodejs_image_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image.yaml"],
-    image = ":nodejs_image",
-)
-
-container_test(
-    name = "nodejs_image_list_with_empty_string_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_list_with_empty_string_args.yaml"],
-    image = ":nodejs_image_list_with_empty_string_args",
-)
-
-container_test(
-    name = "nodejs_image_no_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_no_args.yaml"],
-    image = ":nodejs_image_no_args",
-)
-
-container_test(
-    name = "nodejs_image_empty_list_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_empty_list_args.yaml"],
-    image = ":nodejs_image_empty_list_args",
-)
-
-container_test(
-    name = "nodejs_image_none_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_none_args.yaml"],
-    image = ":nodejs_image_none_args",
-)
-
-container_test(
-    name = "nodejs_image_custom_binary_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_custom_binary.yaml"],
-    image = ":nodejs_image_custom_binary",
-)
-
-container_test(
-    name = "nodejs_image_custom_binary_with_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_custom_binary_with_args.yaml"],
-    image = ":nodejs_image_custom_binary_with_args",
 )

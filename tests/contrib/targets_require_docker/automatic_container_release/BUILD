@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//rust:image.bzl", "rust_image")
+load("//contrib/automatic_container_release:configs_test.bzl", "configs_test")
 
-package(default_visibility = ["//visibility:public"])
+configs_test(
+    name = "configs_test",
+    dependency_update_specs = ["deps_spec.yaml"],
+    file_update_specs = ["file_updates.yaml"],
+)
 
-rust_image(
-    name = "rust_image",
-    srcs = ["//testdata:main.rs"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
+configs_test(
+    name = "configs_test_deps_spec_only",
+    dependency_update_specs = ["deps_spec_no_fus_deps.yaml"],
 )

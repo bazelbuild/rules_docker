@@ -66,6 +66,13 @@ container_image(
     cmd = ["foo"],
 )
 
+container_test( 
+    name = "set_cmd_test_host", 
+    configs = ["//tests/container/configs:set_cmd.yaml"],   
+    driver = "host",    
+    image = ":set_cmd", 
+)
+
 container_image(
     name = "set_entrypoint",
     base = "@distroless_fixed_id//image",
@@ -124,6 +131,13 @@ container_image(
     base = ":import_windows_base_image",
     cmd = ["echo bar"],
     operating_system = "windows",
+)
+
+container_test( 
+    name = "basic_windows_image_test",  
+    configs = ["//tests/container/configs:windows_image.yaml"], 
+    driver = "tar", 
+    image = ":basic_windows_image", 
 )
 
 # The following targets are not imported.
@@ -202,6 +216,13 @@ container_image(
     symlinks = {"foo= symlink": "root= dir/gen= foo.out"},
 )
 # END_DO_NOT_IMPORT
+
+container_test( 
+    name = "special_characters_test",   
+    configs = ["//tests/container/configs:special_characters.yaml"],    
+    driver = "tar", 
+    image = ":special_characters",  
+)
 
 container_push(
     name = "push_test",
@@ -617,6 +638,14 @@ container_image(
         "//testdata:bar",
         "//testdata:foo",
     ],
+)
+
+container_test(
+    name = "new_alpine_linux_ppc64le_image_oci_go_join_layers_test",
+    configs = ["//tests/container/configs:alpine_ppc64le.yaml"],
+    # Using the tar driver to force using the Go join layers implementation.
+    driver = "tar",
+    image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
 )
 # END_DO_NOT_IMPORT
 

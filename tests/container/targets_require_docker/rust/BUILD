@@ -12,17 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//rust:image.bzl", "rust_image")
+load("//contrib:test.bzl", "container_test")
 
-package(default_visibility = ["//visibility:public"])
-
-rust_image(
-    name = "rust_image",
-    srcs = ["//testdata:main.rs"],
-    args = [
-        "arg0",
-        "arg1",
-        "$(location :BUILD)",
-    ],
-    data = [":BUILD"],
+container_test(
+    name = "rust_image_test",
+    configs = ["//tests/container/rust/configs:rust_image.yaml"],
+    image = "//tests/container/rust:rust_image",
 )

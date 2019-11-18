@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//contrib:test.bzl", "container_test")
 load("//java:image.bzl", "java_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -83,34 +82,4 @@ java_image(
 java_image(
     name = "java_partial_entrypoint_image",
     runtime_deps = [":java_bin_as_lib"],
-)
-
-container_test(
-    name = "java_image_test",
-    configs = ["//tests/container/java/configs:java_image.yaml"],
-    image = ":java_image",
-)
-
-container_test(
-    name = "java_runfiles_image_test",
-    configs = ["//tests/container/java/configs:java_runfiles_image.yaml"],
-    image = ":java_runfiles_image",
-)
-
-container_test(
-    name = "java_runfiles_as_lib_image_test",
-    configs = ["//tests/container/java/configs:java_runfiles_as_lib_image.yaml"],
-    image = ":java_runfiles_as_lib_image",
-)
-
-container_test(
-    name = "java_partial_entrypoint_image_test",
-    configs = ["//tests/container/java/configs:java_partial_entrypoint.yaml"],
-    image = ":java_partial_entrypoint_image",
-)
-
-container_test(
-    name = "simple_java_entrypoint_image_test",
-    configs = ["//tests/container/java/configs:simple_java_entrypoint.yaml"],
-    image = ":simple_java_image",
 )

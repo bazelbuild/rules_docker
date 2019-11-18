@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
-load("//contrib:test.bzl", "container_test")
 load("//groovy:image.bzl", "groovy_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -36,10 +35,4 @@ groovy_image(
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
-)
-
-container_test(
-    name = "groovy_image_test",
-    configs = ["//tests/container/groovy/configs:groovy_image.yaml"],
-    image = ":groovy_image",
 )
