@@ -18,4 +18,40 @@ steps:
       - "test"
       - "--define=ENV_KEY=my_key"
       - "--define=ENV_VALUE=my_value"
-      - "//tests/require_docker/container/..."
+      - "//tests/require_docker/container:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/cc:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/go:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/groovy:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/java:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/nodejs:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/python:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/python3:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/rust:all"
+  - name: "l.gcr.io/google/bazel"
+    args: 
+      - "test"
+      - "//tests/require_docker/container/scala:all"
