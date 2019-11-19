@@ -21,6 +21,7 @@ steps:
         path: "/rules_docker"
   - name: "l.gcr.io/google/bazel"
     args: 
+      - "--output_base=/workspace/bazel_outputs"
       - "test"
       - "//tests/require_docker/docker/package_managers:all"
     dir: "/rules_docker"
