@@ -38,9 +38,10 @@ mkdir -p $(dirname $tmpdir/%{installables_tar})
 cp -L $(pwd)/%{installables_tar} $tmpdir/%{installables_tar}
 cp -L $(pwd)/%{installer_script} $tmpdir/installer.sh
 # Temporarily create a container sowe can mount the named volume
-# and copy files.
+# and copy files.  It's okay if /bin/true doesn't exist inside the
+# image; we are never going to run the image anyways.
 vid=$($DOCKER volume create)
-cid=$($DOCKER create -v $vid:/tmp/pkginstall $image_id)
+cid=$($DOCKER create -v $vid:/tmp/pkginstall $image_id /bin/true)
 for f in $tmpdir/*; do
     $DOCKER cp $f $cid:/tmp/pkginstall
 done
