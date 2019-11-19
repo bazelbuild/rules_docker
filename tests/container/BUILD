@@ -66,11 +66,11 @@ container_image(
     cmd = ["foo"],
 )
 
-container_test( 
-    name = "set_cmd_test_host", 
-    configs = ["//tests/container/configs:set_cmd.yaml"],   
-    driver = "host",    
-    image = ":set_cmd", 
+container_test(
+    name = "set_cmd_test_host",
+    configs = ["//tests/container/configs:set_cmd.yaml"],
+    driver = "host",
+    image = ":set_cmd",
 )
 
 container_image(
@@ -133,11 +133,11 @@ container_image(
     operating_system = "windows",
 )
 
-container_test( 
-    name = "basic_windows_image_test",  
-    configs = ["//tests/container/configs:windows_image.yaml"], 
-    driver = "tar", 
-    image = ":basic_windows_image", 
+container_test(
+    name = "basic_windows_image_test",
+    configs = ["//tests/container/configs:windows_image.yaml"],
+    driver = "tar",
+    image = ":basic_windows_image",
 )
 
 # The following targets are not imported.
@@ -217,11 +217,11 @@ container_image(
 )
 # END_DO_NOT_IMPORT
 
-container_test( 
-    name = "special_characters_test",   
-    configs = ["//tests/container/configs:special_characters.yaml"],    
-    driver = "tar", 
-    image = ":special_characters",  
+container_test(
+    name = "special_characters_test",
+    configs = ["//tests/container/configs:special_characters.yaml"],
+    driver = "tar",
+    image = ":special_characters",
 )
 
 container_push(

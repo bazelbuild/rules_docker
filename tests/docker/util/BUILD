@@ -18,13 +18,13 @@ to new container image, or extract specified targets to a directory on
 the host machine.
 """
 
+package(default_visibility = ["//visibility:public"])
+
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
     "rule_test",
 )
-load("//container:container.bzl", "container_image")
-load("//contrib:test.bzl", "container_test")
 load(
     "//docker/util:run.bzl",
     "container_run_and_commit",
@@ -55,12 +55,6 @@ rule_test(
 )
 
 file_test(
-    name = "test_extracted_file",
-    file = "test_container_extract/foo.txt",
-    regexp = "test",
-)
-
-file_test(
     name = "test_extract_script",
     file = "test_container_extract.build",
     regexp = "\-u root",
@@ -82,15 +76,4 @@ rule_test(
         "test_container_commit_commit.tar",
     ],
     rule = "test_container_commit",
-)
-
-container_image(
-    name = "test_container_commit_image",
-    base = ":test_container_commit",
-)
-
-container_test(
-    name = "test_container_commit_metadata",
-    configs = [":container_commit.yaml"],
-    image = ":test_container_commit_image",
 )

@@ -39,4 +39,3 @@ commandTests:
   command: 'wget'
   args: ['--version']
   expectedOutput: ['GNU Wget.* built on linux-gnu.*']
-

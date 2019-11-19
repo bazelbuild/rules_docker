@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("//contrib:test.bzl", "container_test")
 load(
     "//docker/toolchain_container:toolchain_container.bzl",
     "language_tool_layer",
@@ -88,15 +87,6 @@ toolchain_container(
         "wget",
         "zip",
     ],
-)
-
-container_test(
-    name = "test-rbe-test-xenial-with-pkgs",
-    configs = [
-        ":tests.yaml",
-    ],
-    image = ":rbe-test-xenial-with-pkgs",
-    verbose = True,
 )
 
 # a dummy tar file (contents are not relevant) to test
