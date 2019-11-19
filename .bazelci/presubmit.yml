@@ -167,8 +167,8 @@ platforms:
     # Disable the configs_test targets for automatic container release tests on
     # RBE as the RBE bots don't have the necessary permissions to pull the
     # checker images.
-    - "-//tests/contrib/automatic_container_release:configs_test"
-    - "-//tests/contrib/automatic_container_release:configs_test_deps_spec_only"
+    - "-//tests/require_docker/contrib/automatic_container_release:configs_test"
+    - "-//tests/require_docker/contrib/automatic_container_release:configs_test_deps_spec_only"
     test_flags:
     - "--extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_container_cc_toolchain"
     - "--extra_execution_platforms=@buildkite_config//config:platform,//platforms:rbe_container_platform"
