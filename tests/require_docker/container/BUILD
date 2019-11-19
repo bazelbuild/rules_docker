@@ -16,7 +16,7 @@ load("//contrib:test.bzl", "container_test")
 
 container_test(
     name = "structure_test",
-    configs = ["//tests/require_docker/container/configs:test.yaml"],
+    configs = ["//tests/container/configs:test.yaml"],
     image = "//testdata:link_with_files_base",
 )
 
