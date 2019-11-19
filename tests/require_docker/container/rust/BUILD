@@ -12,4 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-exports_files(glob(["*.yaml"]))
+load("//contrib:test.bzl", "container_test")
+
+container_test(
+    name = "rust_image_test",
+    configs = [":rust_image.yaml"],
+    image = "//tests/container/rust:rust_image",
+)

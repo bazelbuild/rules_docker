@@ -12,4 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-exports_files(glob(["*.yaml"]))
+load("//contrib:test.bzl", "container_test")
+
+container_test(
+    name = "go_image_test",
+    configs = [":go_image.yaml"],
+    image = "//tests/container/go:go_image",
+)
+
+container_test(
+    name = "go_static_image_test",
+    configs = [":go_static_image.yaml"],
+    image = "//tests/container/go:go_static_image",
+)

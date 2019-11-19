@@ -16,42 +16,42 @@ load("//contrib:test.bzl", "container_test")
 
 container_test(
     name = "nodejs_image_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image.yaml"],
+    configs = [":nodejs_image.yaml"],
     image = "//tests/container/nodejs:nodejs_image",
 )
 
 container_test(
     name = "nodejs_image_list_with_empty_string_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_list_with_empty_string_args.yaml"],
+    configs = [":nodejs_image_list_with_empty_string_args.yaml"],
     image = "//tests/container/nodejs:nodejs_image_list_with_empty_string_args",
 )
 
 container_test(
     name = "nodejs_image_no_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_no_args.yaml"],
+    configs = [":nodejs_image_no_args.yaml"],
     image = "//tests/container/nodejs:nodejs_image_no_args",
 )
 
 container_test(
     name = "nodejs_image_empty_list_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_empty_list_args.yaml"],
+    configs = [":nodejs_image_empty_list_args.yaml"],
     image = "//tests/container/nodejs:nodejs_image_empty_list_args",
 )
 
 container_test(
     name = "nodejs_image_none_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_none_args.yaml"],
+    configs = [":nodejs_image_none_args.yaml"],
     image = "//tests/container/nodejs:nodejs_image_none_args",
 )
 
 container_test(
     name = "nodejs_image_custom_binary_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_custom_binary.yaml"],
+    configs = [":nodejs_image_custom_binary.yaml"],
     image = "//tests/container/nodejs:nodejs_image_custom_binary",
 )
 
 container_test(
     name = "nodejs_image_custom_binary_with_args_test",
-    configs = ["//tests/container/nodejs/configs:nodejs_image_custom_binary_with_args.yaml"],
+    configs = [":nodejs_image_custom_binary_with_args.yaml"],
     image = "//tests/container/nodejs:nodejs_image_custom_binary_with_args",
 )

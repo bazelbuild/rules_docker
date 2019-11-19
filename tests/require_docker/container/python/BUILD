@@ -15,7 +15,7 @@
 load("//contrib:test.bzl", "container_test")
 
 container_test(
-    name = "groovy_image_test",
-    configs = ["//tests/container/groovy/configs:groovy_image.yaml"],
-    image = "//tests/container/groovy:groovy_image",
+    name = "py_image_test",
+    configs = [":py_image.yaml"],
+    image = "//tests/container/python:py_image",
 )

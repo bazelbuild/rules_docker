@@ -29,8 +29,7 @@ platforms:
     - "-//testing/new_pusher_tests/..."
     # Disable tests that require docker
     - "-//:structure_test_at_workspace_root"
-    - "-//tests/container/targets_require_docker/..."
-    - "-//tests/contrib/targets_require_docker/..."
+    - "-//tests/require_docker/..."
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"
@@ -59,8 +58,7 @@ platforms:
     - "-//testing/new_pusher_tests/..."
     # Disable tests that require docker
     - "-//:structure_test_at_workspace_root"
-    - "-//tests/container/targets_require_docker/..."
-    - "-//tests/contrib/targets_require_docker/..."
+    - "-//tests/require_docker/..."
     # tests/contrib/test_compare_ids_test_* expect 'bazel' on path
     test_flags:
     - "--action_env=PATH"

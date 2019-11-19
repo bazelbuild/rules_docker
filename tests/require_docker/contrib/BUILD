@@ -14,8 +14,12 @@
 
 load("//contrib:test.bzl", "container_test")
 
-container_test(
-    name = "rust_image_test",
-    configs = ["//tests/container/rust/configs:rust_image.yaml"],
-    image = "//tests/container/rust:rust_image",
-)
+[container_test(
+    name = "test_dockerfile_image_%s" % driver,
+    configs = ["//tests/require_docker/contrib/configs:dockerfile_image.yaml"],
+    image = "@loaded_dockerfile_image_%s//image" % driver,
+) for driver in [
+    "docker",
+    "kaniko_latest",
+    "kaniko_debug",
+]]

@@ -12,4 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-exports_files(glob(["*.yaml"]))
+load("//contrib:test.bzl", "container_test")
+
+container_test(
+    name = "scala_image_test",
+    configs = [":scala_image.yaml"],
+    image = "//tests/container/scala:scala_image",
+)

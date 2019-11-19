@@ -16,30 +16,30 @@ load("//contrib:test.bzl", "container_test")
 
 container_test(
     name = "java_image_test",
-    configs = ["//tests/container/java/configs:java_image.yaml"],
+    configs = [":java_image.yaml"],
     image = "//tests/container/java:java_image",
 )
 
 container_test(
     name = "java_runfiles_image_test",
-    configs = ["//tests/container/java/configs:java_runfiles_image.yaml"],
+    configs = [":java_runfiles_image.yaml"],
     image = "//tests/container/java:java_runfiles_image",
 )
 
 container_test(
     name = "java_runfiles_as_lib_image_test",
-    configs = ["//tests/container/java/configs:java_runfiles_as_lib_image.yaml"],
+    configs = [":java_runfiles_as_lib_image.yaml"],
     image = "//tests/container/java:java_runfiles_as_lib_image",
 )
 
 container_test(
     name = "java_partial_entrypoint_image_test",
-    configs = ["//tests/container/java/configs:java_partial_entrypoint.yaml"],
+    configs = [":java_partial_entrypoint.yaml"],
     image = "//tests/container/java:java_partial_entrypoint_image",
 )
 
 container_test(
     name = "simple_java_entrypoint_image_test",
-    configs = ["//tests/container/java/configs:simple_java_entrypoint.yaml"],
+    configs = [":simple_java_entrypoint.yaml"],
     image = "//tests/container/java:simple_java_image",
 )

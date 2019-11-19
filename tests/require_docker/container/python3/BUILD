@@ -14,12 +14,8 @@
 
 load("//contrib:test.bzl", "container_test")
 
-[container_test(
-    name = "test_dockerfile_image_%s" % driver,
-    configs = ["//tests/contrib/configs:dockerfile_image.yaml"],
-    image = "@loaded_dockerfile_image_%s//image" % driver,
-) for driver in [
-    "docker",
-    "kaniko_latest",
-    "kaniko_debug",
-]]
+container_test(
+    name = "py3_image_test",
+    configs = [":py3_image.yaml"],
+    image = "//tests/container/python3:py3_image",
+)

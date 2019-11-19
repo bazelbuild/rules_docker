@@ -15,7 +15,7 @@
 load("//contrib:test.bzl", "container_test")
 
 container_test(
-    name = "cc_image_test",
-    configs = ["//tests/container/cc/configs:cc_image.yaml"],
-    image = "//tests/container/cc:cc_image",
+    name = "groovy_image_test",
+    configs = [":groovy_image.yaml"],
+    image = "//tests/container/groovy:groovy_image",
 )
