@@ -14,9 +14,19 @@
 
 steps:
   - name: "l.gcr.io/google/bazel"
+    entrypoint: "sh"
+    args: ["-c", "cp -a /workspace/. /rules_docker/"]
+    volumes:
+      - name: "vol1"
+        path: "/rules_docker"
+  - name: "l.gcr.io/google/bazel"
     args: 
       - "test"
       - "//tests/require_docker/docker/package_managers:all"
+    dir: "/rules_docker"
+    volumes:
+      - name: "vol1"
+        path: "/rules_docker"
   - name: "l.gcr.io/google/bazel"
     args: 
       - "test"
