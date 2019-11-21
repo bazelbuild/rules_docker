@@ -12,27 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+timeout: "1200s"
+options:
+  machineType: "N1_HIGHCPU_32"
+
 steps:
-  - name: "l.gcr.io/google/bazel"
-    entrypoint: "sh"
-    args: ["-c", "cp -a /workspace/. /rules_docker/"]
-    volumes:
-      - name: "vol1"
-        path: "/rules_docker"
+  - name: "gcr.io/gcp-runtimes/ubuntu_16_0_4"
+    args:
+      - "./tests/contrib/mv_project_root.sh"
   - name: "l.gcr.io/google/bazel"
     args: 
-      - "--output_base=/workspace/bazel_outputs"
+      - "--output_base=/workspace/output_base"
       - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
       - "//tests/require_docker/docker/package_managers:all"
-    dir: "/rules_docker"
-    volumes:
-      - name: "vol1"
-        path: "/rules_docker"
+    dir: "rules_docker"
   - name: "l.gcr.io/google/bazel"
     args: 
+      - "--output_base=/workspace/output_base"
       - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
       - "//tests/require_docker/docker/toolchain_container:all"
+    dir: "rules_docker"
   - name: "l.gcr.io/google/bazel"
     args: 
+      - "--output_base=/workspace/output_base"
       - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
       - "//tests/require_docker/docker/util:all"
+    dir: "rules_docker"
