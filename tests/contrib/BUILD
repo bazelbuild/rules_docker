@@ -137,15 +137,11 @@ docker_push(
     bundle = ":create_empty_bundle",
 )
 
-[container_test(
-    name = "test_dockerfile_image_%s" % driver,
+container_test(
+    name = "test_dockerfile_image_docker",
     configs = ["//tests/contrib/configs:dockerfile_image.yaml"],
-    image = "@loaded_dockerfile_image_%s//image" % driver,
-) for driver in [
-    "docker",
-    "kaniko_latest",
-    "kaniko_debug",
-]]
+    image = "@loaded_dockerfile_image_docker//image",
+)
 
 toolchain_container(
     name = "img_with_random_file",
