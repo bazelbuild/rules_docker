@@ -384,28 +384,11 @@ dockerfile_image(
     dockerfile = "//testdata/dockerfile_build:Dockerfile",
 )
 
-[dockerfile_image(
-    name = "dockerfile_kaniko_%s" % tag,
-    build_args = {
-        "ALPINE_version": "3.9",
-    },
-    dockerfile = "//testdata/dockerfile_build:Dockerfile",
-    driver = "kaniko",
-    kaniko_tag = tag,
-) for tag in [
-    "latest",
-    "debug",
-]]
-
 # Load the image tarball.
-[container_load(
-    name = "loaded_dockerfile_image_%s" % driver,
-    file = "@dockerfile_%s//image:dockerfile_image.tar" % driver,
-) for driver in [
-    "docker",
-    "kaniko_latest",
-    "kaniko_debug",
-]]
+container_load(
+    name = "loaded_dockerfile_image_docker",
+    file = "@dockerfile_docker//image:dockerfile_image.tar",
+)
 
 # Register the default py_toolchain / platform for containerized execution
 register_toolchains(

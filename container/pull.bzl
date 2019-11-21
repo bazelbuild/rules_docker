@@ -38,6 +38,10 @@ _container_pull_attrs = {
               " is not defined, the home directory will be used.",
         mandatory = False,
     ),
+    "import_tags": attr.string_list(
+        default = [],
+        doc = "(optional) tags to be propagated to generated rules.",
+    ),
     "os": attr.string(
         default = "linux",
         doc = "(optional) Which os to pull if this image refers to a " +
@@ -87,6 +91,8 @@ def _impl(repository_ctx):
 
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
+
+    import_rule_tags = "[\"{}\"]".format("\", \"".join(repository_ctx.attr.import_tags))
     repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
 
@@ -94,10 +100,11 @@ container_import(
     name = "image",
     config = "config.json",
     layers = glob(["*.tar.gz"]),
+    tags = {tags},
 )
 
 exports_files(["image.digest", "digest"])
-""")
+""".format(tags = import_rule_tags))
 
     puller = repository_ctx.attr.puller_linux
     if repository_ctx.os.name.lower().startswith("mac os"):
