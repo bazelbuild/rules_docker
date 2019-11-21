@@ -12,16 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-timeout: 1200s
-options:
-    machineType: "N1_HIGHCPU_32"
-
 steps:
   - name: "l.gcr.io/google/bazel"
     args: 
       - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
       - "//tests/require_docker/contrib:all"
+  # Pull the semantic checker image used by configs_test targets.
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["pull", "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/semantics:latest"]
+    id: "pull_validator"
   - name: "l.gcr.io/google/bazel"
     args: 
       - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
       - "//tests/require_docker/contrib/automatic_container_release:all"

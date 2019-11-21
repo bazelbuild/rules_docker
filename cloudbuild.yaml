@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//contrib:test.bzl", "container_test")
-
-container_test(
-    name = "test_dockerfile_image_docker",
-    configs = ["//tests/require_docker/contrib/configs:dockerfile_image.yaml"],
-    image = "@loaded_dockerfile_image_docker//image",
-)
+steps:
+  # Test the case where the test target is located at the root of the
+  # workspace, which makes the Bazel package empty.
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
+      - "//:structure_test_at_workspace_root"
