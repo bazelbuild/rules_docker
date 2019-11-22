@@ -54,7 +54,7 @@ steps:
       - "//tests/container/java:all"
       - "//tests/container/nodejs:all"
       # - "//tests/container/python:all"
-      - "//tests/container/python3:all"
+      # - "//tests/container/python3:all"
       - "//tests/container/rust:all"
       - "//tests/container/scala:all"
 
