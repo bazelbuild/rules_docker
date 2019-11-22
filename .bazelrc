@@ -41,3 +41,4 @@ test:remote --remote_executor=remotebuildexecution.googleapis.com
 test:remote --tls_enabled=true
 test:remote --remote_timeout=3600
 test:remote --auth_enabled=true
+test:remote --jobs=50
