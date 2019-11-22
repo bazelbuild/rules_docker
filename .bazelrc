@@ -18,3 +18,26 @@
 build --incompatible_use_python_toolchains
 test --incompatible_use_python_toolchains
 
+################################################################################
+
+test:remote --remote_instance_name=projects/asci-toolchain/instances/default_instance
+test:remote --crosstool_top=@rbe_default//cc:toolchain
+test:remote --host_javabase=@rbe_default//java:jdk
+test:remote --javabase=@rbe_default//java:jdk
+test:remote --extra_execution_platforms=@rbe_default//config:platform
+test:remote --host_platform=@rbe_default//config:platform
+test:remote --platforms=@rbe_default//config:platform
+test:remote --extra_toolchains=@rbe_default//config:cc-toolchain
+test:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+test:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+test:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+test:remote --spawn_strategy=remote
+test:remote --strategy=Javac=remote
+test:remote --strategy=Closure=remote
+test:remote --genrule_strategy=remote
+test:remote --define=EXECUTOR=remote
+test:remote --remote_cache=remotebuildexecution.googleapis.com
+test:remote --remote_executor=remotebuildexecution.googleapis.com
+test:remote --tls_enabled=true
+test:remote --remote_timeout=3600
+test:remote --auth_enabled=true
