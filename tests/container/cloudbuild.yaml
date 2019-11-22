@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Container and lang_image tests that require the 'docker' tool to be
+# available.
+
 steps:
   - name: "l.gcr.io/google/bazel"
     args: 
@@ -47,7 +50,6 @@ steps:
       - "//tests/container:new_alpine_linux_ppc64le_image_tar_test"
       - "//tests/container:new_alpine_linux_ppc64le_image_oci_tar_test"
       - "//tests/container:new_alpine_linux_ppc64le_image_oci_test"
-
       - "//tests/container/cc:all"
       - "//tests/container/go:all"
       - "//tests/container/groovy:all"
@@ -57,41 +59,4 @@ steps:
       - "//tests/container/python3:all"
       - "//tests/container/rust:all"
       - "//tests/container/scala:all"
-
       - "--config=remote"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/cc:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/go:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/groovy:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/java:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/nodejs:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/python:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/python3:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/rust:all"
-  # - name: "l.gcr.io/google/bazel"
-  #   args: 
-  #     - "test"
-  #     - "//tests/container/scala:all"

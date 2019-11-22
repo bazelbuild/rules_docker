@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Tests under /tests/contrib that require the 'docker' tool to be available.
+
 steps:
   - name: "l.gcr.io/google/bazel"
     args: 

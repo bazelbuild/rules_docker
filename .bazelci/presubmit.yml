@@ -11,6 +11,7 @@ platforms:
   ubuntu1604:
     test_targets:
     - "--"
+    # Tests that don't use the 'docker' tool.
     - "//container/go/pkg/compat:go_default_test"
     - "//container/go/pkg/oci:go_default_test"
     - "//container:image_test"
@@ -74,6 +75,7 @@ platforms:
   ubuntu1804:
     test_targets:
     - "--"
+    # Tests that don't use the 'docker' tool.
     - "//container/go/pkg/compat:go_default_test"
     - "//container/go/pkg/oci:go_default_test"
     - "//container:image_test"
