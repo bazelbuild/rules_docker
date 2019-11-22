@@ -17,8 +17,8 @@ steps:
     args: 
       - "--bazelrc=.bazelrc"
       - "test"
-      # - "--test_output=errors"
-      # - "--verbose_failures"
+      - "--test_output=errors"
+      - "--verbose_failures"
       - "//tests/contrib:test_dockerfile_image_docker"
       - "--config=remote"
   # Pull the semantic checker image used by configs_test targets.
