@@ -190,3 +190,35 @@ func TestWorkdirOverride(t *testing.T) {
 		t.Errorf("WorkingDir field in config was updated to invalid value, got %q, want %q.", opts.ConfigFile.Config.WorkingDir, want)
 	}
 }
+
+func TestEntrypointPrefix(t *testing.T) {
+	want := []string{"prefix1", "prefix2", "entrypoint1", "entrypoint2"}
+	opts := &OverrideConfigOpts{
+		EntrypointPrefix: want[:2],
+		Entrypoint:       want[2:],
+		ConfigFile: &v1.ConfigFile{
+			Config: v1.Config{
+				Entrypoint: want,
+			},
+		},
+		Stamper: &Stamper{},
+	}
+	if err := updateConfig(opts); err != nil {
+		t.Fatalf("Failed to update config: %v", err)
+	}
+	if !stringSlicesEqual(opts.ConfigFile.Config.Entrypoint, want) {
+		t.Errorf("Entrypoint field in config was updated to invalid value, got %q, want %q.", opts.ConfigFile.Config.Entrypoint, want)
+	}
+}
+
+func stringSlicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
