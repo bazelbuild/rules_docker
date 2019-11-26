@@ -527,7 +527,7 @@ func updateConfig(overrideInfo *OverrideConfigOpts) error {
 	}
 
 	if len(overrideInfo.EntrypointPrefix) != 0 {
-		newEntrypoint := append(overrideInfo.ConfigFile.Config.Entrypoint, overrideInfo.EntrypointPrefix...)
+		newEntrypoint := append(overrideInfo.EntrypointPrefix, overrideInfo.ConfigFile.Config.Entrypoint...)
 		overrideInfo.ConfigFile.Config.Entrypoint = newEntrypoint
 	}
 	return nil
