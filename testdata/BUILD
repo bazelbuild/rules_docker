@@ -56,6 +56,7 @@ exports_files([
     "bar",
     "foo",
     "pause.tar",
+    "py_image.py",
 ])
 
 exports_files(["BUILD"])
