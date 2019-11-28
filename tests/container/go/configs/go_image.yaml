@@ -1,0 +1,17 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: ['/app/tests/container/go/go_image.binary']
+  cmd: [
+    'arg0',
+    'arg1',
+    'tests/container/go/BUILD',
+  ]
+
+# File info taken from https://github.com/GoogleContainerTools/distroless/tree/master/base
+
+fileExistenceTests:
+  - name: "openssl"
+    path: "/usr/bin/openssl"
+    shouldExist: true
+

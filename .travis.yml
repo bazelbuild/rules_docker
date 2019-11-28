@@ -1,29 +1,34 @@
+dist: xenial
 sudo: required
-dist: trusty
-language:
-  - java
+
+os:
+  - linux
+
+python:
+  - "2.7"
+
 jdk:
   - oraclejdk8  # Building Bazel requires JDK8.
+
+language: go
+go: 1.10.x
+install: true
+
+services:
+  - docker
+
 addons:
   apt:
     sources:
       - sourceline: 'deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8'
-        key_url: 'https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg'
+        key_url: 'https://bazel.build/bazel-release.pub.gpg'
     packages:
       - bazel
 
 install:
-  - go get -u github.com/bazelbuild/buildifier/buildifier
+  - wget -q https://github.com/bazelbuild/buildtools/releases/download/0.22.0/buildifier
+  - chmod +x ./buildifier
 
 script:
-  # Check that our direct testing passes.
-  - bazel clean && bazel build //...
-  - bazel clean && bazel test --test_output=errors //...
-
-  # Check for issues with the format of our bazel config files.
-  - buildifier -mode=check $(find . -name BUILD -type f)
-  - buildifier -mode=check $(find . -name WORKSPACE -type f)
-  - buildifier -mode=check $(find . -name '*.bzl' -type f)
-
   # Test things by executing the various build configurations under testing/
   - ./testing/e2e.sh

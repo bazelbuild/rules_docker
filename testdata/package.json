@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "jsesc": "2.5.2"
+  }
+}

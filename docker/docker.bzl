@@ -13,120 +13,33 @@
 # limitations under the License.
 """Rules for manipulation Docker images."""
 
-# Alias docker_build and docker_bundle for now, so folks can move to
-# referencing this before it becomes the source of truth.
-load(":build.bzl", "docker_build")
-load(":bundle.bzl", "docker_bundle")
-
-# Expose the docker_pull repository rule.
-load(":pull.bzl", "docker_pull")
-
-# Expose the docker_push rule.
-load(":push.bzl", "docker_push")
-
-# The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.10"
-
-def docker_repositories():
-  """Download dependencies of docker rules."""
-  native.http_file(
-    name = "puller",
-    url = ("https://storage.googleapis.com/containerregistry-releases/" +
-           CONTAINERREGISTRY_RELEASE + "/puller.par"),
-    sha256 = "cfcf1b6478b9ad3297b52adb23d8e5f5dcdccc2028c6cf24f726db025f936b91",
-    executable = True,
-  )
-
-  native.http_file(
-    name = "pusher",
-    url = ("https://storage.googleapis.com/containerregistry-releases/" +
-           CONTAINERREGISTRY_RELEASE + "/pusher.par"),
-    sha256 = "c7a55f3159bd1974a0de5fc80665afdc41606d9e04a3be560326f1eae221ae4c",
-    executable = True,
-  )
-
-  native.git_repository(
-    name = "containerregistry",
-    remote = "https://github.com/google/containerregistry.git",
-    tag = CONTAINERREGISTRY_RELEASE,
-  )
-
-  # TODO(mattmoor): Remove all of this (copied from google/containerregistry)
-  # once transitive workspace instantiation lands.
-  native.new_http_archive(
-    name = "httplib2",
-    url = "https://codeload.github.com/httplib2/httplib2/tar.gz/v0.10.3",
-    sha256 = "d1bee28a68cc665c451c83d315e3afdbeb5391f08971dcc91e060d5ba16986f1",
-    strip_prefix = "httplib2-0.10.3/python2/httplib2/",
-    type = "tar.gz",
-    build_file_content = """
-py_library(
-   name = "httplib2",
-   srcs = glob(["**/*.py"]),
-   data = ["cacerts.txt"],
-   visibility = ["//visibility:public"]
-)""",
-  )
-
-  # Used by oauth2client
-  native.new_http_archive(
-    name = "six",
-    url = "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz",
-    sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
-    strip_prefix = "six-1.9.0/",
-    type = "tar.gz",
-    build_file_content = """
-# Rename six.py to __init__.py
-genrule(
-    name = "rename",
-    srcs = ["six.py"],
-    outs = ["__init__.py"],
-    cmd = "cat $< >$@",
+load(
+    "//container:container.bzl",
+    "container_push",
+    _docker_build = "container_image",
+    _docker_bundle = "container_bundle",
+    _docker_flatten = "container_flatten",
+    _docker_image = "container_image",
+    _docker_import = "container_import",
+    _docker_layer = "container_layer",
+    _docker_load = "container_load",
+    _docker_pull = "container_pull",
 )
-py_library(
-   name = "six",
-   srcs = [":__init__.py"],
-   visibility = ["//visibility:public"],
-)"""
-  )
 
-  # Used for authentication in containerregistry
-  native.new_http_archive(
-    name = "oauth2client",
-    url = "https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0",
-    sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
-    strip_prefix = "oauth2client-4.0.0/oauth2client/",
-    type = "tar.gz",
-    build_file_content = """
-py_library(
-   name = "oauth2client",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"],
-   deps = [
-     "@httplib2//:httplib2",
-     "@six//:six",
-   ]
-)"""
-  )
+docker_pull = _docker_pull
+docker_load = _docker_load
+docker_layer = _docker_layer
+docker_import = _docker_import
+docker_image = _docker_image
+docker_flatten = _docker_flatten
+docker_bundle = _docker_bundle
+docker_build = _docker_build
 
-  # Used for parallel execution in containerregistry
-  native.new_http_archive(
-    name = "concurrent",
-    url = "https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5",
-    sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
-    strip_prefix = "pythonfutures-3.0.5/concurrent/",
-    type = "tar.gz",
-    build_file_content = """
-py_library(
-   name = "concurrent",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"]
-)"""
-  )
-
-  # For packaging python tools.
-  native.git_repository(
-    name = "subpar",
-    remote = "https://github.com/google/subpar",
-    commit = "7e12cc130eb8f09c8cb02c3585a91a4043753c56",
-  )
+def docker_push(*args, **kwargs):
+    if "format" in kwargs:
+        fail(
+            "Cannot override 'format' attribute on docker_push",
+            attr = "format",
+        )
+    kwargs["format"] = "Docker"
+    container_push(*args, **kwargs)

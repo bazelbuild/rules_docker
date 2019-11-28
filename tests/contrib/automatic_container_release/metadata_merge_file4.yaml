@@ -1,0 +1,3 @@
+packages:
+- name: baz
+  version: 2

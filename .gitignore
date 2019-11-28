@@ -17,6 +17,9 @@
 *.mod
 *.smod
 
+# Python 2 bytecode files
+*.pyc
+
 # Compiled Static libraries
 *.lai
 *.la
@@ -31,9 +34,16 @@
 # Emacs garbage
 *~
 
+# Vim garbage
+*.swp
+
 # Bazel directories
 bazel-*
 bazel-bin
 bazel-genfiles
 bazel-out
 bazel-testlogs
+
+# Eclipse and PyDev
+.project
+.pydevproject

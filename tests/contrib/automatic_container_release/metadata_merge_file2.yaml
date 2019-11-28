@@ -1,0 +1,3 @@
+packages:
+- name: foo
+  version: 1

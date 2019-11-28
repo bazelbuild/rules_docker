@@ -1,0 +1,57 @@
+# Copyright 2017 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The following flags are set to test use of new features for python toolchains
+# These flags will only work with Bazel 0.25.0 or above and are only needed for
+#  //tests/docker/security/... & the docker/package_managers rules.
+build --incompatible_use_python_toolchains
+test --incompatible_use_python_toolchains
+
+# The flags below enable running tests using Remote Build Execution
+# for the provided toolchain.
+# Note that your WORKSPACE must contain an rbe_autoconfig target with
+# name="buildkite_config" to use these flags as-is.
+
+test:remote --remote_instance_name=projects/asci-toolchain/instances/default_instance
+
+# Depending on how many machines are in the remote execution instance, setting
+# this higher can make builds faster by allowing more jobs to run in parallel.
+# Setting it too high can result in jobs that timeout, however, while waiting
+# for a remote machine to execute them.
+test:remote --jobs=50
+
+# Platform flags:
+# The toolchain container used for execution is defined in the target indicated
+# by "extra_execution_platforms", "host_platform" and "platforms".
+# More about platforms: https://docs.bazel.build/versions/master/platforms.html
+test:remote --extra_toolchains=@buildkite_config//config:cc-toolchain,//toolchains:rbe_container_cc_toolchain
+test:remote --extra_execution_platforms=@buildkite_config//config:platform,//platforms:rbe_container_platform
+test:remote --host_platform=@buildkite_config//config:platform
+test:remote --platforms=@buildkite_config//config:platform
+
+# Starting with Bazel 0.27.0 strategies do not need to be explicitly
+# defined. See https://github.com/bazelbuild/bazel/issues/7480
+test:remote --define=EXECUTOR=remote
+
+# Enable remote execution so actions are performed on the remote systems.
+test:remote --remote_executor=remotebuildexecution.googleapis.com
+test:remote --remote_cache=remotebuildexecution.googleapis.com
+
+# Enable authentication. This will pick up application default credentials by
+# default. You can use --google_credentials=some_file.json to use a service
+# account credential instead.
+test:remote --google_default_credentials=true
+
+test:remote --remote_timeout=3600
+test:remote --keep_going

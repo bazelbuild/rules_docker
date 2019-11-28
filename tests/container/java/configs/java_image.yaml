@@ -1,0 +1,15 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+    - key: JAVA_RUNFILES
+      value: "/app"
+  entrypoint: [
+        '/usr/bin/java',
+        '-cp',
+        '/app/io_bazel_rules_docker/tests/container/java/libjava_image_library.jar:/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:/app/io_bazel_rules_docker/tests/container/java/java_image.binary.jar:/app/io_bazel_rules_docker/tests/container/java/java_image.binary:/app/io_bazel_rules_docker/tests/container/java/BUILD',
+        '-Dbuild.location=tests/container/java/BUILD',
+        'examples.images.Binary',
+        'arg0',
+        'arg1',
+        'tests/container/java/BUILD']

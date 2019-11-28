@@ -1,0 +1,6 @@
+# required by container_image py tests
+six==1.11.0
+addict==2.1.2
+# required by docker/security & deps
+PyYAML==5.1
+

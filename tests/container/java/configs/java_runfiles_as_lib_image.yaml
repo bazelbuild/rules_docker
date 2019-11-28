@@ -1,0 +1,42 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+    - key: JAVA_RUNFILES
+      value: "/app"
+  entrypoint: [
+        '/usr/bin/java',
+        '-cp',
+        '/app/io_bazel_rules_docker/tests/container/java/libjava_runfiles_as_lib.jar:/app/io_bazel_rules_docker/../bazel_tools/tools/java/runfiles/librunfiles.jar:/app/io_bazel_rules_docker/testdata/foo:/app/io_bazel_rules_docker/tests/container/java/java_runfiles_as_lib_image.binary.jar:/app/io_bazel_rules_docker/tests/container/java/java_runfiles_as_lib_image.binary',
+        'examples.images.Runfiles']
+
+fileExistenceTests:
+- name: 'librunfiles.jar'
+  path: '/app/bazel_tools/tools/java/runfiles/librunfiles.jar'
+  shouldExist: true
+  permissions: '-r-xr-xr-x'
+
+- name: 'libjava_runfiles_as_lib.jar'
+  path: '/app/io_bazel_rules_docker/tests/container/java/libjava_runfiles_as_lib.jar'
+  shouldExist: true
+  permissions: '-r-xr-xr-x'
+
+- name: 'classpath file'
+  path: '/app/io_bazel_rules_docker/tests/container/java/java_runfiles_as_lib_image.classpath'
+  shouldExist: true
+  permissions: '-r-xr-xr-x'
+
+- name: 'java_runfiles_as_lib_image.binary'
+  path: '/app/io_bazel_rules_docker/tests/container/java/java_runfiles_as_lib_image.binary'
+  shouldExist: true
+  permissions: '-r-xr-xr-x'
+
+- name: 'java_runfiles_as_lib_image.binary.jar'
+  path: '/app/io_bazel_rules_docker/tests/container/java/java_runfiles_as_lib_image.binary.jar'
+  shouldExist: true
+  permissions: '-r-xr-xr-x'
+
+- name: 'foo data file'
+  path: '/app/io_bazel_rules_docker/testdata/foo'
+  shouldExist: true
+  permissions: '-r-xr-xr-x'

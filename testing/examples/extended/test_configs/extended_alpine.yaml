@@ -1,0 +1,51 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+    - key: "envVar"
+      value: "My environment variable"
+    - key: "xyz"
+      value: "321"
+  entrypoint: ['echo', 'Hello']
+  cmd: ['World']
+  labels:
+    - key: "version"
+      value: "7.7"
+    - key: "desc"
+      value: "Description for version 7.7"
+  exposedPorts: ["8080", "9876"]
+  volumes: ["/myVol1", "/usr/myVol2"]
+
+fileExistenceTests:
+  - name: 'txt_file_exists'
+    path: '/Data_file.txt'
+    shouldExist: true
+  - name: 'usr_txt_file_exists'
+    path: '/usr/More_data.txt'
+    shouldExist: true
+  - name: 'tar_txt_file1_exists'
+    path: '/File1.txt'
+    shouldExist: true
+  - name: 'tar_txt_file2_exists'
+    path: '/File2.txt'
+    shouldExist: true
+  - name: 'copy_txt_file_exists'
+    path: '/file_to_copy.txt'
+    shouldExist: true
+
+fileContentTests:
+  - name: 'txt_file_contains'
+    path: '/Data_file.txt'
+    expectedContents: ['Some data\.\.\.\s']
+  - name: 'usr_txt_file_contains'
+    path: '/usr/More_data.txt'
+    expectedContents: ['Additional data']
+  - name: 'tar_txt_file1_contains'
+    path: '/File1.txt'
+    expectedContents: ['File1 text']
+  - name: 'tar_txt_file2_contains'
+    path: '/File2.txt'
+    expectedContents: ['File2 text']
+  - name: 'copy_txt_file_contains'
+    path: '/file_to_copy.txt'
+    expectedContents: ['Another file to copy']
