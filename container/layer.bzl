@@ -103,6 +103,13 @@ def build_layer(
     args.add(directory, format = "--directory=%s")
     args.add(ctx.attr.mode, format = "--mode=%s")
 
+    if ctx.attr.mtime != -1:  # Note: Must match default in rule def.
+        if ctx.attr.portable_mtime:
+            fail("You may not set both mtime and portable_mtime")
+        args.add(ctx.attr.mtime, format = "--mtime=%s")
+    if ctx.attr.portable_mtime:
+        args.add("--mtime=portable")
+
     if toolchain_info.xz_path != "":
         args.add(toolchain_info.xz_path, format = "--xz_path=%s")
 
@@ -237,10 +244,12 @@ _layer_attrs = dicts.add({
     "env": attr.string_dict(),
     "files": attr.label_list(allow_files = True),
     "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
+    "mtime": attr.int(default = -1),
     "operating_system": attr.string(
         default = "linux",
         mandatory = False,
     ),
+    "portable_mtime": attr.bool(default = False),
     "symlinks": attr.string_dict(),
     "tars": attr.label_list(allow_files = tar_filetype),
 }, _hash_tools, _layer_tools)
