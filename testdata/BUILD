@@ -54,8 +54,10 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "Binary.java",
     "bar",
+    "cc_image.cc",
     "foo",
     "pause.tar",
+    "py3_image.py",
     "py_image.py",
 ])
 
