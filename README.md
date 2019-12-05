@@ -44,6 +44,12 @@ registry interactions.
 
 ## Language Rules
 
+Note: Some of these rules are not supported on Mac. Specifically `go_image`
+cannot be used from Bazel running on a Mac. Other rules may also fail
+arbitrarily on Mac due to unforseen toolchain issues that need to be resolved in
+Bazel and upstream rules repos. Please see [#943](https://github.com/bazelbuild/rules_docker/issues/943)
+for more details.
+
 * [py_image](#py_image) ([signature](
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
 * [py3_image](#py3_image) ([signature](
