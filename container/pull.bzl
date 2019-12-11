@@ -179,6 +179,7 @@ exports_files(["image.digest", "digest"])
         for k in _container_pull_attrs.keys()
     }
     updated_attrs["name"] = repository_ctx.name
+    updated_attrs["tags"] = repository_ctx.attr.tags
 
     digest_result = repository_ctx.execute(["cat", repository_ctx.path("image/digest")])
     if digest_result.return_code:

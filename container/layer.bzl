@@ -15,7 +15,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//container:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
@@ -39,6 +39,10 @@ load(
 load(
     "//skylib:zip.bzl",
     _gzip = "gzip",
+)
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
 )
 
 def _magic_path(ctx, f, output_layer):
@@ -131,19 +135,22 @@ def build_layer(
     ctx.actions.write(manifest_file, manifest.to_json())
     args.add(manifest_file, format = "--manifest=%s")
 
+    execution_requirements = _execution_requirements(ctx.attr.tags)
+
     ctx.actions.run(
         executable = build_layer_exec,
         arguments = [args],
         tools = files + file_map.values() + tars + debs + [manifest_file],
         outputs = [layer],
         use_default_shell_env = True,
+        execution_requirements = execution_requirements,
         mnemonic = "ImageLayer",
     )
-    return layer, _sha256(ctx, layer)
+    return layer, _sha256(ctx, layer, execution_requirements = execution_requirements)
 
-def zip_layer(ctx, layer):
+def zip_layer(ctx, layer, execution_requirements):
     zipped_layer = _gzip(ctx, layer)
-    return zipped_layer, _sha256(ctx, zipped_layer)
+    return zipped_layer, _sha256(ctx, zipped_layer, execution_requirements)
 
 def _impl(
         ctx,
@@ -188,6 +195,8 @@ def _impl(
     tars = tars or ctx.files.tars
     output_layer = output_layer or ctx.outputs.layer
 
+    execution_requirements = _execution_requirements(ctx.attr.tags)
+
     # Generate the unzipped filesystem layer, and its sha256 (aka diff_id)
     unzipped_layer, diff_id = build_layer(
         ctx,
@@ -205,7 +214,7 @@ def _impl(
     )
 
     # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
-    zipped_layer, blob_sum = zip_layer(ctx, unzipped_layer)
+    zipped_layer, blob_sum = zip_layer(ctx, unzipped_layer, execution_requirements = execution_requirements)
 
     # Returns constituent parts of the Container layer as provider:
     # - in container_image rule, we need to use all the following information,

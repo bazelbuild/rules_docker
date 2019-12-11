@@ -38,10 +38,13 @@ expectation in such cases is that users will write something like:
   )
 
 """
-
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
+)
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//container:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
@@ -231,16 +234,20 @@ def _image_config(
         operating_system,
     )
 
+    execution_requirements = _execution_requirements(ctx.attr.tags)
+
     ctx.actions.run(
         executable = ctx.executable.create_image_config,
         arguments = [args],
         inputs = inputs,
         outputs = [config, manifest],
         use_default_shell_env = True,
+        execution_requirements = execution_requirements,
         mnemonic = "ImageConfig",
     )
-
-    return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)
+    config_sha256 = _sha256(ctx, config, execution_requirements = execution_requirements)
+    manifest_sha256 = _sha256(ctx, manifest, execution_requirements = execution_requirements)
+    return config, config_sha256, manifest, manifest_sha256
 
 def _repository_name(ctx):
     """Compute the repository name for the current rule."""
@@ -273,6 +280,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
 def _impl(
         ctx,
         name = None,
+        tags = None,
         base = None,
         files = None,
         file_map = None,
@@ -301,6 +309,7 @@ def _impl(
   Args:
     ctx: The bazel rule context
     name: str, overrides ctx.label.name or ctx.attr.name
+    tags: str, overrides ctx.attr.tags
     base: File, overrides ctx.attr.base and ctx.files.base[0]
     files: File list, overrides ctx.files.files
     file_map: Dict[str, File], defaults to {}
@@ -326,6 +335,7 @@ def _impl(
     null_entrypoint: bool, overrides ctx.attr.null_entrypoint
   """
     name = name or ctx.label.name
+    tags = tags or ctx.attr.tags
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
     operating_system = operating_system or ctx.attr.operating_system
@@ -456,6 +466,8 @@ def _impl(
         "zipped_layer": zipped_layers,
     }
 
+    execution_requirements = _execution_requirements(tags)
+
     # We support incrementally loading or assembling this single image
     # with a temporary name given by its build rule.
     images = {
@@ -473,6 +485,7 @@ def _impl(
         ctx,
         images,
         output_tarball,
+        execution_requirements,
     )
     _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 

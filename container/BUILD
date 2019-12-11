@@ -26,6 +26,71 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+py_binary(
+    name = "extract_config",
+    srcs = ["extract_config.py"],
+    legacy_create_init = False,
+    python_version = "PY2",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@containerregistry",
+    ],
+)
+
+py_binary(
+    name = "sha256",
+    srcs = ["sha256.py"],
+)
+
+sh_test(
+    name = "sha256_test",
+    size = "small",
+    srcs = ["sha256_test.sh"],
+    data = ["sha256"],
+    # TODO(laszlocsomor): use the runfiles library after
+    # https://github.com/bazelbuild/bazel/issues/4460 is fixed for sh_*
+    tags = ["no_windows"],
+)
+
+py_library(
+    name = "utils",
+    srcs = [
+        "__init__.py",
+        "utils.py",
+    ],
+)
+
+bzl_library(
+    name = "hash",
+    srcs = ["hash.bzl"],
+)
+
+py_binary(
+    name = "join_layers",
+    srcs = ["join_layers.py"],
+    legacy_create_init = False,
+    python_version = "PY2",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":utils",
+        "@containerregistry",
+        "@six",
+    ],
+)
+
+py_binary(
+    name = "create_image_config",
+    srcs = ["create_image_config.py"],
+    legacy_create_init = False,
+    python_version = "PY2",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":utils",
+        "@containerregistry",
+        "@six",
+    ],
+)
+
 # TODO(xingao): Flip legacy_create_init to False if possible.
 py_binary(
     name = "build_tar",
@@ -171,13 +236,13 @@ bzl_library(
     name = "image",
     srcs = ["image.bzl"],
     deps = [
+        ":hash",
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
         "//skylib:zip",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
@@ -185,12 +250,12 @@ bzl_library(
     name = "import",
     srcs = ["import.bzl"],
     deps = [
+        ":hash",
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
@@ -198,12 +263,12 @@ bzl_library(
     name = "layer",
     srcs = ["layer.bzl"],
     deps = [
+        ":hash",
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
         "//skylib:path",
         "//skylib:zip",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 

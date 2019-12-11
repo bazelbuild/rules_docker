@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,33 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+set -e
 
-package(default_visibility = ["//visibility:public"])
+# The following code produces a 120MB file (30*2^22 bytes)
+cat > input.txt <<EOF
+01234567890123456789012345678
+EOF
 
-licenses(["notice"])  # Apache 2.0
+cp input.txt tmp.txt
+for i in {1..22}; do
+  cat tmp.txt >> input.txt
+  cp input.txt tmp.txt
+done
 
-bzl_library(
-    name = "actions",
-    srcs = ["actions.bzl"]
-)
+container/sha256 input.txt output.txt
 
-bzl_library(
-    name = "filetype",
-    srcs = ["filetype.bzl"],
-)
-
-bzl_library(
-    name = "label",
-    srcs = ["label.bzl"],
-)
-
-bzl_library(
-    name = "path",
-    srcs = ["path.bzl"],
-)
-
-bzl_library(
-    name = "zip",
-    srcs = ["zip.bzl"],
-)
+expected=b89e2ebd615b1d32be9cec7bf687f3a00476835fe2ea8fb560394d79f420390c
+if [ "$(cat output.txt)" != "$expected" ]; then
+  echo "Wrong hash $(cat output.txt); expected $expected"
+  exit 1
+fi

@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Functions for producing the gzip of an artifact."""
+load(
+    ":actions.bzl",
+    _execution_requirements = "execution_requirements",
+)
 
 def gzip(ctx, artifact):
     """Create an action to compute the gzipped artifact.
@@ -42,6 +46,7 @@ def gzip(ctx, artifact):
         outputs = [out],
         use_default_shell_env = True,
         mnemonic = "GZIP",
+        execution_requirements = _execution_requirements(ctx.attr.tags),
         tools = tools,
     )
     return out
@@ -74,6 +79,7 @@ def gunzip(ctx, artifact):
         outputs = [out],
         use_default_shell_env = True,
         mnemonic = "GUNZIP",
+        execution_requirements = _execution_requirements(ctx.attr.tags),
         tools = tools,
     )
     return out

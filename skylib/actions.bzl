@@ -11,34 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Action utility methods."""
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+EXECUTION_REQUIREMENT_TAGS = ("no-cache", "no-remote", "local", "requires-network", "block-network")
 
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])  # Apache 2.0
-
-bzl_library(
-    name = "actions",
-    srcs = ["actions.bzl"]
-)
-
-bzl_library(
-    name = "filetype",
-    srcs = ["filetype.bzl"],
-)
-
-bzl_library(
-    name = "label",
-    srcs = ["label.bzl"],
-)
-
-bzl_library(
-    name = "path",
-    srcs = ["path.bzl"],
-)
-
-bzl_library(
-    name = "zip",
-    srcs = ["zip.bzl"],
-)
+def execution_requirements(tags):
+    return {
+        tag: "1" for tag in tags if tag in EXECUTION_REQUIREMENT_TAGS
+    }

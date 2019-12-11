@@ -158,6 +158,7 @@ def assemble(
         ctx,
         images,
         output,
+        execution_requirements,
         stamp = False):
     """Create the full image from the list of layers.
 
@@ -180,6 +181,7 @@ def assemble(
         arguments = [args],
         tools = inputs,
         outputs = [output],
+        execution_requirements = execution_requirements,
         mnemonic = "JoinLayers",
     )
 

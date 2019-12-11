@@ -13,6 +13,10 @@
 # limitations under the License.
 """Rule for bundling Container images into a tarball."""
 
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
+)
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
@@ -61,6 +65,8 @@ def _container_bundle_impl(ctx):
         if layer.get("legacy"):
             runfiles += [layer.get("legacy")]
 
+    execution_requirements = _execution_requirements(ctx.attr.tags)
+
     _incr_load(
         ctx,
         images,
@@ -71,6 +77,7 @@ def _container_bundle_impl(ctx):
         ctx,
         images,
         ctx.outputs.tar_output,
+        execution_requirements,
         stamp = stamp,
     )
 

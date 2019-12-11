@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Rule for importing a container image."""
-
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
+)
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//container:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
@@ -69,6 +72,8 @@ def _repository_name(ctx):
 def _container_import_impl(ctx):
     """Implementation for the container_import rule."""
 
+    execution_requirements = _execution_requirements(ctx.attr.tags)
+
     blobsums = []
     zipped_layers = []
     unzipped_layers = []
@@ -77,15 +82,15 @@ def _container_import_impl(ctx):
         zipped, unzipped = _layer_pair(ctx, layer)
         zipped_layers += [zipped]
         unzipped_layers += [unzipped]
-        blobsums += [_sha256(ctx, zipped)]
-        diff_ids += [_sha256(ctx, unzipped)]
+        blobsums += [_sha256(ctx, zipped, execution_requirements = execution_requirements)]
+        diff_ids += [_sha256(ctx, unzipped, execution_requirements = execution_requirements)]
 
     manifest = None
     manifest_digest = None
 
     if (len(ctx.files.manifest) > 0):
         manifest = ctx.files.manifest[0]
-        manifest_digest = _sha256(ctx, ctx.files.manifest[0])
+        manifest_digest = _sha256(ctx, ctx.files.manifest[0], execution_requirements = execution_requirements)
 
     # These are the constituent parts of the Container image, which each
     # rule in the chain must preserve.
@@ -124,6 +129,7 @@ def _container_import_impl(ctx):
         ctx,
         images,
         ctx.outputs.out,
+        execution_requirements,
     )
 
     runfiles = ctx.runfiles(
