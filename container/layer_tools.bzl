@@ -166,6 +166,7 @@ def assemble(
        ctx: The context
        images: List of images/layers to assemple
        output: The output path for the image tar
+       execution_requirements: The requirements for the action
        stamp: Whether to stamp the produced image
     """
     args = ctx.actions.args()

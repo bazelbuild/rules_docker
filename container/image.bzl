@@ -39,20 +39,16 @@ expectation in such cases is that users will write something like:
 
 """
 
-load(
-    "//skylib:actions.bzl",
-    _execution_requirements = "execution_requirements",
-)
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load(
-    "//container:hash.bzl",
-    _hash_tools = "tools",
-    _sha256 = "sha256",
-)
 load(
     "@io_bazel_rules_docker//container:providers.bzl",
     "ImageInfo",
     "LayerInfo",
+)
+load(
+    "//container:hash.bzl",
+    _hash_tools = "tools",
+    _sha256 = "sha256",
 )
 load(
     "//container:layer.bzl",
@@ -65,6 +61,10 @@ load(
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
+)
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
 )
 load(
     "//skylib:filetype.bzl",
@@ -243,8 +243,8 @@ def _image_config(
         inputs = inputs,
         outputs = [config, manifest],
         use_default_shell_env = True,
-        execution_requirements = execution_requirements,
         mnemonic = "ImageConfig",
+        execution_requirements = execution_requirements,
     )
     config_sha256 = _sha256(ctx, config, execution_requirements = execution_requirements)
     manifest_sha256 = _sha256(ctx, manifest, execution_requirements = execution_requirements)
@@ -261,7 +261,7 @@ def _repository_name(ctx):
 
     return _join_path(ctx.attr.repository, ctx.label.package)
 
-def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
+def _assemble_image_digest(ctx, name, image, image_tarball, output_digest, execution_requirements):
     img_args, inputs = _gen_img_args(ctx, image)
     args = ctx.actions.args()
     args.add_all(img_args)
@@ -276,6 +276,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
         arguments = [args],
         mnemonic = "ImageDigest",
         progress_message = "Extracting image digest of %s" % image_tarball.short_path,
+        execution_requirements = execution_requirements,
     )
 
 def _impl(
@@ -488,7 +489,14 @@ def _impl(
         output_tarball,
         execution_requirements,
     )
-    _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
+    _assemble_image_digest(
+        ctx,
+        name,
+        container_parts,
+        output_tarball,
+        output_digest,
+        execution_requirements,
+    )
 
     # Symlink config file for usage in structure tests
     ln_path = config_file.path.split("/")[-1]
@@ -496,6 +504,7 @@ def _impl(
         outputs = [output_config],
         inputs = [config_file],
         command = "ln -s %s %s" % (ln_path, output_config.path),
+        execution_requirements = execution_requirements,
     )
 
     runfiles = ctx.runfiles(

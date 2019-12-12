@@ -13,10 +13,6 @@
 # limitations under the License.
 """Rule for bundling Container images into a tarball."""
 
-load(
-    "//skylib:actions.bzl",
-    _execution_requirements = "execution_requirements",
-)
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
 load(
@@ -25,6 +21,10 @@ load(
     _get_layers = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
+)
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
 )
 load(
     "//skylib:label.bzl",

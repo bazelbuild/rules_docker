@@ -13,22 +13,22 @@
 # limitations under the License.
 """Rule for importing a container image."""
 
-load(
-    "//skylib:actions.bzl",
-    _execution_requirements = "execution_requirements",
-)
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@io_bazel_rules_docker//container:providers.bzl", "ImportInfo")
 load(
     "//container:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
-load("@io_bazel_rules_docker//container:providers.bzl", "ImportInfo")
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
+)
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
 )
 load(
     "//skylib:filetype.bzl",

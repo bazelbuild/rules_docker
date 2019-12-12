@@ -14,15 +14,19 @@
 """Rule for building a Container layer."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
     "//container:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
-load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
     "//container:layer_tools.bzl",
     _layer_tools = "tools",
+)
+load(
+    "//skylib:actions.bzl",
+    _execution_requirements = "execution_requirements",
 )
 load(
     "//skylib:filetype.bzl",
@@ -39,10 +43,6 @@ load(
 load(
     "//skylib:zip.bzl",
     _gzip = "gzip",
-)
-load(
-    "//skylib:actions.bzl",
-    _execution_requirements = "execution_requirements",
 )
 
 def _magic_path(ctx, f, output_layer):
