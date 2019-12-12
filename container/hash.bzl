@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Functions for producing the hash of an artifact."""
+"""Functions for producing the hash of an artifact.
+
+These functions pass down execution_requirements specified to the action
+definitions they create.
+"""
 
 def sha256(ctx, artifact, execution_requirements = None):
     """Create an action to compute the SHA-256 of an artifact."""
@@ -32,7 +36,7 @@ def sha256(ctx, artifact, execution_requirements = None):
 
 tools = {
     "sha256": attr.label(
-        default = Label("//container:sha256"),
+        default = Label("@bazel_tools//tools/build_defs/hash:sha256"),
         cfg = "host",
         executable = True,
         allow_files = True,
