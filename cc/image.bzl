@@ -32,11 +32,14 @@ load(
 # Load the resolved digests.
 load(":cc.bzl", "DIGESTS")
 
-def repositories(tags = None):
+def repositories(import_tags = []):
     """Import the dependencies for the cc_image rule.
 
     Call the core "go_deps" function to reduce boilerplate. This is
     idempotent if folks call it themselves.
+
+  Args:
+    import_tags: tags to be propagated to generated rules.
     """
     _go_deps()
 
@@ -47,7 +50,7 @@ def repositories(tags = None):
             registry = "gcr.io",
             repository = "distroless/cc",
             digest = DIGESTS["latest"],
-            tags = tags,
+            import_tags = import_tags,
         )
     if "cc_debug_image_base" not in excludes:
         container_pull(
@@ -55,7 +58,7 @@ def repositories(tags = None):
             registry = "gcr.io",
             repository = "distroless/cc",
             digest = DIGESTS["debug"],
-            tags = tags,
+            import_tags = import_tags,
         )
 
 DEFAULT_BASE = select({

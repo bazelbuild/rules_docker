@@ -20,7 +20,7 @@ licenses(["notice"])  # Apache 2.0
 
 bzl_library(
     name = "actions",
-    srcs = ["actions.bzl"]
+    srcs = ["actions.bzl"],
 )
 
 bzl_library(

@@ -38,6 +38,7 @@ expectation in such cases is that users will write something like:
   )
 
 """
+
 load(
     "//skylib:actions.bzl",
     _execution_requirements = "execution_requirements",

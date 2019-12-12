@@ -17,5 +17,7 @@ EXECUTION_REQUIREMENT_TAGS = ("no-cache", "no-remote", "local", "requires-networ
 
 def execution_requirements(tags):
     return {
-        tag: "1" for tag in tags if tag in EXECUTION_REQUIREMENT_TAGS
+        tag: "1"
+        for tag in tags
+        if tag in EXECUTION_REQUIREMENT_TAGS
     }
