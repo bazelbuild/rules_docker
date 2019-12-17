@@ -323,9 +323,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "06c32fde6db017ac60af099fa17d4dd10ee13811db3f13dad847f7c21a93276f",
-    strip_prefix = "rules_rust-3251240a915875fc1bb396a4c818472c46e52368",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/3251240a915875fc1bb396a4c818472c46e52368.tar.gz"],
+    sha256 = "f33bffd6b779ae5a4f57944e86307f876872b9dbfc07b3d10d0e7f0041f29d5f",
+    strip_prefix = "rules_rust-959ba5692cc4e6b803b20018c9eeeadedaa4b637",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/959ba5692cc4e6b803b20018c9eeeadedaa4b637.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -352,18 +352,17 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "9b72bb0aea72d7cbcfc82a01b1e25bf3d85f791e790ddec16c65e2d906382ee0",
-    strip_prefix = "rules_nodejs-0.16.2",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.16.2.zip"],
+    sha256 = "a54b2511d6dae42c1f7cdaeb08144ee2808193a088004fc3b464a04583d5aa2e",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.42.3/rules_nodejs-0.42.3.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
-node_repositories(package_json = ["//testdata:package.json"])
-
-npm_install(
-    name = "npm_deps",
+yarn_install(
+    name = "npm",
     package_json = "//testdata:package.json",
+    symlink_node_modules = False,
+    yarn_lock = "//testdata:yarn.lock",
 )
 
 load(

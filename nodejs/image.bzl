@@ -17,7 +17,7 @@ The signature of this rule is compatible with nodejs_binary.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load(
     "//container:container.bzl",
     "container_pull",
