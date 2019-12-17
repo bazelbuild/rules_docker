@@ -577,20 +577,18 @@ http_archive(
     name = "build_bazel_rules_nodejs",
     # Replace with a real SHA256 checksum
     sha256 = "{SHA256}"
-    # Replace with a real commit SHA
-    strip_prefix = "rules_nodejs-{HEAD}",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/{HEAD}.tar.gz"],
+    # Replace with a real release version
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/{VERSION}/rules_nodejs-{VERSION}.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
 
-# Download Node toolchain, etc.
-node_repositories(package_json = ["//:package.json"])
+load("@build_bazel_rules_nodejs//:index.bzl", "npm_install")
 
 # Install your declared Node.js dependencies
 npm_install(
-    name = "npm_deps",
+    name = "npm",
     package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
 )
 
 load(
@@ -620,9 +618,9 @@ load("@io_bazel_rules_docker//nodejs:image.bzl", "nodejs_image")
 
 nodejs_image(
     name = "nodejs_image",
-    entry_point = "your_workspace/path/to/file.js",
+    entry_point = "@your_workspace//path/to:file.js",
     # This will be put into its own layer.
-    node_modules = "@npm_deps//:node_modules",
+    node_modules = "@npm//:node_modules",
     data = [":file.js"],
     ...
 )
