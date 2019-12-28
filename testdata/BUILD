@@ -13,7 +13,9 @@
 # limitations under the License.
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@npm_bazel_typescript//:index.bzl", "ts_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 load("//cc:image.bzl", "cc_image")
 load(
@@ -42,6 +44,7 @@ load(
     "java_image",
     "war_image",
 )
+load("//nodejs:image.bzl", "nodejs_image")
 load("//oci:oci.bzl", "oci_push")
 load("//python:image.bzl", "py_image", "py_layer")
 load("//python3:image.bzl", "py3_image")
@@ -990,4 +993,33 @@ container_image(
     base = ":docker_run_flags_overrides_default",
     docker_run_flags = "-i --rm --network=host -e ABC=DEF",
     legacy_run_behavior = False,
+)
+
+ts_library(
+    name = "nodejs_image_lib",
+    srcs = ["nodejs_image_lib.ts"],
+    tsconfig = ":tsconfig.json",
+    deps = [
+        "@npm//@types/jsesc",
+        "@npm//@types/node",
+        "@npm//jsesc",
+    ],
+)
+
+nodejs_binary(
+    name = "nodejs_image_binary",
+    data = [
+        ":nodejs_image.js",
+        ":nodejs_image_lib",
+    ],
+    entry_point = ":nodejs_image.js",
+)
+
+nodejs_image(
+    name = "nodejs_image",
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    binary = ":nodejs_image_binary",
 )

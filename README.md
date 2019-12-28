@@ -626,9 +626,8 @@ load("@io_bazel_rules_docker//nodejs:image.bzl", "nodejs_image")
 nodejs_image(
     name = "nodejs_image",
     entry_point = "@your_workspace//path/to:file.js",
-    # This will be put into its own layer.
-    node_modules = "@npm//:node_modules",
-    data = [":file.js"],
+    # npm deps will be put into their own layer
+    data = [":file.js", "@npm//some-npm-dep"],
     ...
 )
 ```
