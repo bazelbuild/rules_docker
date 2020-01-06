@@ -114,6 +114,11 @@ container_push = rule(
             default = Label("//container:push-tag.sh.tpl"),
             allow_single_file = True,
         ),
+        "robot_email": attr.string(
+            default = "",
+            doc = "(NOT SUPPORTED) This attr is currently being ignored.",
+            mandatory = False,
+        ),
     },
     executable = True,
     implementation = _impl,
