@@ -92,11 +92,6 @@ container_push = rule(
             mandatory = True,
             doc = "The bundle of tagged images to publish.",
         ),
-        "robot_email": attr.string(
-            default = "",
-            doc = "(NOT SUPPORTED) This attr is currently being ignored.",
-            mandatory = False,
-        ),
         "format": attr.string(
             mandatory = True,
             values = [
@@ -104,6 +99,11 @@ container_push = rule(
                 "Docker",
             ],
             doc = "The form to push: Docker or OCI.",
+        ),
+        "robot_email": attr.string(
+            default = "",
+            doc = "(NOT SUPPORTED) This attr is currently being ignored.",
+            mandatory = False,
         ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),
