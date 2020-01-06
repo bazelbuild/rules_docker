@@ -92,6 +92,11 @@ container_push = rule(
             mandatory = True,
             doc = "The bundle of tagged images to publish.",
         ),
+        "robot_email": attr.string(
+            default = "",
+            doc = "(NOT SUPPORTED) This attr is currently being ignored.",
+            mandatory = False,
+        ),
         "format": attr.string(
             mandatory = True,
             values = [
@@ -113,11 +118,6 @@ container_push = rule(
         "_tag_tpl": attr.label(
             default = Label("//container:push-tag.sh.tpl"),
             allow_single_file = True,
-        ),
-        "robot_email": attr.string(
-            default = "",
-            doc = "(NOT SUPPORTED) This attr is currently being ignored.",
-            mandatory = False,
         ),
     },
     executable = True,
