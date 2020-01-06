@@ -26,6 +26,7 @@ This repository contains a set of rules for pulling down base images, augmenting
 them with build artifacts and assets, and publishing those images.
 **These rules do not require / use Docker for pulling, building, or pushing
 images.**  This means:
+
 * They can be used to develop Docker containers on OSX without
 `boot2docker` or `docker-machine` installed. Note use of these rules on Windows
 is currently not supported.
