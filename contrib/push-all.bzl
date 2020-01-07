@@ -100,6 +100,11 @@ container_push = rule(
             ],
             doc = "The form to push: Docker or OCI.",
         ),
+        "robot_email": attr.string(
+            default = "",
+            doc = "(NOT SUPPORTED) This attr is currently being ignored.",
+            mandatory = False,
+        ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),
             allow_single_file = True,
