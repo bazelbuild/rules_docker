@@ -35,13 +35,6 @@ steps:
   - //tests/contrib:set_cmd_repro_test
   dir: 'rules_docker'
 
-  # Test RBE image is reproducible.
-- name: "l.gcr.io/google/bazel"
-  entrypoint: "cat"
-  args:
-  - docker/util/extract.sh.tpl
-  dir: 'rules_docker'
-
   # Test image specifying volumes is reproducible.
 - name: "l.gcr.io/google/bazel"
   args:
