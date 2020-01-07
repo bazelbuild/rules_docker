@@ -16,6 +16,12 @@ $DOCKER load -i %{image_tar}
 
 id=$($DOCKER run -d %{docker_run_flags} $image_id %{commands})
 
-$DOCKER wait $id
+retcode=$($DOCKER wait $id)
+
+# Print any error that occurred in the container.
+if [ $retcode != 0 ]; then
+    $DOCKER logs $id && false
+fi
+
 $DOCKER cp $id:%{extract_file} %{output}
 $DOCKER rm $id
