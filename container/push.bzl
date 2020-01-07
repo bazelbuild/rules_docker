@@ -156,11 +156,6 @@ container_push = rule(
             mandatory = True,
             doc = "The name of the image.",
         ),
-        "robot_email": attr.string(
-            default = "",
-            doc = "(NOT SUPPORTED) This attr is currently being ignored.",
-            mandatory = False,
-        ),
         "skip_unchanged_digest": attr.bool(
             default = False,
             doc = "Only push images if the digest has changed, default to False",
