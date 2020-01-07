@@ -201,8 +201,8 @@ container_pull(
 
 # This image is used by tests/contrib tests.
 container_pull(
-    name = "bazel_0291",
-    digest = "sha256:957c063f1296220c55d640ce82542b4c50d7a75b968fa3fd104e5cf293391ede",
+    name = "bazel_2000",
+    digest = "sha256:e8b0adc7d9b8cf6ef28ae8d8c575169a9affeaca89fec2fced0e38c8d08e5059",
     registry = "l.gcr.io",
     repository = "google/bazel",
 )
