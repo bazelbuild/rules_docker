@@ -201,8 +201,8 @@ container_pull(
 
 # This image is used by tests/contrib tests.
 container_pull(
-    name = "bazel_0291",
-    digest = "sha256:957c063f1296220c55d640ce82542b4c50d7a75b968fa3fd104e5cf293391ede",
+    name = "bazel_2000",
+    digest = "sha256:e8b0adc7d9b8cf6ef28ae8d8c575169a9affeaca89fec2fced0e38c8d08e5059",
     registry = "l.gcr.io",
     repository = "google/bazel",
 )
@@ -287,9 +287,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "7edc422e056e7f3c0cc36256bbfd5b6a19948b179bc133a53c1ada19b2841421",
-    strip_prefix = "rules_scala-cfff088f0eef18a8ca4d8bb62143f079e9174772",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/cfff088f0eef18a8ca4d8bb62143f079e9174772.tar.gz"],
+    sha256 = "8566ddc6899d0140a773ffd227d895bc4c79b6def606f131497f95f214df440d",
+    strip_prefix = "rules_scala-bd0c388125e12f4f173648fc4474f73160a5c628",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/bd0c388125e12f4f173648fc4474f73160a5c628.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
