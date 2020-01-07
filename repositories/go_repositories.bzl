@@ -37,7 +37,7 @@ def go_deps():
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            commit = "68bc585818eeca751a710d0f83265e3966a0f56c",
+            commit = "b02f5c5c90539d88cec4eb4450c3d6f135457942",
             importpath = "github.com/google/go-containerregistry",
         )
     if "com_github_pkg_errors" not in excludes:
