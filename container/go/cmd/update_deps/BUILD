@@ -11,14 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:private"])
+# ###
+# Synthesize a .bzl file containing the digests for a given repository.
 
-py_binary(
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_binary(
     name = "update_deps",
-    srcs = ["update_deps.py"],
-    legacy_create_init = False,
-    python_version = "PY2",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["update_deps.go"],
+    importpath = "github.com/bazelbuild/rules_docker",
+    visibility = ["//visibility:private"],
     deps = [
-        "@containerregistry",
+        "//container/go/pkg/compat:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/crane:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
     ],
 )
