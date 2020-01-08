@@ -78,14 +78,14 @@ func main() {
 	latest := *repository + ":latest"
 	latestDigest, err := crane.Digest(latest, options...)
 	if err != nil {
-		log.Fatalf("computing digest for %s: %v", latest, err)
+		log.Fatalf("Computing digest for %s: %v", latest, err)
 	}
 
 	debug := *repository + ":debug"
 	debugDigest, err := crane.Digest(debug, options...)
 	if err != nil {
 		if !strings.HasPrefix(err.Error(), "MANIFEST_UNKNOWN") {
-			log.Fatalf("computing digest for %s: %v", debug, err)
+			log.Fatalf("Computing digest for %s: %v", debug, err)
 		}
 		debugDigest = latestDigest
 	}
@@ -106,12 +106,12 @@ func main() {
 
 	f, err := os.Create(*output)
 	if err != nil {
-		log.Fatalf("failed to open file %s: %s", *output, err)
+		log.Fatalf("Failed to open file %s: %s", *output, err)
 	}
 	defer f.Close()
 
 	err = t.Execute(f, r)
 	if err != nil {
-		log.Fatalf("executing template:", err)
+		log.Fatalf("Executing template:", err)
 	}
 }
