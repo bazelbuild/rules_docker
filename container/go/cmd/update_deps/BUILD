@@ -14,7 +14,6 @@
 # ###
 # Synthesize a .bzl file containing the digests for a given repository.
 
-load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
