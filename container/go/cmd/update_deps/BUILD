@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ###
-# Build file for new puller binary based on go-containerregistry backend.
+# Synthesize a .bzl file containing the digests for a given repository.
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
