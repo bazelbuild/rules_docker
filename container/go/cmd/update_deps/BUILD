@@ -17,9 +17,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-# gazelle:prefix github.com/bazelbuild/rules_docker
-gazelle(name = "gazelle")
-
 go_binary(
     name = "update_deps",
     embed = [":go_default_library"],
