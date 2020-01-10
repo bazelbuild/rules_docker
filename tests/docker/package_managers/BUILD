@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+package(default_visibility = ["//visibility:public"])
+
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -22,8 +24,6 @@ load("//contrib:test.bzl", "container_test")
 load("//docker/package_managers:apt_key.bzl", "add_apt_key")
 load("//docker/package_managers:download_pkgs.bzl", "download_pkgs")
 load("//docker/package_managers:install_pkgs.bzl", "install_pkgs")
-
-package(default_visibility = ["//visibility:public"])
 
 download_pkgs(
     name = "test_download_pkgs",
@@ -95,7 +95,6 @@ install_pkgs(
 rule_test(
     name = "test_install_pkgs_rule",
     generates = [
-        "test_install_pkgs.build",
         "test_install_pkgs.tar",
     ],
     rule = "test_install_pkgs",

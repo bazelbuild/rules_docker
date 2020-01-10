@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_java//java:defs.bzl", "java_library")
 load("//contrib:test.bzl", "container_test")
 load("//java:image.bzl", "java_image")
 

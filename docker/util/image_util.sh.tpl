@@ -1,5 +1,5 @@
 #!/bin/bash
-echo hi
+
 reset_cmd() {
     local original_image_name=$1
     local container_id=$2
@@ -8,7 +8,6 @@ reset_cmd() {
     # Resolve the docker tool path
     DOCKER="%{docker_tool_path}"
     DOCKER_FLAGS="%{docker_flags}"
-    echo reseet
     local old_cmd
     # docker inspect input cannot be piped into docker commit directly, we need to JSON format it.
     old_cmd=$($DOCKER $DOCKER_FLAGS inspect -f "{{range .Config.Cmd}}{{.}} {{end}}" "${original_image_name}")

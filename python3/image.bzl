@@ -16,7 +16,6 @@
 The signature of this rule is compatible with py_binary.
 """
 
-load("@rules_python//python:defs.bzl", "py_binary")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -92,7 +91,7 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
 
-    py_binary(
+    native.py_binary(
         name = binary_name,
         python_version = "PY3",
         deps = deps + layers,
