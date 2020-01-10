@@ -128,6 +128,7 @@ def _impl(ctx):
             tag = tag,
             stamp = stamp,
             stamp_inputs = stamp_inputs,
+            digest = ctx.outputs.digest,
         ),
     ]
 

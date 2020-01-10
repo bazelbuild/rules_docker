@@ -201,8 +201,8 @@ container_pull(
 
 # This image is used by tests/contrib tests.
 container_pull(
-    name = "bazel_0291",
-    digest = "sha256:957c063f1296220c55d640ce82542b4c50d7a75b968fa3fd104e5cf293391ede",
+    name = "bazel_2000",
+    digest = "sha256:e8b0adc7d9b8cf6ef28ae8d8c575169a9affeaca89fec2fced0e38c8d08e5059",
     registry = "l.gcr.io",
     repository = "google/bazel",
 )
@@ -287,9 +287,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "70ade55ddd2762d32651840c9f74a6df945909bad4da0f277b72d79f19cb339b",
-    strip_prefix = "rules_scala-26cf9b74fc46f1e9a970c97837447549ed7257b6",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/26cf9b74fc46f1e9a970c97837447549ed7257b6.tar.gz"],
+    sha256 = "8566ddc6899d0140a773ffd227d895bc4c79b6def606f131497f95f214df440d",
+    strip_prefix = "rules_scala-bd0c388125e12f4f173648fc4474f73160a5c628",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/bd0c388125e12f4f173648fc4474f73160a5c628.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -303,9 +303,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "d2047c66847108f8514cb391ef981e11abd6625c267b156ca4b70345ca196574",
-    strip_prefix = "rules_groovy-ce90de1cde0366229c6fc14bed1e00c2a485c2d8",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/ce90de1cde0366229c6fc14bed1e00c2a485c2d8.tar.gz"],
+    sha256 = "89c6bb23d098f38ac124bfd97fe11cfb44ce944218fc3e6bb5b3f2ffe22169e7",
+    strip_prefix = "rules_groovy-03564544bb981a661a5f80bf12483c64959e1407",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/03564544bb981a661a5f80bf12483c64959e1407.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
@@ -323,9 +323,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "69b67e19532b12da3edccda404772e85a788d16ae739343f5338dd340a0fba2e",
-    strip_prefix = "rules_rust-ec436b5ff2ab1ddeba6f27a7a1a5d263812981a6",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/ec436b5ff2ab1ddeba6f27a7a1a5d263812981a6.tar.gz"],
+    sha256 = "f33bffd6b779ae5a4f57944e86307f876872b9dbfc07b3d10d0e7f0041f29d5f",
+    strip_prefix = "rules_rust-959ba5692cc4e6b803b20018c9eeeadedaa4b637",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/959ba5692cc4e6b803b20018c9eeeadedaa4b637.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -352,18 +352,17 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "9b72bb0aea72d7cbcfc82a01b1e25bf3d85f791e790ddec16c65e2d906382ee0",
-    strip_prefix = "rules_nodejs-0.16.2",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.16.2.zip"],
+    sha256 = "e1a0d6eb40ec89f61a13a028e7113aa3630247253bcb1406281b627e44395145",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.0.1/rules_nodejs-1.0.1.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
-node_repositories(package_json = ["//testdata:package.json"])
-
-npm_install(
-    name = "npm_deps",
+yarn_install(
+    name = "npm",
     package_json = "//testdata:package.json",
+    symlink_node_modules = False,
+    yarn_lock = "//testdata:yarn.lock",
 )
 
 load(
@@ -384,28 +383,11 @@ dockerfile_image(
     dockerfile = "//testdata/dockerfile_build:Dockerfile",
 )
 
-[dockerfile_image(
-    name = "dockerfile_kaniko_%s" % tag,
-    build_args = {
-        "ALPINE_version": "3.9",
-    },
-    dockerfile = "//testdata/dockerfile_build:Dockerfile",
-    driver = "kaniko",
-    kaniko_tag = tag,
-) for tag in [
-    "latest",
-    "debug",
-]]
-
 # Load the image tarball.
-[container_load(
-    name = "loaded_dockerfile_image_%s" % driver,
-    file = "@dockerfile_%s//image:dockerfile_image.tar" % driver,
-) for driver in [
-    "docker",
-    "kaniko_latest",
-    "kaniko_debug",
-]]
+container_load(
+    name = "loaded_dockerfile_image_docker",
+    file = "@dockerfile_docker//image:dockerfile_image.tar",
+)
 
 # Register the default py_toolchain / platform for containerized execution
 register_toolchains(
@@ -419,19 +401,15 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "eea054525c8b8d9aa129d0e03fc02ef47c85eea2884c4dba3700b63e01f2b192",
-    strip_prefix = "bazel-toolchains-1.1.1",
+    sha256 = "e2126599d29f2028e6b267eba273dcc8e7f4a35ff323e9600cf42fb03875b7c6",
+    strip_prefix = "bazel-toolchains-2.0.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/1.1.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/2.0.0.tar.gz",
     ],
 )
 
 # Define several exec property repo rules to be used in testing.
-load(
-    "@bazel_toolchains//rules/exec_properties:exec_properties.bzl",
-    "merge_dicts",
-    "rbe_exec_properties",
-)
+load("@bazel_toolchains//rules/exec_properties:exec_properties.bzl", "rbe_exec_properties")
 
 # A standard RBE execution property set repo rule.
 rbe_exec_properties(
@@ -440,15 +418,93 @@ rbe_exec_properties(
 
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 rbe_autoconfig(
     name = "buildkite_config",
     base_container_digest = "sha256:4bfd33aa9ce73e28718385b8c01608a79bc6546906f01cf9329311cace1766a1",
     digest = "sha256:c20046852a2d7910c55d76e0ec9c182b37532a9f0360d22dd5c9a1451b7c3a15",
-    exec_properties = merge_dicts(DOCKER_SIBLINGS_CONTAINERS, NETWORK_ON),
+    exec_properties = dicts.add(DOCKER_SIBLINGS_CONTAINERS, NETWORK_ON),
     registry = "marketplace.gcr.io",
     repository = "google/bazel",
     use_legacy_platform_definition = False,
 )
 
 # gazelle:repo bazel_gazelle
+
+# Python packages needed for tests
+
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "httplib2",
+    build_file_content = """
+py_library(
+name = "httplib2",
+srcs = glob(["**/*.py"]),
+data = ["cacerts.txt"],
+visibility = ["//visibility:public"]
+)""",
+    sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
+    strip_prefix = "httplib2-0.12.1/python2/httplib2/",
+    type = "tar.gz",
+    urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
+)
+
+# Used by oauth2client
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "six",
+    build_file_content = """
+# Rename six.py to __init__.py
+genrule(
+name = "rename",
+srcs = ["six.py"],
+outs = ["__init__.py"],
+cmd = "cat $< >$@",
+)
+py_library(
+name = "six",
+srcs = [":__init__.py"],
+visibility = ["//visibility:public"],
+)""",
+    sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
+    strip_prefix = "six-1.9.0/",
+    type = "tar.gz",
+    urls = ["https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"],
+)
+
+# Used for authentication in containerregistry
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "oauth2client",
+    build_file_content = """
+py_library(
+name = "oauth2client",
+srcs = glob(["**/*.py"]),
+visibility = ["//visibility:public"],
+deps = [
+"@httplib2//:httplib2",
+"@six//:six",
+]
+)""",
+    sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
+    strip_prefix = "oauth2client-4.0.0/oauth2client/",
+    type = "tar.gz",
+    urls = ["https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0"],
+)
+
+# Used for parallel execution in containerregistry
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "concurrent",
+    build_file_content = """
+py_library(
+name = "concurrent",
+srcs = glob(["**/*.py"]),
+visibility = ["//visibility:public"]
+)""",
+    sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
+    strip_prefix = "pythonfutures-3.0.5/concurrent/",
+    type = "tar.gz",
+    urls = ["https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5"],
+)

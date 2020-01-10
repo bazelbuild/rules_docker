@@ -11,14 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:private"])
 
-py_binary(
-    name = "update_deps",
-    srcs = ["update_deps.py"],
-    legacy_create_init = False,
-    python_version = "PY2",
-    deps = [
-        "@containerregistry",
-    ],
-)
+steps:
+  # Test the case where the test target is located at the root of the
+  # workspace, which makes the Bazel package empty.
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
+      - "//:structure_test_at_workspace_root"

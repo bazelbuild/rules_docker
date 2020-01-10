@@ -52,9 +52,13 @@ load(":stamp_info.bzl", "stamp_info")
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
-    "pause.tar",
+    "Binary.java",
     "bar",
+    "cc_image.cc",
     "foo",
+    "pause.tar",
+    "py3_image.py",
+    "py_image.py",
 ])
 
 exports_files(["BUILD"])

@@ -47,3 +47,6 @@ bazel-testlogs
 # Eclipse and PyDev
 .project
 .pydevproject
+
+# Npm packages
+node_modules
