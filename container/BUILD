@@ -128,7 +128,7 @@ py_test(
     size = "medium",
     srcs = ["image_test.py"],
     data = TEST_DATA,
-    python_version = "PY3",
+    python_version = "PY2",
     deps = ["@containerregistry"],
 )
 
