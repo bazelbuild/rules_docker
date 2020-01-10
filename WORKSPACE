@@ -416,9 +416,9 @@ rbe_exec_properties(
     name = "exec_properties",
 )
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 rbe_autoconfig(
     name = "buildkite_config",

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
+load("@rules_python//python:defs.bzl", "py_runtime")
 
 package(default_visibility = ["//visibility:public"])
 

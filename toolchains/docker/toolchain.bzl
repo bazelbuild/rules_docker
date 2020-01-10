@@ -63,7 +63,7 @@ docker_toolchain = rule(
         ),
         "docker_flags": attr.string_list(
             doc = "Additional flags to the docker command",
-	)
+        ),
         "gzip_path": attr.string(
             doc = "Path to the gzip binary. " +
                   "Should only be set if gzip_target is unset.",
@@ -109,6 +109,7 @@ def _toolchain_configure_impl(repository_ctx):
         gzip_attr = "gzip_path = \"%s\"," % repository_ctx.which("gzip")
     docker_flags = []
     docker_flags += repository_ctx.attr.docker_flags
+
     # If client_config is not set we need to pass an empty string to the
     # template.
     client_config = repository_ctx.attr.client_config or ""

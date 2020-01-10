@@ -16,6 +16,7 @@
 The signature of this rule is compatible with cc_binary.
 """
 
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -80,7 +81,7 @@ def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
 
     if not binary:
         binary = name + ".binary"
-        native.cc_binary(name = binary, deps = deps + layers, **kwargs)
+        cc_binary(name = binary, deps = deps + layers, **kwargs)
     elif deps:
         fail("kwarg does nothing when binary is specified", "deps")
 

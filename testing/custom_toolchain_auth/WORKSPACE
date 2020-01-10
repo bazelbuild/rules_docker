@@ -21,13 +21,14 @@ local_repository(
     path = "replace/this/path",
 )
 
-# Import the location of the docker client config dynamically injected into
-# this workspace by the e2e test driver
-load(":def.bzl", "client_config")
 load(
     "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
 )
+
+# Import the location of the docker client config dynamically injected into
+# this workspace by the e2e test driver
+load(":def.bzl", "client_config")
 
 docker_toolchain_configure(
     name = "docker_config",
