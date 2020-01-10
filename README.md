@@ -26,6 +26,7 @@ This repository contains a set of rules for pulling down base images, augmenting
 them with build artifacts and assets, and publishing those images.
 **These rules do not require / use Docker for pulling, building, or pushing
 images.**  This means:
+
 * They can be used to develop Docker containers on OSX without
 `boot2docker` or `docker-machine` installed. Note use of these rules on Windows
 is currently not supported.
@@ -43,6 +44,12 @@ __NOTE:__ `container_push` and `container_pull` make use of
 registry interactions.
 
 ## Language Rules
+
+Note: Some of these rules are not supported on Mac. Specifically `go_image`
+cannot be used from Bazel running on a Mac. Other rules may also fail
+arbitrarily on Mac due to unforseen toolchain issues that need to be resolved in
+Bazel and upstream rules repos. Please see [#943](https://github.com/bazelbuild/rules_docker/issues/943)
+for more details.
 
 * [py_image](#py_image) ([signature](
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
@@ -107,12 +114,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.12.1
+# Download the rules_docker repository at release v0.13.0
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "14ac30773fdb393ddec90e158c9ec7ebb3f8a4fd533ec2abbfd8789ad81a284b",
-    strip_prefix = "rules_docker-0.12.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.12.1/rules_docker-v0.12.1.tar.gz"],
+    sha256 = "df13123c44b4a4ff2c2f337b906763879d94871d16411bf82dcfeba892b58607",
+    strip_prefix = "rules_docker-0.13.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.13.0/rules_docker-v0.13.0.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -577,20 +584,18 @@ http_archive(
     name = "build_bazel_rules_nodejs",
     # Replace with a real SHA256 checksum
     sha256 = "{SHA256}"
-    # Replace with a real commit SHA
-    strip_prefix = "rules_nodejs-{HEAD}",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/{HEAD}.tar.gz"],
+    # Replace with a real release version
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/{VERSION}/rules_nodejs-{VERSION}.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
 
-# Download Node toolchain, etc.
-node_repositories(package_json = ["//:package.json"])
+load("@build_bazel_rules_nodejs//:index.bzl", "npm_install")
 
 # Install your declared Node.js dependencies
 npm_install(
-    name = "npm_deps",
+    name = "npm",
     package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
 )
 
 load(
@@ -620,9 +625,9 @@ load("@io_bazel_rules_docker//nodejs:image.bzl", "nodejs_image")
 
 nodejs_image(
     name = "nodejs_image",
-    entry_point = "your_workspace/path/to/file.js",
+    entry_point = "@your_workspace//path/to:file.js",
     # This will be put into its own layer.
-    node_modules = "@npm_deps//:node_modules",
+    node_modules = "@npm//:node_modules",
     data = [":file.js"],
     ...
 )
@@ -2290,6 +2295,7 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Amaiz](https://github.com/amaizfinance)
   * [Aura Devices](https://auradevices.io/)
   * [Button](https://usebutton.com)
+  * [Canva](https://canva.com)
   * [Etsy](https://www.etsy.com)
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)

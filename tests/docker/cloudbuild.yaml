@@ -1,0 +1,33 @@
+# Copyright 2017 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Tests under /tests/docker that require the 'docker' tool to be available.
+
+timeout: "1200s"
+
+steps:
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "--bazelrc=.bazelrc"
+      - "test"
+      - "--test_output=errors"
+      - "--verbose_failures"
+      - "//tests/docker/package_managers:download_pkgs_run_test"
+      - "//tests/docker/package_managers:download_pkgs_with_additional_repos_run_test"
+      - "//tests/docker/package_managers:gpg_test"
+      - "//tests/docker/package_managers:install_pkgs_reproducibility_test"
+      - "//tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs"
+      - "//tests/docker/util:test_extracted_file"
+      - "//tests/docker/util:test_container_commit_metadata"
+      - "--config=remote"

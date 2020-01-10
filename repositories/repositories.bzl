@@ -79,97 +79,18 @@ def repositories():
     if "io_bazel_rules_go" not in excludes:
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "b9aa86ec08a292b97ec4591cf578e020b35f98e12173bbd4a921f84f583aebd9",
+            sha256 = "e88471aea3a3a4f19ec1310a55ba94772d087e9ce46e41ae38ecebe17935de7b",
             urls = [
-                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.20.2/rules_go-v0.20.2.tar.gz",
-                "https://github.com/bazelbuild/rules_go/releases/download/v0.20.2/rules_go-v0.20.2.tar.gz",
+                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.20.3/rules_go-v0.20.3.tar.gz",
+                "https://github.com/bazelbuild/rules_go/releases/download/v0.20.3/rules_go-v0.20.3.tar.gz",
             ],
         )
     if "rules_python" not in excludes:
         http_archive(
             name = "rules_python",
-            sha256 = "d2865e2ce23ee217aaa408ddaa024ca472114a6f250b46159d27de05530c75e3",
-            strip_prefix = "rules_python-7b222cfdb4e59b9fd2a609e1fbb233e94fdcde7c",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/7b222cfdb4e59b9fd2a609e1fbb233e94fdcde7c.tar.gz"],
-        )
-
-    if "httplib2" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "httplib2",
-            build_file_content = """
-py_library(
-   name = "httplib2",
-   srcs = glob(["**/*.py"]),
-   data = ["cacerts.txt"],
-   visibility = ["//visibility:public"]
-)""",
-            sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
-            strip_prefix = "httplib2-0.12.1/python2/httplib2/",
-            type = "tar.gz",
-            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
-        )
-
-    # Used by oauth2client
-    if "six" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "six",
-            build_file_content = """
-# Rename six.py to __init__.py
-genrule(
-    name = "rename",
-    srcs = ["six.py"],
-    outs = ["__init__.py"],
-    cmd = "cat $< >$@",
-)
-py_library(
-   name = "six",
-   srcs = [":__init__.py"],
-   visibility = ["//visibility:public"],
-)""",
-            sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
-            strip_prefix = "six-1.9.0/",
-            type = "tar.gz",
-            urls = ["https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"],
-        )
-
-    # Used for authentication in containerregistry
-    if "oauth2client" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "oauth2client",
-            build_file_content = """
-py_library(
-   name = "oauth2client",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"],
-   deps = [
-     "@httplib2//:httplib2",
-     "@six//:six",
-   ]
-)""",
-            sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
-            strip_prefix = "oauth2client-4.0.0/oauth2client/",
-            type = "tar.gz",
-            urls = ["https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0"],
-        )
-
-    # Used for parallel execution in containerregistry
-    if "concurrent" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "concurrent",
-            build_file_content = """
-py_library(
-   name = "concurrent",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"]
-)""",
-            sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
-            strip_prefix = "pythonfutures-3.0.5/concurrent/",
-            type = "tar.gz",
-            urls = ["https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5"],
+            sha256 = "c911dc70f62f507f3a361cbc21d6e0d502b91254382255309bc60b7a0f48de28",
+            strip_prefix = "rules_python-38f86fb55b698c51e8510c807489c9f4e047480e",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/38f86fb55b698c51e8510c807489c9f4e047480e.tar.gz"],
         )
 
     # For packaging python tools.
