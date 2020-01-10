@@ -24,6 +24,5 @@ docker_toolchain(
     %{GZIP_ATTR}
     tool_path = "%{DOCKER_TOOL}",
     docker_flags = ["%{DOCKER_FLAGS}"],
-    client_config = "%{DOCKER_CONFIG}",
     xz_path = "%{XZ_TOOL_PATH}",
 )
