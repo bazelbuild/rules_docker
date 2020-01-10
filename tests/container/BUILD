@@ -408,7 +408,7 @@ docker_push_all(
 py_test(
     name = "build_tar_test",
     srcs = ["build_tar_test.py"],
-    python_version = "PY3",
+    python_version = "PY2",
     deps = ["//container:build_tar_lib"],
 )
 
