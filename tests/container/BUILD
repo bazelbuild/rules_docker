@@ -16,7 +16,6 @@ load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
-load("@rules_python//python:defs.bzl", "py_test")
 load("//container:bundle.bzl", "container_bundle")
 load(
     "//container:container.bzl",

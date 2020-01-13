@@ -1,5 +1,3 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
-
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

@@ -14,7 +14,6 @@
 
 load("@io_bazel_rules_docker//python:image.bzl", "py_image")
 load("@pip_deps//:requirements.bzl", "all_requirements", "requirement")
-load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//testdata:__subpackages__"])
 

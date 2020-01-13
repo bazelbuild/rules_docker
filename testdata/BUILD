@@ -15,9 +15,6 @@
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@pip_deps//:requirements.bzl", "requirement")
-load("@rules_cc//cc:defs.bzl", "cc_binary")
-load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("//cc:image.bzl", "cc_image")
 load(
     "//container:container.bzl",
