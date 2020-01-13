@@ -382,7 +382,7 @@ dockerfile_image(
     },
     dockerfile = "//testdata/dockerfile_build:Dockerfile",
     vars = [
-        "SOME_VAR"
+        "SOME_VAR",
     ],
 )
 
