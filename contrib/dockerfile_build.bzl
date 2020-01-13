@@ -57,7 +57,10 @@ def _impl(repository_ctx):
     if repository_ctx.attr.build_args:
         for pair in repository_ctx.attr.build_args.items():
             build_args.extend(["--build-arg", "%s=%s" % (pair[0], pair[1])])
-
+    if repository_ctx.attr.vars:
+        for env_var in repository_ctx.attr.vars:
+            build_args.extend(["--build-arg", "%s=%s" % (env_var, repository_ctx.os.environ.get(env_var))])
+            
     # The docker bulid command needs to run using the supplied Dockerfile
     # because it may refer to relative paths in its ADD, COPY and WORKDIR
     # instructions.
@@ -113,6 +116,9 @@ dockerfile_image = repository_rule(
             allow_single_file = True,
             mandatory = True,
             doc = "The label for the Dockerfile to build the image from.",
+        ),
+        "vars": attr.string_list(
+            doc = "List of environment vars to include in the build.",
         ),
     },
     implementation = _impl,
