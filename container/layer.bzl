@@ -41,6 +41,8 @@ load(
     _gzip = "gzip",
 )
 
+_DEFAULT_MTIME = -1
+
 def _magic_path(ctx, f, output_layer):
     # Right now the logic this uses is a bit crazy/buggy, so to support
     # bug-for-bug compatibility in the foo_image rules, expose the logic.
@@ -102,6 +104,13 @@ def build_layer(
     args.add(layer, format = "--output=%s")
     args.add(directory, format = "--directory=%s")
     args.add(ctx.attr.mode, format = "--mode=%s")
+
+    if ctx.attr.mtime != _DEFAULT_MTIME:  # Note: Must match default in rule def.
+        if ctx.attr.portable_mtime:
+            fail("You may not set both mtime and portable_mtime")
+        args.add(ctx.attr.mtime, format = "--mtime=%s")
+    if ctx.attr.portable_mtime:
+        args.add("--mtime=portable")
 
     if toolchain_info.xz_path != "":
         args.add(toolchain_info.xz_path, format = "--xz_path=%s")
@@ -237,10 +246,12 @@ _layer_attrs = dicts.add({
     "env": attr.string_dict(),
     "files": attr.label_list(allow_files = True),
     "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
+    "mtime": attr.int(default = _DEFAULT_MTIME),
     "operating_system": attr.string(
         default = "linux",
         mandatory = False,
     ),
+    "portable_mtime": attr.bool(default = False),
     "symlinks": attr.string_dict(),
     "tars": attr.label_list(allow_files = tar_filetype),
 }, _hash_tools, _layer_tools)
