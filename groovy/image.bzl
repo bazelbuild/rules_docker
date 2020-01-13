@@ -17,6 +17,7 @@ The signature of groovy_image is compatible with groovy_binary.
 """
 
 load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_library")
+load("@rules_java//java:defs.bzl", "java_binary")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
@@ -62,8 +63,7 @@ def groovy_image(
 
     # This always belongs in a separate layer.
     layers = layers + ["//external:groovy"]
-
-    native.java_binary(
+    java_binary(
         name = binary_name,
         main_class = main_class,
         runtime_deps = deps + layers,
