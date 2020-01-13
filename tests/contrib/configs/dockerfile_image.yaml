@@ -8,6 +8,8 @@ metadataTest:
       value: "My environment variable"
     - key: "xyz"
       value: "321"
+    - key: "SOME_VAR"
+      value: ""
   labels:
     - key: "version"
       value: "7.7"
