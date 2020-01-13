@@ -151,6 +151,7 @@ func main() {
 		IdleConnTimeout:       dur,
 		ResponseHeaderTimeout: dur,
 		ExpectContinueTimeout: dur,
+		Proxy:                 http.ProxyFromEnvironment,
 	}
 
 	if err := pull(*imgName, *directory, *cachePath, platform, t); err != nil {

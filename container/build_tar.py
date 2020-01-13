@@ -42,6 +42,11 @@ gflags.DEFINE_multistring('empty_dir', [], 'An empty dir to add to the layer')
 gflags.DEFINE_string(
     'mode', None, 'Force the mode on the added files (in octal).')
 
+gflags.DEFINE_string(
+    'mtime', None, 'Set mtime on tar file entries. May be an integer or the'
+        ' value "portable", to get the value 2000-01-01, which is'
+        ' usable with non *nix OSes.')
+
 gflags.DEFINE_multistring(
     'empty_root_dir',
     [],
@@ -116,18 +121,19 @@ class TarFile(object):
     else:
       return os.path.basename(os.path.splitext(filename)[0])
 
-  def __init__(self, output, directory, compression, root_directory):
+  def __init__(self, output, directory, compression, root_directory, default_mtime):
     self.directory = directory
     self.output = output
     self.compression = compression
     self.root_directory = root_directory
+    self.default_mtime = default_mtime
 
   def __enter__(self):
     self.tarfile = archive.TarFileWriter(
         self.output,
         self.compression,
         self.root_directory,
-        default_mtime=0
+        self.default_mtime,
     )
     return self
 
@@ -399,7 +405,7 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory) as output:
+  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory, FLAGS.mtime) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
