@@ -66,10 +66,10 @@ def _impl(repository_ctx):
     command.extend([
         "--no-cache",
         "-f",
-        dockerfile_path,
+        str(dockerfile_path),
         "-t",
         img_name,
-        dockerfile_path.dirname,
+        str(dockerfile_path.dirname),
     ])
 
     build_result = repository_ctx.execute(command)
