@@ -381,6 +381,9 @@ dockerfile_image(
         "ALPINE_version": "3.9",
     },
     dockerfile = "//testdata/dockerfile_build:Dockerfile",
+    vars = [
+        "SOME_VAR",
+    ],
 )
 
 # Load the image tarball.
