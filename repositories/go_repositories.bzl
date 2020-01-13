@@ -43,7 +43,7 @@ def go_deps():
     if "com_github_pkg_errors" not in excludes:
         go_repository(
             name = "com_github_pkg_errors",
-            commit = "27936f6d90f9c8e1145f11ed52ffffbfdb9e0af7",
+            commit = "49f8f617296114c890ae0b7ac18c5953d2b1ca0f",  # v0.9.0
             importpath = "github.com/pkg/errors",
         )
 
