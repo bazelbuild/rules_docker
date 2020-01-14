@@ -303,9 +303,9 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "89ceb71c338d8cac5baf6299f82b5a115211a3d1a0af657d26b7a2e39e9ce8e4",
-    strip_prefix = "rules_groovy-55fc5430ac959ed66f83da69112c11a847104b28",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/55fc5430ac959ed66f83da69112c11a847104b28.tar.gz"],
+    sha256 = "e0eb64bd48e682571a2a1f868f70c3d2e6a35db36c8da2347998baf3f0b426ec",
+    strip_prefix = "rules_groovy-06ce2506bc4d1c4a66e548b03df329e95259670d",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/06ce2506bc4d1c4a66e548b03df329e95259670d.tar.gz"],
 )
 
 load("@io_bazel_rules_groovy//groovy:repositories.bzl", "rules_groovy_dependencies")
@@ -381,6 +381,9 @@ dockerfile_image(
         "ALPINE_version": "3.9",
     },
     dockerfile = "//testdata/dockerfile_build:Dockerfile",
+    vars = [
+        "SOME_VAR",
+    ],
 )
 
 # Load the image tarball.
