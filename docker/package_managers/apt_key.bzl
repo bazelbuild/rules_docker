@@ -47,7 +47,7 @@ def _impl(
     keys = keys or ctx.files.keys
     image_tar = image_tar or ctx.file.image
     gpg_image = gpg_image or ctx.file.gpg_image
-    output_executable = output_executable or ctx.outputs.executable
+    output_executable = output_executable or ctx.outputs.build_script
     output_tarball = output_tarball or ctx.outputs.out
     output_layer = output_layer or ctx.outputs.layer
     output_digest = output_digest or ctx.outputs.digest
@@ -58,6 +58,7 @@ def _impl(
 
     # If the user specified an alternate base for this, use it.
     # Otherwise use the same base image we want the key in.
+
     if gpg_image == None:
         gpg_image = image_tar
 

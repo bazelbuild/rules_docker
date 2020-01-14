@@ -95,6 +95,7 @@ install_pkgs(
 rule_test(
     name = "test_install_pkgs_rule",
     generates = [
+        "test_install_pkgs.build",
         "test_install_pkgs.tar",
     ],
     rule = "test_install_pkgs",

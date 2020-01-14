@@ -23,6 +23,7 @@ DockerToolchainInfo = provider(
                          "the value of the DOCKER_CONFIG environment variable " +
                          "will be used. DOCKER_CONFIG is not defined, the " +
                          "home directory will be used.",
+        "docker_flags": "Additional flags to the docker command",
         "gzip_path": "Optional path to the gzip binary. If not set found via which.",
         "gzip_target": "Optional Bazel target for the gzip tool. " +
                        "Should only be set if gzip_path is unset.",
@@ -36,6 +37,7 @@ DockerToolchainInfo = provider(
 def _docker_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         info = DockerToolchainInfo(
+            docker_flags = ctx.attr.docker_flags,
             client_config = ctx.attr.client_config,
             gzip_path = ctx.attr.gzip_path,
             gzip_target = ctx.attr.gzip_target,
@@ -57,6 +59,9 @@ docker_toolchain = rule(
                   "DOCKER_CONFIG environment variable will be used. " +
                   "DOCKER_CONFIG is not defined, the home directory will be " +
                   "used.",
+        ),
+        "docker_flags": attr.string_list(
+            doc = "Additional flags to the docker command",
         ),
         "gzip_path": attr.string(
             doc = "Path to the gzip binary. " +
@@ -101,6 +106,8 @@ def _toolchain_configure_impl(repository_ctx):
         gzip_attr = "gzip_path = \"%s\"," % repository_ctx.attr.gzip_path
     elif repository_ctx.which("gzip"):
         gzip_attr = "gzip_path = \"%s\"," % repository_ctx.which("gzip")
+    docker_flags = []
+    docker_flags += repository_ctx.attr.docker_flags
 
     # If client_config is not set we need to pass an empty string to the
     # template.
@@ -110,6 +117,7 @@ def _toolchain_configure_impl(repository_ctx):
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{DOCKER_CONFIG}": "%s" % client_config,
+            "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
             "%{DOCKER_TOOL}": "%s" % tool_path,
             "%{GZIP_ATTR}": "%s" % gzip_attr,
             "%{XZ_TOOL_PATH}": "%s" % xz_path,
@@ -140,6 +148,10 @@ toolchain_configure = repository_rule(
                   "DOCKER_CONFIG is not defined, the default set for the " +
                   "docker tool (typically, the home directory) will be " +
                   "used.",
+        ),
+        "docker_flags": attr.string_list(
+            mandatory = False,
+            doc = "List of additional flag arguments to the docker command.",
         ),
         "docker_path": attr.string(
             mandatory = False,

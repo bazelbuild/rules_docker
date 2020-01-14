@@ -150,6 +150,12 @@ docker_toolchain_configure(
   # OPTIONAL: Path to the xz binary.
   # Should be set explcitly for remote execution.
   xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
+  # OPTIONAL: List of additional flags to pass to the docker command.
+  docker_flags = [
+    "--tls",
+    "--log-level=info",
+  ],
+
 )
 # End of OPTIONAL segment.
 
@@ -2294,6 +2300,7 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
   * [Kubernetes Container Image Promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter)
+  * [Nordstrom](https://nordstrom.com)
   * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
   * [Tink](https://www.tink.com)
   * [Wix](https://www.wix.com)

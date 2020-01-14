@@ -330,11 +330,12 @@ def _impl(
     cmd = cmd or ctx.attr.cmd
     operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
-    output_executable = output_executable or ctx.outputs.executable
+    build_executable = output_executable or ctx.outputs.build_script
     output_tarball = output_tarball or ctx.outputs.out
     output_digest = output_digest or ctx.outputs.digest
     output_config = output_config or ctx.outputs.config
     output_layer = output_layer or ctx.outputs.layer
+    build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
 
@@ -465,10 +466,11 @@ def _impl(
     _incr_load(
         ctx,
         images,
-        output_executable,
+        build_executable,
         run = not ctx.attr.legacy_run_behavior,
         run_flags = docker_run_flags,
     )
+
     _assemble_image(
         ctx,
         images,
@@ -496,7 +498,7 @@ def _impl(
             docker_run_flags = docker_run_flags,
         ),
         DefaultInfo(
-            executable = output_executable,
+            executable = build_executable,
             files = depset([output_layer]),
             runfiles = runfiles,
         ),
@@ -558,6 +560,8 @@ _outputs["out"] = "%{name}.tar"
 _outputs["digest"] = "%{name}.digest"
 
 _outputs["config"] = "%{name}.json"
+
+_outputs["build_script"] = "%{name}.executable"
 
 image = struct(
     attrs = _attrs,
