@@ -1,4 +1,5 @@
 ARG ALPINE_version
+ARG SOME_VAR=default_value
 
 FROM alpine:${ALPINE_version}
 ENTRYPOINT ["echo"]
@@ -6,6 +7,8 @@ CMD ["Hello World!"]
 
 ENV envVar My environment variable
 ENV xyz=321
+ENV SOME_VAR=${SOME_VAR}
+
 ADD Data_file.txt /
 ADD More_data.txt /usr/
 COPY file_to_copy.txt /
