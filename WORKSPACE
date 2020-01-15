@@ -281,7 +281,7 @@ jvm_maven_import_external(
     artifact = "com.google.guava:guava:18.0",
     artifact_sha256 = "d664fbfc03d2e5ce9cab2a44fb01f1d0bf9dfebeccc1a473b1f9ea31f79f6f99",
     licenses = ["notice"],  # Apache 2.0
-    server_urls = ["http://central.maven.org/maven2"],
+    server_urls = ["https://repo1.maven.org/maven2"],
 )
 
 # For our scala_image test.
