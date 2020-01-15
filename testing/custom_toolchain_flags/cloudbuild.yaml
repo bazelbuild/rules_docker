@@ -1,4 +1,4 @@
-# Copyright 2018 The Bazel Authors. All rights reserved.
+# Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-This BUILD file is auto-generated from toolchains/docker/BUILD.tpl
-"""
-package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl", "docker_toolchain")
+# Tests that verify that download_pkgs targets can be declared
+# in the top level BUILD file.
 
-docker_toolchain(
-    name = "toolchain",
-    client_config = "%{DOCKER_CONFIG}",
-    %{GZIP_ATTR}
-    tool_path = "%{DOCKER_TOOL}",
-    docker_flags = ["%{DOCKER_FLAGS}"],
-    xz_path = "%{XZ_TOOL_PATH}",
-)
+steps:
+  # Test the download_pkgs examples.
+  - name: "l.gcr.io/google/bazel"
+    args: ["test", "//..."] 
+    dir: "testing/custom_toolchain_flags"

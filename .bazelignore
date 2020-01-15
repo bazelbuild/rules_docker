@@ -3,3 +3,4 @@
 testing/examples
 testing/java_image
 testing/download_pkgs_at_root
+testing/custom_toolchain_flags

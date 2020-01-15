@@ -114,12 +114,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.13.0
+# Download the rules_docker repository at release v0.14.0
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "df13123c44b4a4ff2c2f337b906763879d94871d16411bf82dcfeba892b58607",
-    strip_prefix = "rules_docker-0.13.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.13.0/rules_docker-v0.13.0.tar.gz"],
+    sha256 = "09604a0f544f544df1a3c335ef012d4f24b1c158aff8e8c00a9087e1f41a2869",
+    strip_prefix = "rules_docker-0.14.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.0/rules_docker-v0.14.0.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -150,6 +150,12 @@ docker_toolchain_configure(
   # OPTIONAL: Path to the xz binary.
   # Should be set explcitly for remote execution.
   xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
+  # OPTIONAL: List of additional flags to pass to the docker command.
+  docker_flags = [
+    "--tls",
+    "--log-level=info",
+  ],
+
 )
 # End of OPTIONAL segment.
 
@@ -2294,6 +2300,7 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
   * [Kubernetes Container Image Promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter)
+  * [Nordstrom](https://nordstrom.com)
   * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
   * [Tink](https://www.tink.com)
   * [Wix](https://www.wix.com)

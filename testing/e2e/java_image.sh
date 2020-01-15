@@ -30,7 +30,7 @@ function test_java_image_with_custom_run_flags() {
   cd "${ROOT}"
   clear_docker
   EXPECT_CONTAINS "$(bazel run "$@" testdata:java_image_with_custom_run_flags)" "Hello World"
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags)" "-i --rm --network=host -e ABC=ABC"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/java_image_with_custom_run_flags.executable)" "-i --rm --network=host -e ABC=ABC"
 }
 
 function test_java_sandwich_image() {

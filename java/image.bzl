@@ -87,7 +87,7 @@ def repositories():
             name = "javax_servlet_api",
             artifact = "javax.servlet:javax.servlet-api:3.0.1",
             artifact_sha256 = "377d8bde87ac6bc7f83f27df8e02456d5870bb78c832dac656ceacc28b016e56",
-            server_urls = ["http://central.maven.org/maven2"],
+            server_urls = ["https://repo1.maven.org/maven2"],
             licenses = ["notice"],  # Apache 2.0
         )
 
