@@ -168,14 +168,14 @@ def _impl(ctx):
     # Commands to build the image targets and copy files.
     commands_image1 = cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path1) + " ".join(build_targets),
-    ] + cp_cmds + ["rm -rf %s" % host_outs_path1]
+    ] + cp_cmds
 
     # Some deb package installations (e.g. openjdk-8-jdk) use timestamps
     # during installation. Avoid bulding and reproducing a container at the
     # same start time by sleeping 10 secs before rebuilding.
     commands_image2 = ["sleep 10"] + cd_cmd + [
         ("bazel --output_base=%s build " % host_outs_path2) + " ".join(build_targets),
-    ] + cp_cmds + ["rm -rf %s" % host_outs_path2]
+    ] + cp_cmds
 
     # Mount the docker.sock inside the running container to enable docker
     # sibling, which is needed when builing the test image itself requires
@@ -217,6 +217,14 @@ def _impl(ctx):
         script_file = ctx.actions.declare_file(name + ".build2"),
     )
 
+    # Delete intermediate outputs
+    delete_out = ctx.actions.declare_file(name + "_delete_out")
+    ctx.actions.run_shell(
+        inputs = [bazel_out1, bazel_out2, img1_outs, img2_outs],
+        outputs = [delete_out],
+        command = " rm -rf %s && rm -rf %s | tee %s" % (host_outs_path1, host_outs_path2, delete_out.path),
+    )
+
     # Expand template to run the image comparison test.
     type_args = ["--type=" + type_arg for type_arg in ctx.attr.container_diff_args]
     diff_tool_exec = ctx.executable._container_diff_tool
@@ -241,6 +249,7 @@ def _impl(ctx):
         files = [
             bazel_out1,
             bazel_out2,
+            delete_out,
             diff_tool_exec,
             img1_outs,
             img2_outs,
