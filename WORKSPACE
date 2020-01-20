@@ -365,6 +365,10 @@ yarn_install(
     yarn_lock = "//testdata:yarn.lock",
 )
 
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
+install_bazel_dependencies()
+
 load(
     "//nodejs:image.bzl",
     _nodejs_image_repos = "repositories",
