@@ -114,12 +114,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.13.0
+# Download the rules_docker repository at release v0.14.1
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "df13123c44b4a4ff2c2f337b906763879d94871d16411bf82dcfeba892b58607",
-    strip_prefix = "rules_docker-0.13.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.13.0/rules_docker-v0.13.0.tar.gz"],
+    sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
+    strip_prefix = "rules_docker-0.14.1",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -150,6 +150,12 @@ docker_toolchain_configure(
   # OPTIONAL: Path to the xz binary.
   # Should be set explcitly for remote execution.
   xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
+  # OPTIONAL: List of additional flags to pass to the docker command.
+  docker_flags = [
+    "--tls",
+    "--log-level=info",
+  ],
+
 )
 # End of OPTIONAL segment.
 
@@ -620,9 +626,8 @@ load("@io_bazel_rules_docker//nodejs:image.bzl", "nodejs_image")
 nodejs_image(
     name = "nodejs_image",
     entry_point = "@your_workspace//path/to:file.js",
-    # This will be put into its own layer.
-    node_modules = "@npm//:node_modules",
-    data = [":file.js"],
+    # npm deps will be put into their own layer
+    data = [":file.js", "@npm//some-npm-dep"],
     ...
 )
 ```
@@ -2294,6 +2299,7 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
   * [Kubernetes Container Image Promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter)
+  * [Nordstrom](https://nordstrom.com)
   * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
   * [Tink](https://www.tink.com)
   * [Wix](https://www.wix.com)

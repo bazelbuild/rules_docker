@@ -14,11 +14,9 @@
 
 workspace(name = "e2e_testing")
 
-# Placeholder repository definition to import rules_docker. To be replaced
-# with real path on bazel invocation using --override_repository
 local_repository(
     name = "io_bazel_rules_docker",
-    path = "replace/this/path",
+    path = "../../",
 )
 
 load(
@@ -26,13 +24,11 @@ load(
     docker_toolchain_configure = "toolchain_configure",
 )
 
-# Import the location of the docker client config dynamically injected into
-# this workspace by the e2e test driver
-load(":def.bzl", "client_config")
-
 docker_toolchain_configure(
     name = "docker_config",
-    client_config = client_config,
+    docker_flags = [
+        "--log-level=info",
+    ],
 )
 
 # This is NOT needed when going through the language lang_image
@@ -51,26 +47,11 @@ load(
 
 container_go_deps()
 
-load(
-    "@io_bazel_rules_docker//container:container.bzl",
-    "container_pull",
-)
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
-# For testing
 container_pull(
-    name = "distroless_fixed_id",
+    name = "debian_base",
+    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
     registry = "gcr.io",
-    repository = "distroless/base",
-)
-
-load(
-    "@docker_config//:pull.bzl",
-    authenticated_local_pull = "container_pull",
-)
-
-authenticated_local_pull(
-    name = "local_pull",
-    registry = "localhost:5000",
-    repository = "docker/test",
-    tag = "test",
+    repository = "google-appengine/debian9",
 )

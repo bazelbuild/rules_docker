@@ -295,7 +295,7 @@ def _filter_aspect_impl(target, ctx):
         return [FilterAspectInfo(depset = target[FilterLayerInfo].filtered_depset)]
 
     # Collect transitive deps from all children (propagating along "deps" attr).
-    target_deps = depset(transitive = [dep[FilterAspectInfo].depset for dep in ctx.rule.attr.deps])
+    target_deps = depset(transitive = [dep[FilterAspectInfo].depset for dep in getattr(ctx.rule.attr, "deps", [])])
     myself = struct(target = target, target_deps = target_deps)
     return [
         FilterAspectInfo(

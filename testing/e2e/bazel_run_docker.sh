@@ -92,7 +92,7 @@ function test_bazel_build_then_run_docker_build_clean() {
   do
     bazel build $target
     # Replace : with /
-    ./bazel-bin/${target/://}
+    ./bazel-bin/${target/://}.executable
   done
 }
 

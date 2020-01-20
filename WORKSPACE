@@ -281,15 +281,15 @@ jvm_maven_import_external(
     artifact = "com.google.guava:guava:18.0",
     artifact_sha256 = "d664fbfc03d2e5ce9cab2a44fb01f1d0bf9dfebeccc1a473b1f9ea31f79f6f99",
     licenses = ["notice"],  # Apache 2.0
-    server_urls = ["http://central.maven.org/maven2"],
+    server_urls = ["https://repo1.maven.org/maven2"],
 )
 
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "8566ddc6899d0140a773ffd227d895bc4c79b6def606f131497f95f214df440d",
-    strip_prefix = "rules_scala-bd0c388125e12f4f173648fc4474f73160a5c628",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/bd0c388125e12f4f173648fc4474f73160a5c628.tar.gz"],
+    sha256 = "807753310e092ab6ab1067d581641a9f21fea5edb509f2e7125647f80690829e",
+    strip_prefix = "rules_scala-5a55e5197f9e74963d98dbbed2e6d967b75aa29a",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/5a55e5197f9e74963d98dbbed2e6d967b75aa29a.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -365,6 +365,10 @@ yarn_install(
     yarn_lock = "//testdata:yarn.lock",
 )
 
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
+install_bazel_dependencies()
+
 load(
     "//nodejs:image.bzl",
     _nodejs_image_repos = "repositories",
@@ -419,9 +423,9 @@ rbe_exec_properties(
     name = "exec_properties",
 )
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 rbe_autoconfig(
     name = "buildkite_config",
