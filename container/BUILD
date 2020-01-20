@@ -112,6 +112,7 @@ TEST_TARGETS = [
     ":war_image",
     ":flat",
     ":flatten_with_tarball_base",
+    ":nodejs_image",
 ]
 
 TEST_DATA = [
