@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A rule for creating a Node.js container image.
-
 The signature of this rule is compatible with nodejs_binary.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
+load("@build_bazel_rules_nodejs//:providers.bzl", "NodeRuntimeDepsInfo", "NpmPackageInfo")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -88,6 +88,27 @@ _dep_layer = rule(
     implementation = _dep_layer_impl,
 )
 
+def _npm_deps_runfiles(dep):
+    """
+    Collects the npm package sources of all the transitive deps of the dep
+    """
+    depsets = []
+    for pkg in dep[NodeRuntimeDepsInfo].pkgs:
+        if NpmPackageInfo in pkg:
+            depsets.append(pkg[NpmPackageInfo].sources)
+    return depset(transitive = depsets)
+
+def _npm_deps_layer_impl(ctx):
+    return lang_image.implementation(ctx, runfiles = _npm_deps_runfiles, emptyfiles = _emptyfiles)
+
+_npm_deps_layer = rule(
+    attrs = lang_image.attrs,
+    executable = True,
+    outputs = lang_image.outputs,
+    toolchains = lang_image.toolchains,
+    implementation = _npm_deps_layer_impl,
+)
+
 def nodejs_image(
         name,
         base = None,
@@ -115,19 +136,31 @@ def nodejs_image(
             **kwargs
         )
 
+    nodejs_layers = [
+        # Put the Node binary into its own layers.
+        "@nodejs//:node",
+        "@nodejs//:node_files",
+        "@nodejs//:bin/node_repo_args.sh",
+    ]
+
+    all_layers = nodejs_layers + layers
+
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
     base = base or DEFAULT_BASE
-    for index, dep in enumerate(layers):
+    for index, dep in enumerate(all_layers):
         this_name = "%s.%d" % (name, index)
         _dep_layer(name = this_name, base = base, dep = dep, binary = binary, testonly = kwargs.get("testonly"))
         base = this_name
+
+    npm_deps_layer_name = "%s.npm_deps" % name
+    _npm_deps_layer(name = npm_deps_layer_name, base = base, binary = binary, testonly = kwargs.get("testonly"))
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
     app_layer(
         name = name,
-        base = base,
+        base = npm_deps_layer_name,
         binary = binary,
         visibility = visibility,
         tags = tags,

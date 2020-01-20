@@ -287,9 +287,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "b3f980d09b8394ad513a9c126e30f54acba3164e0fd20cffbf57249dbaf8b2a0",
-    strip_prefix = "rules_scala-2ea8dbad2fee824c68d342d02e48942e2404aaa5",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/2ea8dbad2fee824c68d342d02e48942e2404aaa5.tar.gz"],
+    sha256 = "807753310e092ab6ab1067d581641a9f21fea5edb509f2e7125647f80690829e",
+    strip_prefix = "rules_scala-5a55e5197f9e74963d98dbbed2e6d967b75aa29a",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/5a55e5197f9e74963d98dbbed2e6d967b75aa29a.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -364,6 +364,10 @@ yarn_install(
     symlink_node_modules = False,
     yarn_lock = "//testdata:yarn.lock",
 )
+
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
+install_bazel_dependencies()
 
 load(
     "//nodejs:image.bzl",
