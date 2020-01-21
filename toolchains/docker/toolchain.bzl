@@ -180,5 +180,8 @@ toolchain_configure = repository_rule(
                   "that use xz will fail.",
         ),
     },
+    environ = [
+        "PATH",
+    ],
     implementation = _toolchain_configure_impl,
 )
