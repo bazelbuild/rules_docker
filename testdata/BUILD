@@ -74,6 +74,7 @@ exports_files([
     "Library.groovy",
     "Library.java",
     "Library.scala",
+    "Library.kt",
     "main.go",
     "main.rs",
     "nodejs_image.js",
@@ -923,8 +924,9 @@ groovy_image(
 
 kt_jvm_image(
     name = "kotlin_image",
-    srcs = ["Binary.kt"],
+    srcs = ["Binary.kt", "Library.kt"],
     main_class = "examples.images.Binary",
+    deps = []
 )
 
 go_binary(

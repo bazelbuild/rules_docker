@@ -19,7 +19,7 @@ package(default_visibility = ["//visibility:public"])
 
 kt_jvm_image(
     name = "kt_jvm_image",
-    srcs = ["//testdata:Binary.kt"],
+    srcs = ["//testdata:Binary.kt", "//testdata:Library.kt"],
     args = [
         "arg0",
         "arg1",

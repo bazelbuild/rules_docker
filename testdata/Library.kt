@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package examples.images;
+package examples;
 
-import examples.Library;
-
-object Binary {
-
-    @JvmStatic
-    fun main(args: Array<String>) {
-        println(Library.sayHello());
+object Library {
+    fun sayHello(): String {
+        return listOf("Hello", "World").joinToString(" ")
     }
 }
+
