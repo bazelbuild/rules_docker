@@ -96,6 +96,8 @@ def _impl(ctx):
 
     if ctx.attr.skip_unchanged_digest:
         pusher_args += ["-skip-unchanged-digest"]
+    if ctx.attr.insecure_repository:
+        pusher_args += ["-insecure-repository"]
     digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
@@ -174,6 +176,10 @@ _container_push = rule(
         "repository_file": attr.label(
             allow_single_file = True,
             doc = "(optional) The label of the file with repository value. Overrides 'repository'.",
+        ),
+        "insecure_repository": attr.bool(
+            default = False,
+            doc = "Whether the repository is insecure or not (http vs https)",
         ),
         "skip_unchanged_digest": attr.bool(
             default = False,
