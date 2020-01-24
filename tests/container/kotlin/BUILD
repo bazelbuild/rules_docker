@@ -19,16 +19,19 @@ package(default_visibility = ["//visibility:public"])
 
 kt_jvm_image(
     name = "kt_jvm_image",
-    srcs = ["//testdata:Binary.kt", "//testdata:Library.kt"],
+    srcs = [
+        "//testdata:Binary.kt",
+        "//testdata:Library.kt",
+    ],
     args = [
         "arg0",
         "arg1",
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
-    deps = [],
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     main_class = "examples.images.Binary",
+    deps = [],
 )
 
 container_test(

@@ -18,7 +18,6 @@ The signature of kt_jvm_image is compatible with kt_jvm_binary.
 """
 
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_binary", "kt_jvm_library")
-
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",

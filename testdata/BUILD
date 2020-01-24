@@ -39,12 +39,12 @@ load(
 load("//d:image.bzl", "d_image")
 load("//docker:docker.bzl", "docker_push")
 load("//groovy:image.bzl", "groovy_image")
-load("//kotlin:image.bzl", "kt_jvm_image")
 load(
     "//java:image.bzl",
     "java_image",
     "war_image",
 )
+load("//kotlin:image.bzl", "kt_jvm_image")
 load("//nodejs:image.bzl", "nodejs_image")
 load("//oci:oci.bzl", "oci_push")
 load("//python:image.bzl", "py_image", "py_layer")
@@ -924,9 +924,12 @@ groovy_image(
 
 kt_jvm_image(
     name = "kotlin_image",
-    srcs = ["Binary.kt", "Library.kt"],
+    srcs = [
+        "Binary.kt",
+        "Library.kt",
+    ],
     main_class = "examples.images.Binary",
-    deps = []
+    deps = [],
 )
 
 go_binary(
