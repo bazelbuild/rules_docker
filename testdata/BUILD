@@ -39,6 +39,7 @@ load(
 load("//d:image.bzl", "d_image")
 load("//docker:docker.bzl", "docker_push")
 load("//groovy:image.bzl", "groovy_image")
+load("//kotlin:image.bzl", "kt_jvm_image")
 load(
     "//java:image.bzl",
     "java_image",
@@ -78,6 +79,7 @@ exports_files([
     "nodejs_image.js",
     "py_image_library.py",
     "Runfiles.java",
+    "Binary.kt",
 ])
 
 genrule(
@@ -916,6 +918,12 @@ groovy_image(
     name = "groovy_scala_image",
     srcs = ["Binary.groovy"],
     layers = ["//tests/container/scala:scala_image_library"],
+    main_class = "examples.images.Binary",
+)
+
+kt_jvm_image(
+    name = "kotlin_image",
+    srcs = ["Binary.kt"],
     main_class = "examples.images.Binary",
 )
 
