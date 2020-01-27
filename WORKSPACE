@@ -352,8 +352,8 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "c97bf38546c220fa250ff2cc052c1a9eac977c662c1fc23eda797b0ce8e70a43",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.1.0/rules_nodejs-1.1.0.tar.gz"],
+    sha256 = "591d2945b09ecc89fde53e56dd54cfac93322df3bc9d4747cb897ce67ba8cdbf",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.2.0/rules_nodejs-1.2.0.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
@@ -408,10 +408,10 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "a653c9d318e42b14c0ccd7ac50c4a2a276c0db1e39743ab88b5aa2f0bc9cf607",
-    strip_prefix = "bazel-toolchains-2.0.2",
+    sha256 = "a5635f7c47d08cae4c5690a0c5a6c5d4276c9f6fe7a510659c8435c525ef0d41",
+    strip_prefix = "bazel-toolchains-2.0.3",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/archive/2.0.2.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/2.0.3.tar.gz",
     ],
 )
 
