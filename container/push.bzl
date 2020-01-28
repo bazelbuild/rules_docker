@@ -165,6 +165,10 @@ _container_push = rule(
             mandatory = True,
             doc = "The label of the image to push.",
         ),
+        "insecure_repository": attr.bool(
+            default = False,
+            doc = "Whether the repository is insecure or not (http vs https)",
+        ),
         "registry": attr.string(
             mandatory = True,
             doc = "The registry to which we are pushing.",
