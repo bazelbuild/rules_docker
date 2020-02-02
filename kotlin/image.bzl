@@ -61,9 +61,6 @@ def kt_jvm_image(
         )
         deps = deps + [binary_name + "-lib"]
 
-    # This always belongs in a separate layer.
-    # layers = layers + ["//external:kotlin"]
-
     kt_jvm_binary(
         name = binary_name,
         main_class = main_class,

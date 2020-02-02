@@ -4,7 +4,7 @@ metadataTest:
   entrypoint: [
     '/usr/bin/java',
     '-cp',
-    '/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:/app/io_bazel_rules_docker/../kotlin_sdk_artifact/kotlin-2.5.8/lib/kotlin-2.5.8.jar:/app/io_bazel_rules_docker/tests/container/kotlin/libkt_jvm_image.binary-lib-impl.jar:/app/io_bazel_rules_docker/tests/container/kotlin/kt_jvm_image.binary.jar:/app/io_bazel_rules_docker/tests/container/kotlin/kt_jvm_image.binary:/app/io_bazel_rules_docker/tests/container/kotlin/BUILD',
+    '/app/io_bazel_rules_docker/tests/container/kotlin/kt_jvm_image.binary-lib.jar:/app/io_bazel_rules_docker/../com_github_jetbrains_kotlin/lib/kotlin-stdlib.jar:/app/io_bazel_rules_docker/tests/container/kotlin/kt_jvm_image.binary.jar:/app/io_bazel_rules_docker/tests/container/kotlin/BUILD:/app/io_bazel_rules_docker/tests/container/kotlin/kt_jvm_image.binary',
     '-Dbuild.location=tests/container/kotlin/BUILD',
     'examples.images.Binary',
     'arg0',
