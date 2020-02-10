@@ -287,9 +287,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "1dc0359819bb1bf9a19757a76755314b706a179f32e22d5ab4cf1ad29512065b",
-    strip_prefix = "rules_scala-a7a20a0ae5fd1033f627cea3c8549ad18a34a287",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/a7a20a0ae5fd1033f627cea3c8549ad18a34a287.tar.gz"],
+    sha256 = "fd088f4ee06ff4b6ae8089d4f4bc53205db3c2d6be3cea51ee4ea2c79cb17360",
+    strip_prefix = "rules_scala-0cb1d71266d00ba80560477eb6d298184eb3d1f7",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/0cb1d71266d00ba80560477eb6d298184eb3d1f7.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -352,8 +352,8 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "9473b207f1c5a61b603442cbfeeea8aaf2aa62870673fce2a1c52087f6ff4dc9",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.2.4/rules_nodejs-1.2.4.tar.gz"],
+    sha256 = "b6670f9f43faa66e3009488bbd909bc7bc46a5a9661a33f6bc578068d1837f37",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.3.0/rules_nodejs-1.3.0.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
