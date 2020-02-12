@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Tests that verify kotlin_jvm_image
+# Tests that verify kt_jvm_image
 
 timeout: 1200s
 
@@ -21,10 +21,10 @@ steps:
   entrypoint: "bash"
   args:
   - -c
-  - ./testing/e2e/kotlin_jvm_image.sh test_kotlin_jvm_image -c opt
+  - ./testing/e2e/kt_jvm_image.sh test_kt_jvm_image -c opt
 
 - name: "l.gcr.io/google/bazel"
   entrypoint: "bash"
   args:
   - -c
-  - ./testing/e2e/kotlin_jvm_image.sh test_kotlin_jvm_image -c dbg
+  - ./testing/e2e/kt_jvm_image.sh test_kt_jvm_image -c dbg

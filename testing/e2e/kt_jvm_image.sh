@@ -15,15 +15,15 @@ set -ex
 # limitations under the License.
 source ./testing/e2e/util.sh
 
-# Tests for kotlin_jvm_image
+# Tests for kt_jvm_image
 
 # Must be invoked from the root of the repo.
 ROOT=$PWD
 
-function test_kotlin_jvm_image() {
+function test_kt_jvm_image() {
   cd "${ROOT}"
   clear_docker
-  EXPECT_CONTAINS "$(bazel run "$@" tests/container/kotlin:kotlin_jvm_image)" "Hello World"
+  EXPECT_CONTAINS "$(bazel run "$@" tests/container/kotlin:kt_jvm_image)" "Hello World"
 }
 
 # Call functions above with 3 parameters: 1st parameter is name of function,
