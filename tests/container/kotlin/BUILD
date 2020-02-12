@@ -13,12 +13,12 @@
 # limitations under the License.
 
 load("//contrib:test.bzl", "container_test")
-load("//kotlin:image.bzl", "kt_jvm_image")
+load("//kotlin:image.bzl", "kotlin_jvm_image")
 
 package(default_visibility = ["//visibility:public"])
 
-kt_jvm_image(
-    name = "kt_jvm_image",
+kotlin_jvm_image(
+    name = "kotlin_jvm_image",
     srcs = [
         "//testdata:Binary.kt",
         "//testdata:Library.kt",
@@ -36,6 +36,6 @@ kt_jvm_image(
 
 container_test(
     name = "kotlin_image_test",
-    configs = ["//tests/container/kotlin/configs:kt_jvm_image.yaml"],
-    image = ":kt_jvm_image",
+    configs = ["//tests/container/kotlin/configs:kotlin_jvm_image.yaml"],
+    image = ":kotlin_jvm_image",
 )
