@@ -515,3 +515,18 @@ visibility = ["//visibility:public"]
     type = "tar.gz",
     urls = ["https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5"],
 )
+
+# For kotlin image test
+http_archive(
+    name = "io_bazel_rules_kotlin",
+    sha256 = "fe32ced5273bcc2f9e41cea65a28a9184a77f3bc30fea8a5c47b3d3bfc801dff",
+    strip_prefix = "rules_kotlin-legacy-1.3.0-rc4",
+    type = "zip",
+    urls = ["https://github.com/bazelbuild/rules_kotlin/archive/legacy-1.3.0-rc4.zip"],
+)
+
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
+
+kotlin_repositories()
+
+kt_register_toolchains()

@@ -44,6 +44,7 @@ load(
     "java_image",
     "war_image",
 )
+load("//kotlin:image.bzl", "kt_jvm_image")
 load("//nodejs:image.bzl", "nodejs_image")
 load("//oci:oci.bzl", "oci_push")
 load("//python:image.bzl", "py_image", "py_layer")
@@ -73,11 +74,13 @@ exports_files([
     "Library.groovy",
     "Library.java",
     "Library.scala",
+    "Library.kt",
     "main.go",
     "main.rs",
     "nodejs_image.js",
     "py_image_library.py",
     "Runfiles.java",
+    "Binary.kt",
 ])
 
 genrule(
@@ -917,6 +920,16 @@ groovy_image(
     srcs = ["Binary.groovy"],
     layers = ["//tests/container/scala:scala_image_library"],
     main_class = "examples.images.Binary",
+)
+
+kt_jvm_image(
+    name = "kotlin_image",
+    srcs = [
+        "Binary.kt",
+        "Library.kt",
+    ],
+    main_class = "examples.images.Binary",
+    deps = [],
 )
 
 go_binary(
