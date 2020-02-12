@@ -14,7 +14,7 @@
 
 """A rule for creating a kotlin container image.
 
-The signature of kotlin_jvm_image is compatible with kt_jvm_binary.
+The signature of kt_jvm_image is compatible with kt_jvm_binary.
 """
 
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_binary", "kt_jvm_library")
@@ -26,7 +26,7 @@ load(
     _repositories = "repositories",
 )
 
-def kotlin_jvm_image(
+def kt_jvm_image(
         name,
         base = None,
         main_class = None,
@@ -35,18 +35,15 @@ def kotlin_jvm_image(
         layers = [],
         jvm_flags = [],
         **kwargs):
-    """
-    Builds a container image overlaying the kt_jvm_binary.
-
-    Name changed from kt to kotlin for discoverability.
+    """Builds a container image overlaying the kt_jvm_binary.
 
     Args:
-        name: Name of the kotlin_jvm_image target.
-        base: Base image to use for the kotlin_jvm_image.
+        name: Name of the kt_jvm_image target.
+        base: Base image to use for the kt_jvm_image.
         main_class: The main entrypoint class in the kotlin image.
         srcs: List of kotlin source files that will be used to build the binary
-            to be included in the kotlin_jvm_image.
-        deps: The dependencies of the kotlin_jvm_image target.
+            to be included in the kt_jvm_image.
+        deps: The dependencies of the kt_jvm_image target.
         jvm_flags: The flags to pass to the JVM when running the kotlin image.
         layers: Augments "deps" with dependencies that should be put into
             their own layers.

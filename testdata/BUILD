@@ -44,7 +44,7 @@ load(
     "java_image",
     "war_image",
 )
-load("//kotlin:image.bzl", "kotlin_jvm_image")
+load("//kotlin:image.bzl", "kt_jvm_image")
 load("//nodejs:image.bzl", "nodejs_image")
 load("//oci:oci.bzl", "oci_push")
 load("//python:image.bzl", "py_image", "py_layer")
@@ -922,7 +922,7 @@ groovy_image(
     main_class = "examples.images.Binary",
 )
 
-kotlin_jvm_image(
+kt_jvm_image(
     name = "kotlin_image",
     srcs = [
         "Binary.kt",
