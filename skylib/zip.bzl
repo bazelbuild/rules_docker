@@ -13,12 +13,13 @@
 # limitations under the License.
 """Functions for producing the gzip of an artifact."""
 
-def gzip(ctx, artifact):
+def gzip(ctx, artifact, options=None):
     """Create an action to compute the gzipped artifact.
 
     Args:
        ctx: The context
        artifact: The artifact to zip
+       options: str list, Command-line options to pass to gzip.
 
     Returns:
        the gzipped artifact.
@@ -35,8 +36,9 @@ def gzip(ctx, artifact):
         fail("gzip could not be found. Make sure it is in the path or set it " +
              "explicitly in the docker_toolchain_configure")
 
+    opt_str = " ".join([repr(o) for o in (options or [])])
     ctx.actions.run_shell(
-        command = "%s -n < %s > %s" % (gzip_path, artifact.path, out.path),
+        command = "%s -n %s < %s > %s" % (gzip_path, opt_str, artifact.path, out.path),
         input_manifests = input_manifests,
         inputs = [artifact],
         outputs = [out],
