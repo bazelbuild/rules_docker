@@ -38,8 +38,6 @@ import (
 )
 
 const (
-	// defaultProcArch is the default architecture type based on legacy create_image_config.py.
-	defaultProcArch = "amd64"
 	// defaultTimeStamp is the unix epoch 0 time representation in 32 bits.
 	defaultTimestamp = "1970-01-01T00:00:00Z"
 )
@@ -63,6 +61,8 @@ type OverrideConfigOpts struct {
 	// NullCmd indicates if there is a command.
 	// If true, Command will be set to null.
 	NullCmd bool
+	// Architecture is the architecture of the docker image
+	Architecture string
 	// OperatingSystem is the operating system to creater docker image for.
 	OperatingSystem string
 	// CreatedBy is the command that generated the image. Default
@@ -442,7 +442,7 @@ func updateConfigLayers(overrideInfo *OverrideConfigOpts, layerDigests []string,
 func updateConfig(overrideInfo *OverrideConfigOpts) error {
 	overrideInfo.ConfigFile.Author = overrideInfo.Author
 	overrideInfo.ConfigFile.OS = overrideInfo.OperatingSystem
-	overrideInfo.ConfigFile.Architecture = defaultProcArch
+	overrideInfo.ConfigFile.Architecture = overrideInfo.Architecture
 
 	creationTime, err := getCreationTime(overrideInfo)
 	// creationTime is the RFC 3339 formatted time derived from createTime input.

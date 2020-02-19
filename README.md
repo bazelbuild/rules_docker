@@ -2118,6 +2118,13 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>False</code>.</p>
       </td>
     </tr>
+    <tr>
+      <td><code>architecture</code></td>
+      <td>
+        <p><code>String; optional, default to amd64</code></p>
+        <p>The desired CPU architecture to be used as label in the container image.</p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
