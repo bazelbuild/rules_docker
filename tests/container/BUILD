@@ -804,6 +804,24 @@ container_test(
     driver = "tar",
     image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
 )
+
+# This test is used to check if an architecture label is set properly when set in container_image
+# args are the architecture to be matched and the target
+container_image(
+    name = "alpine_arch_ppc64le",
+    architecture = "ppc64le",
+    base = "@alpine_linux_ppc64le//image",
+)
+
+sh_test(
+    name = "architecture_test",
+    srcs = ["architecture_test.sh"],
+    args = [
+        "ppc64le",
+        "alpine_arch_ppc64le",
+    ],
+    data = [":alpine_arch_ppc64le"],
+)
 # END_DO_NOT_IMPORT
 
 # The following targets are not imported.

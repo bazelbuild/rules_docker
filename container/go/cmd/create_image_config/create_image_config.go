@@ -39,6 +39,7 @@ var (
 	workdir            = flag.String("workdir", "", "Set the working directory of the layer.")
 	nullEntryPoint     = flag.Bool("nullEntryPoint", false, "If true, Entrypoint will be set to null.")
 	nullCmd            = flag.Bool("nullCmd", false, "If true, Cmd will be set to null.")
+	architecture       = flag.String("architecture", "amd64", "The architecture of the docker image.")
 	operatingSystem    = flag.String("operatingSystem", "linux", "Operating system to create docker image for, eg. linux.")
 	labelsArray        utils.ArrayStringFlags
 	ports              utils.ArrayStringFlags
@@ -94,6 +95,7 @@ func main() {
 		Workdir:            *workdir,
 		NullEntryPoint:     *nullEntryPoint,
 		NullCmd:            *nullCmd,
+		Architecture:       *architecture,
 		OperatingSystem:    *operatingSystem,
 		CreatedBy:          "bazel build ...",
 		Author:             "Bazel",

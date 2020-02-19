@@ -106,6 +106,7 @@ def _add_create_image_config_args(
         layer_names,
         base_config,
         base_manifest,
+        architecture,
         operating_system):
     """
     Add args for the create_image_config Go binary.
@@ -159,6 +160,9 @@ def _add_create_image_config_args(
         args.add("-baseManifest", base_manifest)
         inputs += [base_manifest]
 
+    if architecture:
+        args.add("-architecture", architecture)
+
     if operating_system:
         args.add("-operatingSystem", operating_system)
 
@@ -186,6 +190,7 @@ def _image_config(
         env = None,
         base_config = None,
         base_manifest = None,
+        architecture = None,
         operating_system = None,
         layer_name = None,
         workdir = None,
@@ -228,6 +233,7 @@ def _image_config(
         layer_names,
         base_config,
         base_manifest,
+        architecture,
         operating_system,
     )
 
@@ -287,6 +293,7 @@ def _impl(
         layers = None,
         debs = None,
         tars = None,
+        architecture = None,
         operating_system = None,
         output_executable = None,
         output_tarball = None,
@@ -315,6 +322,7 @@ def _impl(
     layers: label List, overrides ctx.attr.layers
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
+    architecture: str, overrides ctx.attr.architecture
     operating_system: Operating system to target (e.g. linux, windows)
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
@@ -328,6 +336,7 @@ def _impl(
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
+    architecture = architecture or ctx.attr.architecture
     operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
     build_executable = output_executable or ctx.outputs.build_script
@@ -415,6 +424,7 @@ def _impl(
             env = layer.env,
             base_config = config_file,
             base_manifest = manifest_file,
+            architecture = architecture,
             operating_system = operating_system,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
@@ -505,6 +515,7 @@ def _impl(
     ]
 
 _attrs = dicts.add(_layer.attrs, {
+    "architecture": attr.string(default = "amd64"),
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
     "create_image_config": attr.label(
