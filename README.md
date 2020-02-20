@@ -2152,6 +2152,13 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       </td>
     </tr>
     <tr>
+      <td><code>os_version</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>The desired OS version to be used in the container image config.</p>
+      </td>
+    </tr>
+    <tr>
       <td><code>compression</code></td>
       <td>
         <code>String, optional</code>

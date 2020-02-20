@@ -107,7 +107,8 @@ def _add_create_image_config_args(
         base_config,
         base_manifest,
         architecture,
-        operating_system):
+        operating_system,
+        os_version):
     """
     Add args for the create_image_config Go binary.
     """
@@ -166,6 +167,9 @@ def _add_create_image_config_args(
     if operating_system:
         args.add("-operatingSystem", operating_system)
 
+    if os_version:
+        args.add("-osVersion", os_version)
+
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
         args.add_all(stamp_inputs, before_each = "-stampInfoFile")
@@ -192,6 +196,7 @@ def _image_config(
         base_manifest = None,
         architecture = None,
         operating_system = None,
+        os_version = None,
         layer_name = None,
         workdir = None,
         null_entrypoint = False,
@@ -235,6 +240,7 @@ def _image_config(
         base_manifest,
         architecture,
         operating_system,
+        os_version,
     )
 
     ctx.actions.run(
@@ -297,6 +303,7 @@ def _impl(
         tars = None,
         architecture = None,
         operating_system = None,
+        os_version = None,
         output_executable = None,
         output_tarball = None,
         output_config = None,
@@ -328,6 +335,7 @@ def _impl(
     tars: File list, overrides ctx.files.tars
     architecture: str, overrides ctx.attr.architecture
     operating_system: Operating system to target (e.g. linux, windows)
+    os_version: Operating system version to target
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
     output_config: File, overrides ctx.outputs.config
@@ -344,6 +352,7 @@ def _impl(
     compression = compression or ctx.attr.compression
     compression_options = compression_options or ctx.attr.compression_options
     operating_system = operating_system or ctx.attr.operating_system
+    os_version = os_version or ctx.attr.os_version
     creation_time = creation_time or ctx.attr.creation_time
     build_executable = output_executable or ctx.outputs.build_script
     output_tarball = output_tarball or ctx.outputs.out
@@ -434,6 +443,7 @@ def _impl(
             base_manifest = manifest_file,
             architecture = architecture,
             operating_system = operating_system,
+            os_version = os_version,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
             null_entrypoint = null_entrypoint,
@@ -561,6 +571,7 @@ _attrs = dicts.add(_layer.attrs, {
     # We need these flags to distinguish them.
     "null_cmd": attr.bool(default = False),
     "null_entrypoint": attr.bool(default = False),
+    "os_version": attr.string(),
     "ports": attr.string_list(),  # Skylark doesn't support int_list...
     "repository": attr.string(default = "bazel"),
     "stamp": attr.bool(default = False),

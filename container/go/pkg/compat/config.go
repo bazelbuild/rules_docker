@@ -65,6 +65,8 @@ type OverrideConfigOpts struct {
 	Architecture string
 	// OperatingSystem is the operating system to creater docker image for.
 	OperatingSystem string
+	// OSVersion is the operating system version to creater docker image for.
+	OSVersion string
 	// CreatedBy is the command that generated the image. Default
 	// "bazel build ...".
 	CreatedBy string
@@ -443,6 +445,9 @@ func updateConfig(overrideInfo *OverrideConfigOpts) error {
 	overrideInfo.ConfigFile.Author = overrideInfo.Author
 	overrideInfo.ConfigFile.OS = overrideInfo.OperatingSystem
 	overrideInfo.ConfigFile.Architecture = overrideInfo.Architecture
+	if overrideInfo.OSVersion != "" {
+		overrideInfo.ConfigFile.OSVersion = overrideInfo.Stamper.Stamp(overrideInfo.OSVersion)
+	}
 
 	creationTime, err := getCreationTime(overrideInfo)
 	// creationTime is the RFC 3339 formatted time derived from createTime input.
