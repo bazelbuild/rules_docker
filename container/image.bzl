@@ -291,6 +291,8 @@ def _impl(
         symlinks = None,
         env = None,
         layers = None,
+        compression = None,
+        compression_options = None,
         debs = None,
         tars = None,
         architecture = None,
@@ -320,6 +322,8 @@ def _impl(
     symlinks: str Dict, overrides ctx.attr.symlinks
     env: str Dict, overrides ctx.attr.env
     layers: label List, overrides ctx.attr.layers
+    compression: str, overrides ctx.attr.compression
+    compression_options: str list, overrides ctx.attr.compression_options
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
     architecture: str, overrides ctx.attr.architecture
@@ -337,6 +341,8 @@ def _impl(
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
     architecture = architecture or ctx.attr.architecture
+    compression = compression or ctx.attr.compression
+    compression_options = compression_options or ctx.attr.compression_options
     operating_system = operating_system or ctx.attr.operating_system
     creation_time = creation_time or ctx.attr.creation_time
     build_executable = output_executable or ctx.outputs.build_script
@@ -379,6 +385,8 @@ def _impl(
         empty_dirs = empty_dirs,
         directory = directory,
         symlinks = symlinks,
+        compression = compression,
+        compression_options = compression_options,
         debs = debs,
         tars = tars,
         env = env,
@@ -518,6 +526,8 @@ _attrs = dicts.add(_layer.attrs, {
     "architecture": attr.string(default = "amd64"),
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
+    "compression": attr.string(default = "gzip"),
+    "compression_options": attr.string_list(),
     "create_image_config": attr.label(
         default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
@@ -707,6 +717,10 @@ def _validate_command(name, argument, operating_system):
 #         ...
 #         "varN": "valN",
 #      },
+#
+#      # Compression method and command-line options.
+#      compression = "gzip",
+#      compression_options = ["--fast"],
 #   )
 
 def container_image(**kwargs):

@@ -24,6 +24,7 @@ load(
     "container_flatten",
     "container_image",
     "container_layer",
+    "container_push",
 )
 load("//contrib:group.bzl", "group_entry", "group_file")
 load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
@@ -1035,4 +1036,40 @@ nodejs_image(
         "arg1",
     ],
     binary = ":nodejs_image_binary",
+)
+
+container_image(
+    name = "compression_gzip_normal",
+    compression = "gzip",
+    files = [":foo"],
+)
+
+container_image(
+    name = "compression_gzip_fast",
+    compression = "gzip",
+    compression_options = ["--fast"],
+    files = [":foo"],
+)
+
+# push_compression* are built but not executed. This is because building a
+# `container_push` appears to be the only way to generated the compressed
+# tarball.
+container_push(
+    name = "push_compression_gzip_normal",
+    format = "Docker",
+    image = ":compression_gzip_normal",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "push_compression_gzip_fast",
+    format = "Docker",
+    image = ":compression_gzip_fast",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
 )
