@@ -150,13 +150,26 @@ def build_layer(
     )
     return layer, _sha256(ctx, layer)
 
-def zip_layer(ctx, layer, compression="", compression_options=None):
+def zip_layer(ctx, layer, compression = "", compression_options = None):
+    """Generate the zipped filesystem layer, and its sha256 (aka blob sum)
+
+    Args:
+       ctx: The bazel rule context
+       layer: File, layer tar
+       compression: str, compression mode, eg "gzip"
+       compression_options: str, command-line options for the compression tool
+
+    Returns:
+       (zipped layer, blobsum)
+    """
     compression_options = compression_options or []
     if compression == "gzip":
-        zipped_layer = _gzip(ctx, layer, options=compression_options)
+        zipped_layer = _gzip(ctx, layer, options = compression_options)
     else:
-        fail('Unrecognized compression method (need "gzip"): %r' % compression,
-             attr="compression")
+        fail(
+            'Unrecognized compression method (need "gzip"): %r' % compression,
+            attr = "compression",
+        )
 
     return zipped_layer, _sha256(ctx, zipped_layer)
 
@@ -181,6 +194,7 @@ def _impl(
   Args:
     ctx: The bazel rule context
     name: str, overrides ctx.label.name or ctx.attr.name
+    files: File list, overrides ctx.files.files
     file_map: Dict[str, File], defaults to {}
     empty_files: str list, overrides ctx.attr.empty_files
     empty_dirs: Dict[str, str], overrides ctx.attr.empty_dirs
@@ -253,7 +267,7 @@ _layer_attrs = dicts.add({
         executable = True,
         allow_files = True,
     ),
-    "compression": attr.string(default="gzip"),
+    "compression": attr.string(default = "gzip"),
     "compression_options": attr.string_list(),
     "data_path": attr.string(),
     "debs": attr.label_list(allow_files = deb_filetype),

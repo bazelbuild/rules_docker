@@ -13,7 +13,7 @@
 # limitations under the License.
 """Functions for producing the gzip of an artifact."""
 
-def gzip(ctx, artifact, options=None):
+def gzip(ctx, artifact, options = None):
     """Create an action to compute the gzipped artifact.
 
     Args:
