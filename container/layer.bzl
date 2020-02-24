@@ -150,8 +150,27 @@ def build_layer(
     )
     return layer, _sha256(ctx, layer)
 
-def zip_layer(ctx, layer):
-    zipped_layer = _gzip(ctx, layer)
+def zip_layer(ctx, layer, compression = "", compression_options = None):
+    """Generate the zipped filesystem layer, and its sha256 (aka blob sum)
+
+    Args:
+       ctx: The bazel rule context
+       layer: File, layer tar
+       compression: str, compression mode, eg "gzip"
+       compression_options: str, command-line options for the compression tool
+
+    Returns:
+       (zipped layer, blobsum)
+    """
+    compression_options = compression_options or []
+    if compression == "gzip":
+        zipped_layer = _gzip(ctx, layer, options = compression_options)
+    else:
+        fail(
+            'Unrecognized compression method (need "gzip"): %r' % compression,
+            attr = "compression",
+        )
+
     return zipped_layer, _sha256(ctx, zipped_layer)
 
 def _impl(
@@ -166,6 +185,8 @@ def _impl(
         debs = None,
         tars = None,
         env = None,
+        compression = None,
+        compression_options = None,
         operating_system = None,
         output_layer = None):
     """Implementation for the container_layer rule.
@@ -181,6 +202,8 @@ def _impl(
     symlinks: str Dict, overrides ctx.attr.symlinks
     env: str Dict, overrides ctx.attr.env
     operating_system: operating system to target (e.g. linux, windows)
+    compression: str, overrides ctx.attr.compression
+    compression_options: str list, overrides ctx.attr.compression_options
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
     output_layer: File, overrides ctx.outputs.layer
@@ -193,6 +216,8 @@ def _impl(
     directory = directory or ctx.attr.directory
     symlinks = symlinks or ctx.attr.symlinks
     operating_system = operating_system or ctx.attr.operating_system
+    compression = ctx.attr.compression
+    compression_options = ctx.attr.compression_options
     debs = debs or ctx.files.debs
     tars = tars or ctx.files.tars
     output_layer = output_layer or ctx.outputs.layer
@@ -214,7 +239,12 @@ def _impl(
     )
 
     # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
-    zipped_layer, blob_sum = zip_layer(ctx, unzipped_layer)
+    zipped_layer, blob_sum = zip_layer(
+        ctx,
+        unzipped_layer,
+        compression = compression,
+        compression_options = compression_options,
+    )
 
     # Returns constituent parts of the Container layer as provider:
     # - in container_image rule, we need to use all the following information,
@@ -237,6 +267,8 @@ _layer_attrs = dicts.add({
         executable = True,
         allow_files = True,
     ),
+    "compression": attr.string(default = "gzip"),
+    "compression_options": attr.string_list(),
     "data_path": attr.string(),
     "debs": attr.label_list(allow_files = deb_filetype),
     "directory": attr.string(default = "/"),

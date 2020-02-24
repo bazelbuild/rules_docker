@@ -106,7 +106,9 @@ def _add_create_image_config_args(
         layer_names,
         base_config,
         base_manifest,
-        operating_system):
+        architecture,
+        operating_system,
+        os_version):
     """
     Add args for the create_image_config Go binary.
     """
@@ -159,8 +161,14 @@ def _add_create_image_config_args(
         args.add("-baseManifest", base_manifest)
         inputs += [base_manifest]
 
+    if architecture:
+        args.add("-architecture", architecture)
+
     if operating_system:
         args.add("-operatingSystem", operating_system)
+
+    if os_version:
+        args.add("-osVersion", os_version)
 
     if ctx.attr.stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
@@ -186,7 +194,9 @@ def _image_config(
         env = None,
         base_config = None,
         base_manifest = None,
+        architecture = None,
         operating_system = None,
+        os_version = None,
         layer_name = None,
         workdir = None,
         null_entrypoint = False,
@@ -228,7 +238,9 @@ def _image_config(
         layer_names,
         base_config,
         base_manifest,
+        architecture,
         operating_system,
+        os_version,
     )
 
     ctx.actions.run(
@@ -285,9 +297,13 @@ def _impl(
         symlinks = None,
         env = None,
         layers = None,
+        compression = None,
+        compression_options = None,
         debs = None,
         tars = None,
+        architecture = None,
         operating_system = None,
+        os_version = None,
         output_executable = None,
         output_tarball = None,
         output_config = None,
@@ -313,9 +329,13 @@ def _impl(
     symlinks: str Dict, overrides ctx.attr.symlinks
     env: str Dict, overrides ctx.attr.env
     layers: label List, overrides ctx.attr.layers
+    compression: str, overrides ctx.attr.compression
+    compression_options: str list, overrides ctx.attr.compression_options
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
+    architecture: str, overrides ctx.attr.architecture
     operating_system: Operating system to target (e.g. linux, windows)
+    os_version: Operating system version to target
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
     output_config: File, overrides ctx.outputs.config
@@ -328,7 +348,11 @@ def _impl(
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
+    architecture = architecture or ctx.attr.architecture
+    compression = compression or ctx.attr.compression
+    compression_options = compression_options or ctx.attr.compression_options
     operating_system = operating_system or ctx.attr.operating_system
+    os_version = os_version or ctx.attr.os_version
     creation_time = creation_time or ctx.attr.creation_time
     build_executable = output_executable or ctx.outputs.build_script
     output_tarball = output_tarball or ctx.outputs.out
@@ -370,6 +394,8 @@ def _impl(
         empty_dirs = empty_dirs,
         directory = directory,
         symlinks = symlinks,
+        compression = compression,
+        compression_options = compression_options,
         debs = debs,
         tars = tars,
         env = env,
@@ -415,7 +441,9 @@ def _impl(
             env = layer.env,
             base_config = config_file,
             base_manifest = manifest_file,
+            architecture = architecture,
             operating_system = operating_system,
+            os_version = os_version,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
             null_entrypoint = null_entrypoint,
@@ -505,8 +533,11 @@ def _impl(
     ]
 
 _attrs = dicts.add(_layer.attrs, {
+    "architecture": attr.string(default = "amd64"),
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
+    "compression": attr.string(default = "gzip"),
+    "compression_options": attr.string_list(),
     "create_image_config": attr.label(
         default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
@@ -540,6 +571,7 @@ _attrs = dicts.add(_layer.attrs, {
     # We need these flags to distinguish them.
     "null_cmd": attr.bool(default = False),
     "null_entrypoint": attr.bool(default = False),
+    "os_version": attr.string(),
     "ports": attr.string_list(),  # Skylark doesn't support int_list...
     "repository": attr.string(default = "bazel"),
     "stamp": attr.bool(default = False),
@@ -696,6 +728,10 @@ def _validate_command(name, argument, operating_system):
 #         ...
 #         "varN": "valN",
 #      },
+#
+#      # Compression method and command-line options.
+#      compression = "gzip",
+#      compression_options = ["--fast"],
 #   )
 
 def container_image(**kwargs):

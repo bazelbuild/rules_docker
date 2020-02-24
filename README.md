@@ -1737,6 +1737,32 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
 	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
       </td>
     </tr>
+    <tr>
+      <td><code>compression</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>Compression method for image layers. Currently only <code>gzip</code> is supported.</p>
+        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
+        <p>
+          <code>
+          compression = "gzip",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression_options</code></td>
+      <td>
+        <code>List of strings, optional</code>
+        <p>Command-line options for the compression tool. Possible values depend on `compression` method.</p>
+        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
+        <p>
+          <code>
+          compression_options = ["--fast"],
+          </code>
+        </p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -2116,6 +2142,52 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <p>Optional flags to use with <code>docker run</code> command.</p>
         <p>Only used when <code>legacy_run_behavior</code> is set to
         <code>False</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>architecture</code></td>
+      <td>
+        <p><code>String; optional, default to amd64</code></p>
+        <p>The desired CPU architecture to be used as label in the container image.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>os_version</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>The desired OS version to be used in the container image config.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>Compression method for image layer. Currently only <code>gzip</code> is supported.</p>
+        <p>
+          This affects the compressed layer, which is by the `container_push` rule.
+          It doesn't affect the layers specified by the `layers` attribute.
+        </p>
+        <p>
+          <code>
+          compression = "gzip",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression_options</code></td>
+      <td>
+        <code>List of strings, optional</code>
+        <p>Command-line options for the compression tool. Possible values depend on `compression` method.</p>
+        <p>
+          This affects the compressed layer, which is used by the `container_push` rule.
+          It doesn't affect the layers specified by the `layers` attribute.
+        </p>
+        <p>
+          <code>
+          compression_options = ["--fast"],
+          </code>
+        </p>
       </td>
     </tr>
   </tbody>
