@@ -287,9 +287,9 @@ jvm_maven_import_external(
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "fd088f4ee06ff4b6ae8089d4f4bc53205db3c2d6be3cea51ee4ea2c79cb17360",
-    strip_prefix = "rules_scala-0cb1d71266d00ba80560477eb6d298184eb3d1f7",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/0cb1d71266d00ba80560477eb6d298184eb3d1f7.tar.gz"],
+    sha256 = "ed1a62f9fb2cb8930dd026b761ff900599b4c786c6cb6b7b5f9ad418f312c272",
+    strip_prefix = "rules_scala-0366fb23cb91fee2847a8358472278ddc9940c5f",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/0366fb23cb91fee2847a8358472278ddc9940c5f.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -323,9 +323,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "c80c470ddbbed036f376d56eec4fe0585d7354cccc1f9c8d761498a07997c020",
-    strip_prefix = "rules_rust-e0dcca40f303e76c4347b9cf541d757edb029441",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/e0dcca40f303e76c4347b9cf541d757edb029441.tar.gz"],
+    sha256 = "3d3faa85e49ebf4d26c40075549a17739d636360064b94a9d481b37ace0add82",
+    strip_prefix = "rules_rust-6e87304c834c30b9c9f585cad19f30e7045281d7",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/6e87304c834c30b9c9f585cad19f30e7045281d7.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -341,9 +341,9 @@ bazel_version(name = "bazel_version")
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "e790a2507111f911e7eb7d9671a2067b251415eed30619afcd191e7fcb2d7fa8",
-    strip_prefix = "rules_d-c442972288dca3cd55ae25468b9595d7f38096e9",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/c442972288dca3cd55ae25468b9595d7f38096e9.tar.gz"],
+    sha256 = "5cad228cf0a0f2e67deb08bfac1800e683854b4e13389376751d52f33e99df73",
+    strip_prefix = "rules_d-7e3bab5bf72f70c773a7240c496301cf80c6d9ec",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/7e3bab5bf72f70c773a7240c496301cf80c6d9ec.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")

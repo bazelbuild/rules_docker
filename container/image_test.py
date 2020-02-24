@@ -28,12 +28,12 @@ PASSWD_FILE_MODE=0o644
 # Dictionary of key to value mappings in the Bazel stamp file
 STAMP_DICT = {}
 
-def TestRunfilePath(path):
+def TestRunfilePath(*args):
   """Convert a path to a file target to the runfile path"""
-  return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker', path)
+  return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker', *args)
 
 def TestData(name):
-  return TestRunfilePath(os.path.join(TEST_DATA_TARGET_BASE, name))
+  return TestRunfilePath(TEST_DATA_TARGET_BASE, name)
 
 def TestImage(name):
   return v2_2_image.FromTarball(TestData(name + '.tar'))
@@ -519,7 +519,7 @@ class ImageTest(unittest.TestCase):
       ])
 
   def test_windows_image_manifest_with_foreign_layers(self):
-    imgPath = TestRunfilePath("tests/container/basic_windows_image.tar")
+    imgPath = TestRunfilePath("tests", "container", "basic_windows_image.tar")
     with v2_2_image.FromTarball(imgPath) as img:
       # Ensure the image manifest in the tarball includes the foreign layer.
       self.assertIn("https://go.microsoft.com/fwlink/?linkid=873595",
@@ -950,6 +950,14 @@ class ImageTest(unittest.TestCase):
   #      '/app/testdata/d_image_binary',
   #      'arg0',
   #      'arg1'])
+
+  def test_compression_gzip(self):
+    fast_bytes = os.stat(TestData('compression_gzip_fast-layer.tar.gz')).st_size
+    normal_bytes = os.stat(TestData('compression_gzip_normal-layer.tar.gz')).st_size
+    self.assertLess(normal_bytes, fast_bytes,
+        'layer with normal compression (%dB) not smaller than layer with fast compression (%dB)' % (
+          normal_bytes, fast_bytes))
+
 
 def load_stamp_info():
   stamp_file = TestData("stamp_info_file.txt")
