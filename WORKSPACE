@@ -341,9 +341,9 @@ bazel_version(name = "bazel_version")
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "e790a2507111f911e7eb7d9671a2067b251415eed30619afcd191e7fcb2d7fa8",
-    strip_prefix = "rules_d-c442972288dca3cd55ae25468b9595d7f38096e9",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/c442972288dca3cd55ae25468b9595d7f38096e9.tar.gz"],
+    sha256 = "5cad228cf0a0f2e67deb08bfac1800e683854b4e13389376751d52f33e99df73",
+    strip_prefix = "rules_d-7e3bab5bf72f70c773a7240c496301cf80c6d9ec",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/7e3bab5bf72f70c773a7240c496301cf80c6d9ec.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
