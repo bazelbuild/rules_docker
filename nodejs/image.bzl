@@ -145,19 +145,20 @@ def nodejs_image(
 
     all_layers = nodejs_layers + layers
 
+    visibility = kwargs.get("visibility", None)
+    tags = kwargs.get("tags", None)
+
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
     base = base or DEFAULT_BASE
     for index, dep in enumerate(all_layers):
         this_name = "%s.%d" % (name, index)
-        _dep_layer(name = this_name, base = base, dep = dep, binary = binary, testonly = kwargs.get("testonly"))
+        _dep_layer(name = this_name, base = base, dep = dep, binary = binary, testonly = kwargs.get("testonly"), visibility = visibility, tags = tags)
         base = this_name
 
     npm_deps_layer_name = "%s.npm_deps" % name
-    _npm_deps_layer(name = npm_deps_layer_name, base = base, binary = binary, testonly = kwargs.get("testonly"))
+    _npm_deps_layer(name = npm_deps_layer_name, base = base, binary = binary, testonly = kwargs.get("testonly"), visibility = visibility, tags = tags)
 
-    visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     app_layer(
         name = name,
         base = npm_deps_layer_name,
