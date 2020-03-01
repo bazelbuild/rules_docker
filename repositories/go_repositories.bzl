@@ -37,27 +37,31 @@ def go_deps():
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            commit = "379933c9c22b8ff1b396b5b7f4ec322d27f0a206",
             importpath = "github.com/google/go-containerregistry",
+            sum = "h1:oGqapkPUiypdS9ch/Vu0npPe03RQ0BhVDYli+OEKNAA=",
+            version = "v0.0.0-20200115214256-379933c9c22b"
         )
     if "com_github_pkg_errors" not in excludes:
         go_repository(
             name = "com_github_pkg_errors",
-            commit = "49f8f617296114c890ae0b7ac18c5953d2b1ca0f",  # v0.9.0
             importpath = "github.com/pkg/errors",
+            sum = "h1:J8lpUdobwIeCI7OiSxHqEwJUKvJwicL5+3v1oe2Yb4k=",
+            version = "v0.9.0"
         )
 
     if "in_gopkg_yaml_v2" not in excludes:
         go_repository(
             name = "in_gopkg_yaml_v2",
-            commit = "f221b8435cfb71e54062f6c6e99e9ade30b124d5",  # v2.2.4
             importpath = "gopkg.in/yaml.v2",
+            sum = "h1:/eiJrUcujPVeJ3xlSWaiNi3uSVmDGBK1pDHUHAnao1I=",
+            version = "v2.2.4"
         )
     if "com_github_kylelemons_godebug" not in excludes:
         go_repository(
             name = "com_github_kylelemons_godebug",
-            commit = "9ff306d4fbead574800b66369df5b6144732d58e",  # v1.1.0
             importpath = "github.com/kylelemons/godebug",
+            sum = "h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=",
+            version = "v1.1.0",
         )
     if "com_github_ghodss_yaml" not in excludes:
         go_repository(
