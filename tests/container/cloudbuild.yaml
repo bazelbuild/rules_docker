@@ -16,7 +16,7 @@
 # available.
 
 steps:
-  - name: "l.gcr.io/google/bazel@sha256:c20046852a2d7910c55d76e0ec9c182b37532a9f0360d22dd5c9a1451b7c3a15"
+  - name: "l.gcr.io/google/bazel"
     args:
       - "--bazelrc=.bazelrc"
       - "test"
