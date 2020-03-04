@@ -37,32 +37,46 @@ def go_deps():
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            commit = "221517453cf931400e6607315045445644122692",
             importpath = "github.com/google/go-containerregistry",
+            sha256 = "0ccc0e58da12913f9e4bf618073ea2083919efc7dfdf4208b262e54e24cf698f",
+            strip_prefix = "go-containerregistry-221517453cf931400e6607315045445644122692",
+            type = "zip",
+            urls = ["https://codeload.github.com/google/go-containerregistry/zip/221517453cf931400e6607315045445644122692"],
         )
     if "com_github_pkg_errors" not in excludes:
         go_repository(
             name = "com_github_pkg_errors",
-            commit = "614d223910a179a466c1767a985424175c39b465",  # v0.9.1
             importpath = "github.com/pkg/errors",
+            sha256 = "f26b4575fb8a4857a5e7bc910e9400b11ac07dacec05eb000d37b4f0d55ae51f",
+            strip_prefix = "errors-0.9.1",
+            type = "zip",
+            urls = ["https://codeload.github.com/pkg/errors/zip/v0.9.1"],
         )
 
     if "in_gopkg_yaml_v2" not in excludes:
         go_repository(
             name = "in_gopkg_yaml_v2",
-            commit = "f221b8435cfb71e54062f6c6e99e9ade30b124d5",  # v2.2.4
             importpath = "gopkg.in/yaml.v2",
+            sha256 = "db2e0ffe81ab370c3e3d3fa9ab7aa05042e51d4b7c2e58f63af2edb29debe5fc",
+            strip_prefix = "yaml-2.2.4",
+            type = "zip",
+            urls = ["https://codeload.github.com/go-yaml/yaml/zip/v2.2.4"],
         )
     if "com_github_kylelemons_godebug" not in excludes:
         go_repository(
             name = "com_github_kylelemons_godebug",
-            commit = "9ff306d4fbead574800b66369df5b6144732d58e",  # v1.1.0
             importpath = "github.com/kylelemons/godebug",
+            sha256 = "a07edfa7b01c277196479e1ec51b92b416f2935c049f96917632e9c000e146f8",
+            strip_prefix = "godebug-1.1.0",
+            type = "zip",
+            urls = ["https://codeload.github.com/kylelemons/godebug/zip/v1.1.0"],
         )
     if "com_github_ghodss_yaml" not in excludes:
         go_repository(
             name = "com_github_ghodss_yaml",
             importpath = "github.com/ghodss/yaml",
-            sum = "h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=",
-            version = "v1.0.0",
+            sha256 = "13b1657c4c2164634e8ed2b7f425ff59a17c1c6b135d70d4adf68195fd3a810d",
+            strip_prefix = "yaml-1.0.0",
+            type = "zip",
+            urls = ["https://codeload.github.com/ghodss/yaml/zip/v1.0.0"],
         )
