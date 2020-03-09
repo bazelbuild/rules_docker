@@ -50,7 +50,7 @@ def go_deps():
     if "in_gopkg_yaml_v2" not in excludes:
         go_repository(
             name = "in_gopkg_yaml_v2",
-            commit = "f221b8435cfb71e54062f6c6e99e9ade30b124d5",  # v2.2.4
+            commit = "53403b58ad1b561927d19068c655246f2db79d48",  # v2.2.8
             importpath = "gopkg.in/yaml.v2",
         )
     if "com_github_kylelemons_godebug" not in excludes:
