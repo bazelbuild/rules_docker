@@ -1976,6 +1976,11 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <p><a href="https://docs.docker.com/engine/reference/builder/#entrypoint">List
                of entrypoints to add in the image.</a></p>
         <p>
+          The behavior between using <code>""</code> and <code>[]</code> may differ.
+          Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
+          for more details.
+        </p>
+        <p>
           Set <code>entrypoint</code> to <code>None</code>, <code>[]</code>
           or <code>""</code> will set the <code>Entrypoint</code> of the image
           to be <code>null</code>.
@@ -1989,6 +1994,11 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
                of commands to execute in the image.</a></p>
+        <p>
+          The behavior between using <code>""</code> and <code>[]</code> may differ.
+          Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
+          for more details.
+        </p>
         <p>
           Set <code>cmd</code> to <code>None</code>, <code>[]</code>
           or <code>""</code> will set the <code>Cmd</code> of the image to be
