@@ -608,13 +608,13 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:2344eeb6732c5610ad8a5ccd2b32f866bf2335ce500a286e9250fe4369b3fa5e",
+    content = "sha256:f757e72211b4ed612e147248bbbb8ce134cf70124d8850d70607d9ba53a28377",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:1e38c6d0f6364fb9ea2c4efb34b8fe00e8ed9bc696b6dfcc6fa6eac2708466f9",
+    content = "sha256:ae3eb3579d8c9654d64075623c8e7819c7681f762cb715ba20de8aa693066e56",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
@@ -803,6 +803,24 @@ container_test(
     # Using the tar driver to force using the Go join layers implementation.
     driver = "tar",
     image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
+)
+
+# This test is used to check if an architecture label is set properly when set in container_image
+# args are the architecture to be matched and the target
+container_image(
+    name = "alpine_arch_ppc64le",
+    architecture = "ppc64le",
+    base = "@alpine_linux_ppc64le//image",
+)
+
+sh_test(
+    name = "architecture_test",
+    srcs = ["architecture_test.sh"],
+    args = [
+        "ppc64le",
+        "alpine_arch_ppc64le",
+    ],
+    data = [":alpine_arch_ppc64le"],
 )
 # END_DO_NOT_IMPORT
 

@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@bazel/typescript@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-1.0.0.tgz#2c7318b9a3aaa730f282b094ddf41dd16fda7b5a"
-  integrity sha512-caNOKz7EjVMgbedjVTreao9++9Sb9oYlU2nqDOMIK8MyoOUQvgGQWhFwF65XXGSb79Tzv8kaFQskoaH/iAs4ng==
+"@bazel/typescript@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-1.4.1.tgz#1c718ce6de694e1bb90f894fa6320a0cadd90850"
+  integrity sha512-+R/cZcQpuvGfxqc9s/qu/LBWGNV93iSPTt/mvXq6hfH+sABmrrC/E0+WxapuQaaPdKqR3zSdDIIBV70FUMozsg==
   dependencies:
     protobufjs "6.8.8"
     semver "5.6.0"
@@ -65,7 +65,7 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@types/jsesc@^2.5.0":
+"@types/jsesc@2.5.0":
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/@types/jsesc/-/jsesc-2.5.0.tgz#40e2de0f4f0e292f172589e75cfb17b6a6db09c4"
   integrity sha512-rhKX1CpHA4NH3H/tXpuHAOLCIrJOV6Dm2rtv5J4jQt9tJ801+IIz9yhj2lHl/m5l7NCS94pODN7kLeAcqEaq/g==
@@ -75,15 +75,15 @@
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.0.tgz#719551d2352d301ac8b81db732acb6bdc28dbdef"
   integrity sha512-1w52Nyx4Gq47uuu0EVcsHBxZFJgurQ+rTKS3qMHxR1GY2T8c2AJYd6vZoZ9q1rupaDjU0yT+Jc2XTyXkjeMA+Q==
 
+"@types/node@12.12.28":
+  version "12.12.28"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.28.tgz#3a2b5f8d21f96ace690a8832ae9779114612575f"
+  integrity sha512-g73GJYJDXgf0jqg+P9S8h2acWbDXNkoCX8DLtJVu7Fkn788pzQ/oJsrdJz/2JejRf/SjfZaAhsw+3nd1D5EWGg==
+
 "@types/node@^10.1.0":
   version "10.17.13"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.13.tgz#ccebcdb990bd6139cd16e84c39dc2fb1023ca90c"
   integrity sha512-pMCcqU2zT4TjqYFrWtYHKal7Sl30Ims6ulZ4UFXxI4xbtQqK/qqKwkDoBFCfooRqqmRu9vY3xaJRwxSh673aYg==
-
-"@types/node@~12.0.0":
-  version "12.0.12"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.0.12.tgz#cc791b402360db1eaf7176479072f91ee6c6c7ca"
-  integrity sha512-Uy0PN4R5vgBUXFoJrKryf5aTk3kJ8Rv3PdlHjl6UaX+Cqp1QE0yPQ68MPXGrZOfG7gZVNDIJZYyot0B9ubXUrQ==
 
 buffer-from@^1.0.0:
   version "1.1.1"
@@ -149,7 +149,7 @@ tsutils@2.27.2:
   dependencies:
     tslib "^1.8.1"
 
-typescript@3.7.4:
-  version "3.7.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.4.tgz#1743a5ec5fef6a1fa9f3e4708e33c81c73876c19"
-  integrity sha512-A25xv5XCtarLwXpcDNZzCGvW2D1S3/bACratYBx2sax8PefsFhlYmkQicKHvpYflFS8if4zne5zT5kpJ7pzuvw==
+typescript@3.8.2:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.8.2.tgz#91d6868aaead7da74f493c553aeff76c0c0b1d5a"
+  integrity sha512-EgOVgL/4xfVrCMbhYKUQTdF37SQn4Iw73H5BgCrF1Abdun7Kwy/QZsE/ssAy0y4LxBbvua3PIbFsbRczWWnDdQ==
