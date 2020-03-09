@@ -25,16 +25,14 @@ packages:
 """
 
 def _impl(ctx):
+    args = ctx.actions.args()
+    args.add("-inputCSV", ctx.file.metadata_csv)
+    args.add("-outputYAML", ctx.outputs.yaml)
     ctx.actions.run(
         inputs = [ctx.file.metadata_csv],
         outputs = [ctx.outputs.yaml],
         executable = ctx.executable._converter,
-        arguments = [
-            "-inputCSV",
-            ctx.file.metadata_csv.path,
-            "-outputYAML",
-            ctx.outputs.yaml.path,
-        ],
+        arguments = [args],
         mnemonic = "PackagesMetadataYAML",
     )
 

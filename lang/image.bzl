@@ -164,18 +164,19 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     # Compute the set of remaining runfiles to include into the
     # application layer.
-
+    # runfiles(dep) can be `depset` or `list`. Convert it to list only if needed.
+    runfiles_list = runfiles(dep).to_list() if type(runfiles(dep)) == "depset" else runfiles(dep)
     file_map = {
         filepath(ctx, f): f
-        # runfiles(dep) can be `depset` or `list`. Covert it to `depset` first
-        # and then call to_list() on it as to_list() cannot be called on type `list`.
-        for f in depset(runfiles(dep)).to_list()
+        for f in runfiles_list
         if filepath(ctx, f) not in available and layer_file_path(ctx, f) not in available
     }
 
+    # emptyfiles(dep) can be `depset` or `list`. Convert it to list only if needed.
+    emptyfiles_list = emptyfiles(dep).to_list() if type(emptyfiles(dep)) == "depset" else emptyfiles(dep)
     empty_files = [
         emptyfilepath(ctx, f)
-        for f in depset(emptyfiles(dep)).to_list()
+        for f in emptyfiles_list
         if emptyfilepath(ctx, f) not in available and _layer_emptyfile_path(ctx, f) not in available
     ]
 
@@ -193,12 +194,12 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
         symlinks.update({
             _final_file_path(ctx, f): layer_file_path(ctx, f)
-            for f in runfiles(dep).to_list()
+            for f in runfiles_list
             if _final_file_path(ctx, f) not in file_map and _final_file_path(ctx, f) not in available
         })
         symlinks.update({
             _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
-            for f in emptyfiles(dep).to_list()
+            for f in emptyfiles_list
             if _final_emptyfile_path(ctx, f) not in empty_files and _final_emptyfile_path(ctx, f) not in available
         })
 
@@ -294,7 +295,7 @@ def _filter_aspect_impl(target, ctx):
         return [FilterAspectInfo(depset = target[FilterLayerInfo].filtered_depset)]
 
     # Collect transitive deps from all children (propagating along "deps" attr).
-    target_deps = depset(transitive = [dep[FilterAspectInfo].depset for dep in ctx.rule.attr.deps])
+    target_deps = depset(transitive = [dep[FilterAspectInfo].depset for dep in getattr(ctx.rule.attr, "deps", [])])
     myself = struct(target = target, target_deps = target_deps)
     return [
         FilterAspectInfo(

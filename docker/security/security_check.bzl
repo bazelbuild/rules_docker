@@ -17,13 +17,10 @@
 def _impl(ctx):
     _security_check = ctx.executable._security_check
     output_yaml = ctx.outputs.yaml
-    args = [
-        ctx.attr.image,
-        "--output-yaml",
-        ctx.outputs.yaml.path,
-        "--severity",
-        ctx.attr.severity,
-    ]
+    args = ctx.actions.args()
+    args.add(ctx.attr.image)
+    args.add("--output-json", ctx.outputs.json)
+    args.add("--severity", ctx.attr.severity)
     if ctx.attr.whitelist != None:
         files = ctx.attr.whitelist.files.to_list()
         if len(files) != 1:
@@ -34,12 +31,11 @@ def _impl(ctx):
                     ctx.label,
                 ),
             )
-        args.append("--whitelist-file")
-        args.append(files[0].path)
+        args.add("--whitelist-file", files[0])
     ctx.actions.run(
         executable = ctx.executable._security_check,
-        arguments = args,
-        outputs = [ctx.outputs.yaml],
+        arguments = [args],
+        outputs = [ctx.outputs.json],
         mnemonic = "ImageSecurityCheck",
         use_default_shell_env = True,
         execution_requirements = {
@@ -49,6 +45,16 @@ def _impl(ctx):
             # CLOUDSDK_CONFIG if set.
             "no-sandbox": "True",
         },
+    )
+    args = ctx.actions.args()
+    args.add("--in-json", ctx.outputs.json)
+    args.add("--out-yaml", ctx.outputs.yaml)
+    ctx.actions.run(
+        executable = ctx.executable._json_to_yaml,
+        arguments = [args],
+        inputs = [ctx.outputs.json],
+        outputs = [ctx.outputs.yaml],
+        mnemonic = "JSONToYAML",
     )
 
 # Run the security_check.py script on the given docker image to generate a
@@ -72,6 +78,13 @@ security_check = rule(
             default = Label("@io_bazel_rules_docker//docker/security:security_check_whitelist.json"),
             allow_single_file = True,
         ),
+        # JSON to YAML converter.
+        "_json_to_yaml": attr.label(
+            default = Label("@io_bazel_rules_docker//docker/security/cmd/json_to_yaml"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
         # The security checker python executable.
         "_security_check": attr.label(
             default = Label("@io_bazel_rules_docker//docker/security:security_check"),
@@ -81,6 +94,7 @@ security_check = rule(
         ),
     },
     outputs = {
+        "json": "%{name}.json",
         "yaml": "%{name}.yaml",
     },
 )

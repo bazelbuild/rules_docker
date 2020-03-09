@@ -25,33 +25,7 @@ load(
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.36"
-RULES_DOCKER_GO_BINARY_RELEASE = "5591caf4324ea2e147f8b7c811e07336faea9f0d"
-
-_local_tool_build_template = """
-sh_binary(
-    name = "{name}",
-    srcs = ["bin/{name}"],
-    visibility = ["//visibility:public"],
-)
-"""
-
-def _local_tool(repository_ctx):
-    rctx = repository_ctx
-    realpath = rctx.which(rctx.name)
-    rctx.symlink(realpath, "bin/%s" % rctx.name)
-    rctx.file(
-        "WORKSPACE",
-        'workspace(name = "{}")\n'.format(rctx.name),
-    )
-    rctx.file(
-        "BUILD",
-        _local_tool_build_template.format(name = rctx.name),
-    )
-
-local_tool = repository_rule(
-    local = True,
-    implementation = _local_tool,
-)
+RULES_DOCKER_GO_BINARY_RELEASE = "66e5e1a894eda961a35c024db6ce91d31008c1e9"
 
 def repositories():
     """Download dependencies of container rules."""
@@ -62,7 +36,7 @@ def repositories():
         http_file(
             name = "go_puller_linux",
             executable = True,
-            sha256 = "ef6cfd34fa30779f180ca86ee63caf72f4b69d57d59131de5b17e136069877ba",
+            sha256 = "1af92327e21eff7630bc38e33bf82ec01c5db9a64b61ad8ebe0f90c774076d74",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-amd64")],
         )
 
@@ -70,7 +44,7 @@ def repositories():
         http_file(
             name = "go_puller_darwin",
             executable = True,
-            sha256 = "c7542b5790c6b1c89c24eaaaf68f543c887137a75334f82fb4234e35ae9d1a7a",
+            sha256 = "34aa3e299c806ce59a012bd1b3a245e25807988e5475189d2edc075163b47dad",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-darwin-amd64")],
         )
 
@@ -78,7 +52,7 @@ def repositories():
         http_file(
             name = "loader_linux",
             executable = True,
-            sha256 = "6ad59fbfa35c3ed61baeba5c5551967d4434a519b90843838cd30c5801ebc59b",
+            sha256 = "8566ab69573d4196f57e2d7303e341e813920d966b445ac6c86f091a2c91c368",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-amd64")],
         )
 
@@ -86,27 +60,8 @@ def repositories():
         http_file(
             name = "loader_darwin",
             executable = True,
-            sha256 = "1f60672cb6986f0d98fb9397215cd81376dcaf0c94aa2e1620c8c69470aba82f",
+            sha256 = "bc27e7b202fb2e1b8cb960f4752713a53f239069320c77b1f428bb7a658c6a7b",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-darwin-amd64")],
-        )
-
-    # Legacy Python binaries.
-    if "puller" not in excludes:
-        http_file(
-            name = "puller",
-            executable = True,
-            sha256 = "75ffb6edfee4bfcfbccd7ebee641dd90b4e2f73c773a9cca04cd0ec849576624",
-            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-                     CONTAINERREGISTRY_RELEASE + "/puller.par")],
-        )
-
-    if "importer" not in excludes:
-        http_file(
-            name = "importer",
-            executable = True,
-            sha256 = "4516a7bf62b052693001fd2b649080c4bb5228dcf698f31e77481fcb37b82ab4",
-            urls = [("https://storage.googleapis.com/containerregistry-releases/" +
-                     CONTAINERREGISTRY_RELEASE + "/importer.par")],
         )
 
     if "containerregistry" not in excludes:
@@ -124,97 +79,18 @@ def repositories():
     if "io_bazel_rules_go" not in excludes:
         http_archive(
             name = "io_bazel_rules_go",
-            sha256 = "ae8c36ff6e565f674c7a3692d6a9ea1096e4c1ade497272c2108a810fb39acd2",
+            sha256 = "af04c969321e8f428f63ceb73463d6ea817992698974abeff0161e069cd08bd6",
             urls = [
-                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/0.19.4/rules_go-0.19.4.tar.gz",
-                "https://github.com/bazelbuild/rules_go/releases/download/0.19.4/rules_go-0.19.4.tar.gz",
+                "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.21.3/rules_go-v0.21.3.tar.gz",
+                "https://github.com/bazelbuild/rules_go/releases/download/v0.21.3/rules_go-v0.21.3.tar.gz",
             ],
         )
     if "rules_python" not in excludes:
         http_archive(
             name = "rules_python",
-            sha256 = "43c007823228f88d6afe1580d00f349564c97e103309a234fa20a5a10a9ff85b",
-            strip_prefix = "rules_python-54d1cb35cd54318d59bf38e52df3e628c07d4bbc",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/54d1cb35cd54318d59bf38e52df3e628c07d4bbc.tar.gz"],
-        )
-
-    if "httplib2" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "httplib2",
-            build_file_content = """
-py_library(
-   name = "httplib2",
-   srcs = glob(["**/*.py"]),
-   data = ["cacerts.txt"],
-   visibility = ["//visibility:public"]
-)""",
-            sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
-            strip_prefix = "httplib2-0.12.1/python2/httplib2/",
-            type = "tar.gz",
-            urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
-        )
-
-    # Used by oauth2client
-    if "six" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "six",
-            build_file_content = """
-# Rename six.py to __init__.py
-genrule(
-    name = "rename",
-    srcs = ["six.py"],
-    outs = ["__init__.py"],
-    cmd = "cat $< >$@",
-)
-py_library(
-   name = "six",
-   srcs = [":__init__.py"],
-   visibility = ["//visibility:public"],
-)""",
-            sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
-            strip_prefix = "six-1.9.0/",
-            type = "tar.gz",
-            urls = ["https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"],
-        )
-
-    # Used for authentication in containerregistry
-    if "oauth2client" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "oauth2client",
-            build_file_content = """
-py_library(
-   name = "oauth2client",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"],
-   deps = [
-     "@httplib2//:httplib2",
-     "@six//:six",
-   ]
-)""",
-            sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
-            strip_prefix = "oauth2client-4.0.0/oauth2client/",
-            type = "tar.gz",
-            urls = ["https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0"],
-        )
-
-    # Used for parallel execution in containerregistry
-    if "concurrent" not in excludes:
-        # TODO(mattmoor): Is there a clean way to override?
-        http_archive(
-            name = "concurrent",
-            build_file_content = """
-py_library(
-   name = "concurrent",
-   srcs = glob(["**/*.py"]),
-   visibility = ["//visibility:public"]
-)""",
-            sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
-            strip_prefix = "pythonfutures-3.0.5/concurrent/",
-            type = "tar.gz",
-            urls = ["https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5"],
+            sha256 = "0aa9ec790a58053e3ab5af397879b267a625955f8297c239b2d8559c6773397b",
+            strip_prefix = "rules_python-dd7f9c5f01bafbfea08c44092b6b0c8fc8fcb77f",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/dd7f9c5f01bafbfea08c44092b6b0c8fc8fcb77f.tar.gz"],
         )
 
     # For packaging python tools.
@@ -255,21 +131,16 @@ py_library(
     if "bazel_skylib" not in excludes:
         http_archive(
             name = "bazel_skylib",
-            sha256 = "2ea8a5ed2b448baf4a6855d3ce049c4c452a6470b1efd1504fdb7c1c134d220a",
-            strip_prefix = "bazel-skylib-0.8.0",
-            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.8.0.tar.gz"],
-        )
-
-    if "gzip" not in excludes:
-        local_tool(
-            name = "gzip",
+            sha256 = "e5d90f0ec952883d56747b7604e2a15ee36e288bb556c3d0ed33e818a4d971f2",
+            strip_prefix = "bazel-skylib-1.0.2",
+            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/1.0.2.tar.gz"],
         )
 
     if "bazel_gazelle" not in excludes:
         http_archive(
             name = "bazel_gazelle",
-            sha256 = "7fc87f4170011201b1690326e8c16c5d802836e3a0d617d8f75c3af2b23180c4",
-            urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.18.2/bazel-gazelle-0.18.2.tar.gz"],
+            sha256 = "d8c45ee70ec39a57e7a05e5027c32b1576cc7f16d9dd37135b0eddde45cf1b10",
+            urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.20.0/bazel-gazelle-v0.20.0.tar.gz"],
         )
 
     native.register_toolchains(

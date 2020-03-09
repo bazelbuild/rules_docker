@@ -75,6 +75,15 @@ func (l *fullLayer) Uncompressed() (io.ReadCloser, error) {
 	return f, nil
 }
 
+// UncompressedSize returns the size of the uncompressed layer contents.
+func (l *fullLayer) UncompressedSize() (int64, error) {
+	f, err := os.Stat(l.uncompressedTarball)
+	if err != nil {
+		return 0, errors.Wrapf(err, "unable to stat %s to determine size of uncompressed layer", l.uncompressedTarball)
+	}
+	return f.Size(), nil
+}
+
 // Size returns the compressed size of the Layer.
 func (l *fullLayer) Size() (int64, error) {
 	f, err := os.Stat(l.compressedTarball)
@@ -233,6 +242,11 @@ func (li *legacyImage) Manifest() (*v1.Manifest, error) {
 // generating it if necessary.
 func (li *legacyImage) RawManifest() ([]byte, error) {
 	return li.rawManifest, nil
+}
+
+// Size returns the size of the raw manifest.
+func (li *legacyImage) Size() (int64, error) {
+	return int64(len(li.rawManifest)), nil
 }
 
 // RawConfigFile returns the serialized bytes of config.json metadata.

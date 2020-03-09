@@ -40,27 +40,6 @@ rename_image(
     new_tag = "new_image_tag",
 )
 
-sh_test(
-    name = "rename_image_go_test",
-    srcs = ["rename_image_test.sh"],
-    args = [
-        "$(location :renamed_image_go.tar)",
-        "new_image_registry.io/new_image_repo:new_image_tag",
-    ],
-    data = [
-        ":renamed_image_go.tar",
-    ],
-)
-
-# Test image renaming using container_bundle using the Go implementation.
-container_bundle(
-    name = "renamed_image_go",
-    images = {
-        "new_image_registry.io/new_image_repo:new_image_tag": "@distroless_base//image",
-    },
-    use_legacy_join_layers = False,
-)
-
 alias(
     name = "duplicate1",
     actual = "@distroless_fixed_id//image",
@@ -158,15 +137,11 @@ docker_push(
     bundle = ":create_empty_bundle",
 )
 
-[container_test(
-    name = "test_dockerfile_image_%s" % driver,
+container_test(
+    name = "test_dockerfile_image_docker",
     configs = ["//tests/contrib/configs:dockerfile_image.yaml"],
-    image = "@loaded_dockerfile_image_%s//image" % driver,
-) for driver in [
-    "docker",
-    "kaniko_latest",
-    "kaniko_debug",
-]]
+    image = "@loaded_dockerfile_image_docker//image",
+)
 
 toolchain_container(
     name = "img_with_random_file",
@@ -188,7 +163,7 @@ container_repro_test(
 
 container_repro_test(
     name = "derivative_with_volume_repro_test",
-    base = "@bazel_0271//image",
+    base = "@bazel_2000//image",
     container_diff_args = [
         "history",
         "file",

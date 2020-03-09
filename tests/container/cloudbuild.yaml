@@ -1,0 +1,62 @@
+# Copyright 2017 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Container and lang_image tests that require the 'docker' tool to be
+# available.
+
+steps:
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "--bazelrc=.bazelrc"
+      - "test"
+      - "--define=ENV_KEY=my_key"
+      - "--define=ENV_VALUE=my_value"
+      - "--test_output=errors"
+      - "--verbose_failures"
+      - "//tests/container:structure_test"
+      - "//tests/container:deb_image_with_dpkgs_test"
+      - "//tests/container:set_cmd_test"
+      - "//tests/container:set_entrypoint_test"
+      - "//tests/container:set_cmd_and_entrypoint_test"
+      - "//tests/container:base_with_cmd_and_entrypoint_test"
+      - "//tests/container:null_cmd_and_entrypoint_none_test"
+      - "//tests/container:null_cmd_and_entrypoint_empty_str_test"
+      - "//tests/container:null_cmd_and_entrypoint_empty_list_test"
+      - "//tests/container:set_cmd_and_entrypoint_null_on_base_test"
+      - "//tests/container:alpine_amd64_image_test"
+      - "//tests/container:alpine_arm_image_test"
+      - "//tests/container:alpine_ppc64le_image_test"
+      - "//tests/container:set_env_csv_test"
+      - "//tests/container:set_env_equals_test"
+      - "//tests/container:set_env_make_vars_test"
+      - "//tests/container:stripped_directory_name_test"
+      - "//tests/container:new_alpine_linux_armv6_image_tar_test"
+      - "//tests/container:new_alpine_linux_armv6_image_oci_tar_test"
+      - "//tests/container:new_alpine_linux_armv6_image_oci_test"
+      - "//tests/container:alpine_linux_amd64_image_tar_test"
+      - "//tests/container:alpine_linux_amd64_image_oci_tar_test"
+      - "//tests/container:alpine_linux_amd64_image_oci_test"
+      - "//tests/container:new_alpine_linux_ppc64le_image_tar_test"
+      - "//tests/container:new_alpine_linux_ppc64le_image_oci_tar_test"
+      - "//tests/container:new_alpine_linux_ppc64le_image_oci_test"
+      - "//tests/container/cc:all"
+      - "//tests/container/go:all"
+      - "//tests/container/groovy:all"
+      - "//tests/container/java:all"
+      - "//tests/container/nodejs:all"
+      - "//tests/container/python:all"
+      - "//tests/container/python3:all"
+      - "//tests/container/rust:all"
+      - "//tests/container/scala:all"
+      - "--config=remote"

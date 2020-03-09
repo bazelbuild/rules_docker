@@ -27,3 +27,12 @@ java_image(
         "@bazel_tools//tools/java/runfiles",
     ],
 )
+
+# Used to test setting gzip as target.
+java_binary(
+    name = "gzip",
+    srcs = ["Gzip.java"],
+    main_class = "tools.gzip.Gzip",
+    visibility = ["//visibility:public"],
+    deps = [],
+)

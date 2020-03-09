@@ -40,7 +40,10 @@ compare_ids_test(
 
 # Implementation of compare_ids_test
 def _compare_ids_test_impl(ctx):
-    tar_files = ctx.files.images
+    tar_files = []
+    for file in ctx.files.images:
+        if file.short_path.endswith("tar"):
+            tar_files += [file]
 
     if (len(tar_files) == 0):
         fail("No images provided for test.")

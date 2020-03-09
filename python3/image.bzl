@@ -16,6 +16,7 @@
 The signature of this rule is compatible with py_binary.
 """
 
+load("@rules_python//python:defs.bzl", "py_binary")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -40,8 +41,14 @@ def repositories():
     """
     _go_deps()
 
-    # Register the default py_toolchain for containerized execution
-    native.register_toolchains("@io_bazel_rules_docker//toolchains/python:container_py_toolchain")
+    # Register the default py_toolchain / platform for containerized execution
+    native.register_toolchains(
+        "@io_bazel_rules_docker//toolchains:container_py_toolchain",
+    )
+    native.register_execution_platforms(
+        "@local_config_platform//:host",
+        "@io_bazel_rules_docker//platforms:local_container_platform",
+    )
 
     excludes = native.existing_rules().keys()
     if "py3_image_base" not in excludes:
@@ -85,9 +92,13 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
 
-    # TODO(ngiraldo): Add exec_compatible_with=["@io_bazel_rules_docker//toolchains/pythin:run_in_container"]
-    # once py_binary targets support it.
-    native.py_binary(name = binary_name, python_version = "PY3", deps = deps + layers, **kwargs)
+    py_binary(
+        name = binary_name,
+        python_version = "PY3",
+        deps = deps + layers,
+        exec_compatible_with = ["@io_bazel_rules_docker//platforms:run_in_container"],
+        **kwargs
+    )
 
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
@@ -108,4 +119,9 @@ def py3_image(name, base = None, deps = [], layers = [], **kwargs):
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        # The targets of the symlinks in the symlink layers are relative to the
+        # workspace directory under the app directory. Thus, create an empty
+        # workspace directory to ensure the symlinks are valid. See
+        # https://github.com/bazelbuild/rules_docker/issues/161 for details.
+        create_empty_workspace_dir = True,
     )

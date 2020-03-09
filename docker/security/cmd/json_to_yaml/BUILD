@@ -11,7 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-build --host_force_python=PY2
-test --host_force_python=PY2
-run --host_force_python=PY2
+go_library(
+    name = "go_default_library",
+    srcs = ["json_to_yaml.go"],
+    importpath = "github.com/bazelbuild/rules_docker/docker/security/cmd/json_to_yaml",
+    visibility = ["//visibility:private"],
+    deps = ["@com_github_ghodss_yaml//:go_default_library"],
+)
+
+go_binary(
+    name = "json_to_yaml",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

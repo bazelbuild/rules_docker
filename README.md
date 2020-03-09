@@ -12,7 +12,6 @@ Travis CI | Bazel CI
 * [container_load](#container_load)
 * [container_pull](#container_pull-1) ([example](#container_pull))
 * [container_push](#container_push-1) ([example](#container_push))
-* [new_container_push](#new_container_push)
 
 These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
 these (mostly) legacy names still exist largely for backwards-compatibility.  We
@@ -27,6 +26,7 @@ This repository contains a set of rules for pulling down base images, augmenting
 them with build artifacts and assets, and publishing those images.
 **These rules do not require / use Docker for pulling, building, or pushing
 images.**  This means:
+
 * They can be used to develop Docker containers on OSX without
 `boot2docker` or `docker-machine` installed. Note use of these rules on Windows
 is currently not supported.
@@ -44,6 +44,12 @@ __NOTE:__ `container_push` and `container_pull` make use of
 registry interactions.
 
 ## Language Rules
+
+Note: Some of these rules are not supported on Mac. Specifically `go_image`
+cannot be used from Bazel running on a Mac. Other rules may also fail
+arbitrarily on Mac due to unforseen toolchain issues that need to be resolved in
+Bazel and upstream rules repos. Please see [#943](https://github.com/bazelbuild/rules_docker/issues/943)
+for more details.
 
 * [py_image](#py_image) ([signature](
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
@@ -108,12 +114,12 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# Download the rules_docker repository at release v0.10.1
+# Download the rules_docker repository at release v0.14.1
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "9ff889216e28c918811b77999257d4ac001c26c1f7c7fb17a79bc28abf74182e",
-    strip_prefix = "rules_docker-0.10.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.10.1/rules_docker-v0.10.1.tar.gz"],
+    sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
+    strip_prefix = "rules_docker-0.14.1",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
 )
 
 # OPTIONAL: Call this to override the default docker toolchain configuration.
@@ -132,6 +138,24 @@ docker_toolchain_configure(
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
   client_config="<enter absolute path to your docker config directory here>",
+  # OPTIONAL: Path to the docker binary.
+  # Should be set explcitly for remote execution.
+  docker_path="<enter absolute path to the docker binary (in the remote exec env) here>",
+  # OPTIONAL: Path to the gzip binary.
+  # Either gzip_path or gzip_target should be set explcitly for remote execution.
+  gzip_path="<enter absolute path to the gzip binary (in the remote exec env) here>",
+  # OPTIONAL: Bazel target for the gzip tool.
+  # Either gzip_path or gzip_target should be set explcitly for remote execution.
+  gzip_target="<enter absolute path (i.e., must start with repo name @...//:...) to an executable gzip target>",
+  # OPTIONAL: Path to the xz binary.
+  # Should be set explcitly for remote execution.
+  xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
+  # OPTIONAL: List of additional flags to pass to the docker command.
+  docker_flags = [
+    "--tls",
+    "--log-level=info",
+  ],
+
 )
 # End of OPTIONAL segment.
 
@@ -181,17 +205,6 @@ error, make sure to import rules_docker before other libraries, so that
 _six_ can be patched properly.
 
   See https://github.com/bazelbuild/rules_docker/issues/1022 for more details.
-
-* Starting with Bazel 0.27.0, you also need to add to your .bazelrc
-file the following:
-
-```
-build --host_force_python=PY2
-test --host_force_python=PY2
-run --host_force_python=PY2
-```
-See https://github.com/bazelbuild/rules_docker/issues/842 for more
-details.
 
 * Ensure your project has a `BUILD` or `BUILD.bazel` file at the top level. This
 can be a blank file if necessary. Otherwise you might see and error that looks
@@ -330,6 +343,7 @@ To address this, we publish variants of the `distroless` runtime images tagged
 to make debugging easier.
 
 For example (in this repo):
+
 ```shell
 $ bazel run -c dbg testdata:go_image
 ...
@@ -391,6 +405,7 @@ _cc_image_repos()
 
 Then in your `BUILD` file, simply rewrite `cc_binary` to `cc_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//cc:image.bzl", "cc_image")
 
@@ -406,6 +421,7 @@ cc_image(
 To use `cc_image` (or `go_image`, `d_image`, `rust_image`) with an external
 `cc_binary` (or the like) target, then your `BUILD` file should instead look
 like:
+
 ```python
 load("@io_bazel_rules_docker//cc:image.bzl", "cc_image")
 
@@ -448,6 +464,7 @@ _py_image_repos()
 
 Then in your `BUILD` file, simply rewrite `py_binary` to `py_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//python:image.bzl", "py_image")
 
@@ -473,6 +490,7 @@ in a location different to the default base, please see
 For Python and Java's `lang_image` rules, you can factor
 dependencies that don't change into their own layers by overriding the
 `layers=[]` attribute.  Consider this sample from the `rules_k8s` repository:
+
 ```python
 py_image(
     name = "server",
@@ -492,6 +510,7 @@ py_image(
 
 You can also implement more complex fine layering strategies by using the
 `py_layer` rule and its `filter` attribute.  For example:
+
 ```python
 # Suppose that we are synthesizing an image that depends on a complex set
 # of libraries that we want to break into layers.
@@ -565,20 +584,18 @@ http_archive(
     name = "build_bazel_rules_nodejs",
     # Replace with a real SHA256 checksum
     sha256 = "{SHA256}"
-    # Replace with a real commit SHA
-    strip_prefix = "rules_nodejs-{HEAD}",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/{HEAD}.tar.gz"],
+    # Replace with a real release version
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/{VERSION}/rules_nodejs-{VERSION}.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
 
-# Download Node toolchain, etc.
-node_repositories(package_json = ["//:package.json"])
+load("@build_bazel_rules_nodejs//:index.bzl", "npm_install")
 
 # Install your declared Node.js dependencies
 npm_install(
-    name = "npm_deps",
+    name = "npm",
     package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
 )
 
 load(
@@ -602,15 +619,15 @@ lines to your `WORKSPACE`.
 
 Then in your `BUILD` file, simply rewrite `nodejs_binary` to `nodejs_image` with
 the following import:
+
 ```python
 load("@io_bazel_rules_docker//nodejs:image.bzl", "nodejs_image")
 
 nodejs_image(
     name = "nodejs_image",
-    entry_point = "your_workspace/path/to/file.js",
-    # This will be put into its own layer.
-    node_modules = "@npm_deps//:node_modules",
-    data = [":file.js"],
+    entry_point = "@your_workspace//path/to:file.js",
+    # npm deps will be put into their own layer
+    data = [":file.js", "@npm//some-npm-dep"],
     ...
 )
 ```
@@ -648,6 +665,7 @@ lines to your `WORKSPACE`.
 
 Then in your `BUILD` file, simply rewrite `go_binary` to `go_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
@@ -671,6 +689,7 @@ see example below.
 To use a custom base image, with any of the `lang_image`
 rules, you can override the default `base="..."` attribute.  Consider this
 modified sample from the `distroless` repository:
+
 ```python
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
@@ -745,6 +764,7 @@ _java_image_repos()
 
 Then in your `BUILD` file, simply rewrite `java_binary` to `java_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//java:image.bzl", "java_image")
 
@@ -788,6 +808,7 @@ lines to your `WORKSPACE`.
 
 Then in your `BUILD` file, simply rewrite `java_war` to `war_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//java:image.bzl", "war_image")
 
@@ -853,6 +874,7 @@ lines to your `WORKSPACE`.
 
 Then in your `BUILD` file, simply rewrite `scala_binary` to `scala_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//scala:image.bzl", "scala_image")
 
@@ -910,6 +932,7 @@ lines to your `WORKSPACE`.
 
 Then in your `BUILD` file, simply rewrite `groovy_binary` to `groovy_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//groovy:image.bzl", "groovy_image")
 
@@ -967,6 +990,7 @@ lines to your `WORKSPACE`.
 
 Then in your `BUILD` file, simply rewrite `rust_binary` to `rust_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//rust:image.bzl", "rust_image")
 
@@ -1023,6 +1047,7 @@ lines to your `WORKSPACE`.
 
 Then in your `BUILD` file, simply rewrite `d_binary` to `d_image` with the
 following import:
+
 ```python
 load("@io_bazel_rules_docker//d:image.bzl", "d_image")
 
@@ -1100,6 +1125,7 @@ to use container_push with custom docker authentication credentials.
 ### container_push (Custom client configuration)
 If you wish to use container_push using custom docker authentication credentials,
 in `WORKSPACE`:
+
 ```python
 # Download the rules_docker repository
 http_archive(
@@ -1120,10 +1146,11 @@ docker_toolchain_configure(
   # in the client configuration JSON file.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="/path/to/docker/client/config",
+  client_config="/path/to/docker/client/config-dir",
 )
 ```
 In `BUILD` file:
+
 ```python
 load("@io_bazel_rules_docker//container:container.bzl", "container_push")
 
@@ -1260,13 +1287,6 @@ python tools installed in a different location to those defined in
 toolchain that points to these paths and register it _before_ the call to
 `py*_images/image.bzl:deps` in your `WORKSPACE`.
 
-Until Bazel 0.26.0 is relesed, registration of the default python toolchain
-will result in all python targets using that same toolchain, which might
-result in errors if any of those targets need to run locally.
-Once Bazel 0.26.0 is out, this default toolchain will only be compatible with
-python targets that run inside a container and will not interfere with
-other python targets.
-
 Use of python toolchain features, currently, only supports picking one
 version of python for execution of host tools. `rules_docker` heavily depends
 on execution of python host tools that are only compatible with python 2.
@@ -1282,6 +1302,7 @@ The digest references to the `distroless` base images must be updated over time
 to pick up bug fixes and security patches.  To facilitate this, the files
 containing the digest references are generated by `tools/update_deps.py`.  To
 update all of the dependencies, please run (from the root of the repository):
+
 ```shell
 ./update_deps.sh
 ```
@@ -1289,100 +1310,6 @@ update all of the dependencies, please run (from the root of the repository):
 Image references should not be updated individually because these images have
 shared layers and letting them diverge could result in sub-optimal push and pull
  performance.
-
-<a name="new_container_push"></a>
-## new_container_push
-
-```python
-new_container_push(name, image, registry, repository, tag)
-```
-
-An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
-
-**NOTE:** `new_container_push` supports authentication using custom docker client
-configuration. See [here](#container_push-custom-client-configuration) for details.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>image</code></td>
-      <td>
-        <p><code>Label; required</code></p>
-        <p>The label containing a Docker image to publish.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>registry</code></td>
-      <td>
-        <p><code>Registry Domain; required</code></p>
-        <p>The registry to which to publish the image.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>repository</code></td>
-      <td>
-        <p><code>Repository; required</code></p>
-        <p>The `repository` of images to which to push.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>format</code></td>
-      <td>
-        <p><code>Kind, required</code></p>
-        <p>The desired format of the published image. Currently, this supports
-	   <code>Docker</code> and <code>OCI</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tag</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>The `tag` of the Docker image to push to the specified `repository`.
-           This attribute defaults to `latest`.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tag_file</code></td>
-      <td>
-        <p><code>File; optional</code></p>
-        <p>The label of the file with tag value. Overrides `tag` if provided.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>stamp</code></td>
-      <td>
-        <p><code>Bool; optional</code></p>
-        <p>Deprecated: it is now automatically inferred.</p>
-        <p>If true, enable use of workspace status variables
-        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
-        and custom values set using <code>--workspace_status_command</code>)
-        in tags.</p>
-        <p>These fields are specified in the tag using Python format
-        syntax, e.g.
-        <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
 
 <a name="container_pull"></a>
 ## container_pull
@@ -1655,7 +1582,7 @@ configuration. See [here](#container_push-custom-client-configuration) for detai
 ## container_layer
 
 ```python
-container_layer(data_path, directory, files, mode, tars, debs, symlinks, env)
+container_layer(data_path, directory, empty_dirs, files, mode, tars, debs, symlinks, env)
 ```
 
 A rule that assembles data into a tarball which can be use as in `layers` attr in `container_image` rule.
@@ -1729,6 +1656,16 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
       </td>
     </tr>
     <tr>
+      <td><code>empty_dirs</code></td>
+      <td>
+        <code>List of directories, optional</code>
+        <p>Directory to add to the layer.</p>
+        <p>
+          A list of empty directories that should be created in the Docker image.
+        </p>
+      </td>
+    </tr>
+    <tr>
       <td><code>files</code></td>
       <td>
         <code>List of files, optional</code>
@@ -1798,6 +1735,32 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
           </code>
         </p>
 	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>Compression method for image layers. Currently only <code>gzip</code> is supported.</p>
+        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
+        <p>
+          <code>
+          compression = "gzip",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression_options</code></td>
+      <td>
+        <code>List of strings, optional</code>
+        <p>Command-line options for the compression tool. Possible values depend on `compression` method.</p>
+        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
+        <p>
+          <code>
+          compression_options = ["--fast"],
+          </code>
+        </p>
       </td>
     </tr>
   </tbody>
@@ -2013,6 +1976,11 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <p><a href="https://docs.docker.com/engine/reference/builder/#entrypoint">List
                of entrypoints to add in the image.</a></p>
         <p>
+          The behavior between using <code>""</code> and <code>[]</code> may differ.
+          Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
+          for more details.
+        </p>
+        <p>
           Set <code>entrypoint</code> to <code>None</code>, <code>[]</code>
           or <code>""</code> will set the <code>Entrypoint</code> of the image
           to be <code>null</code>.
@@ -2026,6 +1994,11 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>String or string list, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
                of commands to execute in the image.</a></p>
+        <p>
+          The behavior between using <code>""</code> and <code>[]</code> may differ.
+          Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
+          for more details.
+        </p>
         <p>
           Set <code>cmd</code> to <code>None</code>, <code>[]</code>
           or <code>""</code> will set the <code>Cmd</code> of the image to be
@@ -2179,6 +2152,52 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <p>Optional flags to use with <code>docker run</code> command.</p>
         <p>Only used when <code>legacy_run_behavior</code> is set to
         <code>False</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>architecture</code></td>
+      <td>
+        <p><code>String; optional, default to amd64</code></p>
+        <p>The desired CPU architecture to be used as label in the container image.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>os_version</code></td>
+      <td>
+        <p><code>String; optional</code></p>
+        <p>The desired OS version to be used in the container image config.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>Compression method for image layer. Currently only <code>gzip</code> is supported.</p>
+        <p>
+          This affects the compressed layer, which is by the `container_push` rule.
+          It doesn't affect the layers specified by the `layers` attribute.
+        </p>
+        <p>
+          <code>
+          compression = "gzip",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression_options</code></td>
+      <td>
+        <code>List of strings, optional</code>
+        <p>Command-line options for the compression tool. Possible values depend on `compression` method.</p>
+        <p>
+          This affects the compressed layer, which is used by the `container_push` rule.
+          It doesn't affect the layers specified by the `layers` attribute.
+        </p>
+        <p>
+          <code>
+          compression_options = ["--fast"],
+          </code>
+        </p>
       </td>
     </tr>
   </tbody>
@@ -2354,12 +2373,15 @@ creates a `container_import` target. The created target can be referenced as
 
 ## Adopters
 Here's a (non-exhaustive) list of companies that use `rules_docker` in production. Don't see yours? [You can add it in a PR!](https://github.com/bazelbuild/rules_docker/edit/master/README.md)
+  * [Amaiz](https://github.com/amaizfinance)
   * [Aura Devices](https://auradevices.io/)
   * [Button](https://usebutton.com)
+  * [Canva](https://canva.com)
   * [Etsy](https://www.etsy.com)
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
   * [Kubernetes Container Image Promoter](https://github.com/kubernetes-sigs/k8s-container-image-promoter)
+  * [Nordstrom](https://nordstrom.com)
   * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
   * [Tink](https://www.tink.com)
   * [Wix](https://www.wix.com)

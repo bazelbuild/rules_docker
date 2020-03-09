@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-build --host_force_python=PY2
-test --host_force_python=PY2
-run --host_force_python=PY2
+licenses(["notice"])  # Apache 2.0
+
+exports_files([
+    "image_with_symlinked_layer.tar",
+])

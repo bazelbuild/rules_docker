@@ -39,8 +39,9 @@ load(
 load(
     "//skylib:zip.bzl",
     _gzip = "gzip",
-    _zip_tools = "tools",
 )
+
+_DEFAULT_MTIME = -1
 
 def _magic_path(ctx, f, output_layer):
     # Right now the logic this uses is a bit crazy/buggy, so to support
@@ -99,14 +100,20 @@ def build_layer(
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     layer = output_layer
     build_layer_exec = ctx.executable.build_layer
-    args = [
-        "--output=" + layer.path,
-        "--directory=" + directory,
-        "--mode=" + ctx.attr.mode,
-    ]
+    args = ctx.actions.args()
+    args.add(layer, format = "--output=%s")
+    args.add(directory, format = "--directory=%s")
+    args.add(ctx.attr.mode, format = "--mode=%s")
+
+    if ctx.attr.mtime != _DEFAULT_MTIME:  # Note: Must match default in rule def.
+        if ctx.attr.portable_mtime:
+            fail("You may not set both mtime and portable_mtime")
+        args.add(ctx.attr.mtime, format = "--mtime=%s")
+    if ctx.attr.portable_mtime:
+        args.add("--mtime=portable")
 
     if toolchain_info.xz_path != "":
-        args += ["--xz_path=%s" % toolchain_info.xz_path]
+        args.add(toolchain_info.xz_path, format = "--xz_path=%s")
 
     # Windows layer.tar require two separate root directories instead of just 1
     # 'Files' is the equivalent of '.' in Linux images.
@@ -115,7 +122,7 @@ def build_layer(
     # directory is required for compatibility on Windows.
     empty_root_dirs = []
     if (operating_system == "windows"):
-        args += ["--root_directory=Files"]
+        args.add("--root_directory=Files")
         empty_root_dirs = ["Files", "Hives"]
 
     all_files = [struct(src = f.path, dst = _magic_path(ctx, f, layer)) for f in files]
@@ -131,11 +138,11 @@ def build_layer(
     )
     manifest_file = ctx.actions.declare_file(name + "-layer.manifest")
     ctx.actions.write(manifest_file, manifest.to_json())
-    args += ["--manifest=" + manifest_file.path]
+    args.add(manifest_file, format = "--manifest=%s")
 
     ctx.actions.run(
         executable = build_layer_exec,
-        arguments = args,
+        arguments = [args],
         tools = files + file_map.values() + tars + debs + [manifest_file],
         outputs = [layer],
         use_default_shell_env = True,
@@ -143,8 +150,27 @@ def build_layer(
     )
     return layer, _sha256(ctx, layer)
 
-def zip_layer(ctx, layer):
-    zipped_layer = _gzip(ctx, layer)
+def zip_layer(ctx, layer, compression = "", compression_options = None):
+    """Generate the zipped filesystem layer, and its sha256 (aka blob sum)
+
+    Args:
+       ctx: The bazel rule context
+       layer: File, layer tar
+       compression: str, compression mode, eg "gzip"
+       compression_options: str, command-line options for the compression tool
+
+    Returns:
+       (zipped layer, blobsum)
+    """
+    compression_options = compression_options or []
+    if compression == "gzip":
+        zipped_layer = _gzip(ctx, layer, options = compression_options)
+    else:
+        fail(
+            'Unrecognized compression method (need "gzip"): %r' % compression,
+            attr = "compression",
+        )
+
     return zipped_layer, _sha256(ctx, zipped_layer)
 
 def _impl(
@@ -159,6 +185,8 @@ def _impl(
         debs = None,
         tars = None,
         env = None,
+        compression = None,
+        compression_options = None,
         operating_system = None,
         output_layer = None):
     """Implementation for the container_layer rule.
@@ -174,6 +202,8 @@ def _impl(
     symlinks: str Dict, overrides ctx.attr.symlinks
     env: str Dict, overrides ctx.attr.env
     operating_system: operating system to target (e.g. linux, windows)
+    compression: str, overrides ctx.attr.compression
+    compression_options: str list, overrides ctx.attr.compression_options
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
     output_layer: File, overrides ctx.outputs.layer
@@ -186,6 +216,8 @@ def _impl(
     directory = directory or ctx.attr.directory
     symlinks = symlinks or ctx.attr.symlinks
     operating_system = operating_system or ctx.attr.operating_system
+    compression = ctx.attr.compression
+    compression_options = ctx.attr.compression_options
     debs = debs or ctx.files.debs
     tars = tars or ctx.files.tars
     output_layer = output_layer or ctx.outputs.layer
@@ -207,7 +239,12 @@ def _impl(
     )
 
     # Generate the zipped filesystem layer, and its sha256 (aka blob sum)
-    zipped_layer, blob_sum = zip_layer(ctx, unzipped_layer)
+    zipped_layer, blob_sum = zip_layer(
+        ctx,
+        unzipped_layer,
+        compression = compression,
+        compression_options = compression_options,
+    )
 
     # Returns constituent parts of the Container layer as provider:
     # - in container_image rule, we need to use all the following information,
@@ -230,6 +267,8 @@ _layer_attrs = dicts.add({
         executable = True,
         allow_files = True,
     ),
+    "compression": attr.string(default = "gzip"),
+    "compression_options": attr.string_list(),
     "data_path": attr.string(),
     "debs": attr.label_list(allow_files = deb_filetype),
     "directory": attr.string(default = "/"),
@@ -239,13 +278,15 @@ _layer_attrs = dicts.add({
     "env": attr.string_dict(),
     "files": attr.label_list(allow_files = True),
     "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
+    "mtime": attr.int(default = _DEFAULT_MTIME),
     "operating_system": attr.string(
         default = "linux",
         mandatory = False,
     ),
+    "portable_mtime": attr.bool(default = False),
     "symlinks": attr.string_dict(),
     "tars": attr.label_list(allow_files = tar_filetype),
-}, _hash_tools, _layer_tools, _zip_tools)
+}, _hash_tools, _layer_tools)
 
 _layer_outputs = {
     "layer": "%{name}-layer.tar",

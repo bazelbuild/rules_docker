@@ -169,7 +169,15 @@ def _language_tool_layer_impl(
         new_base = install_pkgs_out
 
     # Install tars and configure env, symlinks using the container_image rule.
-    result = _container.image.implementation(ctx, base = new_base, symlinks = symlinks, env = env, tars = tars, files = files)
+    result = _container.image.implementation(
+        ctx,
+        base = new_base,
+        symlinks = symlinks,
+        output_executable = ctx.outputs.build_script,
+        env = env,
+        tars = tars,
+        files = files,
+    )
 
     if hasattr(result[1], "runfiles"):
         result_runfiles = result[1].runfiles
@@ -178,6 +186,7 @@ def _language_tool_layer_impl(
 
     return [
         DefaultInfo(
+            executable = ctx.outputs.build_script,
             files = result[1].files,
             runfiles = result_runfiles,
         ),
@@ -302,7 +311,7 @@ def _toolchain_container_impl(ctx):
             installables_tars.append(layer[LanguageToolLayerInfo].installables_tar)
         if layer[LanguageToolLayerInfo].installation_cleanup_commands:
             installation_cleanup_commands += (" && " + layer[LanguageToolLayerInfo].installation_cleanup_commands)
-    tars = depset(direct = ctx.files.tars, transitive = tars)
+    tars += ctx.files.tars
     env.update(ctx.attr.env)
     symlinks.update(ctx.attr.symlinks)
     packages = depset(direct = ctx.attr.packages + packages)

@@ -21,20 +21,39 @@ licenses(["notice"])  # Apache 2.0
 py_binary(
     name = "config_stripper",
     srcs = ["config_stripper.py"],
+    python_version = "PY3",
 )
 
 py_binary(
     name = "to_json",
     srcs = ["to_json.py"],
+    python_version = "PY3",
 )
 
 exports_files([
     "commit.sh.tpl",
     "extract.sh.tpl",
-    "image_util.sh",
+    "image_util.sh.tpl",
 ])
 
 bzl_library(
     name = "util",
     srcs = ["run.bzl"],
+)
+
+# Re-package config_stripper as a library to be used in unit tests.
+py_library(
+    name = "config_stripper_lib",
+    srcs = [
+        "config_stripper.py",
+    ],
+)
+
+py_test(
+    name = "config_stripper_test",
+    size = "medium",
+    srcs = ["config_stripper_test.py"],
+    data = ["//docker/util/testdata:image_with_symlinked_layer.tar"],
+    python_version = "PY3",
+    deps = [":config_stripper_lib"],
 )

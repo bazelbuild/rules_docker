@@ -28,12 +28,12 @@ PASSWD_FILE_MODE=0o644
 # Dictionary of key to value mappings in the Bazel stamp file
 STAMP_DICT = {}
 
-def TestRunfilePath(path):
+def TestRunfilePath(*args):
   """Convert a path to a file target to the runfile path"""
-  return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker', path)
+  return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_docker', *args)
 
 def TestData(name):
-  return TestRunfilePath(os.path.join(TEST_DATA_TARGET_BASE, name))
+  return TestRunfilePath(TEST_DATA_TARGET_BASE, name)
 
 def TestImage(name):
   return v2_2_image.FromTarball(TestData(name + '.tar'))
@@ -71,19 +71,19 @@ class ImageTest(unittest.TestCase):
 
   def test_files_base(self):
     with TestImage('files_base') as img:
-      self.assertDigest(img, '2d2577b6c328f3505de6c43acf0f9c81e5188d40acb91124f4ac30a85b65c760')
+      self.assertDigest(img, 'b2042de8d0d7f2cd89328f22ba4f9e4884d1ea7385e3b1ec8ae686c1cf8377de')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
 
   def test_files_with_file_base(self):
     with TestImage('files_with_files_base') as img:
-      self.assertDigest(img, '371de40de1f50b7a59a9a7a3297454d8c2ed6b210158e3cb4687a62e6f3e7527')
+      self.assertDigest(img, 'cefcefed03f1a69abb8e615979a8214a8f2cf257713b1aa8a9d3e4c3314fcfda')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './bar'])
 
   def test_files_in_layer_with_file_base(self):
     with TestImage('files_in_layer_with_files_base') as img:
-      self.assertDigest(img, '4b008d8241bdbbe930d72d8f0ee7b61d11561946db0fd52d02dbcb8842b3a958')
+      self.assertDigest(img, 'cc4da646e3123052bb5ddf1e7c1ff1fa9e473691b2876f859ab53d294502dbbc')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertLayerNContains(img, 2, ['.', './foo'])
       self.assertLayerNContains(img, 1, ['.', './baz'])
@@ -91,7 +91,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tar_base(self):
     with TestImage('tar_base') as img:
-      self.assertDigest(img, 'df626b895bc8c7b18e6615ac09ffbd0693268a24a817a94030ff88c37602147e')
+      self.assertDigest(img, '611270a900f1d95f896af3d8c38ff04f75d75f972c02eab0403aa12847881489')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './usr', './usr/bin', './usr/bin/unremarkabledeath'])
@@ -100,7 +100,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tar_with_tar_base(self):
     with TestImage('tar_with_tar_base') as img:
-      self.assertDigest(img, 'fc867d1606f3b54228ef9b2a3dcda56f2d2056bfcd1e0a18da3a0e7b86b95798')
+      self.assertDigest(img, '07a2a6a8547551b318b525cf3388a5515060d3cc4354657b8b2e84c8ea6105c9')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './asdf', './usr', './usr/bin',
@@ -108,7 +108,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tars_in_layer_with_tar_base(self):
     with TestImage('tars_in_layer_with_tar_base') as img:
-      self.assertDigest(img, '80f850359828f763ae544f9b7725f89755f1a28a80738a514735becae60924af')
+      self.assertDigest(img, 'feb6575d686ca8dc96015322c120f786baaa3509d5795ad2d43b9302433f297e')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './asdf', './usr', './usr/bin',
@@ -119,7 +119,7 @@ class ImageTest(unittest.TestCase):
 
   def test_directory_with_tar_base(self):
     with TestImage('directory_with_tar_base') as img:
-      self.assertDigest(img, 'ad11d32eb4b2d3abd01ce599a4200b20cf1c545ce870b174d28fd717c558a58c')
+      self.assertDigest(img, 'c81286d84de3bd284b517de070f2813233fb296143acfb3724cca2558bd44086')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         '.', './foo', './foo/asdf', './foo/usr',
@@ -127,13 +127,13 @@ class ImageTest(unittest.TestCase):
 
   def test_files_with_tar_base(self):
     with TestImage('files_with_tar_base') as img:
-      self.assertDigest(img, 'f6f74908187196165c75ccabf1e419255a7217f282f2989020ac6873b6b4a741')
+      self.assertDigest(img, 'ea1dd1fd76aea45ce08573b80202408af40c05c4091a558b5e90ba2785d875aa')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './bar'])
 
   def test_workdir_with_tar_base(self):
     with TestImage('workdir_with_tar_base') as img:
-      self.assertDigest(img, 'fe996f674b45b5d446e8eedd66cf2f6cfaddd9949e56f71d1a4963db40763145')
+      self.assertDigest(img, 'c3b1757b19e007ae28cb456daa6bc0d37531804e750ef3d22ac20f29f2b76aa4')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [])
       # Check that the working directory property has been properly configured.
@@ -141,7 +141,7 @@ class ImageTest(unittest.TestCase):
 
   def test_tar_with_files_base(self):
     with TestImage('tar_with_files_base') as img:
-      self.assertDigest(img, 'b791c09580efa5b2e961897a98facb46432e964558cfdbdbf153f0f2662a2465')
+      self.assertDigest(img, '9f11c380bd9d72b9be0c0e6369705e8b13b70e2af70a8f7bf1584c0580bcb63e')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         './asdf', './usr', './usr/bin',
@@ -149,13 +149,13 @@ class ImageTest(unittest.TestCase):
 
   def test_docker_tarball_base(self):
     with TestImage('docker_tarball_base') as img:
-      self.assertDigest(img, 'cc3ca2b7307e79ad52c6e8878740f86dcfe7055d2b7118aaa10b52cbba8b9898')
+      self.assertDigest(img, '5ef26612cc7c3a7d62580c97cc75f0507bb89142ffd36f5f172ddb7f0874bed6')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
 
   def test_layers_with_docker_tarball_base(self):
     with TestImage('layers_with_docker_tarball_base') as img:
-      self.assertDigest(img, '927b3b98286e16727e2144152efb90f7394b0ad37d16668d40ce22b9e49debf9')
+      self.assertDigest(img, '0d6ae1aa69ff75c0d985619d73bc06b05669835a9300a799aa68392e5f92b983')
       self.assertEqual(5, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
       self.assertLayerNContains(img, 1, ['.', './three', './three/three'])
@@ -163,20 +163,20 @@ class ImageTest(unittest.TestCase):
 
   def test_base_with_entrypoint(self):
     with TestImage('base_with_entrypoint') as img:
-      self.assertDigest(img, '813cb4af1c3f73cc2b5f837a61dca6a62335b87e5cd762e780286ca99f71ac83')
+      self.assertDigest(img, '2b4114ac954ad863da264deb69586f43dd6ff1cb937c057cd11771b361436f73')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Entrypoint', ['/bar'])
       self.assertConfigEqual(img, 'ExposedPorts', {'8080/tcp': {}})
 
   def test_dashdash_entrypoint(self):
     with TestImage('dashdash_entrypoint') as img:
-      self.assertDigest(img, 'da7146845e924f2b70fd6caa2b9c0f41a7d58e2fb51311f158a6255675347584')
+      self.assertDigest(img, '921b63580668951c8d1444cd419eecaf64b4a86c86de9a8f657f863201d15962')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Entrypoint', ['/bar', '--'])
 
   def test_derivative_with_cmd(self):
     with TestImage('derivative_with_cmd') as img:
-      self.assertDigest(img, 'd9756678b73e8ed342866f3694618f85a45430a01f89694580c76659445a7ccb')
+      self.assertDigest(img, '709e155a071ea177fad8ae737ab405124a859d6a7c81c0ee868dccc8d27ae314')
       self.assertEqual(3, len(img.fs_layers()))
 
       self.assertConfigEqual(img, 'Entrypoint', ['/bar'])
@@ -186,7 +186,7 @@ class ImageTest(unittest.TestCase):
 
   def test_derivative_with_volume(self):
     with TestImage('derivative_with_volume') as img:
-      self.assertDigest(img, 'efe2b256ca249c3b49465edb893631c711a21a3891cda66d70d65e2781332908')
+      self.assertDigest(img, '81a41ba96bbea5e22f1b733036a03d7fa8fa9535000e9c2570e17776eb6391b5')
       self.assertEqual(2, len(img.fs_layers()))
 
       # Check that the topmost layer has the volumes exposed by the bottom
@@ -197,21 +197,21 @@ class ImageTest(unittest.TestCase):
 
   def test_with_unix_epoch_creation_time(self):
     with TestImage('with_unix_epoch_creation_time') as img:
-      self.assertDigest(img, '85113de3854559f724a23eed6afea5ceecd5fd4bf241cedaded8af0474d4f882')
+      self.assertDigest(img, '4caeac4da61c673a93e0b0b28bf48c41c5774af1bcb015bc208bf3cd90073a94')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
-      self.assertEqual('2009-02-13T23:31:30.120000Z', cfg.get('created', ''))
+      self.assertEqual('2009-02-13T23:31:30.119999885Z', cfg.get('created', ''))
 
   def test_with_millisecond_unix_epoch_creation_time(self):
     with TestImage('with_millisecond_unix_epoch_creation_time') as img:
-      self.assertDigest(img, 'e9412cb69da02e05fd5b7f8cc1a5d60139c091362afdc2488f9c8f7c508e5d3b')
+      self.assertDigest(img, '6d916ca2fb6eedef06349f9947a637f65ee6d30ae1bc72e23946986a3cf2c943')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
-      self.assertEqual('2009-02-13T23:31:30.123450Z', cfg.get('created', ''))
+      self.assertEqual('2009-02-13T23:31:30.12345004Z', cfg.get('created', ''))
 
   def test_with_rfc_3339_creation_time(self):
     with TestImage('with_rfc_3339_creation_time') as img:
-      self.assertDigest(img, '9aeef8cba32f3af6e95a08e60d76cc5e2a46de4847da5366bffeb1b3d7066d17')
+      self.assertDigest(img, '2180a9e316d3aeeb967424104489d41d16917f4b32713c47e7c0764a9596c2e7')
       self.assertEqual(2, len(img.fs_layers()))
       cfg = json.loads(img.config_file())
       self.assertEqual('1989-05-03T12:58:12.345Z', cfg.get('created', ''))
@@ -226,7 +226,7 @@ class ImageTest(unittest.TestCase):
 
       now = datetime.datetime.utcnow()
 
-      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%SZ')
 
       # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
       # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
@@ -248,7 +248,7 @@ class ImageTest(unittest.TestCase):
 
       now = datetime.datetime.utcnow()
 
-      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+      created = datetime.datetime.strptime(created_str, '%Y-%m-%dT%H:%M:%SZ')
 
       # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
       # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
@@ -261,28 +261,28 @@ class ImageTest(unittest.TestCase):
   def test_with_env(self):
     with TestBundleImage(
         'with_env', 'bazel/%s:with_env' % TEST_DATA_TARGET_BASE) as img:
-      self.assertDigest(img, '0b02ba27ff0d63d9430648e47743cba4ae8a1a4f9a80e0e1f9a1fa86835b2b17')
+      self.assertDigest(img, 'f9e4654485168d82981351dabb479f456fd0ce58515efc738e0c3a58c4e510a5')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Env', ['bar=blah blah blah', 'foo=/asdf'])
 
   def test_layers_with_env(self):
     with TestImage('layers_with_env') as img:
-      self.assertDigest(img, 'ecab0f39b4726e69c62747ce4c1662f697060eef23a26db719a47ea379b77d7f')
+      self.assertDigest(img, 'a6b386fc6a6fc9590759499e97d996e0a6541dc307501d8ac0f37a26e2053896')
       self.assertEqual(3, len(img.fs_layers()))
-      self.assertConfigEqual(img, 'Env', ['PATH=$PATH:/tmp/a:/tmp/b:/tmp/c', 'a=b', 'x=y'])
+      self.assertConfigEqual(img, 'Env', [u'PATH=$PATH:/tmp/a:/tmp/b:/tmp/c', u'a=b', u'x=y'])
 
   def test_dummy_repository(self):
     # We allow users to specify an alternate repository name instead of 'bazel/'
     # to prefix their image names.
     name = 'gcr.io/dummy/%s:dummy_repository' % TEST_DATA_TARGET_BASE
     with TestBundleImage('dummy_repository', name) as img:
-      self.assertDigest(img, 'b15c4a4788ef0144c02469123432babebaa91b1b7c0607f4fafbfbac4824e2c1')
+      self.assertDigest(img, 'b31fcce6cd0a451dccb1f9427d69907903eef6dba2de3ef7dc91c9c40c432b96')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './foo'])
 
   def test_with_double_env(self):
     with TestImage('with_double_env') as img:
-      self.assertDigest(img, '931fc4d7205e4bca8236d3da8243413f7f0f17169ed33755bcc2ca633928de8e')
+      self.assertDigest(img, '8d98c4f1241e197e8c902b65196d65ba61ffc3a39ac041dbad21f0f7d8978cd3')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Env', [
         'bar=blah blah blah',
@@ -291,7 +291,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_label(self):
     with TestImage('with_label') as img:
-      self.assertDigest(img, '22709616008516169c29f30b72c0a566060cbd8959db2050ba1cae983983f830')
+      self.assertDigest(img, 'dca97e74a1717e81cdcdef0d7ef94e754eb3404cf52bbf61f32256e0bdd0162e')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Labels', {
         'com.example.bar': '{"name": "blah"}',
@@ -301,7 +301,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_double_label(self):
     with TestImage('with_double_label') as img:
-      self.assertDigest(img, '8eda9578d7eba0391ec791a6a87d34550b99b05fa55c403a64c4c12781e2cb29')
+      self.assertDigest(img, '74753b3f7beb9590e3df22a91c27bd658e85717e740b55c7d754860def1ff57c')
       self.assertEqual(3, len(img.fs_layers()))
       self.assertConfigEqual(img, 'Labels', {
         'com.example.bar': '{"name": "blah"}',
@@ -312,7 +312,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_user(self):
     with TestImage('with_user') as img:
-      self.assertDigest(img, '31d7d27f5e63516de98a3f67c382b7f86cfa1000d75c04a9e04c136162daa98b')
+      self.assertDigest(img, '8d6a7bc0542324744200c2d09d18b54497d2e3e90ba1383c5b4ccae88b8cdf45')
       self.assertEqual(2, len(img.fs_layers()))
       self.assertConfigEqual(img, 'User', 'nobody')
 
@@ -322,11 +322,11 @@ class ImageTest(unittest.TestCase):
     # the file will be inserted relatively to the testdata package
     # (so `./test/test`).
     with TestImage('no_data_path_image') as img:
-      self.assertDigest(img, '2b32e6468a11c89ccbd2c386af3a2bfd4a365b2c1f36c0429d93e5ae048eee04')
+      self.assertDigest(img, '2ffc012948f2d6a4398d02c790248b65871c3900b9c33bd6399796ef3f14d5d3')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './test'])
     with TestImage('data_path_image') as img:
-      self.assertDigest(img, 'c192f28dd8d03ec9afdb8f4a25cb007d82083ab8e5efd302c45c55e05c3cfae9')
+      self.assertDigest(img, '127bc5b422c092f70821cd48b5b640a19e7c31fc4498de03ae59ef38cf258b7a')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './test', './test/test'])
 
@@ -336,14 +336,14 @@ class ImageTest(unittest.TestCase):
     # "/tools/build_defs", we should have `docker` as the top-level
     # directory.
     with TestImage('absolute_data_path_image') as img:
-      self.assertDigest(img, 'f001377d18507d390009490d2a969ec37f1ec16b02cee7066494f24ee8bb1e9e')
+      self.assertDigest(img, '22d7b915dbb69f2106a1e6d71a0097ec0c8d1581239243cf05eb9834ee77b74e')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         '.', './testdata', './testdata/test', './testdata/test/test'])
       # With data_path = "/", we expect the entire path from the repository
       # root.
     with TestImage('root_data_path_image') as img:
-      self.assertDigest(img, 'f001377d18507d390009490d2a969ec37f1ec16b02cee7066494f24ee8bb1e9e')
+      self.assertDigest(img, '22d7b915dbb69f2106a1e6d71a0097ec0c8d1581239243cf05eb9834ee77b74e')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, [
         '.', './testdata', './testdata/test', './testdata/test/test'])
@@ -352,12 +352,6 @@ class ImageTest(unittest.TestCase):
     # Test the flattened tarball produced by the python flattener
     # binary from google/containerregistry.
     with tarfile.open(TestData('flat.tar'), mode='r') as tar:
-      self.assertTarballContains(tar, [
-        '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
-
-  def test_flattened_go(self):
-    # Test the flattened tarball produced by the Go flattener binary.
-    with tarfile.open(TestData('flat_go.tar'), mode='r') as tar:
       self.assertTarballContains(tar, [
         '.', '/usr', '/usr/bin', '/usr/bin/java', './foo'])
 
@@ -374,17 +368,17 @@ class ImageTest(unittest.TestCase):
     with TestBundleImage('stamped_bundle_test', "example.com/aaaaa{BUILD_USER}:stamped".format(
         BUILD_USER=STAMP_DICT['BUILD_USER']
     )) as img:
-        self.assertDigest(img, '31d7d27f5e63516de98a3f67c382b7f86cfa1000d75c04a9e04c136162daa98b')
+        self.assertDigest(img, '8d6a7bc0542324744200c2d09d18b54497d2e3e90ba1383c5b4ccae88b8cdf45')
     with TestBundleImage('bundle_test', 'docker.io/ubuntu:latest') as img:
-      self.assertDigest(img, '813cb4af1c3f73cc2b5f837a61dca6a62335b87e5cd762e780286ca99f71ac83')
+      self.assertDigest(img, '2b4114ac954ad863da264deb69586f43dd6ff1cb937c057cd11771b361436f73')
       self.assertEqual(1, len(img.fs_layers()))
     with TestBundleImage(
         'bundle_test', 'us.gcr.io/google-appengine/base:fresh') as img:
-      self.assertDigest(img, '7e171f6c3ec60c98bc79012ba9022fc9aeccaff6b7eaa96bf1cda555cd0eedee')
+      self.assertDigest(img, '1f22478c091a41030c6703a01a870f2e312e9d759293a041b8fe6555da65b4df')
       self.assertEqual(2, len(img.fs_layers()))
     with TestBundleImage(
         'bundle_test', 'gcr.io/google-containers/pause:2.0') as img:
-      self.assertDigest(img, '931fc4d7205e4bca8236d3da8243413f7f0f17169ed33755bcc2ca633928de8e')
+      self.assertDigest(img, '8d98c4f1241e197e8c902b65196d65ba61ffc3a39ac041dbad21f0f7d8978cd3')
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_with_stamped_label(self):
@@ -394,7 +388,7 @@ class ImageTest(unittest.TestCase):
 
   def test_pause_based(self):
     with TestImage('pause_based') as img:
-      self.assertDigest(img, 'ea150b117be58b64e4e6d070d28db5fa4d3283c078da927ffb3b49fa01e8c85f')
+      self.assertDigest(img, '1bb22dfaf26c6f68603c173e711739baceed82178ac33cc139207b323e65d641')
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_pause_piecemeal(self):
@@ -408,12 +402,12 @@ class ImageTest(unittest.TestCase):
 
   def test_build_with_tag(self):
     with TestBundleImage('build_with_tag', 'gcr.io/build/with:tag') as img:
-      self.assertDigest(img, '1db3c9f3076f811a8d311ac6ee88251d621706ba8a80985685023b7e62b6cc14')
+      self.assertDigest(img, '9be7bf7711df1a42a16536243fc88ad42269fd1b6027b1cca2049a44bbd5a08f')
       self.assertEqual(3, len(img.fs_layers()))
 
   def test_with_passwd(self):
     with TestImage('with_passwd') as img:
-      self.assertDigest(img, 'b5ddebd09ebfc17bee33929d65a925416739acaeefefe82d87197f112cabbb7f')
+      self.assertDigest(img, '2d9d8c80f8583bfcc5276835836f01682e49abead17c5a4dab7293b019943545')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
 
@@ -427,7 +421,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_passwd_tar(self):
     with TestImage('with_passwd_tar') as img:
-      self.assertDigest(img, 'ceaff61cd81661d85eac1078134baec9c9b34ed4337c84103f8a147a912e8cf2')
+      self.assertDigest(img, 'b7a3e3ea93db1cb8068aa1cbaf11f9b771c33eb4d220abe87fe140d1260b17d2')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
 
@@ -444,7 +438,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_group(self):
     with TestImage('with_group') as img:
-      self.assertDigest(img, 'd6384ee5db847e2c8a9e941d78c10bec987aa9cbd4b5b84847e20336ec09d49c')
+      self.assertDigest(img, '606b33644870f6b50d6675a6c717c028bde28c64ec6c004c46a23d4d65b2216a')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/group'])
 
@@ -455,7 +449,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_empty_files(self):
     with TestImage('with_empty_files') as img:
-      self.assertDigest(img, 'ca83f384d82d79c39ed43dd79b8552e95c050041e7af8bed8ca8af0e291049e1')
+      self.assertDigest(img, '6d1633a12c4e7eb5e1e0fcafeb0072cdd17b522f5e0d40ff2dc333fd90e43060')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './file1', './file2'])
 
@@ -468,7 +462,7 @@ class ImageTest(unittest.TestCase):
 
   def test_with_empty_dirs(self):
     with TestImage('with_empty_dirs') as img:
-      self.assertDigest(img, 'f4f102478ccee4a759c37fadfae09ebfdb1be5b4899faeb81ee24afb558b8868')
+      self.assertDigest(img, '7ec825dfcd225c6e419309855f4b60b3af91ce95617ef9fc79e36e009c54f85a')
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './foo', './bar'])
 
@@ -525,7 +519,7 @@ class ImageTest(unittest.TestCase):
       ])
 
   def test_windows_image_manifest_with_foreign_layers(self):
-    imgPath = TestRunfilePath("tests/container/basic_windows_image_go_join_layers.tar")
+    imgPath = TestRunfilePath("tests", "container", "basic_windows_image.tar")
     with v2_2_image.FromTarball(imgPath) as img:
       # Ensure the image manifest in the tarball includes the foreign layer.
       self.assertIn("https://go.microsoft.com/fwlink/?linkid=873595",
@@ -591,12 +585,12 @@ class ImageTest(unittest.TestCase):
         './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/py_image_complex.binary',
         './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/test',
         './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/test/__init__.py',
-        './app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0',
-        './app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/__init__.py',
+        './app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2',
+        './app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/__init__.py',
         './app/testdata/py_image_complex.binary.runfiles/__init__.py',
-        './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2',
-        './app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/__init__.py',
         './app/testdata/py_image_complex.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
+        './app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0',
+        './app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/__init__.py',
         './app/io_bazel_rules_docker',
         '/app',
         '/app/testdata',
@@ -656,30 +650,30 @@ class ImageTest(unittest.TestCase):
         '/app',
         '/app/testdata',
         '/app/testdata/py_image_complex.binary.runfiles',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six.py',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/DESCRIPTION.rst',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/METADATA',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/RECORD',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/WHEEL',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/metadata.json',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__six_1_11_0/six-1.11.0.dist-info/top_level.txt',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six.py',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/DESCRIPTION.rst',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/METADATA',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/RECORD',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/WHEEL',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/metadata.json',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/top_level.txt',
       ])
 
       # bazel-bin/testdata/py_image_complex.1-layer.tar
       self.assertLayerNContains(img, 6, [
         '.',
         './app',
-        './app/pypi__six_1_11_0',
-        './app/pypi__six_1_11_0/six.py',
-        './app/pypi__six_1_11_0/six-1.11.0.dist-info',
-        './app/pypi__six_1_11_0/six-1.11.0.dist-info/DESCRIPTION.rst',
-        './app/pypi__six_1_11_0/six-1.11.0.dist-info/METADATA',
-        './app/pypi__six_1_11_0/six-1.11.0.dist-info/RECORD',
-        './app/pypi__six_1_11_0/six-1.11.0.dist-info/WHEEL',
-        './app/pypi__six_1_11_0/six-1.11.0.dist-info/metadata.json',
-        './app/pypi__six_1_11_0/six-1.11.0.dist-info/top_level.txt',
+        './app/pip_deps_pypi__six_1_11_0',
+        './app/pip_deps_pypi__six_1_11_0/six.py',
+        './app/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info',
+        './app/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/DESCRIPTION.rst',
+        './app/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/METADATA',
+        './app/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/RECORD',
+        './app/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/WHEEL',
+        './app/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/metadata.json',
+        './app/pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/top_level.txt',
       ])
 
 
@@ -689,34 +683,34 @@ class ImageTest(unittest.TestCase):
         '/app',
         '/app/testdata',
         '/app/testdata/py_image_complex.binary.runfiles',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict/__init__.py',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict/addict.py',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/DESCRIPTION.rst',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/METADATA',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/RECORD',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/WHEEL',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/metadata.json',
-        '/app/testdata/py_image_complex.binary.runfiles/pypi__addict_2_1_2/addict-2.1.2.dist-info/top_level.txt',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict/__init__.py',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict/addict.py',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/DESCRIPTION.rst',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/METADATA',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/RECORD',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/WHEEL',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/metadata.json',
+        '/app/testdata/py_image_complex.binary.runfiles/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/top_level.txt',
       ])
 
       # bazel-bin/testdata/py_image_complex.0-layer.tar
       self.assertLayerNContains(img, 8, [
         '.',
         './app',
-        './app/pypi__addict_2_1_2',
-        './app/pypi__addict_2_1_2/addict',
-        './app/pypi__addict_2_1_2/addict/__init__.py',
-        './app/pypi__addict_2_1_2/addict/addict.py',
-        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info',
-        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/DESCRIPTION.rst',
-        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/METADATA',
-        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/RECORD',
-        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/WHEEL',
-        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/metadata.json',
-        './app/pypi__addict_2_1_2/addict-2.1.2.dist-info/top_level.txt',
+        './app/pip_deps_pypi__addict_2_1_2',
+        './app/pip_deps_pypi__addict_2_1_2/addict',
+        './app/pip_deps_pypi__addict_2_1_2/addict/__init__.py',
+        './app/pip_deps_pypi__addict_2_1_2/addict/addict.py',
+        './app/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info',
+        './app/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/DESCRIPTION.rst',
+        './app/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/METADATA',
+        './app/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/RECORD',
+        './app/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/WHEEL',
+        './app/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/metadata.json',
+        './app/pip_deps_pypi__addict_2_1_2/addict-2.1.2.dist-info/top_level.txt',
       ])
 
   def test_java_image(self):
@@ -766,6 +760,189 @@ class ImageTest(unittest.TestCase):
         './jetty/webapps/ROOT/WEB-INF/lib/javax.servlet-api-3.0.1.jar',
       ])
 
+  def test_nodejs_image(self):
+    self.maxDiff = None
+    with TestImage('nodejs_image') as img:
+      # TODO: remove all '/app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/external'
+      # once --noexternal_legacy_runfiles is enabled
+      # https://github.com/bazelbuild/rules_docker/issues/1350
+
+      # Check the application layer (top layer), which also contains symlinks to the bottom layers.
+      self.assertTopLayerContains(img, [
+      '.',
+      './app',
+      './app/testdata',
+      './app/testdata/nodejs_image_binary.runfiles',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/linker',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/linker/index.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/linker/runfiles_helper.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/node',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/node/node_patches.js',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/_nodejs_image_binary.module_mappings.json',
+      './app/testdata/nodejs_image_binary.runfiles/bazel_tools',
+      './app/testdata/nodejs_image_binary.runfiles/bazel_tools/tools',
+      './app/testdata/nodejs_image_binary.runfiles/bazel_tools/tools/bash',
+      './app/testdata/nodejs_image_binary.runfiles/bazel_tools/tools/bash/runfiles',
+      './app/testdata/nodejs_image_binary.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image_binary_loader.js',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image_binary_require_patch.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/buffer-from/',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/buffer-from/package.json',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/buffer-from/index.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/package.json',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/source-map.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/array-set.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/base64-vlq.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/base64.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/binary-search.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/mapping-list.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/quick-sort.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/source-map-consumer.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/source-map-generator.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/source-node.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/util.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map-support/',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map-support/package.json',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map-support/source-map-support.js',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image_lib.js',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image_lib.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image_binary.sh',
+      '/app',
+      '/app/testdata',
+      '/app/testdata/nodejs_image_binary',
+      '/app/testdata/nodejs_image_binary.runfiles',
+      '/app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker',
+      '/app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/external'])
+
+      # Check that the next layer contains node_modules
+      layerOneFiles = ['.',
+      './app',
+      './app/testdata',
+      './app/testdata/nodejs_image_binary.runfiles',
+      './app/testdata/nodejs_image_binary.runfiles/npm',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/jsesc',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/jsesc/LICENSE',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/jsesc/README.md',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/jsesc/index.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/jsesc/package.json',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/LICENSE',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/README.md',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/assert.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/async_hooks.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/base.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/buffer.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/child_process.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/cluster.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/console.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/constants.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/crypto.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/dgram.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/dns.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/domain.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/events.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/fs.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/globals.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/http.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/http2.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/https.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/index.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/inspector.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/module.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/net.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/os.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/package.json',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/path.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/perf_hooks.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/process.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/punycode.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/querystring.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/readline.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/repl.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/stream.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/string_decoder.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/timers.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/tls.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/trace_events.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/ts3.2',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/ts3.2/fs.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/ts3.2/globals.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/ts3.2/index.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/ts3.2/util.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/tty.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/url.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/util.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/v8.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/vm.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/worker_threads.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/@types/node/zlib.d.ts',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/LICENSE-MIT.txt',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/README.md',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/bin',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/bin/jsesc',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/jsesc.js',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/man',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/man/jsesc.1',
+      './app/testdata/nodejs_image_binary.runfiles/npm/node_modules/jsesc/package.json',
+      '/app',
+      '/app/testdata',
+      '/app/testdata/nodejs_image_binary',
+      '/app/testdata/nodejs_image_binary.runfiles',
+      '/app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker',
+      '/app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/external']
+      self.assertLayerNContains(img, 1, layerOneFiles)
+
+      # Check that the next layer contains node_args
+      layerTwoFiles = [
+        '.',
+        './app',
+        './app/testdata',
+        './app/testdata/nodejs_image_binary.runfiles',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin/node_repo_args.sh',
+      ]
+      self.assertLayerNContains(img, 2, layerTwoFiles)
+
+      # Check that the next layer contains node runfiles
+      layerThreeFiles = [
+        '.',
+        './app',
+        './app/testdata',
+        './app/testdata/nodejs_image_binary.runfiles',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin/nodejs',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin/nodejs/bin',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin/nodejs/bin/node',
+      ]
+      self.assertLayerNContains(img, 3, layerThreeFiles)
+
+      # Check that the next layer contains node
+      layerFourFiles = [
+        '.',
+        './app',
+        './app/testdata',
+        './app/testdata/nodejs_image_binary.runfiles',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin',
+        './app/testdata/nodejs_image_binary.runfiles/nodejs_linux_amd64/bin/node'
+        ]
+      self.assertLayerNContains(img, 4, layerFourFiles)
+
+
   # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
   # def test_d_image_args(self):
   #  with TestImage('d_image') as img:
@@ -773,6 +950,14 @@ class ImageTest(unittest.TestCase):
   #      '/app/testdata/d_image_binary',
   #      'arg0',
   #      'arg1'])
+
+  def test_compression_gzip(self):
+    fast_bytes = os.stat(TestData('compression_gzip_fast-layer.tar.gz')).st_size
+    normal_bytes = os.stat(TestData('compression_gzip_normal-layer.tar.gz')).st_size
+    self.assertLess(normal_bytes, fast_bytes,
+        'layer with normal compression (%dB) not smaller than layer with fast compression (%dB)' % (
+          normal_bytes, fast_bytes))
+
 
 def load_stamp_info():
   stamp_file = TestData("stamp_info_file.txt")

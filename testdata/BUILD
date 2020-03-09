@@ -13,7 +13,9 @@
 # limitations under the License.
 
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@npm_bazel_typescript//:index.bzl", "ts_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 load("//cc:image.bzl", "cc_image")
 load(
@@ -22,6 +24,7 @@ load(
     "container_flatten",
     "container_image",
     "container_layer",
+    "container_push",
 )
 load("//contrib:group.bzl", "group_entry", "group_file")
 load("//contrib:passwd.bzl", "passwd_entry", "passwd_file", "passwd_tar")
@@ -42,6 +45,8 @@ load(
     "java_image",
     "war_image",
 )
+load("//kotlin:image.bzl", "kt_jvm_image")
+load("//nodejs:image.bzl", "nodejs_image")
 load("//oci:oci.bzl", "oci_push")
 load("//python:image.bzl", "py_image", "py_layer")
 load("//python3:image.bzl", "py3_image")
@@ -52,9 +57,13 @@ load(":stamp_info.bzl", "stamp_info")
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
-    "pause.tar",
+    "Binary.java",
     "bar",
+    "cc_image.cc",
     "foo",
+    "pause.tar",
+    "py3_image.py",
+    "py_image.py",
 ])
 
 exports_files(["BUILD"])
@@ -66,11 +75,13 @@ exports_files([
     "Library.groovy",
     "Library.java",
     "Library.scala",
+    "Library.kt",
     "main.go",
     "main.rs",
     "nodejs_image.js",
     "py_image_library.py",
     "Runfiles.java",
+    "Binary.kt",
 ])
 
 genrule(
@@ -414,12 +425,6 @@ container_flatten(
     image = ":link_with_files_base",
 )
 
-container_flatten(
-    name = "flat_go",
-    image = ":link_with_files_base",
-    use_legacy_flattener = False,
-)
-
 container_image(
     name = "image_with_bar",
     files = [
@@ -440,7 +445,6 @@ container_image(
 container_flatten(
     name = "flatten_with_tarball_base",
     image = ":image_with_bar_and_baz",
-    use_legacy_flattener = False,
 )
 
 docker_push(
@@ -836,7 +840,6 @@ java_image(
     ],
     data = [":BUILD"],
     jvm_flags = [
-        "-XX:MaxPermSize=128M",
         "-Dbuild.location=$(location :BUILD)",
     ],
     layers = [":java_image_library"],
@@ -920,6 +923,16 @@ groovy_image(
     main_class = "examples.images.Binary",
 )
 
+kt_jvm_image(
+    name = "kotlin_image",
+    srcs = [
+        "Binary.kt",
+        "Library.kt",
+    ],
+    main_class = "examples.images.Binary",
+    deps = [],
+)
+
 go_binary(
     name = "launcher",
     srcs = ["launcher_main.go"],
@@ -994,4 +1007,69 @@ container_image(
     base = ":docker_run_flags_overrides_default",
     docker_run_flags = "-i --rm --network=host -e ABC=DEF",
     legacy_run_behavior = False,
+)
+
+ts_library(
+    name = "nodejs_image_lib",
+    srcs = ["nodejs_image_lib.ts"],
+    tsconfig = ":tsconfig.json",
+    deps = [
+        "@npm//@types/jsesc",
+        "@npm//@types/node",
+        "@npm//jsesc",
+    ],
+)
+
+nodejs_binary(
+    name = "nodejs_image_binary",
+    data = [
+        ":nodejs_image.js",
+        ":nodejs_image_lib",
+    ],
+    entry_point = ":nodejs_image.js",
+)
+
+nodejs_image(
+    name = "nodejs_image",
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    binary = ":nodejs_image_binary",
+)
+
+container_image(
+    name = "compression_gzip_normal",
+    compression = "gzip",
+    files = [":foo"],
+)
+
+container_image(
+    name = "compression_gzip_fast",
+    compression = "gzip",
+    compression_options = ["--fast"],
+    files = [":foo"],
+)
+
+# push_compression* are built but not executed. This is because building a
+# `container_push` appears to be the only way to generated the compressed
+# tarball.
+container_push(
+    name = "push_compression_gzip_normal",
+    format = "Docker",
+    image = ":compression_gzip_normal",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+container_push(
+    name = "push_compression_gzip_fast",
+    format = "Docker",
+    image = ":compression_gzip_fast",
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
 )

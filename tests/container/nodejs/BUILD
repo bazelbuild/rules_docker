@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("//contrib:test.bzl", "container_test")
 load("//nodejs:image.bzl", "nodejs_image")
 
@@ -25,44 +25,59 @@ nodejs_image(
         "arg0",
         "arg1",
     ],
-    data = ["//testdata:nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
 )
 
 # Docker Cmd value should be `[""]`.
 nodejs_image(
     name = "nodejs_image_list_with_empty_string_args",
     args = [""],
-    data = ["//testdata:nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
 )
 
 # Docker Cmd value should be `null`.
 nodejs_image(
     name = "nodejs_image_no_args",
-    data = ["//testdata:nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
 )
 
 # Docker Cmd value should be `null`.
 nodejs_image(
     name = "nodejs_image_empty_list_args",
     args = [],
-    data = ["//testdata:nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
 )
 
 # Docker Cmd value should be `null`.
 nodejs_image(
     name = "nodejs_image_none_args",
     args = None,
-    data = ["//testdata:nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
 )
 
 nodejs_binary(
@@ -71,15 +86,17 @@ nodejs_binary(
         "arg0",
         "arg1",
     ],
-    data = ["//testdata:nodejs_image.js"],
-    entry_point = "io_bazel_rules_docker/testdata/nodejs_image.js",
-    node_modules = "@npm_deps//:node_modules",
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
 )
 
 nodejs_image(
     name = "nodejs_image_custom_binary",
     binary = ":my_custom_binary",
-    node_modules = "@npm_deps//:node_modules",
 )
 
 nodejs_image(
@@ -89,7 +106,6 @@ nodejs_image(
         "arg1",
     ],
     binary = ":my_custom_binary",
-    node_modules = "@npm_deps//:node_modules",
 )
 
 container_test(

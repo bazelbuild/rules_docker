@@ -25,28 +25,28 @@ function test_docker_run_flags_use_default() {
   clear_docker
   bazel build testdata:docker_run_flags_use_default
   # This depends on the generated image name to ensure no _additional_ flags other than the default were included
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_use_default)" "-i --rm --network=host bazel/testdata:docker_run_flags_use_default"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_use_default.executable)" "-i --rm --network=host bazel/testdata:docker_run_flags_use_default"
 }
 
 function test_docker_run_flags_override_default() {
   cd "${ROOT}"
   clear_docker
   bazel build testdata:docker_run_flags_overrides_default
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_default)" "-i --rm --network=host -e ABC=ABC"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_default.executable)" "-i --rm --network=host -e ABC=ABC"
 }
 
 function test_docker_run_flags_inherit_from_base() {
   cd "${ROOT}"
   clear_docker
   bazel build testdata:docker_run_flags_inherits_base
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_inherits_base)" "-i --rm --network=host -e ABC=ABC"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_inherits_base.executable)" "-i --rm --network=host -e ABC=ABC"
 }
 
 function test_docker_run_flags_overrides_base() {
   cd "${ROOT}"
   clear_docker
   bazel build testdata:docker_run_flags_overrides_base
-  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_base)" "-i --rm --network=host -e ABC=DEF"
+  EXPECT_CONTAINS "$(cat bazel-bin/testdata/docker_run_flags_overrides_base.executable)" "-i --rm --network=host -e ABC=DEF"
 }
 
 # Call functions above. 1st parameter must be a function defined above

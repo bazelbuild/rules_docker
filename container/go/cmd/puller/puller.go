@@ -24,8 +24,11 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
 	ospkg "os"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -49,6 +52,7 @@ var (
 	osFeatures      = flag.String("os-features", "", "Image's operating system features, if referring to a multi-platform manifest list. Input strings are space separated.")
 	variant         = flag.String("variant", "", "Image's CPU variant, if referring to a multi-platform manifest list.")
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
+	timeout         = flag.Int("timeout", 600, "Timeout in seconds for the puller. e.g., --timeout=1000 for a 1000 second timeout.")
 )
 
 // Tag applied to images that were pulled by digest. This denotes
@@ -80,7 +84,7 @@ func getTag(ref name.Reference) name.Reference {
 // copy of the image will be loaded from the given cache path if available. If
 // the given image name points to a list of images, the given platform will
 // be used to select the image to pull.
-func pull(imgName, dstPath, cachePath string, platform v1.Platform) error {
+func pull(imgName, dstPath, cachePath string, platform v1.Platform, transport *http.Transport) error {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -88,7 +92,7 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform) error {
 	}
 
 	// Fetch the image with desired cache files and platform specs.
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform))
+	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform), remote.WithTransport(transport))
 	if err != nil {
 		return errors.Wrapf(err, "reading image %q", ref)
 	}
@@ -130,7 +134,27 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
-	if err := pull(*imgName, *directory, *cachePath, platform); err != nil {
+	dur := time.Duration(*timeout) * time.Second
+	t := &http.Transport{
+		Dial: func(network, addr string) (net.Conn, error) {
+			d := net.Dialer{Timeout: dur, KeepAlive: dur}
+			conn, err := d.Dial(network, addr)
+			if err != nil {
+				return nil, err
+			}
+			if err := conn.SetDeadline(time.Now().Add(dur)); err != nil {
+				return nil, errors.Wrap(err, "unable to set deadline for HTTP connections")
+			}
+			return conn, nil
+		},
+		TLSHandshakeTimeout:   dur,
+		IdleConnTimeout:       dur,
+		ResponseHeaderTimeout: dur,
+		ExpectContinueTimeout: dur,
+		Proxy:                 http.ProxyFromEnvironment,
+	}
+
+	if err := pull(*imgName, *directory, *cachePath, platform, t); err != nil {
 		log.Fatalf("Image pull was unsuccessful: %v", err)
 	}
 

@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//container/go/pkg/compat:go_default_library",
         "//container/go/pkg/utils:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/legacy/tarball:go_default_library",
         "@com_github_google_go_containerregistry//pkg/name:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",

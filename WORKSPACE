@@ -103,6 +103,13 @@ container_pull(
     repository = "distroless/cc",
 )
 
+container_pull(
+    name = "large_image_timeout_test",
+    digest = "sha256:8f995ea7676177aebdb7fc1c8f7d285c290e6e1247b35356ade0e9e8ec628828",
+    registry = "l.gcr.io",
+    repository = "google/bazel",
+)
+
 # These are for package_manager testing.
 http_file(
     name = "bazel_gpg",
@@ -194,8 +201,8 @@ container_pull(
 
 # This image is used by tests/contrib tests.
 container_pull(
-    name = "bazel_0271",
-    digest = "sha256:436708ebb76c0089b94c46adac5d3332adb8c98ef8f24cb32274400d01bde9e3",
+    name = "bazel_2000",
+    digest = "sha256:e8b0adc7d9b8cf6ef28ae8d8c575169a9affeaca89fec2fced0e38c8d08e5059",
     registry = "l.gcr.io",
     repository = "google/bazel",
 )
@@ -219,20 +226,20 @@ _py_image_repos()
 # base_images_docker is needed as ubuntu1604/debian9 is used in package_manager tests
 http_archive(
     name = "base_images_docker",
-    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
 
 http_archive(
     name = "ubuntu1604",
-    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/ubuntu1604",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/ubuntu1604",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
 
 http_archive(
     name = "debian9",
-    strip_prefix = "base-images-docker-8ef00ee3077ba555851f63431036d34ffda85a4c/debian9",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8ef00ee3077ba555851f63431036d34ffda85a4c.tar.gz"],
+    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/debian9",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
 
 load("@ubuntu1604//:deps.bzl", ubuntu1604_deps = "deps")
@@ -274,15 +281,15 @@ jvm_maven_import_external(
     artifact = "com.google.guava:guava:18.0",
     artifact_sha256 = "d664fbfc03d2e5ce9cab2a44fb01f1d0bf9dfebeccc1a473b1f9ea31f79f6f99",
     licenses = ["notice"],  # Apache 2.0
-    server_urls = ["http://central.maven.org/maven2"],
+    server_urls = ["https://repo1.maven.org/maven2"],
 )
 
 # For our scala_image test.
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "9623666b8cc4dcc6ce62cd7f0aea02293d15bc80c2227e33baa78768a59d4651",
-    strip_prefix = "rules_scala-f4a24fe2f76e1b1f2b24757f7740a2699692951f",
-    urls = ["https://github.com/bazelbuild/rules_scala/archive/f4a24fe2f76e1b1f2b24757f7740a2699692951f.tar.gz"],
+    sha256 = "ed1a62f9fb2cb8930dd026b761ff900599b4c786c6cb6b7b5f9ad418f312c272",
+    strip_prefix = "rules_scala-0366fb23cb91fee2847a8358472278ddc9940c5f",
+    urls = ["https://github.com/bazelbuild/rules_scala/archive/0366fb23cb91fee2847a8358472278ddc9940c5f.tar.gz"],
 )
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
@@ -296,14 +303,14 @@ scala_register_toolchains()
 # For our groovy_image test.
 http_archive(
     name = "io_bazel_rules_groovy",
-    sha256 = "d2047c66847108f8514cb391ef981e11abd6625c267b156ca4b70345ca196574",
-    strip_prefix = "rules_groovy-ce90de1cde0366229c6fc14bed1e00c2a485c2d8",
-    urls = ["https://github.com/bazelbuild/rules_groovy/archive/ce90de1cde0366229c6fc14bed1e00c2a485c2d8.tar.gz"],
+    sha256 = "cf998e025316e1a93fc1dbf522814f3acc2fcc01883eec26e3a0c55980f251f1",
+    strip_prefix = "rules_groovy-70f85eafc5620256c3ccd0e2690f2674ab99f524",
+    urls = ["https://github.com/bazelbuild/rules_groovy/archive/70f85eafc5620256c3ccd0e2690f2674ab99f524.tar.gz"],
 )
 
-load("@io_bazel_rules_groovy//groovy:groovy.bzl", "groovy_repositories")
+load("@io_bazel_rules_groovy//groovy:repositories.bzl", "rules_groovy_dependencies")
 
-groovy_repositories()
+rules_groovy_dependencies()
 
 # Have the go_image dependencies for testing.
 load(
@@ -316,9 +323,9 @@ _go_image_repos()
 # For our rust_image test
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "019958e96fcb9d8b5e5f74f31ad58f9c59804e8c04cf5aae03b983001edc79e0",
-    strip_prefix = "rules_rust-f727669b8ac3c9d237ed9bc7833b8e1eeec90506",
-    urls = ["https://github.com/bazelbuild/rules_rust/archive/f727669b8ac3c9d237ed9bc7833b8e1eeec90506.tar.gz"],
+    sha256 = "3d3faa85e49ebf4d26c40075549a17739d636360064b94a9d481b37ace0add82",
+    strip_prefix = "rules_rust-6e87304c834c30b9c9f585cad19f30e7045281d7",
+    urls = ["https://github.com/bazelbuild/rules_rust/archive/6e87304c834c30b9c9f585cad19f30e7045281d7.tar.gz"],
 )
 
 load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
@@ -334,9 +341,9 @@ bazel_version(name = "bazel_version")
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "bf8d7e7d76f4abef5a732614ac06c0ccffbe5aa5fdc983ea4fa3a81ec68e1f8c",
-    strip_prefix = "rules_d-0579d30b7667a04b252489ab130b449882a7bdba",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/0579d30b7667a04b252489ab130b449882a7bdba.tar.gz"],
+    sha256 = "5cad228cf0a0f2e67deb08bfac1800e683854b4e13389376751d52f33e99df73",
+    strip_prefix = "rules_d-7e3bab5bf72f70c773a7240c496301cf80c6d9ec",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/7e3bab5bf72f70c773a7240c496301cf80c6d9ec.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
@@ -345,19 +352,22 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "9b72bb0aea72d7cbcfc82a01b1e25bf3d85f791e790ddec16c65e2d906382ee0",
-    strip_prefix = "rules_nodejs-0.16.2",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/archive/0.16.2.zip"],
+    sha256 = "2eca5b934dee47b5ff304f502ae187c40ec4e33e12bcbce872a2eeb786e23269",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.4.1/rules_nodejs-1.4.1.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
-node_repositories(package_json = ["//testdata:package.json"])
-
-npm_install(
-    name = "npm_deps",
+yarn_install(
+    name = "npm",
     package_json = "//testdata:package.json",
+    symlink_node_modules = False,
+    yarn_lock = "//testdata:yarn.lock",
 )
+
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
+install_bazel_dependencies()
 
 load(
     "//nodejs:image.bzl",
@@ -375,48 +385,149 @@ dockerfile_image(
         "ALPINE_version": "3.9",
     },
     dockerfile = "//testdata/dockerfile_build:Dockerfile",
-)
-
-[dockerfile_image(
-    name = "dockerfile_kaniko_%s" % tag,
-    build_args = {
-        "ALPINE_version": "3.9",
-    },
-    dockerfile = "//testdata/dockerfile_build:Dockerfile",
-    driver = "kaniko",
-    kaniko_tag = tag,
-) for tag in [
-    "latest",
-    "debug",
-]]
-
-# Load the image tarball.
-[container_load(
-    name = "loaded_dockerfile_image_%s" % driver,
-    file = "@dockerfile_%s//image:dockerfile_image.tar" % driver,
-) for driver in [
-    "docker",
-    "kaniko_latest",
-    "kaniko_debug",
-]]
-
-# Register the default py_toolchain for containerized execution
-register_toolchains("//toolchains/python:container_py_toolchain")
-
-http_archive(
-    name = "bazel_toolchains",
-    sha256 = "ab0d8aaeaeeef413ddb03922dbdb99bbae9e1b2c157a87c77d70d45a830be5b0",
-    strip_prefix = "bazel-toolchains-0.29.1",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.29.1.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.29.1.tar.gz",
+    vars = [
+        "SOME_VAR",
     ],
 )
 
+# Load the image tarball.
+container_load(
+    name = "loaded_dockerfile_image_docker",
+    file = "@dockerfile_docker//image:dockerfile_image.tar",
+)
+
+# Register the default py_toolchain / platform for containerized execution
+register_toolchains(
+    "//toolchains:container_py_toolchain",
+)
+
+register_execution_platforms(
+    "@local_config_platform//:host",
+    "//platforms:local_container_platform",
+)
+
+http_archive(
+    name = "bazel_toolchains",
+    sha256 = "1342f84d4324987f63307eb6a5aac2dff6d27967860a129f5cd40f8f9b6fd7dd",
+    strip_prefix = "bazel-toolchains-2.2.0",
+    urls = [
+        "https://github.com/bazelbuild/bazel-toolchains/releases/download/2.2.0/bazel-toolchains-2.2.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/2.2.0.tar.gz",
+    ],
+)
+
+# Define several exec property repo rules to be used in testing.
+load("@bazel_toolchains//rules/exec_properties:exec_properties.bzl", "rbe_exec_properties")
+
+# A standard RBE execution property set repo rule.
+rbe_exec_properties(
+    name = "exec_properties",
+)
+
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+load("@exec_properties//:constants.bzl", "DOCKER_SIBLINGS_CONTAINERS", "NETWORK_ON")
 
 rbe_autoconfig(
     name = "buildkite_config",
+    base_container_digest = "sha256:b4dad0bfc4951d619229ab15343a311f2415a16ef83bcaa55b44f4e2bf1cf635",
+    digest = "sha256:565d0a20a4c6a4c65e219f22ae55c88b36755848ff133164bce2d443f5f6067d",
+    exec_properties = dicts.add(DOCKER_SIBLINGS_CONTAINERS, NETWORK_ON),
+    registry = "marketplace.gcr.io",
+    repository = "google/bazel",
+    use_legacy_platform_definition = False,
 )
 
 # gazelle:repo bazel_gazelle
+
+# Python packages needed for tests
+
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "httplib2",
+    build_file_content = """
+py_library(
+name = "httplib2",
+srcs = glob(["**/*.py"]),
+data = ["cacerts.txt"],
+visibility = ["//visibility:public"]
+)""",
+    sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
+    strip_prefix = "httplib2-0.12.1/python2/httplib2/",
+    type = "tar.gz",
+    urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
+)
+
+# Used by oauth2client
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "six",
+    build_file_content = """
+# Rename six.py to __init__.py
+genrule(
+name = "rename",
+srcs = ["six.py"],
+outs = ["__init__.py"],
+cmd = "cat $< >$@",
+)
+py_library(
+name = "six",
+srcs = [":__init__.py"],
+visibility = ["//visibility:public"],
+)""",
+    sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
+    strip_prefix = "six-1.9.0/",
+    type = "tar.gz",
+    urls = ["https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"],
+)
+
+# Used for authentication in containerregistry
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "oauth2client",
+    build_file_content = """
+py_library(
+name = "oauth2client",
+srcs = glob(["**/*.py"]),
+visibility = ["//visibility:public"],
+deps = [
+"@httplib2//:httplib2",
+"@six//:six",
+]
+)""",
+    sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
+    strip_prefix = "oauth2client-4.0.0/oauth2client/",
+    type = "tar.gz",
+    urls = ["https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0"],
+)
+
+# Used for parallel execution in containerregistry
+# TODO(mattmoor): Is there a clean way to override?
+http_archive(
+    name = "concurrent",
+    build_file_content = """
+py_library(
+name = "concurrent",
+srcs = glob(["**/*.py"]),
+visibility = ["//visibility:public"]
+)""",
+    sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
+    strip_prefix = "pythonfutures-3.0.5/concurrent/",
+    type = "tar.gz",
+    urls = ["https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5"],
+)
+
+# For kotlin image test
+http_archive(
+    name = "io_bazel_rules_kotlin",
+    sha256 = "fe32ced5273bcc2f9e41cea65a28a9184a77f3bc30fea8a5c47b3d3bfc801dff",
+    strip_prefix = "rules_kotlin-legacy-1.3.0-rc4",
+    type = "zip",
+    urls = ["https://github.com/bazelbuild/rules_kotlin/archive/legacy-1.3.0-rc4.zip"],
+)
+
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
+
+kotlin_repositories()
+
+kt_register_toolchains()

@@ -23,10 +23,6 @@ load(
     "container_import",
     "container_push",
 )
-load(
-    "//container:new_push.bzl",
-    "new_container_push",
-)
 load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
@@ -197,26 +193,11 @@ container_image(
     operating_system = "windows",
 )
 
-container_image(
-    name = "basic_windows_image_go_join_layers",
-    base = ":import_windows_base_image",
-    cmd = ["echo bar"],
-    operating_system = "windows",
-    use_legacy_join_layers = False,
-)
-
 container_test(
     name = "basic_windows_image_test",
     configs = ["//tests/container/configs:windows_image.yaml"],
     driver = "tar",
     image = ":basic_windows_image",
-)
-
-container_test(
-    name = "basic_windows_image_test_go_join_layers",
-    configs = ["//tests/container/configs:windows_image.yaml"],
-    driver = "tar",
-    image = ":basic_windows_image_go_join_layers",
 )
 
 # The following targets are not imported.
@@ -240,7 +221,7 @@ container_test(
     image = "@alpine_linux_ppc64le//image",
 )
 
-new_container_push(
+container_push(
     name = "push_image_with_11_layers",
     format = "Docker",
     image = ":image_with_11_layers",
@@ -255,13 +236,13 @@ new_container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
-    content = "sha256:12f16b811707264bb51f96e85a5f08f0d23fe874dd857a4cd39f7a90844a8bdb",
+    content = "sha256:b17eeb809b87bf5ad734369f1ef6aa4a13e6ea850cb745d8d64b17ef13c54f4f",
     file = ":deb_image_with_dpkgs.digest",
 )
 
 file_test(
     name = "test_digest_output2",
-    content = "sha256:5126c97392b596711e00f5af71675581978475cf1490d12a55d4b321ceeee392",
+    content = "sha256:8da7a9421c68be888336492184d54b42db91a0b1f2096d85f4eaf3a25b7f234e",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
 # END_DO_NOT_IMPORT
@@ -279,6 +260,22 @@ container_test(
     name = "set_env_csv_test",
     configs = ["//tests/container/configs:set_env_csv.yaml"],
     image = ":set_env_csv",
+)
+
+container_image(
+    name = "set_env_equals",
+    base = "@distroless_fixed_id//image",
+    cmd = ["foo"],
+    env = {
+        "CUDA_PKG_VERSION": "-10-0=10.0.130-1",
+        "JAVA_OPTS": "-Dloader.main=com.sample.app.SampleApp",
+    },
+)
+
+container_test(
+    name = "set_env_equals_test",
+    configs = ["//tests/container/configs:set_env_equals.yaml"],
+    image = ":set_env_equals",
 )
 
 # Image with Bazel Make variables in the env field.
@@ -416,10 +413,10 @@ py_test(
 )
 
 # The following targets are not imported.
-# new_container_push targets are only available and tested on GitHub.
+# container_push targets are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_1",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -429,7 +426,7 @@ new_container_push(
     tag = "unchanged_tag1",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_unchanged_tag_2",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -439,7 +436,7 @@ new_container_push(
     tag = "unchanged_tag2",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_1",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -449,7 +446,7 @@ new_container_push(
     tag = "changed_tag1",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_skip_unchanged_digest_changed_tag_2",
     format = "Docker",
     image = "@alpine_linux_amd64//image:image.tar",
@@ -459,7 +456,7 @@ new_container_push(
     tag = "changed_tag2",
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_oci",
     format = "OCI",
     image = ":set_cmd_and_entrypoint",
@@ -469,7 +466,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_oci_from_new_puller",
     format = "OCI",
     image = "@alpine_linux_amd64//image",
@@ -479,7 +476,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_container_img",
     format = "Docker",
     image = ":alpine_with_custom_attr",
@@ -489,7 +486,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_container_img_with_auth",
     format = "Docker",
     image = ":set_cmd_and_entrypoint",
@@ -499,7 +496,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_new_puller",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image",
@@ -509,7 +506,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_from_old_puller",
     format = "Docker",
     image = "@alpine_linux_armv6//image",
@@ -519,7 +516,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_tar",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -529,7 +526,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_old_puller_tar",
     format = "Docker",
     image = "@alpine_linux_ppc64le//image:image.tar",
@@ -539,7 +536,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_oci_tag_file",
     format = "OCI",
     image = ":alpine_with_custom_attr",
@@ -549,7 +546,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_test_legacy_tag_file",
     format = "Docker",
     image = ":set_cmd",
@@ -559,7 +556,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_stamped_test_legacy",
     format = "Docker",
     image = ":set_cmd",
@@ -569,7 +566,7 @@ new_container_push(
     tags = ["manual"],
 )
 
-new_container_push(
+container_push(
     name = "new_push_stamped_test_oci",
     format = "OCI",
     image = "@alpine_linux_amd64//image",
@@ -586,7 +583,7 @@ new_container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_push_digest_output",
-    content = "sha256:515b5206d4232e54ac4a0c2b45fb9fbe678ccc4f6c228e59024ac3ef61e08133",
+    content = "sha256:0149d475d8e25903446311d3da4a4aa54f348103b84c43b6ad3351484fdaff67",
     file = ":push_test.digest",
 )
 
@@ -611,13 +608,13 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:0d91921356df81fd2015764032b380fd97315b08967c6e7c5829b8729ac670d2",
+    content = "sha256:f757e72211b4ed612e147248bbbb8ce134cf70124d8850d70607d9ba53a28377",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:0200c2c330733d6d71f94a642849517cfae8b3467d1712689779a7f0438a119d",
+    content = "sha256:ae3eb3579d8c9654d64075623c8e7819c7681f762cb715ba20de8aa693066e56",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
@@ -780,7 +777,6 @@ container_image(
         "//testdata:bar",
         "//testdata:foo",
     ],
-    use_legacy_join_layers = False,
 )
 
 container_test(
@@ -807,6 +803,24 @@ container_test(
     # Using the tar driver to force using the Go join layers implementation.
     driver = "tar",
     image = ":new_alpine_linux_ppc64le_image_oci_go_join_layers",
+)
+
+# This test is used to check if an architecture label is set properly when set in container_image
+# args are the architecture to be matched and the target
+container_image(
+    name = "alpine_arch_ppc64le",
+    architecture = "ppc64le",
+    base = "@alpine_linux_ppc64le//image",
+)
+
+sh_test(
+    name = "architecture_test",
+    srcs = ["architecture_test.sh"],
+    args = [
+        "ppc64le",
+        "alpine_arch_ppc64le",
+    ],
+    data = [":alpine_arch_ppc64le"],
 )
 # END_DO_NOT_IMPORT
 
