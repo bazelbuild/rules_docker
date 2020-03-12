@@ -17,7 +17,7 @@
 
 steps:
   - name: "l.gcr.io/google/bazel"
-    args: 
+    args:
       - "--bazelrc=.bazelrc"
       - "test"
       - "--define=ENV_KEY=my_key"
