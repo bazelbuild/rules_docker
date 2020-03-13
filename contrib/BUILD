@@ -45,7 +45,7 @@ py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
     legacy_create_init = False,
-    python_version = "PY2",
+    python_version = "PY3",
     deps = [":extract_image_id_lib"],
 )
 
