@@ -111,6 +111,8 @@ def build_layer(
         args.add(ctx.attr.mtime, format = "--mtime=%s")
     if ctx.attr.portable_mtime:
         args.add("--mtime=portable")
+    if ctx.attr.preserve_tar_mtimes:
+        args.add("--preserve_tar_mtimes=true")
 
     if toolchain_info.xz_path != "":
         args.add(toolchain_info.xz_path, format = "--xz_path=%s")
