@@ -284,6 +284,7 @@ _layer_attrs = dicts.add({
         mandatory = False,
     ),
     "portable_mtime": attr.bool(default = False),
+    "preserve_tar_mtimes": attr.bool(default = False),
     "symlinks": attr.string_dict(),
     "tars": attr.label_list(allow_files = tar_filetype),
 }, _hash_tools, _layer_tools)
