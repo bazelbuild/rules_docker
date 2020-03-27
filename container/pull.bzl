@@ -166,7 +166,7 @@ exports_files(["image.digest", "digest"])
 
     if "PULLER_TIMEOUT" in repository_ctx.os.environ:
         args += [
-            "--timeout",
+            "-timeout",
             repository_ctx.os.environ.get("PULLER_TIMEOUT"),
         ]
 
