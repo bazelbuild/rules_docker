@@ -408,11 +408,11 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "1342f84d4324987f63307eb6a5aac2dff6d27967860a129f5cd40f8f9b6fd7dd",
-    strip_prefix = "bazel-toolchains-2.2.0",
+    sha256 = "e754d6028845423b2cc7a6c375f9657fe0b0bbb196d76c8de6dd129c3aa74023",
+    strip_prefix = "bazel-toolchains-2.2.3",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/releases/download/2.2.0/bazel-toolchains-2.2.0.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/2.2.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/releases/download/2.2.3/bazel-toolchains-2.2.3.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/2.2.3.tar.gz",
     ],
 )
 
