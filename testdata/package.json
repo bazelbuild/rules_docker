@@ -3,7 +3,7 @@
     "@bazel/typescript": "1.4.1",
     "@types/jsesc": "2.5.0",
     "@types/node": "12.12.35",
-    "jsesc": "2.5.2",
+    "jsesc": "3.0.1",
     "typescript": "3.8.3"
   }
 }
