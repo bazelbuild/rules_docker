@@ -171,23 +171,30 @@ func push(dst string, img v1.Image) error {
 		}
 	}
 
-	file, err := os.Open(path.Join(os.Getenv("DOCKER_CONFIG"), "config.json"))
-	if err != nil {
-		return errors.Wrapf(err, "unable to open docker config")
+	options := []remote.Option{remote.WithAuthFromKeychain(authn.DefaultKeychain)}
+
+	configPath := path.Join(os.Getenv("DOCKER_CONFIG"), "config.json")
+	if _, err := os.Stat(configPath); err == nil {
+		file, err := os.Open(configPath)
+		if err != nil {
+			return errors.Wrapf(err, "unable to open docker config")
+		}
+
+		var dockerConfig dockerHeaders
+		err = json.NewDecoder(file).Decode(&dockerConfig)
+		if err != nil {
+			return errors.Wrapf(err, "error parsing docker config")
+		}
+
+		httpTransportOption := remote.WithTransport(&headerTransport{
+			inner:       http.DefaultTransport,
+			httpHeaders: dockerConfig.HTTPHeaders,
+		})
+
+		options = append(options, httpTransportOption)
 	}
 
-	var dockerConfig dockerHeaders
-	err = json.NewDecoder(file).Decode(&dockerConfig)
-	if err != nil {
-		return errors.Wrapf(err, "error parsing docker config")
-	}
-
-	httpTransportOption := remote.WithTransport(&headerTransport{
-		inner:       http.DefaultTransport,
-		httpHeaders: dockerConfig.HTTPHeaders,
-	})
-
-	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain), httpTransportOption); err != nil {
+	if err := remote.Write(ref, img, options...); err != nil {
 		return errors.Wrapf(err, "unable to push image to %s", dst)
 	}
 
