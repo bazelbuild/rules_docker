@@ -736,6 +736,7 @@ py_image(
 py_library(
     name = "py_image_library_using_six",
     srcs = ["py_image_library_using_six.py"],
+    srcs_version = "PY2AND3",
     deps = [requirement("six")],
 )
 
