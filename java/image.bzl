@@ -365,10 +365,10 @@ _war_dep_layer = rule(
 def _war_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
-    available = depset(transitive = [depset(java_files(jar)) for jar in ctx.attr.jar_layers])
+    available = depset(transitive = [java_files(jar) for jar in ctx.attr.jar_layers])
 
     # This is based on rules_appengine's WAR rules.
-    transitive_deps = depset(java_files(ctx.attr.library))
+    transitive_deps = java_files(ctx.attr.library)
     # TODO(mattmoor): Handle data files.
 
     # If we start putting libs in servlet-agnostic paths,
