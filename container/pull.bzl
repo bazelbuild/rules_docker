@@ -133,35 +133,32 @@ exports_files(["image.digest", "digest"])
         args += ["-client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
 
     cache_dir = repository_ctx.os.environ.get("DOCKER_REPO_CACHE")
+    cache_args = []
     if cache_dir:
         if cache_dir.startswith("~/") and "HOME" in repository_ctx.os.environ:
             cache_dir = cache_dir.replace("~", repository_ctx.os.environ["HOME"], 1)
 
-        args += [
+        cache_args = [
             "-cache",
             cache_dir,
         ]
 
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
+
     if repository_ctx.attr.digest:
-        args += [
-            "-name",
-            "{registry}/{repository}@{digest}".format(
+        image_name = "{registry}/{repository}@{digest}".format(
                 registry = repository_ctx.attr.registry,
                 repository = repository_ctx.attr.repository,
                 digest = repository_ctx.attr.digest,
-            ),
-        ]
+            )
     else:
-        args += [
-            "-name",
-            "{registry}/{repository}:{tag}".format(
+        image_name = "{registry}/{repository}:{tag}".format(
                 registry = repository_ctx.attr.registry,
                 repository = repository_ctx.attr.repository,
                 tag = repository_ctx.attr.tag,
-            ),
-        ]
+            )
 
+    args += ["-name", image_name]
     kwargs = {}
 
     if "PULLER_TIMEOUT" in repository_ctx.os.environ:
@@ -170,9 +167,22 @@ exports_files(["image.digest", "digest"])
             repository_ctx.os.environ.get("PULLER_TIMEOUT"),
         ]
 
-    result = repository_ctx.execute(args, **kwargs)
+    args_with_cache = args + cache_args
+    repository_ctx.report_progress("Pulling image: %s" % (image_name))
+    result = repository_ctx.execute(args_with_cache, **kwargs)
     if result.return_code:
-        fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args])))
+        if not len(cache_args) or not "unexpected EOF" in result.stderr:
+            fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args_with_cache])))
+        else:
+            print("[WARN] Pull command 1st attempt failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args_with_cache])))
+            temp_cache_dir = repository_ctx.execute(["mktemp","-d"]).stdout
+            repository_ctx.report_progress("Trying to download using temp cache "+temp_cache_dir)
+            cache_args = ["-cache",temp_cache_dir]
+            args_with_cache = args + cache_args
+            result = repository_ctx.execute(args_with_cache, **kwargs)
+            if result.return_code:
+                fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args_with_cache])))
+            repository_ctx.execute(["mv",temp_cache_dir + "/*",cache_dir])
 
     updated_attrs = {
         k: getattr(repository_ctx.attr, k)
