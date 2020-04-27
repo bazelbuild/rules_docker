@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@npm_bazel_typescript//:index.bzl", "ts_library")
@@ -285,7 +285,7 @@ container_image(
 # py_binary(
 #     name = "extras_gen",
 #     srcs = ["extras_gen.py"],
-#     deps = ["@bazel_tools//tools/build_defs/pkg:archive"],
+#     deps = ["@rules_pkg//:archive"],
 # )
 
 # genrule(

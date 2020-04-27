@@ -691,7 +691,7 @@ rules, you can override the default `base="..."` attribute.  Consider this
 modified sample from the `distroless` repository:
 
 ```python
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 # Create a passwd file with a root and nonroot user and uid.
 passwd_entry(
