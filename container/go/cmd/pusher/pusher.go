@@ -16,10 +16,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
@@ -44,6 +47,10 @@ var (
 	layers              utils.ArrayStringFlags
 	stampInfoFile       utils.ArrayStringFlags
 )
+
+type dockerHeaders struct {
+	HTTPHeaders map[string]string `json:"HttpHeaders,omitempty"`
+}
 
 // checkClientConfig ensures the given string represents a valid docker client
 // config by ensuring:
@@ -164,9 +171,50 @@ func push(dst string, img v1.Image) error {
 		}
 	}
 
-	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {
+	options := []remote.Option{remote.WithAuthFromKeychain(authn.DefaultKeychain)}
+
+	configPath := path.Join(os.Getenv("DOCKER_CONFIG"), "config.json")
+	if _, err := os.Stat(configPath); err == nil {
+		file, err := os.Open(configPath)
+		if err != nil {
+			return errors.Wrapf(err, "unable to open docker config")
+		}
+
+		var dockerConfig dockerHeaders
+		err = json.NewDecoder(file).Decode(&dockerConfig)
+		if err != nil {
+			return errors.Wrapf(err, "error parsing docker config")
+		}
+
+		httpTransportOption := remote.WithTransport(&headerTransport{
+			inner:       http.DefaultTransport,
+			httpHeaders: dockerConfig.HTTPHeaders,
+		})
+
+		options = append(options, httpTransportOption)
+	}
+
+	if err := remote.Write(ref, img, options...); err != nil {
 		return errors.Wrapf(err, "unable to push image to %s", dst)
 	}
 
 	return nil
+}
+
+// headerTransport sets headers on outgoing requests.
+type headerTransport struct {
+	httpHeaders map[string]string
+	inner       http.RoundTripper
+}
+
+// RoundTrip implements http.RoundTripper.
+func (ht *headerTransport) RoundTrip(in *http.Request) (*http.Response, error) {
+	for k, v := range ht.httpHeaders {
+		// ignore "User-Agent" as it gets overwritten
+		if http.CanonicalHeaderKey(k) == "User-Agent" {
+			continue
+		}
+		in.Header.Set(k, v)
+	}
+	return ht.inner.RoundTrip(in)
 }
