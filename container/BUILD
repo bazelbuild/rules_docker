@@ -44,7 +44,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "@bazel_tools//third_party/py/gflags",
-        "@rules_pkg//pkg:archive",
+        "@rules_pkg//:archive",
     ],
 )
 
