@@ -31,7 +31,7 @@ py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
     legacy_create_init = True,
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [":build_tar_lib"],
