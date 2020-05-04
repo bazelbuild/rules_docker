@@ -134,6 +134,7 @@ class TarFile(object):
         self.compression,
         self.root_directory,
         self.default_mtime,
+        False,
     )
     return self
 
