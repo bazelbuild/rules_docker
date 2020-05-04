@@ -608,7 +608,7 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:f757e72211b4ed612e147248bbbb8ce134cf70124d8850d70607d9ba53a28377",
+    content = "sha256:a962af02dee6e64a20f4b5300d5def30ebb655367fed73d7b4f0300567064b7e",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
