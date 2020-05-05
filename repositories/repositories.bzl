@@ -143,6 +143,13 @@ def repositories():
             urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.20.0/bazel-gazelle-v0.20.0.tar.gz"],
         )
 
+    if "rules_pkg" not in excludes:
+        http_archive(
+            name = "rules_pkg",
+            sha256 = "aeca78988341a2ee1ba097641056d168320ecc51372ef7ff8e64b139516a4937",
+            urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.6-1/rules_pkg-0.2.6.tar.gz"],
+        )
+
     native.register_toolchains(
         # Register the default docker toolchain that expects the 'docker'
         # executable to be in the PATH
