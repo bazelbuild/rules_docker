@@ -111,7 +111,8 @@ def build_layer(
         args.add(ctx.attr.mtime, format = "--mtime=%s")
     if ctx.attr.portable_mtime:
         args.add("--mtime=portable")
-
+    if ctx.attr.enable_mtime_preservation:
+        args.add("--enable_mtime_preservation=true")
     if toolchain_info.xz_path != "":
         args.add(toolchain_info.xz_path, format = "--xz_path=%s")
 
@@ -275,6 +276,7 @@ _layer_attrs = dicts.add({
     "empty_dirs": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
+    "enable_mtime_preservation": attr.bool(default = False),
     "env": attr.string_dict(),
     "files": attr.label_list(allow_files = True),
     "mode": attr.string(default = "0o555"),  # 0o555 == a+rx

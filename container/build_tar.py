@@ -47,6 +47,9 @@ gflags.DEFINE_string(
         ' value "portable", to get the value 2000-01-01, which is'
         ' usable with non *nix OSes.')
 
+gflags.DEFINE_bool(
+    'enable_mtime_preservation', False, 'Preserve file mtimes from input tar file.')
+
 gflags.DEFINE_multistring(
     'empty_root_dir',
     [],
@@ -121,12 +124,14 @@ class TarFile(object):
     else:
       return os.path.basename(os.path.splitext(filename)[0])
 
-  def __init__(self, output, directory, compression, root_directory, default_mtime):
+  def __init__(self, output, directory, compression, root_directory,
+               default_mtime, enable_mtime_preservation):
     self.directory = directory
     self.output = output
     self.compression = compression
     self.root_directory = root_directory
     self.default_mtime = default_mtime
+    self.enable_mtime_preservation = enable_mtime_preservation
 
   def __enter__(self):
     self.tarfile = archive.TarFileWriter(
@@ -406,7 +411,9 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression, FLAGS.root_directory, FLAGS.mtime) as output:
+  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression,
+               FLAGS.root_directory, FLAGS.mtime,
+               FLAGS.enable_mtime_preservation) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
