@@ -162,6 +162,13 @@ container_image(
 )
 
 container_image(
+    name = "tar_with_mtimes_preserved",
+    base = ":tar_base",
+    enable_mtime_preservation = True,
+    tars = ["two.tar"],
+)
+
+container_image(
     name = "tar_with_tar_base",
     base = ":tar_base",
     tars = ["two.tar"],
