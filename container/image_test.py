@@ -53,6 +53,12 @@ class ImageTest(unittest.TestCase):
     with tarfile.open(fileobj=buf, mode='r') as layer:
       self.assertTarballContains(layer, paths)
 
+  def assertNonZeroMtimesInTopLayer(self, img):
+    buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+    with tarfile.open(fileobj=buf, mode='r') as layer:
+      for member in layer.getmembers():
+        self.assertNotEqual(member.mtime, 0)
+
   def assertTopLayerContains(self, img, paths):
     self.assertLayerNContains(img, 0, paths)
 
@@ -97,6 +103,11 @@ class ImageTest(unittest.TestCase):
         './usr', './usr/bin', './usr/bin/unremarkabledeath'])
       # Check that this doesn't have a configured entrypoint.
       self.assertConfigEqual(img, 'Entrypoint', None)
+
+  def test_tar_with_mtimes_preserved(self):
+    with TestImage('tar_with_mtimes_preserved') as img:
+      self.assertDigest(img, '2b01c46f6ba7652112154e7fedfb3357b6cbf1d7eaa09cd15143bb74f8f3b617')
+      self.assertNonZeroMtimesInTopLayer(img)
 
   def test_tar_with_tar_base(self):
     with TestImage('tar_with_tar_base') as img:

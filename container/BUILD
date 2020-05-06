@@ -60,6 +60,7 @@ TEST_TARGETS = [
     ":files_in_layer_with_files_base",
     ":files_with_tar_base",
     ":tar_base",
+    ":tar_with_mtimes_preserved",
     ":tar_with_files_base",
     ":tar_with_tar_base",
     ":tars_in_layer_with_tar_base",
