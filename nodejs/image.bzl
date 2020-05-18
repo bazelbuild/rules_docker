@@ -136,14 +136,6 @@ def nodejs_image(
             **kwargs
         )
 
-    nodejs_layers = [
-        # Put the Node binary into its own layers.
-        "@nodejs//:node",
-        "@nodejs//:node_files",
-        "@nodejs//:bin/node_repo_args.sh",
-    ]
-
-    all_layers = nodejs_layers + layers
 
     visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
@@ -151,7 +143,7 @@ def nodejs_image(
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
     base = base or DEFAULT_BASE
-    for index, dep in enumerate(all_layers):
+    for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
         _dep_layer(name = this_name, base = base, dep = dep, binary = binary, testonly = kwargs.get("testonly"), visibility = visibility, tags = tags)
         base = this_name
