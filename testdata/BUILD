@@ -715,20 +715,11 @@ py_image(
     ],
 )
 
-py_image(
-    name = "py_image_with_main",
-    srcs = ["py_image.py"],
-    layers = [
-        "//tests/container/python:py_image_library",
-    ],
-    main = "py_image.py",
-)
-
 rule_with_symlinks(
     name = "data_with_symlinks",
 )
 
-py_image(
+py3_image(
     name = "py_image_with_symlinks_in_data",
     srcs = ["py_image.py"],
     data = [
