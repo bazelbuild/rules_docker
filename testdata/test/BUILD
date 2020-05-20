@@ -30,8 +30,8 @@ filegroup(
 py_library(
     name = "py_image_library_using_addict",
     srcs = ["py_image_library_using_addict.py"],
+    srcs_version = "PY2AND3",
     deps = [requirement("addict")],
-    srcs_version = "PY2AND3"
 )
 
 # For end to end testing of py_image dependencies specified as "layers"
