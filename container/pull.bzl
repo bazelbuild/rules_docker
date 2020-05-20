@@ -17,6 +17,11 @@ This wraps the rulesdocker.go.cmd.puller.puller executable in a
 Bazel rule for downloading base images without a Docker client to
 construct new images.
 """
+pull_tags_prefix = struct(
+    registry = "dockerRegistry=",
+    repository = "dockerRepository=",
+    digest = "dockerDigest=",
+)
 
 _container_pull_attrs = {
     "architecture": attr.string(
@@ -92,20 +97,8 @@ def _impl(repository_ctx):
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
 
-    import_rule_tags = "[\"{}\"]".format("\", \"".join(repository_ctx.attr.import_tags))
-    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
-load("@io_bazel_rules_docker//container:import.bzl", "container_import")
-
-container_import(
-    name = "image",
-    config = "config.json",
-    layers = glob(["*.tar.gz"]),
-    tags = {tags},
-)
-
-exports_files(["image.digest", "digest"])
-""".format(tags = import_rule_tags))
-
+    # Add another BUILD file in order to generate the image subfolder
+    repository_ctx.file("image/BUILD", "")
     puller = repository_ctx.attr.puller_linux
     if repository_ctx.os.name.lower().startswith("mac os"):
         puller = repository_ctx.attr.puller_darwin
@@ -198,6 +191,26 @@ exports_files(["image.digest", "digest"])
     # Add image.digest for compatibility with container_digest, which generates
     # foo.digest for an image named foo.
     repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
+
+    metatags = [
+        pull_tags_prefix.registry + updated_attrs["registry"],
+        pull_tags_prefix.repository + updated_attrs["repository"],
+        pull_tags_prefix.digest + updated_attrs["digest"],
+    ]
+    tags = repository_ctx.attr.import_tags + metatags
+    import_rule_tags = "[\"{}\"]".format("\", \"".join(tags))
+    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
+load("@io_bazel_rules_docker//container:import.bzl", "container_import")
+
+container_import(
+    name = "image",
+    config = "config.json",
+    layers = glob(["*.tar.gz"]),
+    tags = {tags},
+)
+
+exports_files(["image.digest", "digest"])
+""".format(tags = import_rule_tags))
 
     return updated_attrs
 
