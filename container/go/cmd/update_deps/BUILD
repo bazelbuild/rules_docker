@@ -25,11 +25,7 @@ go_binary(
 go_library(
     name = "go_default_library",
     srcs = ["update_deps.go"],
-    importpath = "github.com/bazelbuild/rules_docker",
+    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/update_deps",
     visibility = ["//visibility:private"],
-    deps = [
-        "//container/go/pkg/compat:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/crane:go_default_library",
-        "@com_github_pkg_errors//:go_default_library",
-    ],
+    deps = ["@com_github_google_go_containerregistry//pkg/crane:go_default_library"],
 )
