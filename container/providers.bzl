@@ -30,7 +30,12 @@ ImageInfo = provider(fields = [
 ])
 
 # A provider containing information exposed by container_import rules
-ImportInfo = provider(fields = ["container_parts"])
+ImportInfo = provider(fields = [
+    "container_parts",
+    "source_registry",
+    "source_repository",
+    "source_digest",
+])
 
 # A provider containing information exposed by container_layer rules
 LayerInfo = provider(fields = [
