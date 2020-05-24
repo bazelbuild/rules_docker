@@ -1,5 +1,7 @@
-load("//container:providers.bzl", "PullInfo")
+"""Custom test and setup properties for checkin pull_info provider."""
+
 load("//container:container.bzl", "container_pull")
+load("//container:providers.bzl", "PullInfo")
 
 test_base_image_properties = struct(
     name = "tests_pull_info_base_image",
