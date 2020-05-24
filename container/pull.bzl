@@ -202,9 +202,9 @@ container_import(
     name = "image",
     config = "config.json",
     layers = glob(["*.tar.gz"]),
-    source_registry = "{registry}",
-    source_repository = "{repository}",
-    source_digest = "{digest}",
+    base_image_registry = "{registry}",
+    base_image_repository = "{repository}",
+    base_image_digest = "{digest}",
     tags = {tags},
 )
 
