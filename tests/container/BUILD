@@ -27,6 +27,7 @@ load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
 load(":empty_layers.bzl", "empty_layers")
+load(":pull_info_validation_test.bzl", "pull_info_validation_test", "test_base_image_properties")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -845,3 +846,11 @@ file_test(
     regexp = ".*",
 )
 # END_DO_NOT_IMPORT
+
+pull_info_validation_test(
+    name = "pull_info_validation_test",
+    target = "@%s//image" % test_base_image_properties.name,
+    expected_registry = test_base_image_properties.registry,
+    expected_repository = test_base_image_properties.repository,
+    expected_digest = test_base_image_properties.digest,
+)
