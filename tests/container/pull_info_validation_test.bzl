@@ -30,8 +30,8 @@ function assert_equals(){
 }
 """ + """
 assert_equals "base_image_registry" "{expected_registry}" "{actual_registry}"
-assert_equals "base_image_registry" "{expected_repository}" "{actual_repository}"
-assert_equals "base_image_registry" "{expected_digest}" "{actual_digest}"
+assert_equals "base_image_repository" "{expected_repository}" "{actual_repository}"
+assert_equals "base_image_digest" "{expected_digest}" "{actual_digest}"
 echo "PASSED"
 """.format(
         expected_registry = ctx.attr.expected_registry,
