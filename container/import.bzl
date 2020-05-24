@@ -165,6 +165,9 @@ def _container_import_impl(ctx):
 
 container_import = rule(
     attrs = dicts.add({
+        "base_image_digest": attr.string(doc = "The digest of the image"),
+        "base_image_registry": attr.string(doc = "The registry from which we pulled the image"),
+        "base_image_repository": attr.string(doc = "The repository from which we pulled the image"),
         "config": attr.label(allow_files = [".json"]),
         "layers": attr.label_list(
             allow_files = tar_filetype + tgz_filetype,
@@ -175,9 +178,6 @@ container_import = rule(
             mandatory = False,
         ),
         "repository": attr.string(default = "bazel"),
-        "base_image_registry": attr.string(doc = "The registry from which we pulled the image"),
-        "base_image_repository": attr.string(doc = "The repository from which we pulled the image"),
-        "base_image_digest": attr.string(doc = "The digest of the image"),
     }, _hash_tools, _layer_tools),
     executable = True,
     outputs = {

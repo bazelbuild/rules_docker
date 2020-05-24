@@ -47,10 +47,10 @@ echo "PASSED"
 pull_info_validation_test = rule(
     implementation = _pull_info_validation_test_impl,
     attrs = {
-        "target": attr.label(providers = [PullInfo]),
+        "expected_digest": attr.string(mandatory = True),
         "expected_registry": attr.string(mandatory = True),
         "expected_repository": attr.string(mandatory = True),
-        "expected_digest": attr.string(mandatory = True),
+        "target": attr.label(providers = [PullInfo]),
     },
     test = True,
 )
