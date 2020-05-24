@@ -1,20 +1,20 @@
 load("//container:providers.bzl", "PullInfo")
-load("//container:container.bzl","container_pull")
+load("//container:container.bzl", "container_pull")
 
-test_base_image_properties=struct(
-  name = "tests_pull_info_base_image",
-  registry = "gcr.io/distroless",
-  repository = "base",
-  digest="sha256:2b0a8e9a13dcc168b126778d9e947a7081b4d2ee1ee122830d835f176d0e2a70"
+test_base_image_properties = struct(
+    name = "tests_pull_info_base_image",
+    registry = "gcr.io/distroless",
+    repository = "base",
+    digest = "sha256:2b0a8e9a13dcc168b126778d9e947a7081b4d2ee1ee122830d835f176d0e2a70",
 )
 
 def define_base_image_for_tests():
-  container_pull(
-    name = test_base_image_properties.name,
-    registry = test_base_image_properties.registry,
-    repository = test_base_image_properties.repository,
-    digest = test_base_image_properties.digest
-  )
+    container_pull(
+        name = test_base_image_properties.name,
+        registry = test_base_image_properties.registry,
+        repository = test_base_image_properties.repository,
+        digest = test_base_image_properties.digest,
+    )
 
 def _pull_info_validation_test_impl(ctx):
     pull_info = ctx.attr.target[PullInfo]
@@ -26,7 +26,7 @@ function assert_equals(){
       exit 1
     fi
 }
-"""+"""
+""" + """
 assert_equals "base_image_registry" "{expected_registry}" "{actual_registry}"
 assert_equals "base_image_registry" "{expected_repository}" "{actual_repository}"
 assert_equals "base_image_registry" "{expected_digest}" "{actual_digest}"
@@ -42,7 +42,7 @@ echo "PASSED"
 
     ctx.actions.write(compare_script_file, compare_script, is_executable = True)
 
-    return [DefaultInfo(executable=compare_script_file,runfiles = ctx.runfiles(files = [compare_script_file]))]
+    return [DefaultInfo(executable = compare_script_file, runfiles = ctx.runfiles(files = [compare_script_file]))]
 
 pull_info_validation_test = rule(
     implementation = _pull_info_validation_test_impl,

@@ -849,8 +849,8 @@ file_test(
 
 pull_info_validation_test(
     name = "pull_info_validation_test",
-    target = "@%s//image" % test_base_image_properties.name,
+    expected_digest = test_base_image_properties.digest,
     expected_registry = test_base_image_properties.registry,
     expected_repository = test_base_image_properties.repository,
-    expected_digest = test_base_image_properties.digest,
+    target = "@%s//image" % test_base_image_properties.name,
 )
