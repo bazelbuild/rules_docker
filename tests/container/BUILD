@@ -845,7 +845,6 @@ file_test(
     file = "@pause_tar//image:001.tar.gz",
     regexp = ".*",
 )
-# END_DO_NOT_IMPORT
 
 pull_info_validation_test(
     name = "pull_info_validation_test",
@@ -854,3 +853,5 @@ pull_info_validation_test(
     expected_repository = test_base_image_properties.repository,
     target = "@%s//image" % test_base_image_properties.name,
 )
+
+# END_DO_NOT_IMPORT
