@@ -27,7 +27,7 @@ load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
 load(":empty_layers.bzl", "empty_layers")
-load(":pull_info_validation_test.bzl", "pull_info_validation_test", "test_base_image_properties")
+load(":pull_info_validation_test.bzl", "pull_info_validation_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -848,10 +848,10 @@ file_test(
 
 pull_info_validation_test(
     name = "pull_info_validation_test",
-    expected_digest = test_base_image_properties.digest,
-    expected_registry = test_base_image_properties.registry,
-    expected_repository = test_base_image_properties.repository,
-    target = "@%s//image" % test_base_image_properties.name,
+    expected_digest = "sha256:a26dde6863dd8b0417d7060c990abe85c1d2481541568445e82b46de9452cf0c",
+    expected_registry = "gcr.io",
+    expected_repository = "distroless/base",
+    target = "@distroless_base_fixed_id//image" ,
 )
 
 # END_DO_NOT_IMPORT

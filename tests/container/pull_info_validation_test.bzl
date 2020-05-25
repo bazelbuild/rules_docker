@@ -1,22 +1,6 @@
 """Custom test and setup properties for checkin pull_info provider."""
 
-load("//container:container.bzl", "container_pull")
 load("//container:providers.bzl", "PullInfo")
-
-test_base_image_properties = struct(
-    name = "tests_pull_info_base_image",
-    registry = "gcr.io/distroless",
-    repository = "base",
-    digest = "sha256:2b0a8e9a13dcc168b126778d9e947a7081b4d2ee1ee122830d835f176d0e2a70",
-)
-
-def define_base_image_for_tests():
-    container_pull(
-        name = test_base_image_properties.name,
-        registry = test_base_image_properties.registry,
-        repository = test_base_image_properties.repository,
-        digest = test_base_image_properties.digest,
-    )
 
 def _pull_info_validation_test_impl(ctx):
     pull_info = ctx.attr.target[PullInfo]

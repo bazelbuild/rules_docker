@@ -531,7 +531,3 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_reg
 kotlin_repositories()
 
 kt_register_toolchains()
-
-load("//tests/container:pull_info_validation_test.bzl", "define_base_image_for_tests")
-
-define_base_image_for_tests()
