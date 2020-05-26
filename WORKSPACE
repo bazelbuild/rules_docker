@@ -113,7 +113,7 @@ container_pull(
 # These are for package_manager testing.
 http_file(
     name = "bazel_gpg",
-    sha256 = "30af2ca7abfb65987cd61802ca6e352aadc6129dfb5bfc9c81f16617bc3a4416",
+    sha256 = "547ec71b61f94b07909969649d52ee069db9b0c55763d3add366ca7a30fb3f6d",
     urls = ["https://bazel.build/bazel-release.pub.gpg"],
 )
 
