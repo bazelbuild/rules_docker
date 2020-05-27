@@ -165,10 +165,15 @@ exports_files(["image.digest", "digest"])
     kwargs = {}
 
     if "PULLER_TIMEOUT" in repository_ctx.os.environ:
-        args += [
-            "-timeout",
-            repository_ctx.os.environ.get("PULLER_TIMEOUT"),
-        ]
+        timeout_in_secs = repository_ctx.os.environ["PULLER_TIMEOUT"]
+        if timeout_in_secs.isdigit():
+            args += [
+                "-timeout",
+                timeout_in_secs,
+            ]
+            kwargs["timeout"] = int(timeout_in_secs)
+        else:
+            fail("'%s' is invalid value for PULLER_TIMEOUT. Must be an integer." % (timeout_in_secs))
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:
