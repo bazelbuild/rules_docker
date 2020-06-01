@@ -13,18 +13,27 @@
 # limitations under the License.
 """Rules for manipulation container images."""
 
-load("//container:bundle.bzl", "container_bundle")
-load("//container:flatten.bzl", "container_flatten")
-load("//container:image.bzl", "container_image", "image")
-load("//container:import.bzl", "container_import")
-load("//container:load.bzl", "container_load")
-load("//container:pull.bzl", "container_pull")
-load("//container:push.bzl", "container_push")
+load("//container:bundle.bzl", _container_bundle = "container_bundle")
+load("//container:flatten.bzl", _container_flatten = "container_flatten")
+load("//container:image.bzl", _container_image = "container_image", "image")
+load("//container:import.bzl", _container_import = "container_import")
+load("//container:load.bzl", _container_load = "container_load")
+load("//container:pull.bzl", _container_pull = "container_pull")
+load("//container:push.bzl", _container_push = "container_push")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 container = struct(
     image = image,
 )
+
+# Re-export imports
+container_bundle = _container_bundle
+container_flatten = _container_flatten
+container_image = _container_image
+container_import = _container_import
+container_load = _container_load
+container_pull = _container_pull
+container_push = _container_push
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.25"

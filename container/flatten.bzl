@@ -61,8 +61,7 @@ def _impl(ctx):
 container_flatten = rule(
     attrs = dict({
         "image": attr.label(
-            allow_files = [".tar"],
-            single_file = True,
+            allow_single_file = [".tar"],
             mandatory = True,
         ),
         "_flattener": attr.label(
