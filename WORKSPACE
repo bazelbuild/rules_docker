@@ -201,8 +201,8 @@ container_pull(
 
 # This image is used by tests/contrib tests.
 container_pull(
-    name = "bazel_2000",
-    digest = "sha256:e8b0adc7d9b8cf6ef28ae8d8c575169a9affeaca89fec2fced0e38c8d08e5059",
+    name = "bazel_320",
+    digest = "sha256:08434856d8196632b936dd082b8e03bae0b41346299aedf60a0d481ab427a69f",
     registry = "l.gcr.io",
     repository = "google/bazel",
 )
@@ -408,11 +408,11 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "144290c4166bd67e76a54f96cd504ed86416ca3ca82030282760f0823c10be48",
-    strip_prefix = "bazel-toolchains-3.1.1",
+    sha256 = "db48eed61552e25d36fe051a65d2a329cc0fb08442627e8f13960c5ab087a44e",
+    strip_prefix = "bazel-toolchains-3.2.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/releases/download/3.1.1/bazel-toolchains-3.1.1.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/3.1.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/releases/download/3.2.0/bazel-toolchains-3.2.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/3.2.0.tar.gz",
     ],
 )
 

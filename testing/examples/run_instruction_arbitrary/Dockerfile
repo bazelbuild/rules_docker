@@ -14,7 +14,6 @@ RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/google-cloud-sdk/bin
 
 # Install python tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python-pip \
+RUN apt-get update && apt-get install -y --no-install-recommends python3-pip \
     && apt-get clean \
-    && python -m pip install --upgrade pip setuptools wheel
+    && python3 -m pip install --upgrade pip setuptools wheel
