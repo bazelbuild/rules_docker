@@ -40,7 +40,7 @@ To get started with building Docker images, check out the
 that build the same images using both rules_docker and a Dockerfile.
 
 __NOTE:__ `container_push` and `container_pull` make use of
-[google/containerregistry](https://github.com/google/containerregistry) for
+[google/go-containerregistry](https://github.com/google/go-containerregistry) for
 registry interactions.
 
 ## Language Rules
@@ -193,7 +193,7 @@ container_pull(
 If the repositories that are imported by `container_repositories()` have already been
 imported (at a different version) by other rules you called in your `WORKSPACE`, which
 are placed above the call to `container_repositories()`, arbitrary errors might
-ocurr. If you get errors related to external repositories, you will likely
+occur. If you get errors related to external repositories, you will likely
 not be able to use `container_repositories()` and will have to import
 directly in your `WORKSPACE` all the required dependencies (see the most up
 to date impl of `container_repositories()` for details).
@@ -207,7 +207,7 @@ _six_ can be patched properly.
   See https://github.com/bazelbuild/rules_docker/issues/1022 for more details.
 
 * Ensure your project has a `BUILD` or `BUILD.bazel` file at the top level. This
-can be a blank file if necessary. Otherwise you might see and error that looks
+can be a blank file if necessary. Otherwise you might see an error that looks
 like:
 ```
 Unable to load package for //:WORKSPACE: BUILD file not found in any of the following directories.
@@ -257,9 +257,9 @@ See also:
  https://github.com/Azure/acr-docker-credential-helper)
 
 Once you've setup your docker client configuration, see [here](#container_pull-custom-client-configuration)
-for an example of how to use container_pull with custom docker authentication credentials
+for an example of how to use `container_pull` with custom docker authentication credentials
 and [here](#container_push-custom-client-configuration) for an example of how
-to use container_push with custom docker authentication credentials.
+to use `container_push` with custom docker authentication credentials.
 
 ## Varying image names
 
@@ -270,14 +270,13 @@ at present for doing this.
 ### Stamping
 
 The first option is to use stamping. Stamping is enabled when a supported
-attribute contains a python format placeholder (eg `{BUILD_USER}`).
+attribute contains a python format placeholder (e.g. `{BUILD_USER}`).
 
 ```python
 # A common pattern when users want to avoid trampling
 # on each other's images during development.
 container_push(
   name = "publish",
-
   format = "Docker",
 
   # Any of these components may have variables.
@@ -496,7 +495,7 @@ py_image(
     name = "server",
     srcs = ["server.py"],
     # "layers" is just like "deps", but it also moves the dependencies each into
-    # their own layer, which can dramatically improve developer cycle time.  For
+    # their own layer, which can dramatically improve developer cycle time. For
     # example here, the grpcio layer is ~40MB, but the rest of the app is only
     # ~400KB.  By partitioning things this way, the large grpcio layer remains
     # unchanging and we can reduce the amount of image data we repush by ~99%!
@@ -1321,7 +1320,7 @@ container_pull(name, registry, repository, digest, tag)
 A repository rule that pulls down a Docker base image in a manner suitable for
 use with `container_image`'s `base` attribute.
 
-**NOTE:** container_pull now supports authentication using custom docker client
+**NOTE:** `container_pull` now supports authentication using custom docker client
 configuration. See [here](#container_pull-custom-client-configuration) for details.
 
 **NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
@@ -1333,7 +1332,7 @@ unsafe. If you notice flakiness after enabling it, see the warning below on how
 to workaround it.
 
 **NOTE:** `container_pull` is suspected to have thread safety issues. To
-ensure multiple container_pull(s) don't execute concurrently, please use the
+ensure multiple `container_pull`(s) don't execute concurrently, please use the
 bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
 
 <table class="table table-condensed table-bordered table-params">
@@ -1499,7 +1498,7 @@ container_push(name, image, registry, repository, tag)
 
 An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
 
-**NOTE:** container_push now supports authentication using custom docker client
+**NOTE:** `container_push` now supports authentication using custom docker client
 configuration. See [here](#container_push-custom-client-configuration) for details.
 
 <table class="table table-condensed table-bordered table-params">
@@ -1635,12 +1634,12 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
         <p>Root path of the files.</p>
         <p>
           The directory structure from the files is preserved inside the
-          Docker image, but a prefix path determined by `data_path`
+          Docker image, but a prefix path determined by <code>data_path</code>
           is removed from the directory structure. This path can
           be absolute from the workspace root if starting with a `/` or
           relative to the rule's directory. A relative path may starts with "./"
           (or be ".") but cannot use go up with "..". By default, the
-          `data_path` attribute is unused, and all files should have no prefix.
+          <code>data_path</code> attribute is unused, and all files should have no prefix.
         </p>
       </td>
     </tr>
@@ -1698,9 +1697,12 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
       <td><code>debs</code></td>
       <td>
         <code>List of files, optional</code>
-        <p>Debian package to install.</p>
+        <p>Debian packages to extract.</p>
         <p>
-          A list of debian packages that will be installed in the Docker image.
+          Deprecated: A list of debian packages that will be extracted in the Docker image.
+          Note that this doesn't actually install the packages. Installation needs apt
+          or apt-get which need to be executed within a running container which
+          <code>container_layer</code> can't do.
         </p>
       </td>
     </tr>
@@ -1868,12 +1870,12 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <p>Root path of the files.</p>
         <p>
           The directory structure from the files is preserved inside the
-          Docker image, but a prefix path determined by `data_path`
+          Docker image, but a prefix path determined by <code>data_path</code>
           is removed from the directory structure. This path can
           be absolute from the workspace root if starting with a `/` or
           relative to the rule's directory. A relative path may starts with "./"
           (or be ".") but cannot use go up with "..". By default, the
-          `data_path` attribute is unused, and all files should have no prefix.
+          <code>data_path</code> attribute is unused, and all files should have no prefix.
         </p>
       </td>
     </tr>
@@ -2087,8 +2089,8 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       <td><code>layers</code></td>
       <td>
         <code>Label list, optional</code>
-        <p>List of `container_layer` targets. </p>
-        <p>The data from each `container_layer` will be part of container image, and the environment variable will be available in the image as well.</p>
+        <p>List of <code>container_layer</code> targets. </p>
+        <p>The data from each <code>container_layer</code> will be part of container image, and the environment variable will be available in the image as well.</p>
       </td>
     </tr>
     <tr>
@@ -2096,11 +2098,11 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
       <td>
         <code>String, default to `bazel`</code>
         <p>The repository for the default tag for the image.</a></p>
-        <p>Images generated by `container_image` are tagged by default to
-           `bazel/package_name:target` for a `container_image` target at
-           `//package/name:target`. Setting this attribute to
-           `gcr.io/dummy` would set the default tag to
-           `gcr.io/dummy/package_name:target`.</p>
+        <p>Images generated by <code>container_image</code> are tagged by default to
+           <code>bazel/package_name:target</code> for a <code>container_image</code> target at
+           <code>//package/name:target</code>. Setting this attribute to
+           <code>gcr.io/dummy</code> would set the default tag to
+           <code>gcr.io/dummy/package_name:target</code>.</p>
       </td>
     </tr>
     <tr>
@@ -2142,7 +2144,7 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>container_image</code> target will directly invoke
         <code>docker run</code>.</p>
         <p>Note that it defaults to <code>False</code> when using
-        <code>&lt;lang&gt;_image</code> rules.</p>
+        <code>lang_image</code> rules.</p>
       </td>
     </tr>
     <tr>
