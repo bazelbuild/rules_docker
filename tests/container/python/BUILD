@@ -13,16 +13,17 @@
 # limitations under the License.
 
 load("//contrib:test.bzl", "container_test")
-load("//python:image.bzl", "py_image")
+load("//python3:image.bzl", "py3_image")
 
 package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "py_image_library",
     srcs = ["//testdata:py_image_library.py"],
+    srcs_version = "PY2AND3",
 )
 
-py_image(
+py3_image(
     name = "py_image",
     srcs = ["//testdata:py_image.py"],
     args = [

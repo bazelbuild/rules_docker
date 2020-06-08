@@ -92,19 +92,10 @@ def _impl(repository_ctx):
     # Add an empty top-level BUILD file.
     repository_ctx.file("BUILD", "")
 
+    # Creating this empty just so `image` subfolder would exist
+    repository_ctx.file("image/BUILD", "")
+
     import_rule_tags = "[\"{}\"]".format("\", \"".join(repository_ctx.attr.import_tags))
-    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
-load("@io_bazel_rules_docker//container:import.bzl", "container_import")
-
-container_import(
-    name = "image",
-    config = "config.json",
-    layers = glob(["*.tar.gz"]),
-    tags = {tags},
-)
-
-exports_files(["image.digest", "digest"])
-""".format(tags = import_rule_tags))
 
     puller = repository_ctx.attr.puller_linux
     if repository_ctx.os.name.lower().startswith("mac os"):
@@ -165,10 +156,15 @@ exports_files(["image.digest", "digest"])
     kwargs = {}
 
     if "PULLER_TIMEOUT" in repository_ctx.os.environ:
-        args += [
-            "-timeout",
-            repository_ctx.os.environ.get("PULLER_TIMEOUT"),
-        ]
+        timeout_in_secs = repository_ctx.os.environ["PULLER_TIMEOUT"]
+        if timeout_in_secs.isdigit():
+            args += [
+                "-timeout",
+                timeout_in_secs,
+            ]
+            kwargs["timeout"] = int(timeout_in_secs)
+        else:
+            fail("'%s' is invalid value for PULLER_TIMEOUT. Must be an integer." % (timeout_in_secs))
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:
@@ -199,6 +195,26 @@ exports_files(["image.digest", "digest"])
     # foo.digest for an image named foo.
     repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
 
+    repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
+load("@io_bazel_rules_docker//container:import.bzl", "container_import")
+
+container_import(
+    name = "image",
+    config = "config.json",
+    layers = glob(["*.tar.gz"]),
+    base_image_registry = "{registry}",
+    base_image_repository = "{repository}",
+    base_image_digest = "{digest}",
+    tags = {tags},
+)
+
+exports_files(["image.digest", "digest"])
+""".format(
+        registry = updated_attrs["registry"],
+        repository = updated_attrs["repository"],
+        digest = updated_attrs["digest"],
+        tags = import_rule_tags,
+    ))
     return updated_attrs
 
 pull = struct(
