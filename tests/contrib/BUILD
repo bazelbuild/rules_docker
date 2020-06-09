@@ -163,7 +163,7 @@ container_repro_test(
 
 container_repro_test(
     name = "derivative_with_volume_repro_test",
-    base = "@bazel_2000//image",
+    base = "@bazel_320//image",
     container_diff_args = [
         "history",
         "file",

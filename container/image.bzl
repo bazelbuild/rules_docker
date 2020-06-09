@@ -530,6 +530,10 @@ def _impl(
             files = depset([output_layer]),
             runfiles = runfiles,
         ),
+        coverage_common.instrumented_files_info(
+            ctx,
+            dependency_attributes = ["files"],
+        ),
     ]
 
 _attrs = dicts.add(_layer.attrs, {
