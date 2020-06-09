@@ -65,10 +65,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@types/jsesc@2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@types/jsesc/-/jsesc-2.5.0.tgz#40e2de0f4f0e292f172589e75cfb17b6a6db09c4"
-  integrity sha512-rhKX1CpHA4NH3H/tXpuHAOLCIrJOV6Dm2rtv5J4jQt9tJ801+IIz9yhj2lHl/m5l7NCS94pODN7kLeAcqEaq/g==
+"@types/jsesc@2.5.1":
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@types/jsesc/-/jsesc-2.5.1.tgz#c34defc608ec94b68dc6a12a581b440942c6d503"
+  integrity sha512-9VN+6yxLOPLOav+7PwjZbxiID2bVaeq0ED4qSQmdQTdjnXJSaCVKTR58t15oqH1H5t8Ng2ZX1SabJVoN9Q34bw==
 
 "@types/long@^4.0.0":
   version "4.0.0"
