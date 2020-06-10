@@ -2,7 +2,7 @@
   "dependencies": {
     "@bazel/typescript": "1.7.0",
     "@types/jsesc": "2.5.1",
-    "@types/node": "12.12.37",
+    "@types/node": "12.12.47",
     "jsesc": "3.0.1",
     "typescript": "3.9.5"
   }
