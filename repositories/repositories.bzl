@@ -149,7 +149,7 @@ def repositories():
             sha256 = "aeca78988341a2ee1ba097641056d168320ecc51372ef7ff8e64b139516a4937",
             urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.6-1/rules_pkg-0.2.6.tar.gz"],
         )
-    
+
     if "io_abseil_py" not in excludes:
         http_archive(
             name = "io_abseil_py",
