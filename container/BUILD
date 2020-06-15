@@ -43,7 +43,7 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "@bazel_tools//third_party/py/gflags",
+        "@io_abseil_py//absl/flags",
         "@rules_pkg//:archive",
     ],
 )
