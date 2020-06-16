@@ -45,6 +45,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         requirement("python-gflags"),
+        requirement("six"),
         "@rules_pkg//:archive",
     ],
 )
