@@ -26,7 +26,6 @@ import re
 import tarfile
 import tempfile
 
-from absl import flags
 from rules_pkg import archive
 
 
