@@ -150,41 +150,6 @@ def repositories():
             urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.6-1/rules_pkg-0.2.6.tar.gz"],
         )
 
-    if "io_abseil_py" not in excludes:
-        http_archive(
-            name = "io_abseil_py",
-            strip_prefix = "abseil-py-pypi-v0.9.0",
-            sha256 = "603febc9b95a8f2979a7bdb77d2f5e4d9b30d4e0d59579f88eba67d4e4cc5462",
-            urls = ["https://github.com/abseil/abseil-py/archive/pypi-v0.9.0.tar.gz"],
-        )
-
-    # Abseil dependency https://github.com/abseil/abseil-py/blob/f24641ca72815e2643659cb7c8a966e5faa6e580/WORKSPACE#L18
-    if "six_archive" not in excludes:
-        http_archive(
-            name = "six_archive",
-            urls = [
-                "http://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
-                "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
-            ],
-            sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
-            strip_prefix = "six-1.10.0",
-            build_file_content = """# Description:
-#   Six provides simple utilities for wrapping over differences between Python 2
-#   and Python 3.
-
-licenses(["notice"])  # MIT
-
-exports_files(["LICENSE"])
-
-py_library(
-    name = "six",
-    srcs = ["six.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-)
-""",
-        )
-
     native.register_toolchains(
         # Register the default docker toolchain that expects the 'docker'
         # executable to be in the PATH
