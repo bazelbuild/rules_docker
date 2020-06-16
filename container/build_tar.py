@@ -14,6 +14,7 @@
 """This tool build tar files from a list of inputs."""
 
 from contextlib import contextmanager
+import gflags
 import gzip
 import io
 import json
@@ -25,86 +26,84 @@ import re
 import tarfile
 import tempfile
 
-from absl import flags
 from rules_pkg import archive
 
+gflags.DEFINE_string('output', None, 'The output file, mandatory')
+gflags.MarkFlagAsRequired('output')
 
-flags.DEFINE_string('output', None, 'The output file, mandatory')
-flags.mark_flag_as_required('output')
+gflags.DEFINE_multistring('file', [], 'A file to add to the layer')
 
-flags.DEFINE_multi_string('file', [], 'A file to add to the layer')
+gflags.DEFINE_string('manifest', None, 'JSON manifest of contents to add to the layer')
 
-flags.DEFINE_string('manifest', None, 'JSON manifest of contents to add to the layer')
+gflags.DEFINE_multistring('empty_file', [], 'An empty file to add to the layer')
 
-flags.DEFINE_multi_string('empty_file', [], 'An empty file to add to the layer')
+gflags.DEFINE_multistring('empty_dir', [], 'An empty dir to add to the layer')
 
-flags.DEFINE_multi_string('empty_dir', [], 'An empty dir to add to the layer')
-
-flags.DEFINE_string(
+gflags.DEFINE_string(
     'mode', None, 'Force the mode on the added files (in octal).')
 
-flags.DEFINE_string(
+gflags.DEFINE_string(
     'mtime', None, 'Set mtime on tar file entries. May be an integer or the'
         ' value "portable", to get the value 2000-01-01, which is'
         ' usable with non *nix OSes.')
 
-flags.DEFINE_bool(
+gflags.DEFINE_bool(
     'enable_mtime_preservation', False, 'Preserve file mtimes from input tar file.')
 
-flags.DEFINE_multi_string(
+gflags.DEFINE_multistring(
     'empty_root_dir',
     [],
     'An empty root directory to add to the layer.  This will create a directory that'
     'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
     '"root_directory"')
 
-flags.DEFINE_multi_string('tar', [], 'A tar file to add to the layer')
+gflags.DEFINE_multistring('tar', [], 'A tar file to add to the layer')
 
-flags.DEFINE_multi_string('deb', [], 'A debian package to add to the layer')
+gflags.DEFINE_multistring('deb', [], 'A debian package to add to the layer')
 
-flags.DEFINE_multi_string(
+gflags.DEFINE_multistring(
     'link', [],
     'Add a symlink a inside the layer ponting to b if a:b is specified')
-flags.register_validator(
+gflags.RegisterValidator(
     'link',
     lambda l: all(value.find(':') > 0 for value in l),
     message='--link value should contains a : separator')
 
-flags.DEFINE_string(
+gflags.DEFINE_string(
     'directory', None, 'Directory in which to store the file inside the layer')
 
-flags.DEFINE_string(
+gflags.DEFINE_string(
     'compression', None, 'Compression (`gz` or `bz2`), default is none.')
 
-flags.DEFINE_multi_string(
+gflags.DEFINE_multistring(
     'modes', None,
     'Specific mode to apply to specific file (from the file argument),'
     ' e.g., path/to/file=0o455.')
 
-flags.DEFINE_multi_string('owners', None,
+gflags.DEFINE_multistring('owners', None,
                           'Specify the numeric owners of individual files, '
                           'e.g. path/to/file=0.0.')
 
-flags.DEFINE_string('owner', '0.0',
+gflags.DEFINE_string('owner', '0.0',
                      'Specify the numeric default owner of all files,'
                      ' e.g., 0.0')
 
-flags.DEFINE_string('owner_name', None,
+gflags.DEFINE_string('owner_name', None,
                      'Specify the owner name of all files, e.g. root.root.')
 
-flags.DEFINE_multi_string('owner_names', None,
+gflags.DEFINE_multistring('owner_names', None,
                           'Specify the owner names of individual files, e.g. '
                           'path/to/file=root.root.')
 
-flags.DEFINE_string(
+gflags.DEFINE_string(
     'root_directory', './', 'Default root directory is named "."'
     'Windows docker images require this be named "Files" instead of "."')
 
-flags.DEFINE_string('xz_path', None,
+gflags.DEFINE_string('xz_path', None,
                      'Specify the path to xz as a fallback when the Python '
                      'lzma module is unavailable.')
 
-FLAGS = flags.FLAGS
+FLAGS = gflags.FLAGS
 
 
 class TarFile(object):
