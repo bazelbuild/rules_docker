@@ -35,6 +35,10 @@ load(
 
 container_deps()
 
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
+
+pip_deps()
+
 load("@io_bazel_rules_docker//container:pull.bzl", "container_pull")
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
 load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
