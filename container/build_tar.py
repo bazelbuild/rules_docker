@@ -14,6 +14,7 @@
 """This tool build tar files from a list of inputs."""
 
 from contextlib import contextmanager
+import gflags
 import gzip
 import io
 import json
@@ -26,7 +27,6 @@ import tarfile
 import tempfile
 
 from rules_pkg import archive
-from third_party.py import gflags
 
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
 gflags.MarkFlagAsRequired('output')
