@@ -205,7 +205,7 @@ EOF
   # We minimize reads / writes by symlinking the layers above
   # and then streaming exactly the layers we've established are
   # needed into the Docker daemon.
-  tar cPh "${MISSING[@]}" | tee image.tar | "${DOCKER}" ${DOCKER_FLAGS} load
+  tar cPh "${MISSING[@]}" | "${DOCKER}" ${DOCKER_FLAGS} load
 }
 
 function tag_layer() {
