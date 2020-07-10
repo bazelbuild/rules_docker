@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule to load a local tool. Used to test gzip_target."""
+"""Rule to load a local tool. Used to test gzip_target and xz_target."""
 
 _local_tool_build_template = """
 sh_binary(
