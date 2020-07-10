@@ -139,16 +139,16 @@ docker_toolchain_configure(
   # for more details.
   client_config="<enter absolute path to your docker config directory here>",
   # OPTIONAL: Path to the docker binary.
-  # Should be set explcitly for remote execution.
+  # Should be set explicitly for remote execution.
   docker_path="<enter absolute path to the docker binary (in the remote exec env) here>",
   # OPTIONAL: Path to the gzip binary.
-  # Either gzip_path or gzip_target should be set explcitly for remote execution.
+  # Either gzip_path or gzip_target should be set explicitly for remote execution.
   gzip_path="<enter absolute path to the gzip binary (in the remote exec env) here>",
   # OPTIONAL: Bazel target for the gzip tool.
-  # Either gzip_path or gzip_target should be set explcitly for remote execution.
+  # Either gzip_path or gzip_target should be set explicitly for remote execution.
   gzip_target="<enter absolute path (i.e., must start with repo name @...//:...) to an executable gzip target>",
   # OPTIONAL: Path to the xz binary.
-  # Should be set explcitly for remote execution.
+  # Should be set explicitly for remote execution.
   xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
   # OPTIONAL: List of additional flags to pass to the docker command.
   docker_flags = [
