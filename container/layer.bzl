@@ -114,8 +114,16 @@ def build_layer(
         args.add("--mtime=portable")
     if ctx.attr.enable_mtime_preservation:
         args.add("--enable_mtime_preservation=true")
-    if toolchain_info.xz_path != "":
-        args.add(toolchain_info.xz_path, format = "--xz_path=%s")
+
+
+    xz_path = toolchain_info.xz_path
+    if toolchain_info.xz_target:
+        xz_path = toolchain_info.xz_target.files_to_run.executable.path
+        xz_tools, _, xz_input_manifests = ctx.resolve_command(tools = [toolchain_info.xz_target])
+    elif toolchain_info.xz_path == "":
+        fail("xz could not be found. Make sure it is in the path or set it " +
+             "explicitly in the docker_toolchain_configure")
+    args.add(xz_path, format = "--xz_path=%s")
 
     # Windows layer.tar require two separate root directories instead of just 1
     # 'Files' is the equivalent of '.' in Linux images.
@@ -149,7 +157,8 @@ def build_layer(
     ctx.actions.run(
         executable = build_layer_exec,
         arguments = [args],
-        tools = files + file_map.values() + tars + debs + [manifest_file],
+        input_manifests = xz_input_manifests,
+        tools = files + file_map.values() + tars + debs + [manifest_file] + xz_tools,
         outputs = [layer],
         use_default_shell_env = True,
         mnemonic = "ImageLayer",
