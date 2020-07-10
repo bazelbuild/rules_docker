@@ -30,6 +30,10 @@ local_tool(
     name = "gzip",
 )
 
+local_tool(
+    name = "xz",
+)
+
 load(
     "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
@@ -38,6 +42,7 @@ load(
 docker_toolchain_configure(
     name = "docker_config",
     gzip_target = "@gzip//:gzip",
+    xz_target = "@xz//:xz",
 )
 
 load(
