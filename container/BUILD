@@ -41,7 +41,7 @@ py_binary(
 py_library(
     name = "build_tar_lib",
     srcs = [
-        "build_tar.py", 
+        "build_tar.py",
         "archive.py",
     ],
     srcs_version = "PY2AND3",
