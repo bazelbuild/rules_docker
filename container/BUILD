@@ -41,8 +41,8 @@ py_binary(
 py_library(
     name = "build_tar_lib",
     srcs = [
-        "build_tar.py",
         "archive.py",
+        "build_tar.py",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
