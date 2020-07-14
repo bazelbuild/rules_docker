@@ -26,7 +26,7 @@ import re
 import tarfile
 import tempfile
 
-from rules_pkg import archive
+from container import archive
 
 gflags.DEFINE_string('output', None, 'The output file, mandatory')
 gflags.MarkFlagAsRequired('output')
