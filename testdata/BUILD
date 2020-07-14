@@ -292,7 +292,7 @@ container_image(
 # py_binary(
 #     name = "extras_gen",
 #     srcs = ["extras_gen.py"],
-#     deps = ["@rules_pkg//:archive"],
+#     deps = ["//container:archive_lib"],
 # )
 
 # genrule(

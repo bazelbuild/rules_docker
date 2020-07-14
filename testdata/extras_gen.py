@@ -16,7 +16,7 @@ import datetime
 import sys
 import tarfile
 
-from rules_pkg import archive
+import archive
 
 if __name__ == '__main__':
   mtime = int(datetime.datetime.now().strftime('%s'))
