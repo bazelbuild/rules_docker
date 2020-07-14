@@ -16,7 +16,7 @@ import datetime
 import sys
 import tarfile
 
-import archive
+from container import archive
 
 if __name__ == '__main__':
   mtime = int(datetime.datetime.now().strftime('%s'))

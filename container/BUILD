@@ -35,28 +35,21 @@ py_binary(
     python_version = "PY3",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = [
-        ":archive_lib",
-        ":build_tar_lib",
-    ],
+    deps = [":build_tar_lib"],
 )
 
 py_library(
     name = "build_tar_lib",
-    srcs = ["build_tar.py"],
+    srcs = [
+        "build_tar.py", 
+        "archive.py",
+    ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
         requirement("python-gflags"),
         requirement("six"),
     ],
-)
-
-py_library(
-    name = "archive_lib",
-    srcs = ["archive.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
 )
 
 TEST_TARGETS = [
