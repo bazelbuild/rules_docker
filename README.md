@@ -1583,7 +1583,7 @@ configuration. See [here](#container_push-custom-client-configuration) for detai
 ## container_layer
 
 ```python
-container_layer(data_path, directory, empty_dirs, files, mode, tars, debs, symlinks, env)
+container_layer(data_path, directory, empty_dirs, empty_files, files, mode, tars, debs, symlinks, env)
 ```
 
 A rule that assembles data into a tarball which can be use as in `layers` attr in `container_image` rule.
@@ -1660,9 +1660,19 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
       <td><code>empty_dirs</code></td>
       <td>
         <code>List of directories, optional</code>
-        <p>Directory to add to the layer.</p>
+        <p>Directory to remove in the layer.</p>
         <p>
           A list of empty directories that should be created in the Docker image.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>empty_files</code></td>
+      <td>
+        <code>List of files, optional</code>
+        <p>File to remove to the layer.</p>
+        <p>
+          A list of empty files that should be created in the Docker image.
         </p>
       </td>
     </tr>
