@@ -663,7 +663,7 @@ class ImageTest(unittest.TestCase):
         '/app/testdata/py_image_complex.binary.runfiles',
         '/app/testdata/py_image_complex.binary.runfiles/container_pip_deps_pypi__six_1_11_0',
         '/app/testdata/py_image_complex.binary.runfiles/container_pip_deps_pypi__six_1_11_0/six.py',
-        '/app/testdata/py_image_complex.binary.runfiles/container_pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/',
+        '/app/testdata/py_image_complex.binary.runfiles/container_pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info',
         '/app/testdata/py_image_complex.binary.runfiles/container_pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/DESCRIPTION.rst',
         '/app/testdata/py_image_complex.binary.runfiles/container_pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/METADATA',
         '/app/testdata/py_image_complex.binary.runfiles/container_pip_deps_pypi__six_1_11_0/six-1.11.0.dist-info/RECORD',
