@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
-load("@pip_deps//:requirements.bzl", "all_requirements", "requirement")
+load("@container_pip_deps//:requirements.bzl", "all_requirements", "requirement")
 
 package(default_visibility = ["//testdata:__subpackages__"])
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@pip_deps//:requirements.bzl", "requirement")
+load("@container_pip_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 

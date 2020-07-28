@@ -30,10 +30,10 @@ def py_deps():
     already.
     """
     excludes = native.existing_rules().keys()
-    if "pip_deps" not in excludes:
+    if "container_pip_deps" not in excludes:
         pip_repositories()
 
         pip_import(
-            name = "pip_deps",
+            name = "container_pip_deps",
             requirements = "@io_bazel_rules_docker//repositories:requirements-pip.txt",
         )
