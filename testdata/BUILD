@@ -13,9 +13,9 @@
 # limitations under the License.
 
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
+load("@container_pip_deps//:requirements.bzl", "requirement")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@npm_bazel_typescript//:index.bzl", "ts_library")
-load("@container_pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//cc:image.bzl", "cc_image")
 load(
