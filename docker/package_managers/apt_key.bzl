@@ -27,7 +27,8 @@ def _impl(
         output_tarball = None,
         output_layer = None,
         output_digest = None,
-        output_config = None):
+        output_config = None,
+        output_config_digest = None):
     """Implementation for the add_apt_key rule.
 
     Args:
@@ -42,6 +43,7 @@ def _impl(
         output_layer: File, overrides ctx.outputs.layer
         output_digest: File, overrides ctx.outputs.digest
         output_config: File, overrides ctx.outputs.config
+        output_config_digest: File, overrides ctx.outputs.config_digest
     """
     name = name or ctx.label.name
     keys = keys or ctx.files.keys
@@ -52,6 +54,7 @@ def _impl(
     output_layer = output_layer or ctx.outputs.layer
     output_digest = output_digest or ctx.outputs.digest
     output_config = output_config or ctx.outputs.config
+    output_config_digest = output_config_digest or ctx.outputs.config_digest
 
     # First build an image capable of adding an apt-key.
     # This requires the keyfile and the "gnupg package."
@@ -68,6 +71,7 @@ def _impl(
     key_image_output_layer = ctx.actions.declare_file("%s-layer.tar" % key_image)
     key_image_output_digest = ctx.actions.declare_file("%s.digest" % key_image)
     key_image_output_config = ctx.actions.declare_file("%s.json" % key_image)
+    key_image_output_config_digest = ctx.actions.declare_file("%s.json.sh256" % key_image)
 
     key_image_result = _container.image.implementation(
         ctx,
@@ -80,6 +84,7 @@ def _impl(
         output_layer = key_image_output_layer,
         output_digest = key_image_output_digest,
         output_config = key_image_output_config,
+        output_config_digest = key_image_output_config_digest,
     )
 
     commands = [
@@ -114,6 +119,7 @@ def _impl(
         output_layer = output_layer,
         output_digest = output_digest,
         output_config = output_config,
+        output_config_digest = output_config_digest,
     )
 
 _attrs = dict(_container.image.attrs)
