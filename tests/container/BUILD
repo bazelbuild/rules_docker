@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -855,3 +856,21 @@ pull_info_validation_test(
 )
 
 # END_DO_NOT_IMPORT
+
+bzl_library(
+    name = "apple_bzl",
+    srcs = ["apple.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "empty_layers_bzl",
+    srcs = ["empty_layers.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "pull_info_validation_test_bzl",
+    srcs = ["pull_info_validation_test.bzl"],
+    visibility = ["//visibility:private"],
+)
