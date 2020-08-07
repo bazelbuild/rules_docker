@@ -388,16 +388,16 @@ if __name__ == '__main__':
   parser.add_argument('--output', type=str, required=True,
     help='The output file, mandatory')
 
-  parser.add_argument('--file', default=[], type=str, nargs='+',
+  parser.add_argument('--file', default=[], type=str, action='append',
     help='A file to add to the layer')
 
   parser.add_argument('--manifest', type=str,
     help='JSON manifest of contents to add to the layer')
 
-  parser.add_argument('--empty_file', type=str, default=[], nargs='+',
+  parser.add_argument('--empty_file', type=str, default=[], action='append',
     help='An empty file to add to the layer')
 
-  parser.add_argument('--empty_dir', type=str, default=[], nargs='+',
+  parser.add_argument('--empty_dir', type=str, default=[], action='append',
     help='An empty dir to add to the layer')
 
   parser.add_argument('--mode', type=str,
@@ -408,18 +408,18 @@ if __name__ == '__main__':
     ' value "portable", to get the value 2000-01-01, which is'
     ' usable with non *nix OSes.')
 
-  parser.add_argument('--enable_mtime_preservation', type=bool,
+  parser.add_argument('--enable_mtime_preservation', type=bool, default=False,
     help='Preserve file mtimes from input tar file.')
 
-  parser.add_argument('--empty_root_dir', type=str, default=[], nargs='+',
+  parser.add_argument('--empty_root_dir', type=str, default=[], action='append',
     help='An empty root directory to add to the layer.  This will create a directory that'
     'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
     '"root_directory"')
 
-  parser.add_argument('--tar', type=str, default=[], nargs='+',
+  parser.add_argument('--tar', type=str, default=[], action='append',
     help='A tar file to add to the layer')
 
-  parser.add_argument('--deb', type=str, default=[], nargs='+',
+  parser.add_argument('--deb', type=str, default=[], action='append',
     help='A debian package to add to the layer')
 
   def validate_link(l):
@@ -427,7 +427,7 @@ if __name__ == '__main__':
       raise argparse.ArgumentTypeError(msg)
     return l
 
-  parser.add_argument('--link', type=validate_link, default=[], nargs='+',
+  parser.add_argument('--link', type=validate_link, default=[], action='append',
     help='Add a symlink a inside the layer ponting to b if a:b is specified')
 
   parser.add_argument('--directory', type=str,
@@ -436,11 +436,11 @@ if __name__ == '__main__':
   parser.add_argument('--compression', type=str,
     help='Compression (`gz` or `bz2`), default is none.')
 
-  parser.add_argument('--modes', type=str, default=None, nargs='+',
+  parser.add_argument('--modes', type=str, default=None, action='append',
     help='Specific mode to apply to specific file (from the file argument),'
     ' e.g., path/to/file=0o455.')
 
-  parser.add_argument('--owners', type=str, default=None, nargs='+',
+  parser.add_argument('--owners', type=str, default=None, action='append',
     help='Specific mode to apply to specific file (from the file argument),'
     ' e.g., path/to/file=0o455.')
 
@@ -450,7 +450,7 @@ if __name__ == '__main__':
   parser.add_argument('--owner_name', type=str,
     help='Specify the owner name of all files, e.g. root.root.')
 
-  parser.add_argument('--owner_names', type=str, default=None, nargs='+',
+  parser.add_argument('--owner_names', type=str, default=None, action='append',
     help='Specify the owner names of individual files, e.g. path/to/file=root.root.')
 
   parser.add_argument('--root_directory', type=str, default='./',
