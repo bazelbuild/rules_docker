@@ -46,10 +46,6 @@ py_library(
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = [
-        requirement("python-gflags"),
-        requirement("six"),
-    ],
 )
 
 TEST_TARGETS = [
