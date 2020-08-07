@@ -24,7 +24,7 @@ import (
 
 func main() {
 	var extraEnv stringSlice
-	flag.Var(&extraEnv, "env", "Append to the environment of the launched binary. May be specified multiple times. (eg --env=VAR_NAME=value)")
+	flag.Var(&extraEnv, "extraEnv", "Append to the environment of the launched binary. May be specified multiple times. (eg --extraEnv=VAR_NAME=value)")
 	flag.Parse()
 	envv := append(os.Environ(), extraEnv...)
 	argv := flag.Args()
