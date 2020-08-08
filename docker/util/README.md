@@ -11,6 +11,7 @@ properly via
 
 * [container_run_and_commit](#container_run_and_commit)
 * [container_run_and_extract](#container_run_and_extract)
+* [container_run_and_commit_layer](#container_run_and_commit_layer)
 
 ## container_run_and_commit
 
@@ -126,6 +127,64 @@ bazel-out directory.
       </td>
     </tr>
     <tr id="container_run_and_extract-image">
+      <td><code>image</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          The image to run the commands in.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="#container_run_and_commit_layer"></a>
+
+## container_run_and_commit_layer
+
+<pre>
+container_run_and_commit_layer(<a href="#container_run_and_commit_layer-name">name</a>, <a href="#container_run_and_commit_layer-commands">commands</a>, <a href="#container_run_and_commit_layer-docker_run_flags">docker_run_flags</a>, <a href="#container_run_and_commit_layer-image">image</a>)
+</pre>
+
+This rule runs a set of commands in a given image, waits for the commands
+to finish, and then outputs the difference to a tarball, similar to <a href="/README.md#container_layer">`container_layer`</a>. The output can be used in the `layers` attribute of <a href="/README.md#container_image">`container_image`</a>.
+
+### Attributes
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="container_run_and_commit_layer-name">
+      <td><code>name</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
+        <p>
+          A unique name for this target.
+        </p>
+      </td>
+    </tr>
+    <tr id="container_run_and_commit_layer-commands">
+      <td><code>commands</code></td>
+      <td>
+        List of strings; required
+        <p>
+          A list of commands to run (sequentially) in the container.
+        </p>
+      </td>
+    </tr>
+    <tr id="container_run_and_commit_layer-docker_run_flags">
+      <td><code>docker_run_flags</code></td>
+      <td>
+        List of strings; optional
+        <p>
+          Extra flags to pass to the docker run command.
+        </p>
+      </td>
+    </tr>
+    <tr id="container_run_and_commit_layer-image">
       <td><code>image</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
