@@ -306,6 +306,8 @@ def _commit_layer_impl(
         image: The input image tarball
         commands: The commands to run in the input image container
         docker_run_flags: String list, overrides ctx.attr.docker_run_flags
+        compression: str, overrides ctx.attr.compression
+        compression_options: str list, overrides ctx.attr.compression_options
         output_image_tar: The output image obtained as a result of running
                           the commands on the input image
     """
@@ -335,7 +337,7 @@ def _commit_layer_impl(
 
     output_diff_id = ctx.actions.declare_file(output_layer_tar.basename + ".sha256")
 
-    # Generate a shell script to execute the run statement
+    # Generate a shell script to execute the run statement and extract the layer
     ctx.actions.expand_template(
         template = ctx.file._run_tpl,
         output = script,
@@ -368,6 +370,7 @@ def _commit_layer_impl(
         use_default_shell_env = True,
     )
 
+    # Generate a zipped layer and calculate the blob sum, this is for LayerInfo
     zipped_layer, blob_sum = zip_layer(
         ctx,
         output_layer_tar,

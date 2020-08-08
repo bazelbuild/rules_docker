@@ -54,17 +54,21 @@ def extract_last_layer(tar_path, layer_path, diffid_path):
   # Get the manifest dictionary from JSON
   manifest = decoder.decode(manifest)[0]
 
+  # Get the last layer tar path
   layers = manifest["Layers"]
 
   last_layer_path = layers[-1]
 
   layer_id = last_layer_path.split("/")[0]
 
+  # Hash the layer as we extract it
   diff_id = hashlib.sha256()
 
   try:
+    # Extract the layer from the image to the output path
     last_layer = tar.extractfile(last_layer_path)
     with open(layer_path, "wb") as f:
+      # Extract in blocks, to avoid loading the entire layer in memory
       while True:
         buf = last_layer.read(4096)
         if buf:
@@ -80,6 +84,7 @@ def extract_last_layer(tar_path, layer_path, diffid_path):
           file=sys.stderr)
     exit(1)
 
+  # Output the diff ID hash
   diff_id_digest = diff_id.hexdigest()
   try:
     with open(diffid_path, "w") as f:
