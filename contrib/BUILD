@@ -45,6 +45,13 @@ py_library(
 )
 
 py_binary(
+    name = "extract_last_layer",
+    srcs = [":extract_last_layer.py"],
+    legacy_create_init = False,
+    python_version = "PY3",
+)
+
+py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
     legacy_create_init = False,
