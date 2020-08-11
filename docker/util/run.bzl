@@ -23,8 +23,8 @@ load(
     "@bazel_tools//tools/build_defs/hash:hash.bzl",
     _hash_tools = "tools",
 )
-load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
+load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 
 def _extract_impl(
         ctx,
@@ -309,7 +309,7 @@ def _commit_layer_impl(
         env: str Dict, overrides ctx.attr.env
         compression: str, overrides ctx.attr.compression
         compression_options: str list, overrides ctx.attr.compression_options
-        output_image_tar: The output image obtained as a result of running
+        output_layer_tar: The output layer obtained as a result of running
                           the commands on the input image
     """
 
@@ -403,30 +403,32 @@ def _commit_layer_impl(
     ]
 
 _commit_layer_attrs = dicts.add({
+    "commands": attr.string_list(
+        doc = "A list of commands to run (sequentially) in the container.",
+        mandatory = True,
+        allow_empty = False,
+    ),
+    "compression": attr.string(default = "gzip"),
+    "compression_options": attr.string_list(),
+    "docker_run_flags": attr.string_list(
+        doc = "Extra flags to pass to the docker run command.",
+        mandatory = False,
+    ),
+    "env": attr.string_dict(),
     "image": attr.label(
         doc = "The image to run the commands in.",
         mandatory = True,
         allow_single_file = True,
         cfg = "target",
     ),
-    "commands": attr.string_list(
-        doc = "A list of commands to run (sequentially) in the container.",
-        mandatory = True,
-        allow_empty = False,
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
     ),
-    "docker_run_flags": attr.string_list(
-        doc = "Extra flags to pass to the docker run command.",
-        mandatory = False,
-    ),
-    "env": attr.string_dict(),
-    "compression": attr.string(default = "gzip"),
-    "compression_options": attr.string_list(),
     "_image_utils_tpl": attr.label(
         default = "//docker/util:image_util.sh.tpl",
-        allow_single_file = True,
-    ),
-    "_run_tpl": attr.label(
-        default = Label("//docker/util:commit_layer.sh.tpl"),
         allow_single_file = True,
     ),
     "_last_layer_extractor_tool": attr.label(
@@ -435,11 +437,9 @@ _commit_layer_attrs = dicts.add({
         executable = True,
         allow_files = True,
     ),
-    "_extract_image_id": attr.label(
-        default = Label("//contrib:extract_image_id"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
+    "_run_tpl": attr.label(
+        default = Label("//docker/util:commit_layer.sh.tpl"),
+        allow_single_file = True,
     ),
 }, _hash_tools)
 
