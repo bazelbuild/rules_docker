@@ -292,6 +292,7 @@ def _commit_layer_impl(
         image = None,
         commands = None,
         docker_run_flags = None,
+        env = None,
         compression = None,
         compression_options = None,
         output_layer_tar = None):
@@ -306,6 +307,7 @@ def _commit_layer_impl(
         image: The input image tarball
         commands: The commands to run in the input image container
         docker_run_flags: String list, overrides ctx.attr.docker_run_flags
+        env: str Dict, overrides ctx.attr.env
         compression: str, overrides ctx.attr.compression
         compression_options: str list, overrides ctx.attr.compression_options
         output_image_tar: The output image obtained as a result of running
@@ -316,6 +318,7 @@ def _commit_layer_impl(
     image = image or ctx.file.image
     commands = commands or ctx.attr.commands
     docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
+    env = env or ctx.attr.env
     script = ctx.actions.declare_file(name + ".build")
     compression = compression or ctx.attr.compression
     compression_options = compression_options or ctx.attr.compression_options
@@ -335,6 +338,16 @@ def _commit_layer_impl(
         is_executable = True,
     )
 
+    docker_env = [
+        "{}={}".format(
+            ctx.expand_make_variables("env", key, {}), 
+            ctx.expand_make_variables("env", value, {})
+        ) for key, value in env
+    ]
+
+    env_file = ctx.actions.declare_file(name + ".env")
+    ctx.actions.write(env_file, "\n".join(docker_env))
+
     output_diff_id = ctx.actions.declare_file(output_layer_tar.basename + ".sha256")
 
     # Generate a shell script to execute the run statement and extract the layer
@@ -346,6 +359,7 @@ def _commit_layer_impl(
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{env_file_path}": env_file.path,
             "%{image_last_layer_extractor_path}": ctx.executable._last_layer_extractor_tool.path,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
@@ -360,7 +374,7 @@ def _commit_layer_impl(
         is_executable = True,
     )
 
-    runfiles = [image, image_utils]
+    runfiles = [image, image_utils, env_file]
 
     ctx.actions.run(
         outputs = [output_layer_tar, output_diff_id],
@@ -385,11 +399,17 @@ def _commit_layer_impl(
             diff_id = output_diff_id,
             zipped_layer = zipped_layer,
             blob_sum = blob_sum,
-            env = {}
+            env = env
         )
     ] 
 
 _commit_layer_attrs = dicts.add({
+    "image": attr.label(
+        doc = "The image to run the commands in.",
+        mandatory = True,
+        allow_single_file = True,
+        cfg = "target",
+    ),
     "commands": attr.string_list(
         doc = "A list of commands to run (sequentially) in the container.",
         mandatory = True,
@@ -399,12 +419,7 @@ _commit_layer_attrs = dicts.add({
         doc = "Extra flags to pass to the docker run command.",
         mandatory = False,
     ),
-    "image": attr.label(
-        doc = "The image to run the commands in.",
-        mandatory = True,
-        allow_single_file = True,
-        cfg = "target",
-    ),
+    "env": attr.string_dict(),
     "compression": attr.string(default = "gzip"),
     "compression_options": attr.string_list(),
     "_image_utils_tpl": attr.label(

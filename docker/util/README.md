@@ -143,7 +143,7 @@ bazel-out directory.
 ## container_run_and_commit_layer
 
 <pre>
-container_run_and_commit_layer(<a href="#container_run_and_commit_layer-name">name</a>, <a href="#container_run_and_commit_layer-commands">commands</a>, <a href="#container_run_and_commit_layer-docker_run_flags">docker_run_flags</a>, <a href="#container_run_and_commit_layer-image">image</a>)
+container_run_and_commit_layer(<a href="#container_run_and_commit_layer-name">name</a>, <a href="#container_run_and_commit_layer-commands">commands</a>, <a href="#container_run_and_commit_layer-docker_run_flags">docker_run_flags</a>, <a href="#container_run_and_commit_layer-image">image</a>, <a href="#container_run_and_commit_layer-env">env</a>)
 </pre>
 
 This rule runs a set of commands in a given image, waits for the commands
@@ -191,6 +191,24 @@ to finish, and then outputs the difference to a tarball, similar to <a href="/RE
         <p>
           The image to run the commands in.
         </p>
+      </td>
+    </tr>
+    <tr id="container_run_and_commit_layer-env">
+      <td><code>env</code></td>
+      <td>
+        <code>Dictionary from strings to strings, optional</code>
+        <p><a href="https://docs.docker.com/engine/reference/builder/#env">Dictionary
+               from environment variable names to their values when running the
+               Docker image.</a></p>
+        <p>
+          <code>
+          env = {
+            "FOO": "bar",
+            ...
+          },
+          </code>
+        </p>
+        <p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
       </td>
     </tr>
   </tbody>
