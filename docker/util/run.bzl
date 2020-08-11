@@ -285,7 +285,6 @@ commit = struct(
     implementation = _commit_impl,
 )
 
-
 def _commit_layer_impl(
         ctx,
         name = None,
@@ -340,9 +339,10 @@ def _commit_layer_impl(
 
     docker_env = [
         "{}={}".format(
-            ctx.expand_make_variables("env", key, {}), 
-            ctx.expand_make_variables("env", value, {})
-        ) for key, value in env
+            ctx.expand_make_variables("env", key, {}),
+            ctx.expand_make_variables("env", value, {}),
+        )
+        for key, value in env
     ]
 
     env_file = ctx.actions.declare_file(name + ".env")
@@ -392,16 +392,15 @@ def _commit_layer_impl(
         compression_options = compression_options,
     )
 
-
     return [
         LayerInfo(
             unzipped_layer = output_layer_tar,
             diff_id = output_diff_id,
             zipped_layer = zipped_layer,
             blob_sum = blob_sum,
-            env = env
-        )
-    ] 
+            env = env,
+        ),
+    ]
 
 _commit_layer_attrs = dicts.add({
     "image": attr.label(
