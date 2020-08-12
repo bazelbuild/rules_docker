@@ -22,7 +22,6 @@ import json
 import os
 import os.path
 import subprocess
-import sys
 import re
 import tarfile
 import tempfile

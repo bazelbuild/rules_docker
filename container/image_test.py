@@ -484,6 +484,18 @@ class ImageTest(unittest.TestCase):
           self.assertEqual(tarfile.DIRTYPE, memberfile.type)
           self.assertEqual(0o777, memberfile.mode)
 
+  def test_with_prune_files_and_directories(self):
+    with TestImage('with_prune_files_and_directories') as img:
+      self.assertDigest(img, '1a0de180c2c7fa5730df1a4bbc445b287dc02f5fa897bc08195020ab9a729f16')
+      self.assertEqual(2, len(img.fs_layers()))
+      self.assertLayerNContains(img, 1, ['.', './etc', './three'])
+
+  def test_windows_with_prune_files_and_directories(self):
+    with TestImage('with_windows_prune_files_and_directories') as img:
+      self.assertDigest(img, '9f72cd6c9d1a06177eee623a5aa67044a77b7476ec15066e1c4228b0e116465e')
+      self.assertEqual(2, len(img.fs_layers()))
+      self.assertLayerNContains(img, 1, ['Files', 'Files/etc', 'Hives', 'Files/three'])
+
   def test_py_image(self):
     with TestImage('py_image') as img:
       # Check the application layer, which is on top.
