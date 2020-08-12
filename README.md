@@ -1744,7 +1744,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
       <td>
         <code>String, optional</code>
         <p>Compression method for image layers. Currently only <code>gzip</code> is supported.</p>
-        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
+        <p>This affects the compressed layer, which is used by the `container_push` rule.</p>
         <p>
           <code>
           compression = "gzip",
@@ -1757,11 +1757,131 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
       <td>
         <code>List of strings, optional</code>
         <p>Command-line options for the compression tool. Possible values depend on `compression` method.</p>
-        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
+        <p>This affects the compressed layer, which is used by the `container_push` rule.</p>
         <p>
           <code>
           compression_options = ["--fast"],
           </code>
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="container_layer_prune"></a>
+## container_layer_prune
+
+```python
+container_layer_prune(layer, remove_paths, compression, compression_options, operating_system)
+```
+
+A rule that assembles a tarball by copying a `container_layer` while excluding the specified files and directories. The output of this rule can used in the `layers` attribute in `container_image` rule.
+
+<table class="table table-condensed table-bordered table-implicit">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Implicit output targets</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code><i>name</i>-layer.tar</code></td>
+      <td>
+        <code>A tarball of current layer</code>
+        <p>
+            A data tarball corresponding to the layer.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <code>Name, required</code>
+        <p>A unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>layer</code></td>
+      <td>
+        <code>Label, required</code>
+        <p>A <code>container_layer</code> target.</p>
+        <p>
+          The data from the <code>layer</code>, excluding the files
+          and directories specified in <code>remove_paths</code>, are
+          copied into the output layer.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>remove_paths</code></td>
+      <td>
+        <code>List of strings, required</code>
+        <p>The file and directory paths to exclude from the <code>layer</code>.</p>
+        <p>
+          This is a list of case-sensitive glob patterns. Removing a directory removes all its contents recursively.
+        </p>
+        <p>
+          For example, the glob pattern <code>"*.tmp"</code> removes files with the <code>tmp</code> extension
+          and directories with names that ends with <code>.tmp</code>;
+          <code>"/var/tmp/*"</code> removes all files and directories in the <code>/var/tmp</code> directory;
+          <code>"/usr/share/man"</code> removes the <code>/usr/share/man</code> directory and all its contents.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>Compression method for image layers. Currently only <code>gzip</code> is supported.</p>
+        <p>This affects the compressed layer, which is used by the <code>container_push</code> rule.</p>
+        <p>
+          <code>
+          compression = "gzip",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compression_options</code></td>
+      <td>
+        <code>List of strings, optional</code>
+        <p>Command-line options for the compression tool. Possible values depend on <code>compression</code> method.</p>
+        <p>This affects the compressed layer, which is by used the <code>container_push</code> rule.</p>
+        <p>
+          <code>
+          compression_options = ["--fast"],
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>operating_system</code></td>
+      <td>
+        <code>Strings, optional</code>
+        <p>Indicates whether this is a Windows or Linux image.</p>
+        <p>Accepted values: linux|windows</p>
+        <p>Defaults to linux.</p>
+        <p>
+          For Windows image, the paths in the <code>layer</code> tar is modified to be rooted at the <code>Files</code> directory,
+          before comparing them against <code>remove_paths</code>.
         </p>
       </td>
     </tr>

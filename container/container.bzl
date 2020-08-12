@@ -19,6 +19,7 @@ load("//container:image.bzl", _container_image = "container_image", _image = "im
 load("//container:import.bzl", _container_import = "container_import")
 load("//container:layer.bzl", _container_layer = "container_layer")
 load("//container:load.bzl", _container_load = "container_load")
+load("//container:prune.bzl", _container_layer_prune = "container_layer_prune")
 load("//container:pull.bzl", _container_pull = "container_pull")
 load("//container:push.bzl", _container_push = "container_push")
 
@@ -28,6 +29,7 @@ container_flatten = _container_flatten
 container_image = _container_image
 image = _image
 container_layer = _container_layer
+container_layer_prune = _container_layer_prune
 container_import = _container_import
 container_pull = _container_pull
 container_push = _container_push

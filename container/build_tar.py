@@ -23,7 +23,6 @@ import os
 import os.path
 import posixpath
 import subprocess
-import sys
 import re
 import tarfile
 import tempfile

@@ -25,6 +25,7 @@ load(
     "container_flatten",
     "container_image",
     "container_layer",
+    "container_layer_prune",
     "container_push",
 )
 load("//contrib:group.bzl", "group_entry", "group_file")
@@ -685,6 +686,63 @@ container_image(
         "bar",
     ],
     mode = "0o777",
+)
+
+container_image(
+    name = "with_prune_files_and_directories",
+    layers = [":prune_files_and_directories"],
+)
+
+container_layer_prune(
+    name = "prune_files_and_directories",
+    layer = ":layer_with_files_and_directories",
+    remove_paths = [
+        "/usr",
+        "/etc/**",
+        "as?f",
+    ],
+)
+
+container_layer(
+    name = "layer_with_files_and_directories",
+    empty_dirs = [
+        "etc",
+    ],
+    tars = [
+        "one.tar",
+        "two.tar",
+        "three.tar",
+    ],
+)
+
+container_image(
+    name = "with_windows_prune_files_and_directories",
+    layers = [":windows_prune_files_and_directories"],
+    operating_system = "windows",
+)
+
+container_layer_prune(
+    name = "windows_prune_files_and_directories",
+    layer = ":layer_with_windows_files_and_directories",
+    operating_system = "windows",
+    remove_paths = [
+        "/usr",
+        "/etc/**",
+        "as?f",
+    ],
+)
+
+container_layer(
+    name = "layer_with_windows_files_and_directories",
+    empty_dirs = [
+        "etc",
+    ],
+    operating_system = "windows",
+    tars = [
+        "one.tar",
+        "two.tar",
+        "three.tar",
+    ],
 )
 
 container_image(
