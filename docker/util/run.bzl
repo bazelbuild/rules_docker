@@ -342,7 +342,7 @@ def _commit_layer_impl(
             ctx.expand_make_variables("env", key, {}),
             ctx.expand_make_variables("env", value, {}),
         )
-        for key, value in env
+        for key, value in env.items()
     ]
 
     env_file = ctx.actions.declare_file(name + ".env")
