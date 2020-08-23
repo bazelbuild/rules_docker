@@ -171,7 +171,7 @@ to finish, and then outputs the difference to a tarball, similar to <a href="/RE
       <td>
         List of strings; required
         <p>
-          A list of commands to run (sequentially) in the container.
+          A list of commands to run (sequentially) inside `sh` in the container. If the base image uses a non-standard entrypoint, you may need to use `docker_run_flags` to change the entrypoint to a shell.
         </p>
       </td>
     </tr>
@@ -180,7 +180,7 @@ to finish, and then outputs the difference to a tarball, similar to <a href="/RE
       <td>
         List of strings; optional
         <p>
-          Extra flags to pass to the docker run command.
+          Extra flags to pass to the docker run command. You may want to use this to override the `entrypoint` for images with a non-standard entrypoint with `["--entrypoint=''"]`. These flags only apply to the build step of this rule, and do not affect the output layer. That is, if you change the entrypoint here, and use the layer in a `container_image` later, the entrypoint of that image will not be changed.
         </p>
       </td>
     </tr>
