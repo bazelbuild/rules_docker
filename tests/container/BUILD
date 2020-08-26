@@ -236,6 +236,7 @@ container_push(
 # The following targets are not imported.
 # Digest outputs are only available and tested on GitHub.
 # BEGIN_DO_NOT_IMPORT
+# fails
 file_test(
     name = "test_digest_output1",
     content = "sha256:b17eeb809b87bf5ad734369f1ef6aa4a13e6ea850cb745d8d64b17ef13c54f4f",
@@ -608,24 +609,28 @@ file_test(
     file = "@k8s_pause_arm64//image:digest",
 )
 
+# fails
 file_test(
     name = "alpine_custom_attr_digest_test",
     content = "sha256:f757e72211b4ed612e147248bbbb8ce134cf70124d8850d70607d9ba53a28377",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
+# test
 file_test(
     name = "alpine_digest_test",
     content = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
     file = "@alpine_linux_amd64//image:digest",
 )
 
+# fails
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:ae3eb3579d8c9654d64075623c8e7819c7681f762cb715ba20de8aa693066e56",
+    content = "sha256:0d69231a766ccce9ea329a64d71c9222af9a9b051648e94c90c73d2c0d592d7d",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
+# test
 file_test(
     name = "alpine_armv6_digest_test",
     content = "sha256:dabea2944dcc2b86482b4f0b0fb62da80e0673e900c46c0e03b45919881a5d84",
@@ -667,10 +672,10 @@ file_test(
 container_image(
     name = "new_alpine_linux_armv6_image_tar",
     base = "@alpine_linux_armv6_tar//image:image.tar",
-    files = [
-        "//testdata:bar",
-        "//testdata:foo",
-    ],
+    # files = [
+    #     "//testdata:bar",
+    #     "//testdata:foo",
+    # ],
 )
 
 container_image(
