@@ -615,9 +615,21 @@ file_test(
 )
 
 file_test(
+    name = "alpine_digest_test",
+    content = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
+    file = "@alpine_linux_amd64//image:digest",
+)
+
+file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
     content = "sha256:ae3eb3579d8c9654d64075623c8e7819c7681f762cb715ba20de8aa693066e56",
     file = ":new_alpine_linux_armv6_image_tar.digest",
+)
+
+file_test(
+    name = "alpine_armv6_digest_test",
+    content = "sha256:dabea2944dcc2b86482b4f0b0fb62da80e0673e900c46c0e03b45919881a5d84",
+    file = "@alpine_linux_armv6_tar//image:digest",
 )
 
 # END_DO_NOT_IMPORT
