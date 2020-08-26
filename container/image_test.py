@@ -794,6 +794,8 @@ class ImageTest(unittest.TestCase):
       './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/linker/runfiles_helper.js',
       './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/node',
       './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/node/node_patches.js',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/coverage',
+      './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/coverage/lcov_merger-js.js',
       './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/_nodejs_image_binary.module_mappings.json',
       './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party',
       './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com',
