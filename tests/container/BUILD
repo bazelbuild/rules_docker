@@ -626,7 +626,7 @@ file_test(
 # fails
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:0d69231a766ccce9ea329a64d71c9222af9a9b051648e94c90c73d2c0d592d7d",
+    content = "sha256:ae3eb3579d8c9654d64075623c8e7819c7681f762cb715ba20de8aa693066e56",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
@@ -672,10 +672,10 @@ file_test(
 container_image(
     name = "new_alpine_linux_armv6_image_tar",
     base = "@alpine_linux_armv6_tar//image:image.tar",
-    # files = [
-    #     "//testdata:bar",
-    #     "//testdata:foo",
-    # ],
+    files = [
+        "//testdata:bar",
+        "//testdata:foo",
+    ],
 )
 
 container_image(
