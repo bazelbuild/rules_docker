@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This cloudbuild.yaml file is used to release the go puller and loader
-# binaries.
+# This cloudbuild.yaml file is used to release the go puller binary.
 
 timeout: 3600s
 options:
@@ -30,17 +29,17 @@ steps:
 # TODO(xingao): Once we have tests for the go binary, run the tests before
 # pushing the binaries to GCS.
 
-# Step: build the puller and loader release binaries for Linux AMD64
+# Step: build the puller release binary for Linux
   - name: "l.gcr.io/google/bazel"
     args:
       - "build"
       - "--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64"
       - "//container/go/cmd/puller:puller"
       - "//container/go/cmd/loader:loader"
-    id: "build-linux-amd64"
+    id: "build-linux"
     waitFor: ["version"]
 
-# Step: push the puller release binary for Linux AMD64
+# Step: push the puller release binary for Linux
   - name: "gcr.io/cloud-builders/gsutil"
     args:
       - "cp"
@@ -48,9 +47,9 @@ steps:
       - "public-read"
       - "bazel-bin/container/go/cmd/puller/linux_amd64_pure_stripped/puller"
       - "gs://rules_docker/$COMMIT_SHA/puller-linux-amd64"
-    waitFor: ["build-linux-amd64"]
+    waitFor: ["build-linux"]
 
-# Step: push the loader release binary for Linux AMD64
+# Step: push the loader release binary for Linux
   - name: "gcr.io/cloud-builders/gsutil"
     args:
       - "cp"
@@ -58,49 +57,19 @@ steps:
       - "public-read"
       - "bazel-bin/container/go/cmd/loader/linux_amd64_pure_stripped/loader"
       - "gs://rules_docker/$COMMIT_SHA/loader-linux-amd64"
-    waitFor: ["build-linux-amd64"]
+    waitFor: ["build-linux"]
 
-# Step: build the puller and loader release binaries for Linux ARM64
-  - name: "l.gcr.io/google/bazel"
-    args:
-      - "build"
-      - "--platforms=@io_bazel_rules_go//go/toolchain:linux_arm64"
-      - "//container/go/cmd/puller:puller"
-      - "//container/go/cmd/loader:loader"
-    id: "build-linux-arm64"
-    waitFor: ["build-linux-amd64"]
-
-# Step: push the puller release binary for Linux ARM64
-  - name: "gcr.io/cloud-builders/gsutil"
-    args:
-      - "cp"
-      - "-a"
-      - "public-read"
-      - "bazel-bin/container/go/cmd/puller/linux_arm64_pure_stripped/puller"
-      - "gs://rules_docker/$COMMIT_SHA/puller-linux-arm64"
-    waitFor: ["build-linux-arm64"]
-
-# Step: push the loader release binary for Linux ARM64
-  - name: "gcr.io/cloud-builders/gsutil"
-    args:
-      - "cp"
-      - "-a"
-      - "public-read"
-      - "bazel-bin/container/go/cmd/loader/linux_arm64_pure_stripped/loader"
-      - "gs://rules_docker/$COMMIT_SHA/loader-linux-arm64"
-    waitFor: ["build-linux-arm64"]
-
-# Step: build the puller and loader release binaries for Darwin AMD64
+# Step: build the puller release binary for Darwin
   - name: "l.gcr.io/google/bazel"
     args:
       - "build"
       - "--platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64"
       - "//container/go/cmd/puller:puller"
       - "//container/go/cmd/loader:loader"
-    id: "build-darwin-amd64"
-    waitFor: ["build-linux-arm64"]
+    id: "build-darwin"
+    waitFor: ["build-linux"]
 
-# Step: push the puller release binary for Darwin AMD64
+# Step: push the puller release binary for Darwin
   - name: "gcr.io/cloud-builders/gsutil"
     args:
       - "cp"
@@ -108,9 +77,9 @@ steps:
       - "public-read"
       - "bazel-bin/container/go/cmd/puller/darwin_amd64_pure_stripped/puller"
       - "gs://rules_docker/$COMMIT_SHA/puller-darwin-amd64"
-    waitFor: ["build-darwin-amd64"]
+    waitFor: ["build-darwin"]
 
-# Step: push the loader release binary for Darwin AMD64
+# Step: push the loader release binary for Darwin
   - name: "gcr.io/cloud-builders/gsutil"
     args:
       - "cp"
@@ -118,4 +87,4 @@ steps:
       - "public-read"
       - "bazel-bin/container/go/cmd/loader/darwin_amd64_pure_stripped/loader"
       - "gs://rules_docker/$COMMIT_SHA/loader-darwin-amd64"
-    waitFor: ["build-darwin-amd64"]
+    waitFor: ["build-darwin"]
