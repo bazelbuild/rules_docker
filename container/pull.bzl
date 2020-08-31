@@ -176,10 +176,7 @@ def _impl(repository_ctx):
     }
     updated_attrs["name"] = repository_ctx.name
 
-    digest_result = repository_ctx.execute(["cat", repository_ctx.path("image/digest")])
-    if digest_result.return_code:
-        fail("Failed to read digest: %s" % digest_result.stderr)
-    updated_attrs["digest"] = digest_result.stdout
+    updated_attrs["digest"] = repository_ctx.read(repository_ctx.path("image/digest"))
 
     if repository_ctx.attr.digest and repository_ctx.attr.digest != updated_attrs["digest"]:
         fail(("SHA256 of the image specified does not match SHA256 of the pulled image. " +
