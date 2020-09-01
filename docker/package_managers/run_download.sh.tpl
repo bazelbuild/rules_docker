@@ -28,7 +28,7 @@ image_id=$(%{image_id_extractor_path} %{image_tar})
 $DOCKER $DOCKER_FLAGS load -i %{image_tar}
 
 # Run the builder image.
-cid=$($DOCKER $DOCKER_FLAGS run -w="/" -d --privileged $image_id sh -c $'%{download_commands}')
+cid=$($DOCKER $DOCKER_FLAGS run -w="/" -d $image_id sh -c $'%{download_commands}')
 $DOCKER $DOCKER_FLAGS attach $cid
 $DOCKER $DOCKER_FLAGS cp $cid:%{installables}_packages.tar %{output}
 $DOCKER $DOCKER_FLAGS cp $cid:%{installables}_metadata.csv %{output_metadata}

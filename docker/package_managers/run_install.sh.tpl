@@ -48,7 +48,7 @@ for f in $tmpdir/*; do
 done
 $DOCKER $DOCKER_FLAGS rm $cid
 
-cid=$($DOCKER $DOCKER_FLAGS run -d -v $vid:/tmp/pkginstall --privileged $image_id /tmp/pkginstall/installer.sh)
+cid=$($DOCKER $DOCKER_FLAGS run -d -v $vid:/tmp/pkginstall $image_id /tmp/pkginstall/installer.sh)
 
 $DOCKER $DOCKER_FLAGS attach $cid || true
 
