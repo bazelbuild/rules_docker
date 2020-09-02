@@ -41,7 +41,7 @@ def gzip(ctx, artifact, options = None):
     out = ctx.actions.declare_file(artifact.basename + ".gz")
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     gzip_path = _gzip_path(toolchain_info)
-    
+
     if gzip_path == "":
         # If the user did not specify a gzip tool, use the Go helper provided with rules_docker.
         ctx.actions.run(
@@ -83,7 +83,7 @@ def gunzip(ctx, artifact):
     out = ctx.actions.declare_file(artifact.basename + ".nogz")
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     gzip_path = _gzip_path(toolchain_info)
-             
+
     if gzip_path == "":
         # If the user did not specify a gzip tool, use the Go helper provided with rules_docker.
         ctx.actions.run(
