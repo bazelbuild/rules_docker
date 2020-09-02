@@ -142,10 +142,8 @@ docker_toolchain_configure(
   # Should be set explcitly for remote execution.
   docker_path="<enter absolute path to the docker binary (in the remote exec env) here>",
   # OPTIONAL: Path to the gzip binary.
-  # Either gzip_path or gzip_target should be set explcitly for remote execution.
   gzip_path="<enter absolute path to the gzip binary (in the remote exec env) here>",
   # OPTIONAL: Bazel target for the gzip tool.
-  # Either gzip_path or gzip_target should be set explcitly for remote execution.
   gzip_target="<enter absolute path (i.e., must start with repo name @...//:...) to an executable gzip target>",
   # OPTIONAL: Path to the xz binary.
   # Should be set explcitly for remote execution.

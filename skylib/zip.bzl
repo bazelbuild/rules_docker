@@ -13,6 +13,20 @@
 # limitations under the License.
 """Functions for producing the gzip of an artifact."""
 
+def _gzip_path(toolchain_info):
+    """Resolve the user-supplied gzip path, if any.
+
+    Args:
+       toolchain_info: The DockerToolchainInfo
+
+    Returns:
+       Path to gzip, or empty string.
+    """
+    if toolchain_info.gzip_target:
+        return toolchain_info.gzip_target.files_to_run.executable.path
+    else:
+        return toolchain_info.gzip_path
+
 def gzip(ctx, artifact, options = None):
     """Create an action to compute the gzipped artifact.
 
@@ -26,26 +40,34 @@ def gzip(ctx, artifact, options = None):
     """
     out = ctx.actions.declare_file(artifact.basename + ".gz")
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
-    input_manifests = []
-    tools = []
-    gzip_path = toolchain_info.gzip_path
-    if toolchain_info.gzip_target:
-        gzip_path = toolchain_info.gzip_target.files_to_run.executable.path
-        tools, _, input_manifests = ctx.resolve_command(tools = [toolchain_info.gzip_target])
-    elif toolchain_info.gzip_path == "":
-        fail("gzip could not be found. Make sure it is in the path or set it " +
-             "explicitly in the docker_toolchain_configure")
+    gzip_path = _gzip_path(toolchain_info)
+    
+    if gzip_path == "":
+        # If the user did not specify a gzip tool, use the Go helper provided with rules_docker.
+        ctx.actions.run(
+            executable = ctx.executable._zipper,
+            arguments = ["-src", artifact.path, "-dst", out.path] + (options or []),
+            inputs = [artifact],
+            outputs = [out],
+            mnemonic = "GZIP",
+            tools = ctx.attr._zipper[DefaultInfo].default_runfiles.files,
+        )
+    else:
+        input_manifests = []
+        tools = []
+        if toolchain_info.gzip_target:
+            tools, _, input_manifests = ctx.resolve_command(tools = [toolchain_info.gzip_target])
 
-    opt_str = " ".join([repr(o) for o in (options or [])])
-    ctx.actions.run_shell(
-        command = "%s -n %s < %s > %s" % (gzip_path, opt_str, artifact.path, out.path),
-        input_manifests = input_manifests,
-        inputs = [artifact],
-        outputs = [out],
-        use_default_shell_env = True,
-        mnemonic = "GZIP",
-        tools = tools,
-    )
+        opt_str = " ".join([repr(o) for o in (options or [])])
+        ctx.actions.run_shell(
+            command = "%s -n %s < %s > %s" % (gzip_path, opt_str, artifact.path, out.path),
+            input_manifests = input_manifests,
+            inputs = [artifact],
+            outputs = [out],
+            use_default_shell_env = True,
+            mnemonic = "GZIP",
+            tools = tools,
+        )
     return out
 
 def gunzip(ctx, artifact):
@@ -60,22 +82,38 @@ def gunzip(ctx, artifact):
     """
     out = ctx.actions.declare_file(artifact.basename + ".nogz")
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
-    input_manifests = []
-    tools = []
-    gzip_path = toolchain_info.gzip_path
-    if toolchain_info.gzip_target:
-        gzip_path = toolchain_info.gzip_target.files_to_run.executable.path
-        tools, _, input_manifests = ctx.resolve_command(tools = [toolchain_info.gzip_target])
-    elif toolchain_info.gzip_path == "":
-        fail("gzip could not be found. Make sure it is in the path or set it " +
-             "explicitly in the docker_toolchain_configure")
-    ctx.actions.run_shell(
-        command = "%s -d < %s > %s" % (gzip_path, artifact.path, out.path),
-        input_manifests = input_manifests,
-        inputs = [artifact],
-        outputs = [out],
-        use_default_shell_env = True,
-        mnemonic = "GUNZIP",
-        tools = tools,
-    )
+    gzip_path = _gzip_path(toolchain_info)
+             
+    if gzip_path == "":
+        # If the user did not specify a gzip tool, use the Go helper provided with rules_docker.
+        ctx.actions.run(
+            executable = ctx.executable._zipper,
+            arguments = ["-decompress", "-src", artifact.path, "-dst", out.path],
+            inputs = [artifact],
+            outputs = [out],
+            mnemonic = "GUNZIP",
+            tools = ctx.attr._zipper[DefaultInfo].default_runfiles.files,
+        )
+    else:
+        input_manifests = []
+        tools = []
+        if toolchain_info.gzip_target:
+            tools, _, input_manifests = ctx.resolve_command(tools = [toolchain_info.gzip_target])
+        ctx.actions.run_shell(
+            command = "%s -d < %s > %s" % (gzip_path, artifact.path, out.path),
+            input_manifests = input_manifests,
+            inputs = [artifact],
+            outputs = [out],
+            use_default_shell_env = True,
+            mnemonic = "GUNZIP",
+            tools = tools,
+        )
     return out
+
+tools = {
+    "_zipper": attr.label(
+        default = Label("//container/go/cmd/zipper"),
+        cfg = "host",
+        executable = True,
+    ),
+}
