@@ -35,10 +35,7 @@ def _gzip(ctx, artifact, out, decompress, options, mnemonic):
        artifact: The artifact to zip/unzip
        out: The output file.
        decompress: Whether to decompress (True) or compress (False)
-       options: Additional options for compression only.
-
-    Returns:
-       Path to gzip, or empty string.
+       options: str list, Command-line options.
     """
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     gzip_path = _gzip_path(toolchain_info)
