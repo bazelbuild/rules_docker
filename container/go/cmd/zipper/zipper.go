@@ -17,10 +17,9 @@
 package main
 
 import (
-	"bytes"
 	"compress/gzip"
 	"flag"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 )
@@ -43,39 +42,48 @@ func main() {
 		log.Fatalln("Required option -dst was not specified.")
 	}
 
-	dat, err := ioutil.ReadFile(*src)
+	var copy_from io.Reader
+	var copy_to io.Writer
+
+	f, err := os.Open(*src)
 	if err != nil {
 		log.Fatalf("Unable to read input file: %v", err)
 	}
-	var buf bytes.Buffer
+	t, err := os.Create(*dst)
+	if err != nil {
+		log.Fatalf("Unable to create output file: %v", err)
+	}
+
 	if *decompress {
-		zr, err := gzip.NewReader(bytes.NewReader(dat))
+		zr, err := gzip.NewReader(f)
 		if err != nil {
 			log.Fatalf("Unable to read: %v", err)
 		}
-		if _, err := buf.ReadFrom(zr); err != nil {
-			log.Fatalf("Unable to decompress: %v", err)
-		}
-		if err := zr.Close(); err != nil {
-			log.Fatalf("Unable to close gzip reader: %v", err)
-		}
+		defer func() {
+			if err := zr.Close(); err != nil {
+				log.Fatalf("Unable to close gzip reader: %v", err)
+			}
+		}()
+		copy_from = zr
+		copy_to = t
 	} else {
 		level := gzip.DefaultCompression
 		if *fast {
 			level = gzip.BestSpeed
 		}
-		zw, err := gzip.NewWriterLevel(&buf, level)
+		zw, err := gzip.NewWriterLevel(t, level)
 		if err != nil {
 			log.Fatalf("Unable to create gzip writer: %v", err)
 		}
-		if _, err := zw.Write(dat); err != nil {
-			log.Fatalf("Unable to compress: %v", err)
-		}
-		if err := zw.Close(); err != nil {
-			log.Fatalf("Unable to close gzip writer: %s", err)
-		}
+		defer func() {
+			if err := zw.Close(); err != nil {
+				log.Fatalf("Unable to close gzip writer: %v", err)
+			}
+		}()
+		copy_from = f
+		copy_to = zw
 	}
-	if err := ioutil.WriteFile(*dst, buf.Bytes(), os.ModePerm); err != nil {
-		log.Fatalf("Unable to write to %q: %v", *dst, err)
+	if _, err := io.Copy(copy_to, copy_from); err != nil {
+		log.Fatalf("Unable to perform the gzip operation from %q to %q: %v", *src, *dst, err)
 	}
 }
