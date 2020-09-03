@@ -85,7 +85,14 @@ def gzip(ctx, artifact, options = None):
        the gzipped artifact.
     """
     out = ctx.actions.declare_file(artifact.basename + ".gz")
-    _gzip(ctx, artifact, out, False, options, "GZIP")
+    _gzip(
+        ctx = ctx,
+        artifact = artifact,
+        out = out,
+        decompress = False,
+        options = options,
+        mnemonic = "GZIP",
+    )
     return out
 
 def gunzip(ctx, artifact):
@@ -99,7 +106,14 @@ def gunzip(ctx, artifact):
        the gunzipped artifact.
     """
     out = ctx.actions.declare_file(artifact.basename + ".nogz")
-    _gzip(ctx, artifact, out, True, None, "GUNZIP")
+    _gzip(
+        ctx = ctx,
+        artifact = artifact,
+        out = out,
+        decompress = True,
+        options = None,
+        mnemonic = "GUNZIP",
+    )
     return out
 
 tools = {
