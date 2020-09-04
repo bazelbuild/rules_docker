@@ -78,4 +78,5 @@ def go_deps():
             sha256 = "6775fdc9ff61c99b9d9ea03df0af793f41d6ec4a7cdbcd04eae1d9911acdf6f9",
             importpath = "github.com/ghodss/yaml",
             strip_prefix = "yaml-0ca9ea5df5451ffdf184b4428c902747c2c11cd7",
+            type = "zip",            
         )
