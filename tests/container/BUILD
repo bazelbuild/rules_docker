@@ -238,7 +238,7 @@ container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
-    content = "sha256:b17eeb809b87bf5ad734369f1ef6aa4a13e6ea850cb745d8d64b17ef13c54f4f",
+    content = "sha256:18e27a73e3faabc819f903fc8e603de2bfd49813e231c2e8ce98b533577450e2",
     file = ":deb_image_with_dpkgs.digest",
 )
 
@@ -610,13 +610,13 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:f757e72211b4ed612e147248bbbb8ce134cf70124d8850d70607d9ba53a28377",
+    content = "sha256:6a7bd5d833271be520664af1391e399b2fe10ae7647ee091ee24e2e2774d38d6",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:ae3eb3579d8c9654d64075623c8e7819c7681f762cb715ba20de8aa693066e56",
+    content = "sha256:7b2554a0a34e7ba53f5e70f4b1ed1f8515d9f9d34b0dd75e33fe8fc6384a04c5",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
