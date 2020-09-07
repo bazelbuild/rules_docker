@@ -45,6 +45,12 @@ def _impl(ctx):
     # Parse and get destination registry to be pushed to
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
     repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
+
+    # If a repository file is provided, override <repository> with tag value
+    if ctx.file.repository_file:
+        repository = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.repository_file))
+        pusher_input.append(ctx.file.repository_file)
+
     tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
 
     # If a tag file is provided, override <tag> with tag value
@@ -155,6 +161,10 @@ container_push = rule(
         "repository": attr.string(
             mandatory = True,
             doc = "The name of the image.",
+        ),
+        "repository_file": attr.label(
+            allow_single_file = True,
+            doc = "(optional) The label of the file with repository value. Overrides 'repository'.",
         ),
         "skip_unchanged_digest": attr.bool(
             default = False,
