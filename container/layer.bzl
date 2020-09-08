@@ -39,6 +39,7 @@ load(
 load(
     "//skylib:zip.bzl",
     _gzip = "gzip",
+    _zip_tools = "tools",
 )
 
 _DEFAULT_MTIME = -1
@@ -288,7 +289,7 @@ _layer_attrs = dicts.add({
     "portable_mtime": attr.bool(default = False),
     "symlinks": attr.string_dict(),
     "tars": attr.label_list(allow_files = tar_filetype),
-}, _hash_tools, _layer_tools)
+}, _hash_tools, _layer_tools, _zip_tools)
 
 _layer_outputs = {
     "layer": "%{name}-layer.tar",
