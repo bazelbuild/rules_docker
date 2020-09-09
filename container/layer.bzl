@@ -126,6 +126,9 @@ def build_layer(
     if (operating_system == "windows"):
         args.add("--root_directory=Files")
         empty_root_dirs = ["Files", "Hives"]
+    elif build_layer_exec.path.endswith(".exe"):
+        # Building on Windows, but not for Windows. Do not use the default root directory.
+        args.add("--root_directory=")
 
     all_files = [struct(src = f.path, dst = _magic_path(ctx, f, layer)) for f in files]
     all_files += [struct(src = f.path, dst = path) for (path, f) in file_map.items()]
