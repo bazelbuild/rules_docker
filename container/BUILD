@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@pip_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -40,14 +39,12 @@ py_binary(
 
 py_library(
     name = "build_tar_lib",
-    srcs = ["build_tar.py"],
+    srcs = [
+        "archive.py",
+        "build_tar.py",
+    ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = [
-        requirement("python-gflags"),
-        requirement("six"),
-        "@rules_pkg//:archive",
-    ],
 )
 
 TEST_TARGETS = [
@@ -182,7 +179,6 @@ bzl_library(
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
-        "//skylib:zip",
         "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )

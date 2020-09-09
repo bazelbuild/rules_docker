@@ -24,7 +24,7 @@ DockerToolchainInfo = provider(
                          "will be used. DOCKER_CONFIG is not defined, the " +
                          "home directory will be used.",
         "docker_flags": "Additional flags to the docker command",
-        "gzip_path": "Optional path to the gzip binary. If not set found via which.",
+        "gzip_path": "Optional path to the gzip binary.",
         "gzip_target": "Optional Bazel target for the gzip tool. " +
                        "Should only be set if gzip_path is unset.",
         "tool_path": "Path to the docker executable",
@@ -104,8 +104,6 @@ def _toolchain_configure_impl(repository_ctx):
         gzip_attr = "gzip_target = \"%s\"," % repository_ctx.attr.gzip_target
     elif repository_ctx.attr.gzip_path:
         gzip_attr = "gzip_path = \"%s\"," % repository_ctx.attr.gzip_path
-    elif repository_ctx.which("gzip"):
-        gzip_attr = "gzip_path = \"%s\"," % repository_ctx.which("gzip")
     docker_flags = []
     docker_flags += repository_ctx.attr.docker_flags
 
@@ -161,9 +159,8 @@ toolchain_configure = repository_rule(
         ),
         "gzip_path": attr.string(
             mandatory = False,
-            doc = "The full path to the gzip binary. If not specified, it will " +
-                  "be searched for in the path. If not available, running commands " +
-                  "that use gzip will fail.",
+            doc = "The full path to the gzip binary. If not specified, a tool will " +
+                  "be compiled and used.",
         ),
         "gzip_target": attr.label(
             executable = True,

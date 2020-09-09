@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("@npm//@bazel/typescript:index.bzl", "ts_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//cc:image.bzl", "cc_image")
@@ -292,7 +293,7 @@ container_image(
 # py_binary(
 #     name = "extras_gen",
 #     srcs = ["extras_gen.py"],
-#     deps = ["@rules_pkg//:archive"],
+#     deps = ["//container:build_tar_lib"],
 # )
 
 # genrule(
@@ -1071,4 +1072,16 @@ container_push(
     repository = "docker/test/{BUILD_USER}",
     tag = "{BUILD_USER}",
     tags = ["manual"],
+)
+
+bzl_library(
+    name = "stamp_info_bzl",
+    srcs = ["stamp_info.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "utils_bzl",
+    srcs = ["utils.bzl"],
+    visibility = ["//visibility:private"],
 )

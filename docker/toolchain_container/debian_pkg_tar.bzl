@@ -99,6 +99,7 @@ def _generate_deb_tar(
         image_with_keys_output_layer = ctx.actions.declare_file(image_with_keys + "-layer.tar")
         image_with_keys_output_digest = ctx.actions.declare_file(image_with_keys + ".digest")
         image_with_keys_output_config = ctx.actions.declare_file(image_with_keys + ".json")
+        image_with_keys_output_config_digest = ctx.actions.declare_file(image_with_keys + ".json.sha256")
 
         _apt_key.implementation(
             ctx,
@@ -110,6 +111,7 @@ def _generate_deb_tar(
             output_layer = image_with_keys_output_layer,
             output_digest = image_with_keys_output_digest,
             output_config = image_with_keys_output_config,
+            output_config_digest = image_with_keys_output_config_digest,
         )
         download_base = image_with_keys_output_tarball
 
