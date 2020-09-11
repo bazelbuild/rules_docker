@@ -945,7 +945,7 @@ container_image(
     name = "launcher_image",
     base = "//tests/container/go:go_image",
     launcher = ":launcher",
-    launcher_args = ["-env=CUSTOM_MESSAGE=Launched via launcher!"],
+    launcher_args = ["-env-append=CUSTOM_MESSAGE=Launched via launcher!"],
     legacy_run_behavior = False,
 )
 
