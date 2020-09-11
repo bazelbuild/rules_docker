@@ -37,46 +37,46 @@ def go_deps():
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            urls = ["https://codeload.github.com/google/go-containerregistry/zip/e5f4efd48dbff3ab3165a944d6777f8db28f0ccb"],  # v0.1.2
-            strip_prefix = "go-containerregistry-e5f4efd48dbff3ab3165a944d6777f8db28f0ccb",
-            sha256 = "ba9b5ae737f9b7ae153f20cad6d4a56b94949afec1fcb638bb1e3e7cc0028923",
+            urls = ["https://api.github.com/repos/google/go-containerregistry/tarball/e5f4efd48dbff3ab3165a944d6777f8db28f0ccb"],  # v0.1.2
+            strip_prefix = "go-containerregistry-e5f4efd",
+            sha256 = "3a5f9ff61b48b928ce37e9d227a581571957b3b3ad5d45d148bce5433f9c9a6c",
             importpath = "github.com/google/go-containerregistry",
-            type = "zip",
+            type = "tar.gz",
         )
     if "com_github_pkg_errors" not in excludes:
         go_repository(
             name = "com_github_pkg_errors",
-            urls = ["https://codeload.github.com/pkg/errors/zip/614d223910a179a466c1767a985424175c39b465"],  # v0.9.1
-            sha256 = "49c7041442cc15211ee85175c06ffa6520c298b1826ed96354c69f16b6cfd13b",
+            urls = ["https://api.github.com/repos/pkg/errors/tarball/614d223910a179a466c1767a985424175c39b465"],  # v0.9.1
+            sha256 = "208d21a7da574026f68a8c9818fa7c6ede1b514ef9e72dc733b496ddcb7792a6",
             importpath = "github.com/pkg/errors",
-            strip_prefix = "errors-614d223910a179a466c1767a985424175c39b465",
-            type = "zip",
+            strip_prefix = "pkg-errors-614d223",
+            type = "tar.gz",
         )
 
     if "in_gopkg_yaml_v2" not in excludes:
         go_repository(
             name = "in_gopkg_yaml_v2",
-            urls = ["https://codeload.github.com/go-yaml/yaml/zip/53403b58ad1b561927d19068c655246f2db79d48"],  # v2.2.8
-            sha256 = "6ba5e7e5a1cffe05e7628b8cb441ee860d75e439e567187330b5f5d8d72c1537",
+            urls = ["https://api.github.com/repos/go-yaml/yaml/tarball/53403b58ad1b561927d19068c655246f2db79d48"],  # v2.2.8
+            sha256 = "7c8b9e36fac643f1b4a5fc1dc578fb569fc3a1d611c02c3338f4efa84de729fa",
             importpath = "gopkg.in/yaml.v2",
-            strip_prefix = "yaml-53403b58ad1b561927d19068c655246f2db79d48",
-            type = "zip",
+            strip_prefix = "go-yaml-yaml-53403b5",
+            type = "tar.gz",
         )
     if "com_github_kylelemons_godebug" not in excludes:
         go_repository(
             name = "com_github_kylelemons_godebug",
-            urls = ["https://codeload.github.com/kylelemons/godebug/zip/9ff306d4fbead574800b66369df5b6144732d58e"],  # v1.1.0
-            sha256 = "117fb85c4d3e6bf9fe55ad2379aca71fee8f7157f025733a7fb40835a8729188",
+            urls = ["https://api.github.com/repos/kylelemons/godebug/tarball/9ff306d4fbead574800b66369df5b6144732d58e"],  # v1.1.0
+            sha256 = "6151c487936ab72cffbf804626228083c9b3abfc908a2bb41b1160e1e5780aaf",
             importpath = "github.com/kylelemons/godebug",
-            strip_prefix = "godebug-9ff306d4fbead574800b66369df5b6144732d58e",
-            type = "zip",
+            strip_prefix = "kylelemons-godebug-9ff306d",
+            type = "tar.gz",
         )
     if "com_github_ghodss_yaml" not in excludes:
         go_repository(
             name = "com_github_ghodss_yaml",
-            urls = ["https://codeload.github.com/ghodss/yaml/zip/0ca9ea5df5451ffdf184b4428c902747c2c11cd7"],  # v1.0.0
-            sha256 = "6775fdc9ff61c99b9d9ea03df0af793f41d6ec4a7cdbcd04eae1d9911acdf6f9",
+            urls = ["https://api.github.com/repos/ghodss/yaml/tarball/0ca9ea5df5451ffdf184b4428c902747c2c11cd7"],  # v1.0.0
+            sha256 = "d4bd43ce9348fc1b52af3b7de7a8e62a30d5a02d9137319f312cd95380014f6e",
             importpath = "github.com/ghodss/yaml",
-            strip_prefix = "yaml-0ca9ea5df5451ffdf184b4428c902747c2c11cd7",
-            type = "zip",
+            strip_prefix = "ghodss-yaml-0ca9ea5",
+            type = "tar.gz",
         )
