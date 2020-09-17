@@ -179,7 +179,7 @@ def _add_create_image_config_args(
         fail("launcher_args does nothing when launcher is not specified.", attr = "launcher_args")
     if ctx.attr.launcher:
         args.add("-entrypointPrefix", ctx.file.launcher.basename, format = "/%s")
-        args.add_all(ctx.attr.launcher_args)
+        args.add_all(ctx.attr.launcher_args, before_each = "-entrypointPrefix")
 
 def _format_legacy_label(t):
     return ("--labels=%s=%s" % (t[0], t[1]))
@@ -307,6 +307,7 @@ def _impl(
         output_executable = None,
         output_tarball = None,
         output_config = None,
+        output_config_digest = None,
         output_digest = None,
         output_layer = None,
         workdir = None,
@@ -339,6 +340,7 @@ def _impl(
     output_executable: File to use as output for script to load docker image
     output_tarball: File, overrides ctx.outputs.out
     output_config: File, overrides ctx.outputs.config
+    output_config_digest: File, overrides ctx.outputs.config_digest
     output_digest: File, overrides ctx.outputs.digest
     output_layer: File, overrides ctx.outputs.layer
     workdir: str, overrides ctx.attr.workdir
@@ -358,6 +360,7 @@ def _impl(
     output_tarball = output_tarball or ctx.outputs.out
     output_digest = output_digest or ctx.outputs.digest
     output_config = output_config or ctx.outputs.config
+    output_config_digest = output_config_digest or ctx.outputs.config_digest
     output_layer = output_layer or ctx.outputs.layer
     build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
@@ -506,16 +509,20 @@ def _impl(
     )
     _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 
-    # Symlink config file for usage in structure tests
-    ln_path = config_file.path.split("/")[-1]
+    # Copy config file and its sha file for usage in tests
     ctx.actions.run_shell(
         outputs = [output_config],
         inputs = [config_file],
-        command = "ln -s %s %s" % (ln_path, output_config.path),
+        command = "cp %s %s" % (config_file.path, output_config.path),
+    )
+    ctx.actions.run_shell(
+        outputs = [output_config_digest],
+        inputs = [config_digest],
+        command = "cp %s %s" % (config_digest.path, output_config_digest.path),
     )
 
     runfiles = ctx.runfiles(
-        files = unzipped_layers + diff_ids + [config_file, config_digest] +
+        files = unzipped_layers + diff_ids + [config_file, config_digest, output_config_digest] +
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
@@ -596,6 +603,8 @@ _outputs["out"] = "%{name}.tar"
 _outputs["digest"] = "%{name}.digest"
 
 _outputs["config"] = "%{name}.json"
+
+_outputs["config_digest"] = "%{name}.json.sha256"
 
 _outputs["build_script"] = "%{name}.executable"
 

@@ -14,7 +14,8 @@
 """This tool build tar files from a list of inputs."""
 
 from contextlib import contextmanager
-import gflags
+import argparse
+import functools
 import gzip
 import io
 import json
@@ -27,84 +28,6 @@ import tarfile
 import tempfile
 
 from container import archive
-
-gflags.DEFINE_string('output', None, 'The output file, mandatory')
-gflags.MarkFlagAsRequired('output')
-
-gflags.DEFINE_multistring('file', [], 'A file to add to the layer')
-
-gflags.DEFINE_string('manifest', None, 'JSON manifest of contents to add to the layer')
-
-gflags.DEFINE_multistring('empty_file', [], 'An empty file to add to the layer')
-
-gflags.DEFINE_multistring('empty_dir', [], 'An empty dir to add to the layer')
-
-gflags.DEFINE_string(
-    'mode', None, 'Force the mode on the added files (in octal).')
-
-gflags.DEFINE_string(
-    'mtime', None, 'Set mtime on tar file entries. May be an integer or the'
-        ' value "portable", to get the value 2000-01-01, which is'
-        ' usable with non *nix OSes.')
-
-gflags.DEFINE_bool(
-    'enable_mtime_preservation', False, 'Preserve file mtimes from input tar file.')
-
-gflags.DEFINE_multistring(
-    'empty_root_dir',
-    [],
-    'An empty root directory to add to the layer.  This will create a directory that'
-    'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
-    '"root_directory"')
-
-gflags.DEFINE_multistring('tar', [], 'A tar file to add to the layer')
-
-gflags.DEFINE_multistring('deb', [], 'A debian package to add to the layer')
-
-gflags.DEFINE_multistring(
-    'link', [],
-    'Add a symlink a inside the layer ponting to b if a:b is specified')
-gflags.RegisterValidator(
-    'link',
-    lambda l: all(value.find(':') > 0 for value in l),
-    message='--link value should contains a : separator')
-
-gflags.DEFINE_string(
-    'directory', None, 'Directory in which to store the file inside the layer')
-
-gflags.DEFINE_string(
-    'compression', None, 'Compression (`gz` or `bz2`), default is none.')
-
-gflags.DEFINE_multistring(
-    'modes', None,
-    'Specific mode to apply to specific file (from the file argument),'
-    ' e.g., path/to/file=0o455.')
-
-gflags.DEFINE_multistring('owners', None,
-                          'Specify the numeric owners of individual files, '
-                          'e.g. path/to/file=0.0.')
-
-gflags.DEFINE_string('owner', '0.0',
-                     'Specify the numeric default owner of all files,'
-                     ' e.g., 0.0')
-
-gflags.DEFINE_string('owner_name', None,
-                     'Specify the owner name of all files, e.g. root.root.')
-
-gflags.DEFINE_multistring('owner_names', None,
-                          'Specify the owner names of individual files, e.g. '
-                          'path/to/file=root.root.')
-
-gflags.DEFINE_string(
-    'root_directory', './', 'Default root directory is named "."'
-    'Windows docker images require this be named "Files" instead of "."')
-
-gflags.DEFINE_string('xz_path', None,
-                     'Specify the path to xz as a fallback when the Python '
-                     'lzma module is unavailable.')
-
-FLAGS = gflags.FLAGS
-
 
 class TarFile(object):
   """A class to generates a Docker layer."""
@@ -125,13 +48,14 @@ class TarFile(object):
       return os.path.basename(os.path.splitext(filename)[0])
 
   def __init__(self, output, directory, compression, root_directory,
-               default_mtime, enable_mtime_preservation):
+               default_mtime, enable_mtime_preservation, xz_path):
     self.directory = directory
     self.output = output
     self.compression = compression
     self.root_directory = root_directory
     self.default_mtime = default_mtime
     self.enable_mtime_preservation = enable_mtime_preservation
+    self.xz_path = xz_path
 
   def __enter__(self):
     self.tarfile = archive.TarFileWriter(
@@ -347,13 +271,13 @@ class TarFile(object):
       raise self.DebError(deb + ' does not contains a control file!')
 
   @staticmethod
-  def _xzcat_decompress(data):
+  def _xzcat_decompress(xz_path, data):
     """Decompresses the xz-encrypted bytes in data by piping to xz."""
-    if not FLAGS.xz_path:
+    if not xz_path:
       raise RuntimeError('Cannot handle .xz compression: xz not found.')
 
     xz_proc = subprocess.Popen(
-      [FLAGS.xz_path, '--decompress', '--stdout'],
+      [xz_path, '--decompress', '--stdout'],
       stdin=subprocess.PIPE,
       stdout=subprocess.PIPE)
     return xz_proc.communicate(data)[0]
@@ -368,11 +292,11 @@ class TarFile(object):
         from backports import lzma
         decompress = lzma.decompress
       except ImportError:
-        decompress = self._xzcat_decompress
+        decompress = functools.partial(self._xzcat_decompress, self.xz_path)
     return decompress(data)
 
 
-def main(unused_argv):
+def main(FLAGS):
   # Parse modes arguments
   default_mode = None
   if FLAGS.mode:
@@ -413,7 +337,7 @@ def main(unused_argv):
   # Add objects to the tar file
   with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression,
                FLAGS.root_directory, FLAGS.mtime,
-               FLAGS.enable_mtime_preservation) as output:
+               FLAGS.enable_mtime_preservation, FLAGS.xz_path) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
@@ -460,4 +384,81 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-  main(FLAGS(sys.argv))
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--output', type=str, required=True,
+    help='The output file, mandatory')
+
+  parser.add_argument('--file', default=[], type=str, action='append',
+    help='A file to add to the layer')
+
+  parser.add_argument('--manifest', type=str,
+    help='JSON manifest of contents to add to the layer')
+
+  parser.add_argument('--empty_file', type=str, default=[], action='append',
+    help='An empty file to add to the layer')
+
+  parser.add_argument('--empty_dir', type=str, default=[], action='append',
+    help='An empty dir to add to the layer')
+
+  parser.add_argument('--mode', type=str,
+    help='Force the mode on the added files (in octal).')
+
+  parser.add_argument('--mtime', type=str,
+    help='Set mtime on tar file entries. May be an integer or the'
+    ' value "portable", to get the value 2000-01-01, which is'
+    ' usable with non *nix OSes.')
+
+  parser.add_argument('--enable_mtime_preservation', type=bool, default=False,
+    help='Preserve file mtimes from input tar file.')
+
+  parser.add_argument('--empty_root_dir', type=str, default=[], action='append',
+    help='An empty root directory to add to the layer.  This will create a directory that'
+    'is a peer of "root_directory".  "empty_dir" creates an empty directory inside of'
+    '"root_directory"')
+
+  parser.add_argument('--tar', type=str, default=[], action='append',
+    help='A tar file to add to the layer')
+
+  parser.add_argument('--deb', type=str, default=[], action='append',
+    help='A debian package to add to the layer')
+
+  def validate_link(l):
+    if not all([value.find(':') > 0 for value in l]):
+      raise argparse.ArgumentTypeError(msg)
+    return l
+
+  parser.add_argument('--link', type=validate_link, default=[], action='append',
+    help='Add a symlink a inside the layer ponting to b if a:b is specified')
+
+  parser.add_argument('--directory', type=str,
+    help='Directory in which to store the file inside the layer')
+
+  parser.add_argument('--compression', type=str,
+    help='Compression (`gz` or `bz2`), default is none.')
+
+  parser.add_argument('--modes', type=str, default=None, action='append',
+    help='Specific mode to apply to specific file (from the file argument),'
+    ' e.g., path/to/file=0o455.')
+
+  parser.add_argument('--owners', type=str, default=None, action='append',
+    help='Specific mode to apply to specific file (from the file argument),'
+    ' e.g., path/to/file=0o455.')
+
+  parser.add_argument('--owner', type=str, default='0.0',
+    help='Specify the numeric default owner of all files, e.g., 0.0')
+
+  parser.add_argument('--owner_name', type=str,
+    help='Specify the owner name of all files, e.g. root.root.')
+
+  parser.add_argument('--owner_names', type=str, default=None, action='append',
+    help='Specify the owner names of individual files, e.g. path/to/file=root.root.')
+
+  parser.add_argument('--root_directory', type=str, default='./',
+    help='Default root directory is named "."'
+    'Windows docker images require this be named "Files" instead of "."')
+
+  parser.add_argument('--xz_path', type=str,
+    help='Specify the path to xz as a fallback when the Python '
+    'lzma module is unavailable.')
+
+  main(parser.parse_args())

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//container:container.bzl", "container_import")
 load("//testdata/pause_piecemeal:layers.bzl", "PAUSE_LAYERS")
 
@@ -43,4 +44,10 @@ container_import(
     name = "image",
     config = ":pause_config.json",
     layers = ["%s.tar" % x for x in PAUSE_LAYERS],
+)
+
+bzl_library(
+    name = "layers_bzl",
+    srcs = ["layers.bzl"],
+    visibility = ["//visibility:private"],
 )

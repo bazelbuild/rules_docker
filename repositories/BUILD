@@ -11,6 +11,45 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+bzl_library(
+    name = "pip_repositories_bzl",
+    srcs = ["pip_repositories.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "go_repositories_bzl",
+    srcs = ["go_repositories.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "repositories_bzl",
+    srcs = ["repositories.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "images_bzl",
+    srcs = ["images.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "deps_bzl",
+    srcs = ["deps.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "py_repositories_bzl",
+    srcs = ["py_repositories.bzl"],
+    visibility = ["//visibility:private"],
+)
