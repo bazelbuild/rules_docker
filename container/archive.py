@@ -140,7 +140,12 @@ class TarFileWriter(object):
       # Instead, we manually re-implement gzopen from tarfile.py and set mtime.
       self.fileobj = gzip.GzipFile(
           filename=name, mode='w', compresslevel=9, mtime=self.default_mtime)
-    self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
+    self.tar = tarfile.open(
+      name=name,
+      mode=mode,
+      fileobj=self.fileobj,
+      # https://github.com/bazelbuild/rules_docker/issues/1602
+      format=tarfile.PAX_FORMAT)
     self.members = set([])
     self.directories = set([])
 
