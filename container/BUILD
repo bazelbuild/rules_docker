@@ -179,7 +179,6 @@ bzl_library(
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
-        "//skylib:zip",
         "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )

@@ -22,22 +22,12 @@ local_repository(
 )
 
 load(
-    "//:local_tool.bzl",
-    "local_tool",
-)
-
-local_tool(
-    name = "gzip",
-)
-
-load(
     "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
 )
 
 docker_toolchain_configure(
     name = "docker_config",
-    gzip_target = "@gzip//:gzip",
 )
 
 load(
