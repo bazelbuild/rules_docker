@@ -516,7 +516,8 @@ container_bundle(
 py_binary(
     name = "gen_deb",
     srcs = ["gen_deb.py"],
-    python_version = "PY2",
+    python_version = "PY3",
+    srcs_version = "PY3",
 )
 
 generate_deb(
@@ -742,6 +743,7 @@ py_library(
 py_library(
     name = "py_image_complex_library",
     srcs = ["py_image_complex_library.py"],
+    srcs_version = "PY2AND3",
     deps = [
         ":py_image_library_using_six",
         "//testdata/test:py_image_library_using_addict",

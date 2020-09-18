@@ -24,7 +24,7 @@ load(
 )
 
 # The release of the github.com/google/containerregistry to consume.
-CONTAINERREGISTRY_RELEASE = "v0.0.36"
+CONTAINERREGISTRY_RELEASE = "v0.0.38"
 RULES_DOCKER_GO_BINARY_RELEASE = "fdebd6e0b6c9185a115379166c1c067f88d53630"
 
 def repositories():
@@ -67,7 +67,7 @@ def repositories():
     if "containerregistry" not in excludes:
         http_archive(
             name = "containerregistry",
-            sha256 = "a8cdf2452323e0fefa4edb01c08b2ec438c9fa3192bc9f408b89287598c12abc",
+            sha256 = "a0c01fcc11db848212f8b11d89df168361f99a31eb7373ff60ce50c5d05cd74b",
             strip_prefix = "containerregistry-" + CONTAINERREGISTRY_RELEASE[1:],
             urls = [("https://github.com/google/containerregistry/archive/" +
                      CONTAINERREGISTRY_RELEASE + ".tar.gz")],
