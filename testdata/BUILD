@@ -517,7 +517,7 @@ py_binary(
     name = "gen_deb",
     srcs = ["gen_deb.py"],
     python_version = "PY3",
-    srcs_version = "PY3",
+    srcs_version = "PY2AND3",
 )
 
 generate_deb(
@@ -768,7 +768,7 @@ py_layer(
     deps = [":py_image_complex_library"],
 )
 
-py_image(
+py3_image(
     name = "py_image_complex",
     srcs = ["py_image_complex.py"],
     layers = [
