@@ -47,7 +47,7 @@ registry interactions.
 
 Note: Some of these rules are not supported on Mac. Specifically `go_image`
 cannot be used from Bazel running on a Mac. Other rules may also fail
-arbitrarily on Mac due to unforseen toolchain issues that need to be resolved in
+arbitrarily on Mac due to unforeseen toolchain issues that need to be resolved in
 Bazel and upstream rules repos. Please see [#943](https://github.com/bazelbuild/rules_docker/issues/943)
 for more details.
 
@@ -139,14 +139,14 @@ docker_toolchain_configure(
   # for more details.
   client_config="<enter absolute path to your docker config directory here>",
   # OPTIONAL: Path to the docker binary.
-  # Should be set explcitly for remote execution.
+  # Should be set explicitly for remote execution.
   docker_path="<enter absolute path to the docker binary (in the remote exec env) here>",
   # OPTIONAL: Path to the gzip binary.
   gzip_path="<enter absolute path to the gzip binary (in the remote exec env) here>",
   # OPTIONAL: Bazel target for the gzip tool.
   gzip_target="<enter absolute path (i.e., must start with repo name @...//:...) to an executable gzip target>",
   # OPTIONAL: Path to the xz binary.
-  # Should be set explcitly for remote execution.
+  # Should be set explicitly for remote execution.
   xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
   # OPTIONAL: List of additional flags to pass to the docker command.
   docker_flags = [

@@ -408,11 +408,11 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "db48eed61552e25d36fe051a65d2a329cc0fb08442627e8f13960c5ab087a44e",
-    strip_prefix = "bazel-toolchains-3.2.0",
+    sha256 = "89a053218639b1c5e3589a859bb310e0a402dedbe4ee369560e66026ae5ef1f2",
+    strip_prefix = "bazel-toolchains-3.5.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/releases/download/3.2.0/bazel-toolchains-3.2.0.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/3.2.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/releases/download/3.5.0/bazel-toolchains-3.5.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/3.5.0.tar.gz",
     ],
 )
 
@@ -452,10 +452,10 @@ srcs = glob(["**/*.py"]),
 data = ["cacerts.txt"],
 visibility = ["//visibility:public"]
 )""",
-    sha256 = "2dcbd4f20e826d6405593df8c3d6b6e4e369d57586db3ec9bbba0f0e0cdc0916",
-    strip_prefix = "httplib2-0.12.1/python2/httplib2/",
+    sha256 = "f2f35e29e99e8d9bb5921c17ede6ee10bd5bd971f2cd0b3aaaa20088754f89ba",
+    strip_prefix = "httplib2-0.18.1/python3/httplib2/",
     type = "tar.gz",
-    urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.12.1"],
+    urls = ["https://codeload.github.com/httplib2/httplib2/tar.gz/v0.18.1"],
 )
 
 # Used by oauth2client
@@ -499,22 +499,6 @@ deps = [
     strip_prefix = "oauth2client-4.0.0/oauth2client/",
     type = "tar.gz",
     urls = ["https://codeload.github.com/google/oauth2client/tar.gz/v4.0.0"],
-)
-
-# Used for parallel execution in containerregistry
-# TODO(mattmoor): Is there a clean way to override?
-http_archive(
-    name = "concurrent",
-    build_file_content = """
-py_library(
-name = "concurrent",
-srcs = glob(["**/*.py"]),
-visibility = ["//visibility:public"]
-)""",
-    sha256 = "a7086ddf3c36203da7816f7e903ce43d042831f41a9705bc6b4206c574fcb765",
-    strip_prefix = "pythonfutures-3.0.5/concurrent/",
-    type = "tar.gz",
-    urls = ["https://codeload.github.com/agronholm/pythonfutures/tar.gz/3.0.5"],
 )
 
 # For kotlin image test
