@@ -26,7 +26,7 @@ load(
 load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
 load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
-    "//skylib:zip.bzl", 
+    "//skylib:zip.bzl",
     _zip_tools = "tools",
 )
 

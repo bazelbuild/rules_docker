@@ -28,8 +28,8 @@ load("//contrib:test.bzl", "container_test")
 load(
     "//docker/util:run.bzl",
     "container_run_and_commit",
+    "container_run_and_commit_layer",
     "container_run_and_extract",
-    "container_run_and_commit_layer"
 )
 
 container_run_and_extract(
