@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cStringIO
+from io import BytesIO
 import datetime
 import json
 import os
@@ -49,12 +49,12 @@ class ImageTest(unittest.TestCase):
     self.assertEqual(paths, tar.getnames())
 
   def assertLayerNContains(self, img, n, paths):
-    buf = cStringIO.StringIO(img.blob(img.fs_layers()[n]))
+    buf = BytesIO(img.blob(img.fs_layers()[n]))
     with tarfile.open(fileobj=buf, mode='r') as layer:
       self.assertTarballContains(layer, paths)
 
   def assertNonZeroMtimesInTopLayer(self, img):
-    buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+    buf = BytesIO(img.blob(img.fs_layers()[0]))
     with tarfile.open(fileobj=buf, mode='r') as layer:
       for member in layer.getmembers():
         self.assertNotEqual(member.mtime, 0)
@@ -422,11 +422,11 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
 
-      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      buf = BytesIO(img.blob(img.fs_layers()[0]))
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/passwd').read()
         self.assertEqual(
-          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
+          b'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
           content)
         self.assertEqual(layer.getmember("./etc/passwd").mode, PASSWD_FILE_MODE)
 
@@ -436,11 +436,11 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/password', './root', './myhomedir'])
 
-      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      buf = BytesIO(img.blob(img.fs_layers()[0]))
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/password').read()
         self.assertEqual(
-          'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
+          b'root:x:0:0:Root:/root:/rootshell\nfoobar:x:1234:2345:myusernameinfo:/myhomedir:/myshell\nnobody:x:65534:65534:nobody with no home:/nonexistent:/sbin/nologin\n',
           content)
         self.assertEqual(layer.getmember("./etc/password").mode, PASSWD_FILE_MODE)
         self.assertTarInfo(layer.getmember("./root"), 0, 0, DIR_PERMISSION, True)
@@ -453,10 +453,10 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './etc/group'])
 
-      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      buf = BytesIO(img.blob(img.fs_layers()[0]))
       with tarfile.open(fileobj=buf, mode='r') as layer:
         content = layer.extractfile('./etc/group').read()
-        self.assertEqual('root:x:0:\nfoobar:x:2345:foo,bar,baz\n', content)
+        self.assertEqual(b'root:x:0:\nfoobar:x:2345:foo,bar,baz\n', content)
 
   def test_with_empty_files(self):
     with TestImage('with_empty_files') as img:
@@ -464,7 +464,7 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './file1', './file2'])
 
-      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      buf = BytesIO(img.blob(img.fs_layers()[0]))
       with tarfile.open(fileobj=buf, mode='r') as layer:
         for name in ('./file1', './file2'):
           memberfile = layer.getmember(name)
@@ -477,7 +477,7 @@ class ImageTest(unittest.TestCase):
       self.assertEqual(1, len(img.fs_layers()))
       self.assertTopLayerContains(img, ['.', './etc', './foo', './bar'])
 
-      buf = cStringIO.StringIO(img.blob(img.fs_layers()[0]))
+      buf = BytesIO(img.blob(img.fs_layers()[0]))
       with tarfile.open(fileobj=buf, mode='r') as layer:
         for name in ('./etc', './foo', './bar'):
           memberfile = layer.getmember(name)

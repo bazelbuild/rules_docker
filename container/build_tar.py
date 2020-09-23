@@ -21,6 +21,7 @@ import io
 import json
 import os
 import os.path
+import posixpath
 import subprocess
 import sys
 import re
@@ -48,7 +49,8 @@ class TarFile(object):
       return os.path.basename(os.path.splitext(filename)[0])
 
   def __init__(self, output, directory, compression, root_directory,
-               default_mtime, enable_mtime_preservation, xz_path):
+               default_mtime, enable_mtime_preservation, xz_path,
+               force_posixpath):
     self.directory = directory
     self.output = output
     self.compression = compression
@@ -56,6 +58,7 @@ class TarFile(object):
     self.default_mtime = default_mtime
     self.enable_mtime_preservation = enable_mtime_preservation
     self.xz_path = xz_path
+    self.force_posixpath = force_posixpath
 
   def __enter__(self):
     self.tarfile = archive.TarFileWriter(
@@ -92,7 +95,10 @@ class TarFile(object):
       ids = (0, 0)
     if names is None:
       names = ('', '')
-    dest = os.path.normpath(dest)
+    if self.force_posixpath:
+        dest = posixpath.normpath(dest)
+    else:
+        dest = os.path.normpath(dest)
     self.tarfile.add_file(
         dest,
         file_content=f,
@@ -123,7 +129,10 @@ class TarFile(object):
       ids = (0, 0)
     if names is None:
       names = ('', '')
-    dest = os.path.normpath(dest)
+    if self.force_posixpath:
+        dest = posixpath.normpath(dest)
+    else:
+        dest = os.path.normpath(dest)
     self.tarfile.add_file(
         dest,
         content='' if kind == tarfile.REGTYPE else None,
@@ -187,7 +196,10 @@ class TarFile(object):
       symlink: the name of the symbolic link to add.
       destination: where the symbolic link point to.
     """
-    symlink = os.path.normpath(symlink)
+    if self.force_posixpath:
+        symlink = posixpath.normpath(symlink)
+    else:
+        symlink = os.path.normpath(symlink)
     self.tarfile.add_file(symlink, tarfile.SYMTYPE, link=destination)
 
   @contextmanager
@@ -337,7 +349,8 @@ def main(FLAGS):
   # Add objects to the tar file
   with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression,
                FLAGS.root_directory, FLAGS.mtime,
-               FLAGS.enable_mtime_preservation, FLAGS.xz_path) as output:
+               FLAGS.enable_mtime_preservation, FLAGS.xz_path,
+               FLAGS.force_posixpath) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
@@ -460,5 +473,9 @@ if __name__ == '__main__':
   parser.add_argument('--xz_path', type=str,
     help='Specify the path to xz as a fallback when the Python '
     'lzma module is unavailable.')
+  
+  parser.add_argument('--force_posixpath', type=bool, default=False,
+    help='Force the use of posixpath when normalizing file paths. This is useful' 
+    'when building in a non-posix environment.')
 
   main(parser.parse_args())
