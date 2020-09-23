@@ -25,6 +25,10 @@ load(
 )
 load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
 load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
+load(
+    "//skylib:zip.bzl", 
+    _zip_tools = "tools",
+)
 
 def _extract_impl(
         ctx,
@@ -298,7 +302,7 @@ def _commit_layer_impl(
     """Implementation for the container_run_and_commit_layer rule.
 
     This rule runs a set of commands in a given image, waits for the commands
-    to finish, and then commits the container to a new image.
+    to finish, and then extracts the layer of changes into a new container_layer target.
 
     Args:
         ctx: The bazel rule context
@@ -441,7 +445,7 @@ _commit_layer_attrs = dicts.add({
         default = Label("//docker/util:commit_layer.sh.tpl"),
         allow_single_file = True,
     ),
-}, _hash_tools)
+}, _hash_tools, _zip_tools)
 
 _commit_layer_outputs = {
     "layer": "%{name}-layer.tar",

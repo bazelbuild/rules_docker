@@ -29,6 +29,7 @@ load(
     "//docker/util:run.bzl",
     "container_run_and_commit",
     "container_run_and_extract",
+    "container_run_and_commit_layer"
 )
 
 container_run_and_extract(
@@ -94,4 +95,35 @@ container_test(
     name = "test_container_commit_metadata",
     configs = [":container_commit.yaml"],
     image = ":test_container_commit_image",
+)
+
+container_run_and_commit_layer(
+    name = "test_container_commit_layer",
+    commands = ["touch /foo.txt"],
+    docker_run_flags = [
+        "-u",
+        "root",
+    ],
+    image = "@debian_base//image",
+)
+
+rule_test(
+    name = "test_container_commit_layer_rule",
+    generates = [
+        "test_container_commit.build",
+        "test_container_commit_commit-layer.tar",
+    ],
+    rule = "test_container_commit_layer",
+)
+
+container_image(
+    name = "test_container_commit_layer_image",
+    base = "@debian_base//image",
+    layers = [":test_container_commit_layer"],
+)
+
+container_test(
+    name = "test_container_layer_commit_metadata",
+    configs = [":container_commit_layer.yaml"],
+    image = ":test_container_commit_layer_image",
 )

@@ -38,6 +38,3 @@ $DOCKER $DOCKER_FLAGS rmi %{output_image}
 # Delete the intermediate tar
 rm $OUTPUT_IMAGE_TAR
 
-
-
-

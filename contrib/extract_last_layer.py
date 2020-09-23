@@ -13,7 +13,7 @@
 # limitations under the License.
 """Extracts the last layer of a docker image out of an image tarball
 
-Takes three arguments, the path to the tarball, and the output file for the layer, and the output file for the layer diffID
+Takes three arguments: the path to the image tarball, the output file for the layer, and the output file for the layer diffID
 """
 
 
