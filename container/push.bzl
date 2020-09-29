@@ -142,7 +142,6 @@ def _impl(ctx):
         ),
     ]
 
-# Pushes a container image to a registry.
 _container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
@@ -213,6 +212,7 @@ _container_push = rule(
         "digest": "%{name}.digest",
     },
 )
+
 # Pushes a container image to a registry.
 def container_push(name, format, image, registry, repository, **kwargs):
     _container_push(
