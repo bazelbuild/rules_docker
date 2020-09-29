@@ -30,7 +30,10 @@ load(
 )
 
 def _get_runfile_path(ctx, f):
-    return "${RUNFILES}/%s" % runfile(ctx, f)
+    if ctx.attr.windows_paths:
+        return "%RUNFILES%\{}".format(runfile(ctx, f).replace("/", "\\"))
+    else:
+        return "${RUNFILES}/%s" % runfile(ctx, f)
 
 def _impl(ctx):
     """Core implementation of container_push."""
@@ -113,19 +116,20 @@ def _impl(ctx):
     runfiles = ctx.runfiles(files = pusher_runfiles)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
+    exe = ctx.actions.declare_file(ctx.label.name + ctx.attr.extension)
     ctx.actions.expand_template(
-        template = ctx.file._tag_tpl,
+        template = ctx.file.tag_tpl,
+        output = exe,
         substitutions = {
             "%{args}": " ".join(pusher_args),
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
         },
-        output = ctx.outputs.executable,
         is_executable = True,
     )
 
     return [
         DefaultInfo(
-            executable = ctx.outputs.executable,
+            executable = exe,
             runfiles = runfiles,
         ),
         PushInfo(
@@ -139,7 +143,7 @@ def _impl(ctx):
     ]
 
 # Pushes a container image to a registry.
-container_push = rule(
+_container_push = rule(
     attrs = dicts.add({
         "format": attr.string(
             mandatory = True,
@@ -193,9 +197,13 @@ container_push = rule(
             executable = True,
             allow_files = True,
         ),
-        "_tag_tpl": attr.label(
-            default = Label("//container:push-tag.sh.tpl"),
+        "extension": attr.string(),
+        "tag_tpl": attr.label(
+            mandatory = True,
             allow_single_file = True,
+        ),
+        "windows_paths": attr.bool(
+            mandatory = True,
         ),
     }, _layer_tools),
     executable = True,
@@ -205,3 +213,25 @@ container_push = rule(
         "digest": "%{name}.digest",
     },
 )
+# Pushes a container image to a registry.
+def container_push(name, format, image, registry, repository, **kwargs):
+    _container_push(
+        name = name,
+        format = format,
+        image = image,
+        registry = registry,
+        repository = repository,
+        extension = select({
+                "@bazel_tools//src/conditions:host_windows": ".bat",
+                "//conditions:default": "",
+            }),
+        tag_tpl = select({
+                "@bazel_tools//src/conditions:host_windows": Label("//container:push-tag.bat.tpl"),
+                "//conditions:default": Label("//container:push-tag.sh.tpl"),
+            }),
+        windows_paths = select({
+                "@bazel_tools//src/conditions:host_windows": True,
+                "//conditions:default": False,
+            }),
+        **kwargs
+    )
