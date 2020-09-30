@@ -144,6 +144,9 @@ def _impl(ctx):
 
 _container_push = rule(
     attrs = dicts.add({
+        "extension": attr.string(
+            doc = "(optional) The file extension for the push script.",
+        ),
         "format": attr.string(
             mandatory = True,
             values = [
@@ -185,6 +188,14 @@ _container_push = rule(
             allow_single_file = True,
             doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
         ),
+        "tag_tpl": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+            doc = "The script template to use.",
+        ),
+        "windows_paths": attr.bool(
+            mandatory = True,
+        ),
         "_digester": attr.label(
             default = "//container/go/cmd/digester",
             cfg = "host",
@@ -195,14 +206,6 @@ _container_push = rule(
             cfg = "host",
             executable = True,
             allow_files = True,
-        ),
-        "extension": attr.string(),
-        "tag_tpl": attr.label(
-            mandatory = True,
-            allow_single_file = True,
-        ),
-        "windows_paths": attr.bool(
-            mandatory = True,
         ),
     }, _layer_tools),
     executable = True,
