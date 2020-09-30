@@ -64,6 +64,7 @@ alias(
     actual = select({
         "@bazel_tools//src/conditions:darwin": "@structure_test_darwin//file",
         "@bazel_tools//src/conditions:darwin_x86_64": "@structure_test_darwin//file",
+        "@bazel_tools//src/conditions:linux_aarch64": "@structure_test_linux_aarch64//file",
         "//conditions:default": "@structure_test_linux//file",
     }),
 )
