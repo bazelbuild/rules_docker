@@ -60,6 +60,29 @@ sh_test(
     data = [":test_download_pkgs.tar"],
 )
 
+download_pkgs(
+    name = "test_download_pkgs_with_docker_run_flags",
+    image_tar = "@ubuntu1604//:ubuntu1604_vanilla.tar",
+    docker_run_flags = [
+        "--network=host",
+    ],
+    packages = [
+        "unzip",
+    ],
+)
+
+file_test(
+    name = "test_download_pkgs_docker_with_docker_run_flags_run",
+    file = ":test_download_pkgs_with_docker_run_flags",
+    regexp = "\-\-network=host \-\-privileged",
+)
+
+sh_test(
+    name = "download_pkgs_with_docker_run_flags_run_test",
+    srcs = ["download_pkgs_with_docker_run_flags_run_test.sh"],
+    data = [":test_download_pkgs_with_docker_run_flags.tar"],
+)
+
 add_apt_key(
     name = "ubuntu_gpg_image",
     image = "@ubuntu1604//:ubuntu1604_vanilla.tar",

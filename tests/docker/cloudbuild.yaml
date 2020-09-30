@@ -24,6 +24,7 @@ steps:
       - "--test_output=errors"
       - "--verbose_failures"
       - "//tests/docker/package_managers:download_pkgs_run_test"
+      - "//tests/docker/package_managers:download_pkgs_with_docker_run_flags_run_test"
       - "//tests/docker/package_managers:download_pkgs_with_additional_repos_run_test"
       - "//tests/docker/package_managers:gpg_test"
       - "//tests/docker/package_managers:install_pkgs_reproducibility_test"
