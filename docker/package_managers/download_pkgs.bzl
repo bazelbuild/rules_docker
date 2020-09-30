@@ -104,6 +104,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         output = output_script,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
+            "%{docker_run_flags}": " ".join(ctx.attr.docker_run_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
@@ -130,6 +131,7 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         output = output_executable,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
+            "%{docker_run_flags}": " ".join(ctx.attr.docker_run_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{download_commands}": _generate_download_commands(ctx, packages, additional_repos),
             "%{image_id_extractor_path}": "${RUNFILES}/%s" % runfile(ctx, ctx.executable._extract_image_id),
@@ -161,6 +163,10 @@ _attrs = {
     "additional_repos": attr.string_list(
         doc = ("list of additional debian package repos to use, in " +
                "sources.list format"),
+    ),
+    "docker_run_flags": attr.string_list(
+        doc = "Extra flags to pass to the docker run command.",
+        mandatory = False,
     ),
     "image_tar": attr.label(
         doc = "The image tar for the container used to download packages.",

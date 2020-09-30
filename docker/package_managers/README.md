@@ -342,7 +342,7 @@ add_apt_key(<a href="#add_apt_key-name">name</a>, <a href="#add_apt_key-base">ba
 ## download_pkgs
 
 <pre>
-download_pkgs(<a href="#download_pkgs-name">name</a>, <a href="#download_pkgs-additional_repos">additional_repos</a>, <a href="#download_pkgs-image_tar">image_tar</a>, <a href="#download_pkgs-packages">packages</a>)
+download_pkgs(<a href="#download_pkgs-name">name</a>, <a href="#download_pkgs-additional_repos">additional_repos</a>, <a href="#download_pkgs-docker_run_flags">docker_run_flags</a>, <a href="#download_pkgs-image_tar">image_tar</a>, <a href="#download_pkgs-packages">packages</a>)
 </pre>
 
 This rule creates a script to download packages within a container.
@@ -371,6 +371,15 @@ The script bunldes all the packages in a tarball.
         List of strings; optional
         <p>
           list of additional debian package repos to use, in sources.list format
+        </p>
+      </td>
+    </tr>
+    <tr id="download_pkgs-docker_run_flags">
+      <td><code>docker_run_flags</code></td>
+      <td>
+        List of strings; optional
+        <p>
+          Extra flags to pass to the docker run command.
         </p>
       </td>
     </tr>
