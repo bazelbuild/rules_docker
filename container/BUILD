@@ -18,7 +18,10 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files(["push-tag.sh.tpl"])
+exports_files([
+    "push-tag.bat.tpl",
+    "push-tag.sh.tpl",
+])
 
 filegroup(
     name = "incremental_load_template",
