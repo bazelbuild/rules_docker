@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 # Setup tools and load utils
 TO_JSON_TOOL="%{to_json_tool}"
