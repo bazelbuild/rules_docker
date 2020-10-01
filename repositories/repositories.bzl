@@ -107,16 +107,24 @@ def repositories():
         http_file(
             name = "structure_test_linux",
             executable = True,
-            sha256 = "cfdfedd77c04becff0ea16a4b8ebc3b57bf404c56e5408b30d4fbb35853db67c",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-linux-amd64"],
+            sha256 = "9ddc0791491dc8139af5af4d894e48db4eeaca4b2cb9196293efd615bdb79122",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.9.1/container-structure-test-linux-amd64"],
+        )
+
+    if "structure_test_linux_aarch64" not in excludes:
+        http_file(
+            name = "structure_test_linux_aarch64",
+            executable = True,
+            sha256 = "b8fd54ed5f3fcb65861dec8aea5ccf05856c9e030a67461e601eab64c1fe70b1",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.9.1/container-structure-test-linux-arm64"],
         )
 
     if "structure_test_darwin" not in excludes:
         http_file(
             name = "structure_test_darwin",
             executable = True,
-            sha256 = "14e94f75112a8e1b08a2d10f2467d27db0b94232a276ddd1e1512593a7b7cf5a",
-            urls = ["https://storage.googleapis.com/container-structure-test/v1.8.0/container-structure-test-darwin-amd64"],
+            sha256 = "0b8c019b5a3df1a84515b75c2eb47aaf9db51dec621a39d1c4fa31a4a8f6c855",
+            urls = ["https://storage.googleapis.com/container-structure-test/v1.9.1/container-structure-test-darwin-amd64"],
         )
 
     if "container_diff" not in excludes:
