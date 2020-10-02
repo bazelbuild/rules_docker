@@ -29,6 +29,10 @@ load(
     "//skylib:zip.bzl",
     _zip_tools = "tools",
 )
+load(
+    "//skylib:path.bzl",
+    _join_path = "join",
+)
 
 def _extract_impl(
         ctx,
@@ -158,7 +162,8 @@ def _commit_impl(
         image = None,
         commands = None,
         docker_run_flags = None,
-        output_image_tar = None):
+        output_image_tar = None,
+        repository = None):
     """Implementation for the container_run_and_commit rule.
 
     This rule runs a set of commands in a given image, waits for the commands
@@ -172,6 +177,7 @@ def _commit_impl(
         docker_run_flags: String list, overrides ctx.attr.docker_run_flags
         output_image_tar: The output image obtained as a result of running
                           the commands on the input image
+        repository: The repository for the default tag for the image.
     """
 
     name = name or ctx.attr.name
@@ -180,6 +186,9 @@ def _commit_impl(
     docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
     script = ctx.actions.declare_file(name + ".build")
     output_image_tar = output_image_tar or ctx.outputs.out
+
+    # Construct a temporary name based on the build target.
+    tag_name = "{}:{}".format(_repository_name(ctx), name)
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
@@ -206,10 +215,7 @@ def _commit_impl(
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
-            "%{output_image}": "bazel/%s:%s" % (
-                ctx.label.package or "default",
-                name,
-            ),
+            "%{output_image}": tag_name,
             "%{output_tar}": output_image_tar.path,
             "%{to_json_tool}": ctx.executable._to_json_tool.path,
             "%{util_script}": image_utils.path,
@@ -229,6 +235,17 @@ def _commit_impl(
 
     return struct()
 
+def _repository_name(ctx):
+    """Compute the repository name for the current rule."""
+    if ctx.attr.legacy_repository_naming:
+        # Legacy behavior, off by default.
+        return _join_path(ctx.attr.repository, ctx.label.package.replace("/", "_"))
+
+    # Newer Docker clients support multi-level names, which are a part of
+    # the v2 registry specification.
+
+    return _join_path(ctx.attr.repository, ctx.label.package)
+
 _commit_attrs = {
     "commands": attr.string_list(
         doc = "A list of commands to run (sequentially) in the container.",
@@ -245,6 +262,8 @@ _commit_attrs = {
         allow_single_file = True,
         cfg = "target",
     ),
+    "repository": attr.string(default = "bazel"),
+    "legacy_repository_naming": attr.bool(default = False),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
         cfg = "host",
