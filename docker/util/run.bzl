@@ -26,12 +26,12 @@ load(
 load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
 load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
-    "//skylib:zip.bzl",
-    _zip_tools = "tools",
-)
-load(
     "//skylib:path.bzl",
     _join_path = "join",
+)
+load(
+    "//skylib:zip.bzl",
+    _zip_tools = "tools",
 )
 
 def _extract_impl(
@@ -262,8 +262,8 @@ _commit_attrs = {
         allow_single_file = True,
         cfg = "target",
     ),
-    "repository": attr.string(default = "bazel"),
     "legacy_repository_naming": attr.bool(default = False),
+    "repository": attr.string(default = "bazel"),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
         cfg = "host",
