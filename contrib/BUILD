@@ -45,6 +45,13 @@ py_library(
 )
 
 py_binary(
+    name = "extract_last_layer",
+    srcs = [":extract_last_layer.py"],
+    legacy_create_init = False,
+    python_version = "PY3",
+)
+
+py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
     legacy_create_init = False,
@@ -57,6 +64,7 @@ alias(
     actual = select({
         "@bazel_tools//src/conditions:darwin": "@structure_test_darwin//file",
         "@bazel_tools//src/conditions:darwin_x86_64": "@structure_test_darwin//file",
+        "@bazel_tools//src/conditions:linux_aarch64": "@structure_test_linux_aarch64//file",
         "//conditions:default": "@structure_test_linux//file",
     }),
 )
