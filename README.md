@@ -167,9 +167,9 @@ load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
 
-load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "io_bazel_rules_docker_pip_deps")
 
-pip_deps()
+io_bazel_rules_docker_pip_deps()
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",

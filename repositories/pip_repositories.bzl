@@ -19,9 +19,9 @@ Provides functions to pull all Python external package dependencies of this
 repository.
 """
 
-load("@pip_deps//:requirements.bzl", "pip_install")
+load("@io_bazel_rules_docker_pip_deps//:requirements.bzl", "pip_install")
 
-def pip_deps():
+def io_bazel_rules_docker_pip_deps():
     """Pull in external pip packages needed by py binaries in this repo.
 
     Pull in all pip dependencies needed to build the Py binaries in this
