@@ -26,6 +26,7 @@ bzl_library(
 # Docker toolchain type
 toolchain_type(
     name = "toolchain_type",
+    visibility = ["//visibility:public"],
 )
 
 # Default docker toolchain that expects the 'docker' executable

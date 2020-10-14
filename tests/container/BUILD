@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -237,13 +238,13 @@ container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
-    content = "sha256:b17eeb809b87bf5ad734369f1ef6aa4a13e6ea850cb745d8d64b17ef13c54f4f",
+    content = "sha256:4ec78686f1edd4f30cca6222f17ace5a2b9f8db9708727c3a140c954af0a534d",
     file = ":deb_image_with_dpkgs.digest",
 )
 
 file_test(
     name = "test_digest_output2",
-    content = "sha256:8da7a9421c68be888336492184d54b42db91a0b1f2096d85f4eaf3a25b7f234e",
+    content = "sha256:cf3bc4bfee0707fc15ee50b27af6dcb0fe6c0585a6ba89870736ac8f72c702e9",
     file = ":null_cmd_and_entrypoint_none.digest",
 )
 # END_DO_NOT_IMPORT
@@ -584,7 +585,7 @@ container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_push_digest_output",
-    content = "sha256:0149d475d8e25903446311d3da4a4aa54f348103b84c43b6ad3351484fdaff67",
+    content = "sha256:ea10d597d15d62e3a33ea378f75b08d9afc332f685495900724b857a8b9d2d8a",
     file = ":push_test.digest",
 )
 
@@ -609,13 +610,13 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:f757e72211b4ed612e147248bbbb8ce134cf70124d8850d70607d9ba53a28377",
+    content = "sha256:2f3bf2d061a1bab130cdd98f10b73dfceb08bfbf94a610c62f20c787073e5178",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:ae3eb3579d8c9654d64075623c8e7819c7681f762cb715ba20de8aa693066e56",
+    content = "sha256:249804db68a05bb88cc353d4aff090b084d8b8312665638d2f8d7bdaeaa423b3",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
@@ -855,3 +856,21 @@ pull_info_validation_test(
 )
 
 # END_DO_NOT_IMPORT
+
+bzl_library(
+    name = "apple_bzl",
+    srcs = ["apple.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "empty_layers_bzl",
+    srcs = ["empty_layers.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "pull_info_validation_test_bzl",
+    srcs = ["pull_info_validation_test.bzl"],
+    visibility = ["//visibility:private"],
+)

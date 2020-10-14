@@ -34,6 +34,7 @@ exports_files([
     "commit.sh.tpl",
     "extract.sh.tpl",
     "image_util.sh.tpl",
+    "commit_layer.sh.tpl",
 ])
 
 bzl_library(

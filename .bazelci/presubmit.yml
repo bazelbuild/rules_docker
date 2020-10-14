@@ -49,6 +49,8 @@ platforms:
     - "//tests/docker/util:test_container_commit_rule"
     - "//tests/docker/util:test_container_extract_rule"
     - "//tests/docker/util:test_extract_script"
+    - "//tests/docker/util:test_container_commit_layer_rule"
+    - "//tests/docker/util:test_container_commit_layer_metadata"
 
     # Disabled tests that do not run in BuildKite CI.
     # The targets listed below is not an exhaustive list of disabled targets
@@ -114,6 +116,8 @@ platforms:
     - "//tests/docker/util:test_container_commit_rule"
     - "//tests/docker/util:test_container_extract_rule"
     - "//tests/docker/util:test_extract_script"
+    - "//tests/docker/util:test_container_commit_layer_rule"
+    - "//tests/docker/util:test_container_commit_layer_metadata"
 
 
     # Disabled tests that do not run in BuildKite CI.
@@ -186,6 +190,7 @@ platforms:
     - "//tests/docker/util:test_container_commit_rule"
     - "//tests/docker/util:test_container_extract_rule"
     - "//tests/docker/util:test_extract_script"
+    - "//tests/docker/util:test_container_commit_layer_rule"
     # Disabled e2e tests that pull from localhost in nested workspace
     - "-//testing/new_pusher_tests/..."
     test_flags:

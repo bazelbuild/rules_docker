@@ -18,6 +18,18 @@ to new container image, or extract specified targets to a directory on
 the host machine.
 """
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load(
+    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    _hash_tools = "tools",
+)
+load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
+load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
+load(
+    "//skylib:zip.bzl",
+    _zip_tools = "tools",
+)
+
 def _extract_impl(
         ctx,
         name = "",
@@ -275,6 +287,186 @@ commit = struct(
     attrs = _commit_attrs,
     outputs = _commit_outputs,
     implementation = _commit_impl,
+)
+
+def _commit_layer_impl(
+        ctx,
+        name = None,
+        image = None,
+        commands = None,
+        docker_run_flags = None,
+        env = None,
+        compression = None,
+        compression_options = None,
+        output_layer_tar = None):
+    """Implementation for the container_run_and_commit_layer rule.
+
+    This rule runs a set of commands in a given image, waits for the commands
+    to finish, and then extracts the layer of changes into a new container_layer target.
+
+    Args:
+        ctx: The bazel rule context
+        name: A unique name for this rule.
+        image: The input image tarball
+        commands: The commands to run in the input image container
+        docker_run_flags: String list, overrides ctx.attr.docker_run_flags
+        env: str Dict, overrides ctx.attr.env
+        compression: str, overrides ctx.attr.compression
+        compression_options: str list, overrides ctx.attr.compression_options
+        output_layer_tar: The output layer obtained as a result of running
+                          the commands on the input image
+    """
+
+    name = name or ctx.attr.name
+    image = image or ctx.file.image
+    commands = commands or ctx.attr.commands
+    docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
+    env = env or ctx.attr.env
+    script = ctx.actions.declare_file(name + ".build")
+    compression = compression or ctx.attr.compression
+    compression_options = compression_options or ctx.attr.compression_options
+    output_layer_tar = output_layer_tar or ctx.outputs.layer
+
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+
+    # Generate a shell script to execute the reset cmd
+    image_utils = ctx.actions.declare_file("image_util.sh")
+    ctx.actions.expand_template(
+        template = ctx.file._image_utils_tpl,
+        output = image_utils,
+        substitutions = {
+            "%{docker_flags}": " ".join(toolchain_info.docker_flags),
+            "%{docker_tool_path}": toolchain_info.tool_path,
+        },
+        is_executable = True,
+    )
+
+    docker_env = [
+        "{}={}".format(
+            ctx.expand_make_variables("env", key, {}),
+            ctx.expand_make_variables("env", value, {}),
+        )
+        for key, value in env.items()
+    ]
+
+    env_file = ctx.actions.declare_file(name + ".env")
+    ctx.actions.write(env_file, "\n".join(docker_env))
+
+    output_diff_id = ctx.actions.declare_file(output_layer_tar.basename + ".sha256")
+
+    # Generate a shell script to execute the run statement and extract the layer
+    ctx.actions.expand_template(
+        template = ctx.file._run_tpl,
+        output = script,
+        substitutions = {
+            "%{commands}": _process_commands(commands),
+            "%{docker_flags}": " ".join(toolchain_info.docker_flags),
+            "%{docker_run_flags}": " ".join(docker_run_flags),
+            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{env_file_path}": env_file.path,
+            "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
+            "%{image_last_layer_extractor_path}": ctx.executable._last_layer_extractor_tool.path,
+            "%{image_tar}": image.path,
+            "%{output_diff_id}": output_diff_id.path,
+            "%{output_image}": "bazel/%s:%s" % (
+                ctx.label.package or "default",
+                name,
+            ),
+            "%{output_layer_tar}": output_layer_tar.path,
+            "%{util_script}": image_utils.path,
+        },
+        is_executable = True,
+    )
+
+    runfiles = [image, image_utils, env_file]
+
+    ctx.actions.run(
+        outputs = [output_layer_tar, output_diff_id],
+        inputs = runfiles,
+        executable = script,
+        tools = [ctx.executable._extract_image_id, ctx.executable._last_layer_extractor_tool],
+        use_default_shell_env = True,
+    )
+
+    # Generate a zipped layer and calculate the blob sum, this is for LayerInfo
+    zipped_layer, blob_sum = zip_layer(
+        ctx,
+        output_layer_tar,
+        compression = compression,
+        compression_options = compression_options,
+    )
+
+    return [
+        LayerInfo(
+            unzipped_layer = output_layer_tar,
+            diff_id = output_diff_id,
+            zipped_layer = zipped_layer,
+            blob_sum = blob_sum,
+            env = env,
+        ),
+    ]
+
+_commit_layer_attrs = dicts.add({
+    "commands": attr.string_list(
+        doc = "A list of commands to run (sequentially) in the container.",
+        mandatory = True,
+        allow_empty = False,
+    ),
+    "compression": attr.string(default = "gzip"),
+    "compression_options": attr.string_list(),
+    "docker_run_flags": attr.string_list(
+        doc = "Extra flags to pass to the docker run command.",
+        mandatory = False,
+    ),
+    "env": attr.string_dict(),
+    "image": attr.label(
+        doc = "The image to run the commands in.",
+        mandatory = True,
+        allow_single_file = True,
+        cfg = "target",
+    ),
+    "_extract_image_id": attr.label(
+        default = Label("//contrib:extract_image_id"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "_image_utils_tpl": attr.label(
+        default = "//docker/util:image_util.sh.tpl",
+        allow_single_file = True,
+    ),
+    "_last_layer_extractor_tool": attr.label(
+        default = Label("//contrib:extract_last_layer"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "_run_tpl": attr.label(
+        default = Label("//docker/util:commit_layer.sh.tpl"),
+        allow_single_file = True,
+    ),
+}, _hash_tools, _zip_tools)
+
+_commit_layer_outputs = {
+    "layer": "%{name}-layer.tar",
+}
+
+container_run_and_commit_layer = rule(
+    attrs = _commit_layer_attrs,
+    doc = ("This rule runs a set of commands in a given image, waits" +
+           "for the commands to finish, and then commits the" +
+           "container state to a new layer."),
+    executable = False,
+    outputs = _commit_layer_outputs,
+    implementation = _commit_layer_impl,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
+)
+
+# Export container_run_and_commit_layer rule for other bazel rules to depend on.
+commit_layer = struct(
+    attrs = _commit_layer_attrs,
+    outputs = _commit_layer_outputs,
+    implementation = _commit_layer_impl,
 )
 
 def _process_commands(command_list):

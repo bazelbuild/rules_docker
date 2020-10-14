@@ -13,13 +13,15 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_rules_docker_pip_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files(["push-tag.sh.tpl"])
+exports_files([
+    "push-tag.bat.tpl",
+    "push-tag.sh.tpl",
+])
 
 filegroup(
     name = "incremental_load_template",
@@ -46,10 +48,6 @@ py_library(
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = [
-        requirement("python-gflags"),
-        requirement("six"),
-    ],
 )
 
 TEST_TARGETS = [
@@ -136,7 +134,8 @@ py_test(
     size = "medium",
     srcs = ["image_test.py"],
     data = TEST_DATA,
-    python_version = "PY2",
+    python_version = "PY3",
+    srcs_version = "PY3",
     deps = ["@containerregistry"],
 )
 
@@ -184,7 +183,6 @@ bzl_library(
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
-        "//skylib:zip",
         "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )

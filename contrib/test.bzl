@@ -162,11 +162,15 @@ def container_test(name, image, configs, driver = None, verbose = None, **kwargs
         # from different packages.
         sanitized_name = (native.package_name() + image).replace(":", "").replace("@", "").replace("/", "")
         loaded_name = "%s:intermediate" % sanitized_name
+        restricted_to = kwargs.get("restricted_to", None)
+        compatible_with = kwargs.get("compatible_with", None)
         container_bundle(
             name = image_loader,
             images = {
                 loaded_name: image,
             },
+            restricted_to = restricted_to,
+            compatible_with = compatible_with,
         )
 
     _container_test(

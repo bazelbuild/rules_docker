@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -42,6 +45,13 @@ py_library(
 )
 
 py_binary(
+    name = "extract_last_layer",
+    srcs = [":extract_last_layer.py"],
+    legacy_create_init = False,
+    python_version = "PY3",
+)
+
+py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
     legacy_create_init = False,
@@ -54,6 +64,67 @@ alias(
     actual = select({
         "@bazel_tools//src/conditions:darwin": "@structure_test_darwin//file",
         "@bazel_tools//src/conditions:darwin_x86_64": "@structure_test_darwin//file",
+        "@bazel_tools//src/conditions:linux_aarch64": "@structure_test_linux_aarch64//file",
         "//conditions:default": "@structure_test_linux//file",
     }),
+)
+
+bzl_library(
+    name = "push-all_bzl",
+    srcs = ["push-all.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "with-tag_bzl",
+    srcs = ["with-tag.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "repro_test_bzl",
+    srcs = ["repro_test.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "compare_ids_test_bzl",
+    srcs = ["compare_ids_test.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "with-defaults_bzl",
+    srcs = ["with-defaults.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "test_bzl",
+    srcs = ["test.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "rename_image_bzl",
+    srcs = ["rename_image.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "group_bzl",
+    srcs = ["group.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "dockerfile_build_bzl",
+    srcs = ["dockerfile_build.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "passwd_bzl",
+    srcs = ["passwd.bzl"],
+    visibility = ["//visibility:private"],
 )
