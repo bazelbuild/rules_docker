@@ -1095,7 +1095,7 @@ container_pull(
 
 This can then be referenced in `BUILD` files as `@base//image`.
 
-To get the correct digest one can run `docker manifest inspect gcr.io/my-project/my-base:tag` once [experimental docker cli featuers are enabled](https://docs.docker.com/engine/reference/commandline/manifest_inspect).
+To get the correct digest one can run `docker manifest inspect gcr.io/my-project/my-base:tag` once [experimental docker cli features are enabled](https://docs.docker.com/engine/reference/commandline/manifest_inspect).
 
 See [here](#container_pull-custom-client-configuration) for an example of how
 to use container_pull with custom docker authentication credentials.
