@@ -88,9 +88,8 @@ def repositories():
     if "rules_python" not in excludes:
         http_archive(
             name = "rules_python",
-            sha256 = "0aa9ec790a58053e3ab5af397879b267a625955f8297c239b2d8559c6773397b",
-            strip_prefix = "rules_python-dd7f9c5f01bafbfea08c44092b6b0c8fc8fcb77f",
-            urls = ["https://github.com/bazelbuild/rules_python/archive/dd7f9c5f01bafbfea08c44092b6b0c8fc8fcb77f.tar.gz"],
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
+            sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
         )
 
     # For packaging python tools.
