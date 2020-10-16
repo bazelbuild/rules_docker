@@ -19,7 +19,7 @@ Provides functions to pull all Python external package dependencies of this
 repository.
 """
 
-load("@rules_python//python:pip.bzl", "pip_import", "pip_repositories")
+load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repositories")
 
 def py_deps():
     """Pull in external Python packages needed by py binaries in this repo.
