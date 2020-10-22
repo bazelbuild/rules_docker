@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -ex
 TEST_BUILD_FILE="tests/docker/package_managers/BUILD.bazel"

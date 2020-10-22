@@ -5,7 +5,7 @@ load("//container:providers.bzl", "PullInfo")
 def _pull_info_validation_test_impl(ctx):
     pull_info = ctx.attr.target[PullInfo]
     compare_script_file = ctx.actions.declare_file("compare.sh")
-    compare_script = """#!/bin/bash
+    compare_script = """#!/usr/bin/env bash
 function assert_equals(){
     if [ "$2" != "$3" ]; then
       echo "Expected $1 to be '$2' but was '$3'"

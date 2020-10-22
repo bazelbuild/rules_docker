@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 reset_cmd() {
     local original_image_name=$1
