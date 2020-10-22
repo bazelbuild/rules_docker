@@ -29,6 +29,11 @@ load(
     "//container:layer.bzl",
     _zip_layer = "zip_layer",
 )
+load(
+    "//skylib:zip.bzl",
+    _zip_tools = "tools",
+)
+
 
 def build_layer(
         ctx,
@@ -161,7 +166,7 @@ _layer_attrs = dicts.add({
         values = ["linux", "windows"],
     ),
     "remove_paths": attr.string_list(),
-}, _hash_tools)
+}, _hash_tools, _zip_tools)
 
 _layer_outputs = {
     "layer": "%{name}-layer.tar",
