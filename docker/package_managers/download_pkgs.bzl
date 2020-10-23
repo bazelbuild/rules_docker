@@ -26,7 +26,7 @@ def _generate_add_additional_repo_commands(ctx, additional_repos):
     )
 
 def _generate_download_commands(ctx, packages, additional_repos):
-    return """#!/bin/bash
+    return """#!/usr/bin/env bash
 set -ex
 {add_additional_repo_commands}
 # Remove /var/lib/apt/lists/* in the base image. apt-get update -y command will create them.

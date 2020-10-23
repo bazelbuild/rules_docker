@@ -16,7 +16,7 @@
 # This creates a new workspace and copies all required files into it, then runs the test
 # which is expected to fail, and passes only if it fails.
 
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -eux
 
