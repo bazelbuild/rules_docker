@@ -31,7 +31,6 @@ def py_deps():
     """
     excludes = native.existing_rules().keys()
     if "io_bazel_rules_docker_pip_deps" not in excludes:
-
         pip_install(
             name = "io_bazel_rules_docker_pip_deps",
             requirements = "@io_bazel_rules_docker//repositories:requirements-pip.txt",
