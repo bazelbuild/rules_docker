@@ -20,7 +20,7 @@
 
 DIGESTS = {
     # "gcr.io/distroless/cc:debug" circa 2020-10-30 12:48 -0700
-    "debug": "sha256:820bc028e4957cc24bbe8a8975fdee106c7d2d8fedac1d1ad605e9d942a2bb3e",
+    "debug": "sha256:7c31f56955cc66134efb3e8282c68f7c92ae3dddcfd99ebf0e7e3dcd9b686e4f",
     # "gcr.io/distroless/cc:latest" circa 2020-10-30 12:48 -0700
-    "latest": "sha256:ac75dbf0b249e5e3758134458d447bfd6a85d74c262ecb7cd88df68a3f53c6e3",
+    "latest": "sha256:c4014bdecaede16f767f8cfc496f968736bc08632bf54a37c004820e85cd8209",
 }
