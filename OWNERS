@@ -4,8 +4,10 @@
 reviewers:
 - smukherj1
 - rubensf
+- davegay
 
 # Approvers can /approve changes to files within this directory tree.
 approvers:
 - smukherj1
 - rubensf
+- davegay
