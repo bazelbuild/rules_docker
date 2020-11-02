@@ -19,12 +19,6 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bzl_library(
-    name = "pip_repositories_bzl",
-    srcs = ["pip_repositories.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
     name = "go_repositories_bzl",
     srcs = ["go_repositories.bzl"],
     visibility = ["//visibility:private"],

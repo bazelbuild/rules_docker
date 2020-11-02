@@ -37,11 +37,6 @@ load("//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
 
-# pip deps are only needed for running tests.
-load("//repositories:pip_repositories.bzl", "io_bazel_rules_docker_pip_deps")
-
-io_bazel_rules_docker_pip_deps()
-
 load(
     "//container:container.bzl",
     "container_load",
