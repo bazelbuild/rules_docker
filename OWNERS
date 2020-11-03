@@ -3,9 +3,11 @@
 # Reviewers may be auto-assigned by blunderbuss
 reviewers:
 - smukherj1
-- rubensf
+- davegay
+- eytankidron
 
 # Approvers can /approve changes to files within this directory tree.
 approvers:
 - smukherj1
-- rubensf
+- davegay
+- eytankidron
