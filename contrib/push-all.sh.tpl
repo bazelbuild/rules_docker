@@ -34,11 +34,17 @@ function async() {
     PIDS+=($!)
 }
 
-%{push_statements}
-
-# Wait for all of the subprocesses, failing the script if any of them failed.
-if [ "${#PIDS[@]}" != 0 ]; then
+SEQUENTIAL="%{sequential}"
+if [ -z "${SEQUENTIAL}" ]; then
+  %{async_push_statements}
+  # Wait for all of the subprocesses, failing the script if any of them failed.
+  if [ "${#PIDS[@]}" != 0 ]; then
     for pid in ${PIDS[@]}; do
-        wait ${pid}
+      wait ${pid}
     done
+  fi
+else
+  %{push_statements}
 fi
+
+
