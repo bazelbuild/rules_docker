@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/bazelbuild/rules_docker/container/go/pkg/oci"
@@ -32,7 +31,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 	"github.com/pkg/errors"
 )
 
@@ -128,25 +126,20 @@ func main() {
 	log.Printf("Successfully pushed %s image to %s", *format, stamped)
 }
 
-// digestExists checks whether an image's digest exists in a repository.
-func digestExists(dst string, img v1.Image) (bool, error) {
+// checkDigestExists checks whether an image's digest exists in a repository.
+func checkDigestExists(dst string, img v1.Image) error {
 	digest, err := img.Digest()
 	if err != nil {
-		return false, errors.Wrapf(err, "unable to get local image digest")
+		return errors.Wrapf(err, "unable to get local image digest")
 	}
 	digestRef, err := name.NewDigest(fmt.Sprintf("%s@%s", dst, digest))
 	if err != nil {
-		return false, errors.Wrapf(err, "couldn't create ref from digest")
+		return errors.Wrapf(err, "couldn't create ref from digest")
 	}
-	remoteImg, err := remote.Image(digestRef, remote.WithAuthFromKeychain(authn.DefaultKeychain))
-	if err != nil {
-		if strings.HasPrefix(err.Error(), string(transport.ManifestUnknownErrorCode)) {
-			// no manifest matching the digest
-			return false, nil
-		}
-		return false, errors.Wrapf(err, "unable to get remote image")
+	if _, err := remote.Head(digestRef, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {
+		return errors.Wrapf(err, "unable to get remote image")
 	}
-	return remoteImg != nil, nil
+	return nil
 }
 
 // push pushes the given image to the given destination.
@@ -161,12 +154,9 @@ func push(dst string, img v1.Image) error {
 	}
 
 	if *skipUnchangedDigest {
-		exists, err := digestExists(dst, img)
-		if err != nil {
+		if err := checkDigestExists(dst, img); err != nil {
 			log.Printf("Error checking if digest already exists %v. Still pushing", err)
-		}
-		if exists {
-			log.Print("Skipping push of unchanged digest")
+		} else {
 			return nil
 		}
 	}
