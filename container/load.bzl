@@ -33,9 +33,13 @@ container_import(
     layers = glob(["*.tar.gz"]),
 )""")
 
-    loader = repository_ctx.attr._loader_linux
+    loader = repository_ctx.attr._loader_linux_amd64
     if repository_ctx.os.name.lower().startswith("mac os"):
         loader = repository_ctx.attr._loader_darwin
+    elif repository_ctx.os.name.lower().startswith("linux"):
+        arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
+        if arch == "s390x":
+            loader = repository_ctx.attr._loader_linux_s390x
 
     result = repository_ctx.execute([
         repository_ctx.path(loader),
@@ -59,9 +63,14 @@ container_load = repository_rule(
             default = Label("@loader_darwin//file:downloaded"),
             cfg = "host",
         ),
-        "_loader_linux": attr.label(
+        "_loader_linux_amd64": attr.label(
             executable = True,
-            default = Label("@loader_linux//file:downloaded"),
+            default = Label("@loader_linux_amd64//file:downloaded"),
+            cfg = "host",
+        ),
+        "_loader_linux_s390x": attr.label(
+            executable = True,
+            default = Label("@loader_linux_s390x//file:downloaded"),
             cfg = "host",
         ),
     },

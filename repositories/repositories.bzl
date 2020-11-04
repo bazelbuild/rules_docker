@@ -25,42 +25,58 @@ load(
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.38"
-RULES_DOCKER_GO_BINARY_RELEASE = "fdebd6e0b6c9185a115379166c1c067f88d53630"
+RULES_DOCKER_GO_BINARY_RELEASE = "aad94363e63d31d574cf701df484b3e8b868a96a"
 
 def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
 
     # Go binaries.
-    if "go_puller_linux" not in excludes:
+    if "go_puller_linux_amd64" not in excludes:
         http_file(
-            name = "go_puller_linux",
+            name = "go_puller_linux_amd64",
             executable = True,
-            sha256 = "1bcbbf86972cde8448dfab770a686801c46a1739f68f1d7a5373a4f0c3954846",
+            sha256 = "08b8963cce9234f57055bafc7cadd1624cdce3c5990048cea1df453d7d288bc6",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-amd64")],
+        )
+
+    if "go_puller_linux_s390x" not in excludes:
+        http_file(
+            name = "go_puller_linux_s390x",
+            executable = True,
+            sha256 = "a5527b7b3b4a266e4680a4ad8939429665d4173f26b35d5d317385134369e438",
+            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-s390x")],
         )
 
     if "go_puller_darwin" not in excludes:
         http_file(
             name = "go_puller_darwin",
             executable = True,
-            sha256 = "62b405511624528ba5b2716b1b93b5591c41edeca57195efc62da14001441c44",
+            sha256 = "4855c4f5927f8fb0f885510ab3e2a166d5fa7cde765fbe9aec97dc6b2761bb22",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-darwin-amd64")],
         )
 
-    if "loader_linux" not in excludes:
+    if "loader_linux_amd64" not in excludes:
         http_file(
-            name = "loader_linux",
+            name = "loader_linux_amd64",
             executable = True,
-            sha256 = "06b6baaddbb42854a2d854f014d3af7cd67ff40741b49ba66efd35991752efc4",
+            sha256 = "5e5ada66beff07f9188bdc1f99c3fa37c407fc0048cd78b9c2047e9c5516f20b",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-amd64")],
+        )
+
+    if "loader_linux_s390x" not in excludes:
+        http_file(
+            name = "loader_linux_s390x",
+            executable = True,
+            sha256 = "0c0ebc3e0a502542547a38b51f4686a049897eeb4cbc0e2f07fc25276c57866f",
+            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-s390x")],
         )
 
     if "loader_darwin" not in excludes:
         http_file(
             name = "loader_darwin",
             executable = True,
-            sha256 = "8572f547b87143e344bcab3155b18ff438351a256b4c90dfab72beb02b46b178",
+            sha256 = "8c9986b2b506febbff737090d9ec485cec1376c52789747573521a85194341c1",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-darwin-amd64")],
         )
 
