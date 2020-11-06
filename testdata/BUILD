@@ -338,6 +338,11 @@ container_image(
 )
 
 container_image(
+    name = "with_base_stamped_image",
+    base = ":with_stamped_creation_time",
+)
+
+container_image(
     name = "with_default_stamped_creation_time",
     base = ":base_with_volume",
     stamp = True,

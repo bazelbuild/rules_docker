@@ -126,9 +126,18 @@ def _add_create_image_config_args(
     args.add_all(ctx.attr.ports, before_each = "-ports")
     args.add_all(ctx.attr.volumes, before_each = "-volumes")
 
+    stamp = None
+
+    # If base image is having enabled stamping then it is propagated
+    # to child images.
+    if ctx.attr.stamp == True:
+        stamp = ctx.attr.stamp
+    elif ctx.attr.base and ImageInfo in ctx.attr.base:
+        stamp = ctx.attr.base[ImageInfo].stamp
+
     if creation_time:
         args.add("-creationTime", creation_time)
-    elif ctx.attr.stamp:
+    elif stamp:
         # If stamping is enabled, and the creation_time is not manually defined,
         # default to '{BUILD_TIMESTAMP}'.
         args.add("-creationTime", "{BUILD_TIMESTAMP}")
@@ -170,7 +179,7 @@ def _add_create_image_config_args(
     if os_version:
         args.add("-osVersion", os_version)
 
-    if ctx.attr.stamp:
+    if stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
         args.add_all(stamp_inputs, before_each = "-stampInfoFile")
         inputs += stamp_inputs
@@ -221,6 +230,7 @@ def _image_config(
     args = ctx.actions.args()
     inputs = []
     executable = None
+
     _add_create_image_config_args(
         ctx,
         args,
@@ -526,11 +536,31 @@ def _impl(
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
+    # Stamp attribute needs to be propagated between definitions to enhance actions
+    # with ability to determine properly whether root image has activated stamping.
+    #
+    # This covers the following example case:
+    # container_image(
+    #     name = “base_image”,
+    #     base = “@base//image”,
+    #     stamp = True,
+    # )
+    #
+    # lang_image(
+    #     base = “:base_image”,
+    # )
+    stamp = None
+    if ctx.attr.stamp:
+        stamp = ctx.attr.stamp
+    elif ctx.attr.base and ImageInfo in ctx.attr.base:
+        stamp = ctx.attr.base[ImageInfo].stamp
+
     return [
         ImageInfo(
             container_parts = container_parts,
             legacy_run_behavior = ctx.attr.legacy_run_behavior,
             docker_run_flags = docker_run_flags,
+            stamp = stamp,
         ),
         DefaultInfo(
             executable = build_executable,

@@ -75,6 +75,7 @@ TEST_TARGETS = [
     ":with_rfc_3339_creation_time",
     ":with_stamped_creation_time",
     ":with_default_stamped_creation_time",
+    ":with_base_stamped_image",
     ":with_env",
     ":layers_with_env",
     ":with_double_env",
