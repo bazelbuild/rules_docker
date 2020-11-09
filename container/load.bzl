@@ -38,7 +38,7 @@ container_import(
         loader = repository_ctx.attr._loader_darwin
     elif repository_ctx.os.name.lower().startswith("linux"):
         arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        if arch == "arm64" or arch == "aarch64" :
+        if arch == "arm64" or arch == "aarch64":
             loader = repository_ctx.attr._loader_linux_arm64
         elif arch == "s390x":
             loader = repository_ctx.attr._loader_linux_s390x

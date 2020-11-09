@@ -39,7 +39,7 @@ def repositories():
             sha256 = "08b8963cce9234f57055bafc7cadd1624cdce3c5990048cea1df453d7d288bc6",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-amd64")],
         )
-        
+
     if "go_puller_linux_arm64" not in excludes:
         http_file(
             name = "go_puller_linux_arm64",
