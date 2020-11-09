@@ -39,7 +39,7 @@ mkdir -p /tmp/install/./partial
 apt-get install --no-install-recommends -y -q -o Dir::Cache="/tmp/install" -o Dir::Cache::archives="." {packages} --download-only
 
 items=$(ls /tmp/install/*.deb)
-if [ $items = ""]; then
+if [ $items = "" ]; then
     echo "Did not find the .deb files for debian packages {packages} in /tmp/install. Did apt-get actually succeed?" && false
 fi
 # Generate csv listing the name & versions of the debian packages.
@@ -53,11 +53,11 @@ dpkg_deb_path=$(which dpkg-deb)
 for item in $items; do
     echo "Adding information about $item to metadata CSV"
     pkg_name=$($dpkg_deb_path -f $item Package)
-    if [ $pkg_name = ""]; then
+    if [ $pkg_name = "" ]; then
         echo "Failed to get name of the package for $item" && false
     fi
     pkg_version=$($dpkg_deb_path -f $item Version)
-    if [ $pkg_version = ""]; then
+    if [ $pkg_version = "" ]; then
         echo "Failed to get the version of the package for $item" && false
     fi
     echo "Package $pkg_name, Version $pkg_version"
