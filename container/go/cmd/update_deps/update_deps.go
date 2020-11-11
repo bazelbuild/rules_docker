@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/crane"
+	"github.com/google/go-containerregistry/pkg/v1"
 )
 
 const digestTemplate = `# Copyright 2017 The Bazel Authors. All rights reserved.
@@ -74,6 +75,7 @@ func main() {
 		log.Fatalln("Required option -output was not specified.")
 	}
 	options := []crane.Option{}
+	options = append(options, crane.WithPlatform(&v1.Platform{Architecture: "amd64", OS: "linux"}))
 
 	latest := *repository + ":latest"
 	latestDigest, err := crane.Digest(latest, options...)
