@@ -64,7 +64,7 @@ file_test(
 file_test(
     name = "test_extract_script",
     file = "test_container_extract.build",
-    regexp = "\-u root",
+    regexp = "\\-u root",
 )
 
 container_run_and_commit(
