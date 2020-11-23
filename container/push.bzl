@@ -132,6 +132,9 @@ def _impl(ctx):
             executable = exe,
             runfiles = runfiles,
         ),
+        OutputGroupInfo(
+            exe = [exe],
+        ),
         PushInfo(
             registry = registry,
             repository = repository,
@@ -224,10 +227,10 @@ def container_push(name, format, image, registry, repository, **kwargs):
         image = image,
         registry = registry,
         repository = repository,
-        extension = select({
+        extension = kwargs.pop("extension", select({
             "@bazel_tools//src/conditions:host_windows": ".bat",
             "//conditions:default": "",
-        }),
+        })),
         tag_tpl = select({
             "@bazel_tools//src/conditions:host_windows": Label("//container:push-tag.bat.tpl"),
             "//conditions:default": Label("//container:push-tag.sh.tpl"),
