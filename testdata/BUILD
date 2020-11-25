@@ -353,6 +353,13 @@ container_image(
 )
 
 container_image(
+    name = "with_stamping_env",
+    env = {
+        "FOO": "{FOO}",
+    },
+)
+
+container_image(
     name = "with_double_env",
     base = ":with_env",
     env = {

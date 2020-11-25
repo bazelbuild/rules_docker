@@ -430,6 +430,24 @@ function test_new_container_pull_image_with_11_layers() {
   docker stop -t 0 $cid
 }
 
+function test_stamping_environment() {
+  cd "${ROOT}"
+  clear_docker_full
+
+  # Create an image using stamping in the environment
+  bazel run "$@" \
+    --workspace_status_command=$ROOT/testing/stamping.sh testdata:with_stamping_env
+
+  # Inspect the image's environment
+  output=$(docker inspect -f \
+    '{{range $index, $value := .Config.Env}}{{$value}} {{end}}' bazel/testdata:with_stamping_env)
+
+  EXPECT_CONTAINS "$output" "FOO=bar"
+}
+
+test_stamping_environment -c dbg
+test_stamping_environment -c opt
+
 # Tests failing on GCB due to isssues with local registry
 test_container_push
 test_container_push_all

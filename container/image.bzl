@@ -170,7 +170,7 @@ def _add_create_image_config_args(
     if os_version:
         args.add("-osVersion", os_version)
 
-    if ctx.attr.stamp:
+    if ctx.attr.stamp or [value for value in env.values() if '{' in value]:
         stamp_inputs = [ctx.info_file, ctx.version_file]
         args.add_all(stamp_inputs, before_each = "-stampInfoFile")
         inputs += stamp_inputs
