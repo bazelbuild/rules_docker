@@ -27,6 +27,7 @@ ImageInfo = provider(fields = [
     "container_parts",
     "legacy_run_behavior",
     "docker_run_flags",
+    "stamp",
 ])
 
 # A provider containing information exposed by container_import rules
