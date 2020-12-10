@@ -309,6 +309,7 @@ def _impl(
         layers = None,
         compression = None,
         compression_options = None,
+        experimental_tarball_format = None,
         debs = None,
         tars = None,
         architecture = None,
@@ -342,6 +343,7 @@ def _impl(
     layers: label List, overrides ctx.attr.layers
     compression: str, overrides ctx.attr.compression
     compression_options: str list, overrides ctx.attr.compression_options
+    experimental_tarball_format: str, overrides ctx.attr.experimental_tarball_format
     debs: File list, overrides ctx.files.debs
     tars: File list, overrides ctx.files.tars
     architecture: str, overrides ctx.attr.architecture
@@ -363,6 +365,7 @@ def _impl(
     architecture = architecture or ctx.attr.architecture
     compression = compression or ctx.attr.compression
     compression_options = compression_options or ctx.attr.compression_options
+    experimental_tarball_format = experimental_tarball_format or ctx.attr.experimental_tarball_format
     operating_system = operating_system or ctx.attr.operating_system
     os_version = os_version or ctx.attr.os_version
     creation_time = creation_time or ctx.attr.creation_time
@@ -516,6 +519,7 @@ def _impl(
         ctx,
         images,
         output_tarball,
+        experimental_tarball_format,
     )
     _assemble_image_digest(ctx, name, container_parts, output_tarball, output_digest)
 
@@ -579,6 +583,19 @@ _attrs = dicts.add(_layer.attrs, {
     "cmd": attr.string_list(),
     "compression": attr.string(default = "gzip"),
     "compression_options": attr.string_list(),
+    "experimental_tarball_format": attr.string(
+        values = [
+            "legacy",
+            "compressed",
+        ],
+        default = "legacy",
+        doc = ("The tarball format to use when producing an image .tar file. " +
+               "Defaults to \"legacy\", which contains uncompressed layers. " +
+               "If set to \"compressed\", the resulting tarball will contain " +
+               "compressed layers, but is only loadable by newer versions of " +
+               "docker. This is an experimental attribute, which is subject " +
+               "to change or removal: do not depend on its exact behavior."),
+    ),
     "create_image_config": attr.label(
         default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
@@ -775,6 +792,7 @@ def _validate_command(name, argument, operating_system):
 #      # Compression method and command-line options.
 #      compression = "gzip",
 #      compression_options = ["--fast"],
+#      experimental_tarball_format = "compressed",
 #   )
 
 def container_image(**kwargs):

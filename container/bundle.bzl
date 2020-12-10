@@ -71,6 +71,10 @@ def _container_bundle_impl(ctx):
         ctx,
         images,
         ctx.outputs.tar_output,
+        # Experiment: currently only support experimental_tarball_format in
+        # container_image for testing optimization.
+        # TODO(#1695): Update this.
+        "legacy",
         stamp = stamp,
     )
 

@@ -125,6 +125,10 @@ def _container_import_impl(ctx):
         ctx,
         images,
         ctx.outputs.out,
+        # Experiment: currently only support experimental_tarball_format in
+        # container_image for testing optimization.
+        # TODO(#1695): Update this.
+        "legacy",
     )
 
     runfiles = ctx.runfiles(
