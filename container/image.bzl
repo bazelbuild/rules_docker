@@ -583,6 +583,15 @@ _attrs = dicts.add(_layer.attrs, {
     "cmd": attr.string_list(),
     "compression": attr.string(default = "gzip"),
     "compression_options": attr.string_list(),
+    "create_image_config": attr.label(
+        default = Label("//container/go/cmd/create_image_config:create_image_config"),
+        cfg = "host",
+        executable = True,
+        allow_files = True,
+    ),
+    "creation_time": attr.string(),
+    "docker_run_flags": attr.string(),
+    "entrypoint": attr.string_list(),
     "experimental_tarball_format": attr.string(
         values = [
             "legacy",
@@ -596,15 +605,6 @@ _attrs = dicts.add(_layer.attrs, {
                "docker. This is an experimental attribute, which is subject " +
                "to change or removal: do not depend on its exact behavior."),
     ),
-    "create_image_config": attr.label(
-        default = Label("//container/go/cmd/create_image_config:create_image_config"),
-        cfg = "host",
-        executable = True,
-        allow_files = True,
-    ),
-    "creation_time": attr.string(),
-    "docker_run_flags": attr.string(),
-    "entrypoint": attr.string_list(),
     "label_file_strings": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(

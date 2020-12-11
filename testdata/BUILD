@@ -1060,8 +1060,8 @@ container_image(
 
 container_image(
     name = "compressed_experiment",
-    files = [":foo"],
     experimental_tarball_format = "compressed",
+    files = [":foo"],
 )
 
 # push_compression* are built but not executed. This is because building a

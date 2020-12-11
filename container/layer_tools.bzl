@@ -166,6 +166,7 @@ def assemble(
        ctx: The context
        images: List of images/layers to assemple
        output: The output path for the image tar
+       experimental_tarball_format: The format of the image tarball: "legacy" | "compressed"
        stamp: Whether to stamp the produced image
     """
     args = ctx.actions.args()
