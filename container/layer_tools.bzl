@@ -158,6 +158,7 @@ def assemble(
         ctx,
         images,
         output,
+        experimental_tarball_format,
         stamp = False):
     """Create the full image from the list of layers.
 
@@ -165,10 +166,12 @@ def assemble(
        ctx: The context
        images: List of images/layers to assemple
        output: The output path for the image tar
+       experimental_tarball_format: The format of the image tarball: "legacy" | "compressed"
        stamp: Whether to stamp the produced image
     """
     args = ctx.actions.args()
     args.add(output, format = "--output=%s")
+    args.add(experimental_tarball_format, format = "--experimental-tarball-format=%s")
     inputs = []
     if stamp:
         args.add_all([ctx.info_file, ctx.version_file], format_each = "--stamp-info-file=%s")

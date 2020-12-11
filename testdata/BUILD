@@ -1058,6 +1058,12 @@ container_image(
     files = [":foo"],
 )
 
+container_image(
+    name = "compressed_experiment",
+    experimental_tarball_format = "compressed",
+    files = [":foo"],
+)
+
 # push_compression* are built but not executed. This is because building a
 # `container_push` appears to be the only way to generated the compressed
 # tarball.

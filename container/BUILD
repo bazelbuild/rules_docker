@@ -117,6 +117,7 @@ TEST_TARGETS = [
     ":flat",
     ":flatten_with_tarball_base",
     ":nodejs_image",
+    ":compressed_experiment",
 ]
 
 TEST_DATA = [
