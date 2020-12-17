@@ -34,7 +34,13 @@ def go_deps(version = GO_VERSION):
     already.
     """
     go_rules_dependencies()
-    go_register_toolchains(version)
+    sdk_kinds = ("_go_download_sdk", "_go_host_sdk", "_go_local_sdk", "_go_wrap_sdk")
+    existing_rules = native.existing_rules()
+    sdk_rules = [r for r in existing_rules.values() if r["kind"] in sdk_kinds]
+    if len(sdk_rules) > 0 or "go_sdk" in existing_rules:
+        go_register_toolchains()
+    else:
+        go_register_toolchains(version)
     gazelle_dependencies()
     excludes = native.existing_rules().keys()
     if "com_github_google_go_containerregistry" not in excludes:
