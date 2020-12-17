@@ -34,7 +34,7 @@ def go_deps(version = GO_VERSION):
     already.
     """
     go_rules_dependencies()
-    go_register_toolchains(go_version)
+    go_register_toolchains(version)
     gazelle_dependencies()
     excludes = native.existing_rules().keys()
     if "com_github_google_go_containerregistry" not in excludes:
