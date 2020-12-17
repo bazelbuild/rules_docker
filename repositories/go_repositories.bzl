@@ -22,7 +22,10 @@ repository.
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
-def go_deps():
+# go version for rules_go
+GO_VERSION = "1.15.5"
+
+def go_deps(version = GO_VERSION):
     """Pull in external Go packages needed by Go binaries in this repo.
 
     Pull in all dependencies needed to build the Go binaries in this
@@ -31,7 +34,7 @@ def go_deps():
     already.
     """
     go_rules_dependencies()
-    go_register_toolchains()
+    go_register_toolchains(go_version)
     gazelle_dependencies()
     excludes = native.existing_rules().keys()
     if "com_github_google_go_containerregistry" not in excludes:
