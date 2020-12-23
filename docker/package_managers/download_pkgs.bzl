@@ -39,7 +39,7 @@ mkdir -p /tmp/install/./partial
 apt-get install --no-install-recommends -y -q -o Dir::Cache="/tmp/install" -o Dir::Cache::archives="." {packages} --download-only
 
 items=$(ls /tmp/install/*.deb)
-if [ $items = "" ]; then
+if [ "$items" = "" ]; then
     echo "Did not find the .deb files for debian packages {packages} in /tmp/install. Did apt-get actually succeed?" && false
 fi
 # Generate csv listing the name & versions of the debian packages.
@@ -52,20 +52,20 @@ echo Name,Version > {installables}_metadata.csv
 dpkg_deb_path=$(which dpkg-deb)
 for item in $items; do
     echo "Adding information about $item to metadata CSV"
-    pkg_name=$($dpkg_deb_path -f $item Package)
-    if [ $pkg_name = "" ]; then
+    pkg_name=$($dpkg_deb_path -f "$item" Package)
+    if [ "$pkg_name" = "" ]; then
         echo "Failed to get name of the package for $item" && false
     fi
-    pkg_version=$($dpkg_deb_path -f $item Version)
-    if [ $pkg_version = "" ]; then
+    pkg_version=$($dpkg_deb_path -f "$item" Version)
+    if [ "$pkg_version" = "" ]; then
         echo "Failed to get the version of the package for $item" && false
     fi
     echo "Package $pkg_name, Version $pkg_version"
     echo -n "$pkg_name," >> {installables}_metadata.csv
-    echo $pkg_version >> {installables}_metadata.csv
+    echo "$pkg_version" >> {installables}_metadata.csv
 done;
 # Tar command to only include all the *.deb files and ignore other directories placed in the cache dir.
-tar -cpf {installables}_packages.tar --mtime='1970-01-01' --directory /tmp/install/. `cd /tmp/install/. && ls *.deb`""".format(
+tar -cpf {installables}_packages.tar --mtime='1970-01-01' --directory /tmp/install/. "$(cd /tmp/install/. && ls ./*.deb)" """.format(
         installables = ctx.attr.name,
         packages = " ".join(packages.to_list()),
         add_additional_repo_commands = _generate_add_additional_repo_commands(ctx, additional_repos),
