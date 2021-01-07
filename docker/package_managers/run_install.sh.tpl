@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 
 # Resolve the docker tool path
 DOCKER="%{docker_tool_path}"
