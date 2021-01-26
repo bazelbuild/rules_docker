@@ -347,8 +347,8 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "10fffa29f687aa4d8eb6dfe8731ab5beb63811ab00981fc84a93899641fd4af1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.0.3/rules_nodejs-2.0.3.tar.gz"],
+    sha256 = "9d93d4e1340c43dbf6b2fd66b683d89630a6310bf8be3bf40ec96685dcacc26c",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.3.3/rules_nodejs-2.3.3.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
