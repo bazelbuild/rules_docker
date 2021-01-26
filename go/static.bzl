@@ -19,8 +19,10 @@
 # git repository.
 
 DIGESTS = {
+    # TODO: this image tag is no longer published on gcr.io.
+    # See https://github.com/GoogleContainerTools/distroless/issues/571
     # "gcr.io/distroless/static:debug" circa 2019-10-11 13:46 -0400
     "debug": "sha256:9b60270ec0991bc4f14bda475e8cae75594d8197d0ae58576ace84694aa75d7a",
-    # "gcr.io/distroless/static:latest" circa 2019-10-11 13:46 -0400
-    "latest": "sha256:9b60270ec0991bc4f14bda475e8cae75594d8197d0ae58576ace84694aa75d7a",
+    # "gcr.io/distroless/static:latest" circa 2021-01-26 10:09 +0000
+    "latest": "sha256:bea8d5bd05952cf913f33b22d26540e2a25389be781b357e8b1a132672d6fe24",
 }

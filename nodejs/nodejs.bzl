@@ -19,8 +19,9 @@
 # git repository.
 
 DIGESTS = {
+    # TODO: this image tag is no longer published on gcr.io.
     # "gcr.io/google-appengine/debian9:debug" circa 2019-10-11 13:46 -0400
     "debug": "sha256:c05b781371f75d1bd7a199bc83de177173cc80c98dbfb6c1ef7075757addece4",
-    # "gcr.io/google-appengine/debian9:latest" circa 2019-10-11 13:46 -0400
-    "latest": "sha256:c05b781371f75d1bd7a199bc83de177173cc80c98dbfb6c1ef7075757addece4",
+    # "gcr.io/google-appengine/debian9:latest" circa 2021-01-26 10:09 +0000
+    "latest": "sha256:f2aac845f5cc5659bd101580f77862a5f5501b3a539b9805ba4dd8ceb31ac0e6",
 }
