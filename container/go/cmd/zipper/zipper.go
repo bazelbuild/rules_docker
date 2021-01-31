@@ -29,6 +29,7 @@ var (
 	dst        = flag.String("dst", "", "The destination location of the file, after zip/unzip.")
 	decompress = flag.Bool("decompress", false, "If true, perform gunzip. If false, gzip.")
 	fast       = flag.Bool("fast", false, "If true, use the fastest compression level.")
+	best       = flag.Bool("best", false, "If true, use the best (highest) compression level.")
 )
 
 func main() {
@@ -40,6 +41,9 @@ func main() {
 
 	if *dst == "" {
 		log.Fatalln("Required option -dst was not specified.")
+	}
+	if *fast && *best {
+		log.Fatalln("You can not set --fast and --best at the same time.")
 	}
 
 	var copy_from io.Reader
@@ -70,6 +74,9 @@ func main() {
 		level := gzip.DefaultCompression
 		if *fast {
 			level = gzip.BestSpeed
+		}
+		if *best {
+			level = gzip.BestCompression
 		}
 		zw, err := gzip.NewWriterLevel(t, level)
 		if err != nil {
