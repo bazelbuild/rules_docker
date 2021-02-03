@@ -32,4 +32,14 @@ function test_pusher_client_config_errors() {
   echo "test_pusher_client_config_errors PASSED!"
 }
 
-test_pusher_client_config_errors
+function test_pusher_insecure_repository() {
+  # Ensure the pusher validates a given client config path is a valid directory.
+  cd "${ROOT}"
+  common_opts="--dst=foo:latest --format=Docker --config=foo.json"
+  # Test that flag is accepted and the image is attempted
+  EXPECT_CONTAINS "$(bazel run //container/go/cmd/pusher -- --insecure-repository ${common_opts} 2>&1)" "unable to load image metadata"
+  echo "test_pusher_insecure_repository PASSED!"
+}
+
+test_pusher_insecure_repository
+# test_pusher_client_config_errors

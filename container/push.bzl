@@ -181,10 +181,6 @@ _container_push = rule(
             allow_single_file = True,
             doc = "(optional) The label of the file with repository value. Overrides 'repository'.",
         ),
-        "insecure_repository": attr.bool(
-            default = False,
-            doc = "Whether the repository is insecure or not (http vs https)",
-        ),
         "skip_unchanged_digest": attr.bool(
             default = False,
             doc = "Only push images if the digest has changed, default to False",
