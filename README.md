@@ -949,7 +949,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # You *must* import the Rust rules before setting up the rust_image rules.
 http_archive(
-    name = "io_bazel_rules_rust",
+    name = "rules_rust",
     # Replace with a real SHA256 checksum
     sha256 = "{SHA256}"
     # Replace with a real commit SHA
@@ -957,7 +957,7 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_rust/archive/{HEAD}.tar.gz"],
 )
 
-load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
+load("@rules_rust//rust:repositories.bzl", "rust_repositories")
 
 rust_repositories()
 
