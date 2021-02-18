@@ -121,11 +121,16 @@ func main() {
 		log.Printf("Destination %s was resolved to %s after stamping.", *dst, stamped)
 	}
 
+	digest, err := img.Digest()
+	if err != nil {
+		log.Fatalf("Failed to digest image: %v", err)
+	}
+
 	if err := push(stamped, img); err != nil {
 		log.Fatalf("Error pushing image to %s: %v", stamped, err)
 	}
 
-	log.Printf("Successfully pushed %s image to %s", *format, stamped)
+	log.Printf("Successfully pushed %s image to %s (digest: %s)", *format, stamped, digest)
 }
 
 // digestExists checks whether an image's digest exists in a repository.
