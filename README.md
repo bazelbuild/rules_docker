@@ -2195,6 +2195,82 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         </p>
       </td>
     </tr>
+    <tr>
+      <td><code>healthcheck_test</code></td>
+      <td>
+        <code>List of strings, optional</code>
+        <p><a href="https://docs.docker.com/engine/reference/builder/#healthcheck">
+        The test to perform to check that the container is healthy.</a></p>
+        <p>An empty list means to inherit the default.</p>
+        <p>Possible definition options are:</p>
+        <p><code>[]</code> : inherit healthcheck</p>
+        <p><code>["NONE"]</code> : disable healthcheck</p>
+        <p><code>["CMD", "test", "-f", "file"]</code> : exec arguments directly</p>
+        <p><code>["CMD-SHELL", "curl -q localhost:8080"]</code> : run command with system's default shell</p>
+        <p>
+          <code>
+          healthcheck_test = ["CMD", "test", "-f", "file"],
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>healthcheck_interval</code></td>
+      <td>
+        <code>strings, optional</code>
+        <p>Interval is the time to wait between health checks.</p>
+        <p>
+          Should be in the duration format. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
+        </p>
+        <p>
+          <code>
+          healthcheck_interval = "30s",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>healthcheck_timeout</code></td>
+      <td>
+        <code>strings, optional</code>
+        <p>Health check timeout is the time to wait before considering the check to have hung.</p>
+        <p>
+          Should be in the duration format. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
+        </p>
+        <p>
+          <code>
+          healthcheck_timeout = "30s",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>healthcheck_start_period</code></td>
+      <td>
+        <code>strings, optional</code>
+        <p>The health check start period for the container to initialize before the retries starts to count down.</p>
+        <p>
+          Should be in the duration format. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
+        </p>
+        <p>
+          <code>
+          healthcheck_start_period = "10s",
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>healthcheck_retries</code></td>
+      <td>
+        <code>integer, optional</code>
+        <p>Health check retries is the number of consecutive failures needed to consider a container as unhealthy.</p>
+        <p>
+          <code>
+          healthcheck_retries = 2,
+          </code>
+        </p>
+      </td>
+    </tr>
   </tbody>
 </table>
 

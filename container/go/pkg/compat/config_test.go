@@ -19,7 +19,9 @@ package compat
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
+	"time"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/kylelemons/godebug/pretty"
@@ -188,6 +190,65 @@ func TestWorkdirOverride(t *testing.T) {
 	}
 	if opts.ConfigFile.Config.WorkingDir != want {
 		t.Errorf("WorkingDir field in config was updated to invalid value, got %q, want %q.", opts.ConfigFile.Config.WorkingDir, want)
+	}
+}
+
+// TestHealthCheckOverride ensures updateConfig correctly overrides base image config
+func TestHealthCheckOverride(t *testing.T) {
+	testCases := []struct {
+		name     string
+		expected v1.HealthConfig
+		opts     *OverrideConfigOpts
+	}{
+		{
+			name: "HealthcheckInterval override",
+			opts: &OverrideConfigOpts{
+				HealthcheckInterval: "10s",
+				ConfigFile: &v1.ConfigFile{
+					Config: v1.Config{
+						Healthcheck: &v1.HealthConfig{
+							Test:     []string{"NONE"},
+							Interval: 1,
+							Timeout:  2,
+						},
+					},
+				},
+			},
+			expected: v1.HealthConfig{
+				Test:     []string{"NONE"},
+				Interval: time.Duration(10 * time.Second),
+				Timeout:  2,
+			},
+		},
+		{
+			name: "Healthcheck Test override",
+			opts: &OverrideConfigOpts{
+				HealthcheckTest: []string{"CMD", "echo"},
+				ConfigFile: &v1.ConfigFile{
+					Config: v1.Config{
+						Healthcheck: &v1.HealthConfig{
+							Interval: 1,
+							Timeout:  2,
+						},
+					},
+				},
+			},
+			expected: v1.HealthConfig{
+				Test:     []string{"CMD", "echo"},
+				Timeout:  2,
+				Interval: 1,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := updateConfig(tc.opts); err != nil {
+				t.Fatalf("Failed to update config: %v", err)
+			}
+			if !reflect.DeepEqual(*tc.opts.ConfigFile.Config.Healthcheck, tc.expected) {
+				t.Errorf("Healthcheck field in config was updated to invalid value, got %q, want %q.", *tc.opts.ConfigFile.Config.Healthcheck, tc.expected)
+			}
+		})
 	}
 }
 

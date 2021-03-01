@@ -30,27 +30,32 @@ import (
 )
 
 var (
-	baseConfig         = flag.String("baseConfig", "", "The base image config.")
-	baseManifest       = flag.String("baseManifest", "", "The base image manifest.")
-	outputConfig       = flag.String("outputConfig", "", "The output image config file to generate.")
-	outputManifest     = flag.String("outputManifest", "", "The output manifest file to generate.")
-	creationTimeString = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC 3339 date/time.")
-	user               = flag.String("user", "", "The username to run the commands under.")
-	workdir            = flag.String("workdir", "", "Set the working directory of the layer.")
-	nullEntryPoint     = flag.Bool("nullEntryPoint", false, "If true, Entrypoint will be set to null.")
-	nullCmd            = flag.Bool("nullCmd", false, "If true, Cmd will be set to null.")
-	architecture       = flag.String("architecture", "amd64", "The architecture of the docker image.")
-	operatingSystem    = flag.String("operatingSystem", "linux", "Operating system to create docker image for, eg. linux.")
-	osVersion          = flag.String("osVersion", "", "Operating system version to create docker image for (primarily for windows).")
-	labelsArray        utils.ArrayStringFlags
-	ports              utils.ArrayStringFlags
-	volumes            utils.ArrayStringFlags
-	entrypointPrefix   utils.ArrayStringFlags
-	env                utils.ArrayStringFlags
-	command            utils.ArrayStringFlags
-	entrypoint         utils.ArrayStringFlags
-	layerDigestFile    utils.ArrayStringFlags
-	stampInfoFile      utils.ArrayStringFlags
+	baseConfig             = flag.String("baseConfig", "", "The base image config.")
+	baseManifest           = flag.String("baseManifest", "", "The base image manifest.")
+	outputConfig           = flag.String("outputConfig", "", "The output image config file to generate.")
+	outputManifest         = flag.String("outputManifest", "", "The output manifest file to generate.")
+	creationTimeString     = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC 3339 date/time.")
+	user                   = flag.String("user", "", "The username to run the commands under.")
+	workdir                = flag.String("workdir", "", "Set the working directory of the layer.")
+	nullEntryPoint         = flag.Bool("nullEntryPoint", false, "If true, Entrypoint will be set to null.")
+	nullCmd                = flag.Bool("nullCmd", false, "If true, Cmd will be set to null.")
+	architecture           = flag.String("architecture", "amd64", "The architecture of the docker image.")
+	operatingSystem        = flag.String("operatingSystem", "linux", "Operating system to create docker image for, eg. linux.")
+	osVersion              = flag.String("osVersion", "", "Operating system version to create docker image for (primarily for windows).")
+	healthcheckInterval    = flag.String("healthcheckInterval", "", "Health check interval is the time to wait between checks.")
+	healthcheckTimeout     = flag.String("healthcheckTimeout", "", "Health check timeout is the time to wait before considering the check to have hung.")
+	healthcheckStartPeriod = flag.String("healthcheckStartPeriod", "", "Health check start period for the container to initialize before the retries starts to count down.")
+	healthcheckRetries     = flag.Int("healthcheckRetries", 0, "Health check retries is the number of consecutive failures needed to consider a container as unhealthy. Zero means inherit.")
+	labelsArray            utils.ArrayStringFlags
+	ports                  utils.ArrayStringFlags
+	volumes                utils.ArrayStringFlags
+	entrypointPrefix       utils.ArrayStringFlags
+	env                    utils.ArrayStringFlags
+	command                utils.ArrayStringFlags
+	entrypoint             utils.ArrayStringFlags
+	layerDigestFile        utils.ArrayStringFlags
+	stampInfoFile          utils.ArrayStringFlags
+	healthcheckTest        utils.ArrayStringFlags
 )
 
 func main() {
@@ -63,6 +68,7 @@ func main() {
 	flag.Var(&entrypoint, "entrypoint", "Override the Entrypoint of the previous layer.")
 	flag.Var(&layerDigestFile, "layerDigestFile", "Layer sha256 hashes that make up this image. The order that these layers are specified matters.")
 	flag.Var(&stampInfoFile, "stampInfoFile", "A list of files from which to read substitutions to make in the provided fields.")
+	flag.Var(&healthcheckTest, "healthcheckTest", "Override the HealthCheck command of the previous layer.")
 
 	flag.Parse()
 
@@ -89,27 +95,32 @@ func main() {
 	}
 
 	opts := compat.OverrideConfigOpts{
-		ConfigFile:         configFile,
-		OutputConfig:       *outputConfig,
-		CreationTimeString: *creationTimeString,
-		User:               *user,
-		Workdir:            *workdir,
-		NullEntryPoint:     *nullEntryPoint,
-		NullCmd:            *nullCmd,
-		Architecture:       *architecture,
-		OperatingSystem:    *operatingSystem,
-		OSVersion:          *osVersion,
-		CreatedBy:          "bazel build ...",
-		Author:             "Bazel",
-		LabelsArray:        labelsArray,
-		Ports:              ports,
-		Volumes:            volumes,
-		EntrypointPrefix:   entrypointPrefix,
-		Env:                env,
-		Command:            command,
-		Entrypoint:         entrypoint,
-		Layer:              layerDigestFile,
-		Stamper:            stamper,
+		ConfigFile:             configFile,
+		OutputConfig:           *outputConfig,
+		CreationTimeString:     *creationTimeString,
+		User:                   *user,
+		Workdir:                *workdir,
+		NullEntryPoint:         *nullEntryPoint,
+		NullCmd:                *nullCmd,
+		Architecture:           *architecture,
+		OperatingSystem:        *operatingSystem,
+		OSVersion:              *osVersion,
+		CreatedBy:              "bazel build ...",
+		Author:                 "Bazel",
+		LabelsArray:            labelsArray,
+		Ports:                  ports,
+		Volumes:                volumes,
+		EntrypointPrefix:       entrypointPrefix,
+		Env:                    env,
+		Command:                command,
+		Entrypoint:             entrypoint,
+		Layer:                  layerDigestFile,
+		HealthcheckInterval:    *healthcheckInterval,
+		HealthcheckTimeout:     *healthcheckTimeout,
+		HealthcheckStartPeriod: *healthcheckStartPeriod,
+		HealthcheckRetries:     *healthcheckRetries,
+		HealthcheckTest:        healthcheckTest,
+		Stamper:                stamper,
 	}
 
 	// write out the updated config after overriding config content.
