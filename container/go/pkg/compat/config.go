@@ -403,8 +403,21 @@ func updateConfigLabels(overrideInfo *OverrideConfigOpts, labels map[string]stri
 	return labelsMap
 }
 
+// healthCheckConfigIsChanged checks if any parameters for healthcheck were changed
+func healthCheckConfigIsChanged(overrideInfo *OverrideConfigOpts) bool {
+	return overrideInfo.HealthcheckInterval != "" ||
+		overrideInfo.HealthcheckTimeout != "" ||
+		overrideInfo.HealthcheckStartPeriod != "" ||
+		overrideInfo.HealthcheckRetries > 0 ||
+		len(overrideInfo.HealthcheckTest) > 0
+}
+
 // updateHealthCheck modifies the config's health check definition based on the provided override options.
 func updateHealthCheck(overrideInfo *OverrideConfigOpts) error {
+	if overrideInfo.ConfigFile.Config.Healthcheck == nil && healthCheckConfigIsChanged(overrideInfo) {
+		overrideInfo.ConfigFile.Config.Healthcheck = &v1.HealthConfig{}
+	}
+
 	if overrideInfo.HealthcheckInterval != "" {
 		interval, err := time.ParseDuration(overrideInfo.HealthcheckInterval)
 		if err != nil {
@@ -585,9 +598,6 @@ func updateConfig(overrideInfo *OverrideConfigOpts) error {
 		}
 	}
 
-	if overrideInfo.ConfigFile.Config.Healthcheck == nil {
-		overrideInfo.ConfigFile.Config.Healthcheck = &v1.HealthConfig{}
-	}
 	if err := updateHealthCheck(overrideInfo); err != nil {
 		return errors.Wrap(err, "failed to update health check from config")
 	}

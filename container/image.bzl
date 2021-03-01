@@ -627,11 +627,6 @@ _attrs = dicts.add(_layer.attrs, {
     "architecture": attr.string(default = "amd64"),
     "base": attr.label(allow_files = container_filetype),
     "cmd": attr.string_list(),
-    "healthcheck_test": attr.string_list(),
-    "healthcheck_interval": attr.string(),
-    "healthcheck_timeout": attr.string(),
-    "healthcheck_start_period": attr.string(),
-    "healthcheck_retries": attr.int(),
     "compression": attr.string(default = "gzip"),
     "compression_options": attr.string_list(),
     "create_image_config": attr.label(
@@ -656,6 +651,11 @@ _attrs = dicts.add(_layer.attrs, {
                "docker. This is an experimental attribute, which is subject " +
                "to change or removal: do not depend on its exact behavior."),
     ),
+    "healthcheck_interval": attr.string(),
+    "healthcheck_retries": attr.int(),
+    "healthcheck_start_period": attr.string(),
+    "healthcheck_test": attr.string_list(),
+    "healthcheck_timeout": attr.string(),
     "label_file_strings": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "label_files": attr.label_list(
