@@ -4,6 +4,6 @@
     "@types/jsesc": "2.5.1",
     "@types/node": "12.12.47",
     "jsesc": "3.0.1",
-    "typescript": "3.9.6"
+    "typescript": "4.2.3"
   }
 }
