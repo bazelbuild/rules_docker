@@ -53,6 +53,7 @@ var (
 	variant         = flag.String("variant", "", "Image's CPU variant, if referring to a multi-platform manifest list.")
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 	timeout         = flag.Int("timeout", 600, "Timeout in seconds for the puller. e.g., --timeout=1000 for a 1000 second timeout.")
+	metadataOnly    = flag.Bool("metadata-only", false, "Fetches only the metadata such as the list of layers for this image.")
 )
 
 // Tag applied to images that were pulled by digest. This denotes
@@ -84,7 +85,7 @@ func getTag(ref name.Reference) name.Reference {
 // copy of the image will be loaded from the given cache path if available. If
 // the given image name points to a list of images, the given platform will
 // be used to select the image to pull.
-func pull(imgName, dstPath, cachePath string, platform v1.Platform, transport *http.Transport) error {
+func pull(imgName, dstPath, cachePath string, metadataOnly bool, platform v1.Platform, transport *http.Transport) error {
 	// Get a digest/tag based on the name.
 	ref, err := name.ParseReference(imgName)
 	if err != nil {
@@ -100,8 +101,14 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform, transport *h
 		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
 
-	if err := compat.WriteImage(img, dstPath); err != nil {
-		return errors.Wrapf(err, "unable to save remote image %v", ref)
+	if metadataOnly {
+		if err := compat.WriteImageMetadata(img, dstPath); err != nil {
+			return errors.Wrapf(err, "unable to save remote image metadata %v", ref)
+		}
+	} else {
+		if err := compat.WriteImage(img, dstPath); err != nil {
+			return errors.Wrapf(err, "unable to save remote image %v", ref)
+		}
 	}
 
 	return nil
@@ -154,7 +161,7 @@ func main() {
 		Proxy:                 http.ProxyFromEnvironment,
 	}
 
-	if err := pull(*imgName, *directory, *cachePath, platform, t); err != nil {
+	if err := pull(*imgName, *directory, *cachePath, *metadataOnly, platform, t); err != nil {
 		log.Fatalf("Image pull was unsuccessful: %v", err)
 	}
 
