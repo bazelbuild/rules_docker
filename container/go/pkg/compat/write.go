@@ -35,13 +35,13 @@ func isCompressed(m types.MediaType) bool {
 	return m == types.DockerLayer || m == types.OCILayer
 }
 
-// writeImageMetadata generates the following files in the given directory
+// WriteImageMetadata generates the following files in the given directory
 // for the given image:
 // directory/
 //   config.json   <-- only *.json, the image's config
 //   digest        <-- sha256 digest of the image's manifest
 //   manifest.json <-- the image's manifest
-func writeImageMetadata(img v1.Image, outDir string) error {
+func WriteImageMetadata(img v1.Image, outDir string) error {
 	c, err := img.RawConfigFile()
 	if err != nil {
 		return errors.Wrap(err, "unable to get raw config from image")
@@ -144,7 +144,7 @@ func writeImageLayers(img v1.Image, outDir string) error {
 // We pad layer indices to only 3 digits because of a known ceiling on the number
 // of filesystem layers Docker supports.
 func WriteImage(img v1.Image, outDir string) error {
-	if err := writeImageMetadata(img, outDir); err != nil {
+	if err := WriteImageMetadata(img, outDir); err != nil {
 		return errors.Wrap(err, "unable to write image metadata")
 	}
 	if err := writeImageLayers(img, outDir); err != nil {
