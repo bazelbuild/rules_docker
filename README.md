@@ -1,5 +1,15 @@
 # Bazel Container Image Rules
 
+## Are you interested in maintaining `rules_docker`?
+
+Given the maturity of `rules_docker` and its importance to so many Bazel users,
+we believe that it's time to give the community more ownership in maintaining
+these rules. If you are interested in helping to shape the growth of
+`rules_docker`, ensuring that pull requests get processed in a timely manner,
+and creating new tagged releases, please reach out to
+rules-docker-users@googlegroups.com.
+
+
 Travis CI | Bazel CI
 :---: | :---:
 [![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
