@@ -1,6 +1,6 @@
 # Bazel Container Image Rules
 
-## Are you interested in maintaining `rules_docker`?
+## Are you interested in helping maintain `rules_docker`?
 
 Given the maturity of `rules_docker` and its importance to so many Bazel users,
 we believe that it's time to give the community more ownership in maintaining
