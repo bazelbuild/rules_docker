@@ -1660,7 +1660,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
       <td><code>empty_dirs</code></td>
       <td>
         <code>List of directories, optional</code>
-        <p>Directory to add in the layer.</p>
+        <p>Directory to add to the layer.</p>
         <p>
           A list of empty directories that should be created in the Docker image.
         </p>
@@ -1669,7 +1669,7 @@ A rule that assembles data into a tarball which can be use as in `layers` attr i
     <tr>
       <td><code>empty_files</code></td>
       <td>
-        <code>List of files, optional</code>
+        <code>List of empty files, optional</code>
         <p>File to add to the layer.</p>
         <p>
           A list of empty files that should be created in the Docker image.
