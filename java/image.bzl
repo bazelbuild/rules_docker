@@ -202,7 +202,7 @@ def _jar_app_layer_impl(ctx):
         "-cp",
         # Support optionally passing the classpath as a file.
         "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
-    ] + jvm_flags + ([ctx.attr.main_class] + args if ctx.attr.main_class != "" else [])
+    ] + jvm_flags + ([ctx.attr.main_class + "asdasdas"] + args if ctx.attr.main_class != "" else [])
 
     file_map = {
         layer_file_path(ctx, f): f
