@@ -90,10 +90,10 @@ buffer-from@^1.0.0:
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"
   integrity sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
 
-jsesc@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-3.0.1.tgz#0e10205322721c22716cd5bbdbf80e71fb9c8344"
-  integrity sha512-w+MMxnByppM4jwskitZotEtvtO3a2C7WOz31NxJToGisHuysCAQQU7umb/pA/6soPFe8LGjXFEFbuPuLEPm7Ag==
+jsesc@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-3.0.2.tgz#bb8b09a6597ba426425f2e4a07245c3d00b9343e"
+  integrity sha512-xKqzzWXDttJuOcawBt4KnKHHIf5oQ/Cxax+0PWFG+DFDgHNAdi+TXECADI+RYiFUMmx8792xsMbbgXj4CwnP4g==
 
 long@^4.0.0:
   version "4.0.0"
