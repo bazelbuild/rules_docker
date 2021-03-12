@@ -123,7 +123,7 @@ func main() {
 
 	digest, err := img.Digest()
 	if err != nil {
-		log.Fatalf("Failed to digest image: %v", err)
+		log.Printf("Failed to digest image: %v", err)
 	}
 
 	if err := push(stamped, img); err != nil {
