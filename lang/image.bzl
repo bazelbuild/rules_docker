@@ -98,7 +98,7 @@ def _layer_emptyfile_path(ctx, name):
     # whereas we see:
     #    external/foreign-workspace/...
     # so we "fix" the empty files' paths by removing "external/" and basing them
-    # directly on the runfiles path.
+    # directly on the runfiles path...
 
     return "/".join([ctx.attr.directory, name[len("external/"):]])
 
