@@ -2381,6 +2381,7 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Amaiz](https://github.com/amaizfinance)
   * [Aura Devices](https://auradevices.io/)
   * [Button](https://usebutton.com)
+  * [Domino Data Lab](https://www.dominodatalab.com/)
   * [Canva](https://canva.com)
   * [Etsy](https://www.etsy.com)
   * [Evertz](https://evertz.com/)
