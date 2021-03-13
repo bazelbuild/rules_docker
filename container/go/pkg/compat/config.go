@@ -43,24 +43,24 @@ const (
 )
 
 var (
-	validHealcheckTypes = map[string]func([]string) error{
+	validHealthcheckTypes = map[string]func([]string) error{
 		"NONE": func(args []string) error {
-			if len(args) == 1 {
-				return nil
+			if len(args) != 1 {
+				return errors.New("NONE doesn't accept any extra args")
 			}
-			return errors.New("NONE doesn't accept any extra args")
+			return nil
 		},
 		"CMD": func(args []string) error {
-			if len(args) > 1 {
-				return nil
+			if len(args) < 2 {
+				return errors.New("CMD accepts at least 1 arg")
 			}
-			return errors.New("CMD accepts at least 1 arg")
+			return nil
 		},
 		"CMD-SHELL": func(args []string) error {
-			if len(args) == 2 {
-				return nil
+			if len(args) != 2 {
+				return errors.New("CMD-SHELL accepts only 1 arg")
 			}
-			return errors.New("CMD-SHELL accepts only 1 arg")
+			return nil
 		},
 	}
 )
@@ -448,7 +448,7 @@ func updateHealthCheck(overrideInfo *OverrideConfigOpts) error {
 
 	if len(overrideInfo.HealthcheckTest) > 0 {
 		checkType := overrideInfo.HealthcheckTest[0]
-		if check, ok := validHealcheckTypes[checkType]; !ok {
+		if check, ok := validHealthcheckTypes[checkType]; !ok {
 			return fmt.Errorf("HealthcheckTest first argument should be one of: 'NONE', 'CMD', 'CMD-SHELL' was '%s'", checkType)
 		} else if err := check(overrideInfo.HealthcheckTest); err != nil {
 			return errors.Wrap(err, "failed to validate check check command")
