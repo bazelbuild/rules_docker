@@ -19,8 +19,8 @@
 # git repository.
 
 DIGESTS = {
-    # "gcr.io/distroless/cc:debug" circa 2020-10-30 14:07 -0700
-    "debug": "sha256:7c31f56955cc66134efb3e8282c68f7c92ae3dddcfd99ebf0e7e3dcd9b686e4f",
-    # "gcr.io/distroless/cc:latest" circa 2020-10-30 14:07 -0700
-    "latest": "sha256:c4014bdecaede16f767f8cfc496f968736bc08632bf54a37c004820e85cd8209",
+    # "gcr.io/distroless/cc:debug" circa 2021-03-14 11:14 -0400
+    "debug": "sha256:2b083aa36dbfe76eff429ee21596d53a6ca5ab69ec48aef375264c267e3da5a0",
+    # "gcr.io/distroless/cc:latest" circa 2021-03-14 11:14 -0400
+    "latest": "sha256:937aa8c7edd91618d8ed4510a0fd06a9dd97db3a786b23e953213cdcf88ccfde",
 }
