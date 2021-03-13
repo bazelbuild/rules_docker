@@ -122,4 +122,5 @@ dockerfile_image = repository_rule(
         ),
     },
     implementation = _impl,
+    local = True,
 )
