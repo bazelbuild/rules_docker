@@ -24,6 +24,7 @@ jobs:
             --config=github \
             --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
             --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
+            --build_metadata="GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" \
             //:structure_test_at_workspace_root
   tests_slash_docker:
     runs-on: ubuntu-20.04
@@ -46,6 +47,7 @@ jobs:
             --config=github \
             --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
             --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
+            --build_metadata="GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" \
             //tests/docker/package_managers:download_pkgs_run_test \
             //tests/docker/package_managers:download_pkgs_with_additional_repos_run_test \
             //tests/docker/package_managers:gpg_test \
@@ -73,6 +75,7 @@ jobs:
             --config=github \
             --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
             --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
+            --build_metadata="GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" \
             --define=ENV_KEY=my_key \
             --define=ENV_VALUE=my_value \
             //tests/container:structure_test \
@@ -133,4 +136,5 @@ jobs:
             --config=github \
             --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
             --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
+            --build_metadata="GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" \
             //...
