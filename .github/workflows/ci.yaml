@@ -122,6 +122,7 @@ jobs:
       - name: Test
         run: |
           cd testing/java_image && \
+          cp ./.github/workflows/.bazelrc . \
           "${GITHUB_WORKSPACE}/bin/bazel" test \
             --config=github \
             //...
