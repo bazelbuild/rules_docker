@@ -190,3 +190,13 @@ tasks:
     test_flags:
       - --config=bezel
       - --test_output=errors
+  testing_custom_toolchain_flags:
+    platform: ubuntu1804
+    working_directory: testing/custom_toolchain_flags
+    shell_commands:
+      - cp ../../.bazelrc .
+    test_targets:
+      - //...
+    test_flags:
+      - --config=bezel
+      - --test_output=errors
