@@ -16,7 +16,6 @@ platforms:
       - //container/go/pkg/compat:go_default_test
       - //container/go/pkg/oci:go_default_test
       - //docker/util:config_stripper_test
-      - //testing/new_pusher_tests:new_push_verify_pushed_configs_and_files
       - //tests/container:alpine_amd64_image_test
       - //tests/container:alpine_arm_image_test
       - //tests/container:alpine_custom_attr_digest_test
