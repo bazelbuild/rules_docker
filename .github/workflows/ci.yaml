@@ -45,7 +45,6 @@ jobs:
             //tests/docker/package_managers:download_pkgs_run_test \
             //tests/docker/package_managers:download_pkgs_with_additional_repos_run_test \
             //tests/docker/package_managers:gpg_test \
-            //tests/docker/package_managers:install_pkgs_reproducibility_test \
             //tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs \
             //tests/docker/util:test_extracted_file \
             //tests/docker/util:test_container_commit_metadata
