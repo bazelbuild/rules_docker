@@ -100,7 +100,6 @@ platforms:
       - //tests/container/scala:scala_image_test
       - //tests/contrib:derivative_with_volume_repro_test
       - //tests/contrib:random_file_img_non_repro_test
-      - //tests/contrib:rbe-test-xenial_repro_test
       - //tests/contrib:rename_image_test
       - //tests/contrib:set_cmd_repro_test
       - //tests/contrib:test_compare_ids_test
@@ -144,6 +143,7 @@ platforms:
       - //tests/docker/util:test_extracted_file_impl
       # failing tests
       - -//testing/new_pusher_tests:new_push_verify_pushed_configs_and_files
+      - -//tests/contrib:rbe-test-xenial_repro_test
       - -//tests/contrib:test_compare_ids_test_diff_ids_fails
       - -//tests/contrib:test_compare_ids_test_invalid_tar_fails
       - -//tests/contrib:test_compare_ids_test_no_images_with_id_fails
