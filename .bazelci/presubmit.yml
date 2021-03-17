@@ -166,8 +166,9 @@ tasks:
       - cp ../../.bazelrc .
     test_targets:
       - //basic:all
-      - //java_app:all
       - //extended:all
+      - //java_app:all
+      - //run_instruction_arbitrary:all
     test_flags:
       - --config=bezel
       - --test_output=errors
