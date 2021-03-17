@@ -162,6 +162,8 @@ tasks:
   testing_examples:
     platform: ubuntu1804
     working_directory: testing/examples
+    shell_commands:
+      - cp ../../.bazelrc .
     test_targets:
       - //basic:all
     test_flags:
