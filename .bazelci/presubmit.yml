@@ -167,6 +167,7 @@ tasks:
     test_targets:
       - //basic:all
       - //java_app:all
+      - //extended:all
     test_flags:
       - --config=bezel
       - --test_output=errors
@@ -179,3 +180,13 @@ tasks:
       - //...
     build_flags:
       - --config=bezel
+  testing_download_pkgs_at_root:
+    platform: ubuntu1804
+    working_directory: testing/download_pkgs_at_root
+    shell_commands:
+      - cp ../../.bazelrc .
+    test_targets:
+      - //...
+    test_flags:
+      - --config=bezel
+      - --test_output=errors
