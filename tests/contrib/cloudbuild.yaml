@@ -15,20 +15,16 @@
 # Tests under /tests/contrib that require the 'docker' tool to be available.
 
 steps:
-  - name: "l.gcr.io/google/bazel"
-    args: 
-      - "--bazelrc=.bazelrc"
-      - "test"
-      - "--test_output=errors"
-      - "--verbose_failures"
-      - "//tests/contrib:test_dockerfile_image_docker"
-      - "--config=remote"
   # Pull the semantic checker image used by configs_test targets.
   - name: "gcr.io/cloud-builders/docker"
-    args: ["pull", "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/semantics:latest"]
+    args:
+      [
+        "pull",
+        "gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/semantics:latest",
+      ]
     id: "pull_validator"
   - name: "l.gcr.io/google/bazel"
-    args: 
+    args:
       - "test"
       - "--test_output=errors"
       - "--verbose_failures"
