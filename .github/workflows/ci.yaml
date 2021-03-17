@@ -3,27 +3,49 @@ name: CI
 on: [pull_request]
 
 jobs:
-  build:
+  structure_test_at_workspace_root:
     runs-on: ubuntu-20.04
-
     steps:
       - uses: actions/checkout@v1
-
       - name: Mount bazel cache
         uses: actions/cache@v2
         with:
           path: "/home/runner/.cache/bazel"
           key: bazel-v2
-
       - name: Install bazelisk
         run: |
           curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-linux-amd64"
           mkdir -p "${GITHUB_WORKSPACE}/bin/"
           mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
           chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
-
       - name: Test
         run: |
           "${GITHUB_WORKSPACE}/bin/bazel" test \
             --config=github \
             //:structure_test_at_workspace_root
+  tests_slash_docker:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Mount bazel cache
+        uses: actions/cache@v2
+        with:
+          path: "/home/runner/.cache/bazel"
+          key: bazel-v2
+      - name: Install bazelisk
+        run: |
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-linux-amd64"
+          mkdir -p "${GITHUB_WORKSPACE}/bin/"
+          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
+          chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+      - name: Test
+        run: |
+          "${GITHUB_WORKSPACE}/bin/bazel" test \
+            --config=github \
+            //tests/docker/package_managers:download_pkgs_run_test \
+            //tests/docker/package_managers:download_pkgs_with_additional_repos_run_test \
+            //tests/docker/package_managers:gpg_test \
+            //tests/docker/package_managers:install_pkgs_reproducibility_test \
+            //tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs \
+            //tests/docker/util:test_extracted_file \
+            //tests/docker/util:test_container_commit_metadata
