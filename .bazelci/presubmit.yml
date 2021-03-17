@@ -7,8 +7,10 @@ buildifier:
   # rule-impl-return, uninitialized, return-value, rule-impl-return
   # TODO (suvanjan): Re-enable once issues are fixed.
   warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
-platforms:
-  ubuntu1804:
+bazel: 4.0.0 # keep in sync with .bazelversion
+tasks:
+  core_tests:
+    platform: ubuntu1804
     test_targets:
       - "--"
       - //:structure_test_at_workspace_root
@@ -138,22 +140,30 @@ platforms:
       - //tests/docker/util:test_extract_script_impl
       - //tests/docker/util:test_extracted_file
       - //tests/docker/util:test_extracted_file_impl
-      # failing tests
+      # failing or incompatible tests
       - -//testing/new_pusher_tests:new_push_verify_pushed_configs_and_files
-      - -//tests/contrib:set_cmd_repro_test
       - -//tests/contrib:random_file_img_non_repro_test
-      - -//tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs
       - -//tests/contrib:rbe-test-xenial_repro_test
+      - -//tests/contrib:set_cmd_repro_test
       - -//tests/contrib:test_compare_ids_test_diff_ids_fails
       - -//tests/contrib:test_compare_ids_test_invalid_tar_fails
-      - -//tests/contrib:test_compare_ids_test_no_images_with_id_fails
       - -//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex
+      - -//tests/contrib:test_compare_ids_test_no_images_with_id_fails
+      - -//tests/contrib:test_compare_ids_test_one_tar_no_id_fails
       - -//tests/contrib:test_compare_ids_test_wrong_id_fails
       - -//tests/docker/security/... # User [buildkite@bazel-untrusted.iam.gserviceaccount.com] does not have permission to access projects instance [asci-toolchain]
-      - -//tests/contrib:test_compare_ids_test_one_tar_no_id_fails
+      - -//tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs
     test_flags:
       - --action_env=PATH
-      - --test_output=errors
       - --config=bezel
       - --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test
       - --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test
+      - --test_output=errors
+  testing_examples:
+    platform: ubuntu1804
+    working_directory: testing/examples
+    test_targets:
+      - //basic:all
+    test_flags:
+      - --config=bezel
+      - --test_output=errors
