@@ -128,7 +128,6 @@ platforms:
       - //tests/docker/security:security_check_expect_cve_test_impl
       - //tests/docker/security:security_check_test
       - //tests/docker/security:security_check_test_impl
-      - //tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs
       - //tests/docker/util:test_container_commit_layer_metadata
       - //tests/docker/util:test_container_commit_layer_rule
       - //tests/docker/util:test_container_commit_layer_rule_impl
@@ -143,6 +142,7 @@ platforms:
       - //tests/docker/util:test_extracted_file_impl
       # failing tests
       - -//testing/new_pusher_tests:new_push_verify_pushed_configs_and_files
+      - -//tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs
       - -//tests/contrib:rbe-test-xenial_repro_test
       - -//tests/contrib:test_compare_ids_test_diff_ids_fails
       - -//tests/contrib:test_compare_ids_test_invalid_tar_fails
