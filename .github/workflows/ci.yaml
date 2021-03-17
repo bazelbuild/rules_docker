@@ -1,11 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches:
-      - "*"
-    tags:
-      - "!*"
+on: [pull_request]
 
 jobs:
   build:
