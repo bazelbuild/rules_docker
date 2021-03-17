@@ -175,8 +175,7 @@ tasks:
     working_directory: testing/java_image
     shell_commands:
       - cp ../../.bazelrc .
-    test_targets:
+    build_targets:
       - //...
-    test_flags:
+    build_flags:
       - --config=bezel
-      - --test_output=errors
