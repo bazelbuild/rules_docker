@@ -69,8 +69,6 @@ jobs:
             --config=github \
             --define=ENV_KEY=my_key \
             --define=ENV_VALUE=my_value \
-            --test_output=errors \
-            --verbose_failures \
             //tests/container:structure_test \
             //tests/container:deb_image_with_dpkgs_test \
             //tests/container:set_cmd_test \
@@ -106,3 +104,24 @@ jobs:
             //tests/container/python3:all \
             //tests/container/rust:all \
             //tests/container/scala:all
+  testing_slash_java_image:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Mount bazel cache
+        uses: actions/cache@v2
+        with:
+          path: "/home/runner/.cache/bazel"
+          key: bazel-testing_slash_java_image
+      - name: Install bazelisk
+        run: |
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-linux-amd64"
+          mkdir -p "${GITHUB_WORKSPACE}/bin/"
+          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
+          chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+      - name: Test
+        run: |
+          cd testing/java_image && \
+          "${GITHUB_WORKSPACE}/bin/bazel" test \
+            --config=github \
+            //...
