@@ -55,3 +55,6 @@ test:remote --google_default_credentials=true
 
 test:remote --remote_timeout=3600
 test:remote --keep_going
+
+# Configuration specific to github actions test runner.
+test:github --test_output=errors --verbose_failures
