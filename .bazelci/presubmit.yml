@@ -149,6 +149,8 @@ platforms:
       - //tests/docker/util:test_extracted_file
       - //tests/docker/util:test_extracted_file_impl
     test_flags:
-      - "--action_env=PATH"
-      - "--test_output=errors"
-      - "--config=bezel"
+      - --action_env=PATH
+      - --test_output=errors
+      - --config=bezel
+      - --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test
+      - --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test
