@@ -11,7 +11,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: "/home/runner/.cache/bazel"
-          key: bazel-v2
+          key: bazel-structure_test_at_workspace_root
       - name: Install bazelisk
         run: |
           curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-linux-amd64"
@@ -31,7 +31,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: "/home/runner/.cache/bazel"
-          key: bazel-v2
+          key: bazel-tests_slash_docker
       - name: Install bazelisk
         run: |
           curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-linux-amd64"
@@ -48,3 +48,61 @@ jobs:
             //tests/docker/toolchain_container:test-rbe-test-xenial-with-pkgs \
             //tests/docker/util:test_extracted_file \
             //tests/docker/util:test_container_commit_metadata
+  tests_slash_container:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Mount bazel cache
+        uses: actions/cache@v2
+        with:
+          path: "/home/runner/.cache/bazel"
+          key: bazel-tests_slash_container
+      - name: Install bazelisk
+        run: |
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-linux-amd64"
+          mkdir -p "${GITHUB_WORKSPACE}/bin/"
+          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
+          chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+      - name: Test
+        run: |
+          "${GITHUB_WORKSPACE}/bin/bazel" test \
+            --config=github \
+            --define=ENV_KEY=my_key \
+            --define=ENV_VALUE=my_value \
+            --test_output=errors \
+            --verbose_failures \
+            //tests/container:structure_test \
+            //tests/container:deb_image_with_dpkgs_test \
+            //tests/container:set_cmd_test \
+            //tests/container:set_entrypoint_test \
+            //tests/container:set_cmd_and_entrypoint_test \
+            //tests/container:base_with_cmd_and_entrypoint_test \
+            //tests/container:null_cmd_and_entrypoint_none_test \
+            //tests/container:null_cmd_and_entrypoint_empty_str_test \
+            //tests/container:null_cmd_and_entrypoint_empty_list_test \
+            //tests/container:set_cmd_and_entrypoint_null_on_base_test \
+            //tests/container:alpine_amd64_image_test \
+            //tests/container:alpine_arm_image_test \
+            //tests/container:alpine_ppc64le_image_test \
+            //tests/container:set_env_csv_test \
+            //tests/container:set_env_equals_test \
+            //tests/container:set_env_make_vars_test \
+            //tests/container:stripped_directory_name_test \
+            //tests/container:new_alpine_linux_armv6_image_tar_test \
+            //tests/container:new_alpine_linux_armv6_image_oci_tar_test \
+            //tests/container:new_alpine_linux_armv6_image_oci_test \
+            //tests/container:alpine_linux_amd64_image_tar_test \
+            //tests/container:alpine_linux_amd64_image_oci_tar_test \
+            //tests/container:alpine_linux_amd64_image_oci_test \
+            //tests/container:new_alpine_linux_ppc64le_image_tar_test \
+            //tests/container:new_alpine_linux_ppc64le_image_oci_tar_test \
+            //tests/container:new_alpine_linux_ppc64le_image_oci_test \
+            //tests/container/cc:all \
+            //tests/container/go:all \
+            //tests/container/groovy:all \
+            //tests/container/java:all \
+            //tests/container/nodejs:all \
+            //tests/container/python:all \
+            //tests/container/python3:all \
+            //tests/container/rust:all \
+            //tests/container/scala:all
