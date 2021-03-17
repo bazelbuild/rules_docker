@@ -22,6 +22,8 @@ jobs:
         run: |
           "${GITHUB_WORKSPACE}/bin/bazel" test \
             --config=github \
+            --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
+            --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
             //:structure_test_at_workspace_root
   tests_slash_docker:
     runs-on: ubuntu-20.04
@@ -42,6 +44,8 @@ jobs:
         run: |
           "${GITHUB_WORKSPACE}/bin/bazel" test \
             --config=github \
+            --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
+            --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
             //tests/docker/package_managers:download_pkgs_run_test \
             //tests/docker/package_managers:download_pkgs_with_additional_repos_run_test \
             //tests/docker/package_managers:gpg_test \
@@ -67,6 +71,8 @@ jobs:
         run: |
           "${GITHUB_WORKSPACE}/bin/bazel" test \
             --config=github \
+            --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
+            --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
             --define=ENV_KEY=my_key \
             --define=ENV_VALUE=my_value \
             //tests/container:structure_test \
@@ -125,4 +131,6 @@ jobs:
           cp ./.github/workflows/.bazelrc .
           "${GITHUB_WORKSPACE}/bin/bazel" test \
             --config=github \
+            --build_metadata="GITHUB_SHA=${GITHUB_SHA}" \
+            --build_metadata="GITHUB_SERVER_URL=${GITHUB_SERVER_URL}" \
             //...
