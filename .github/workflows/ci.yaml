@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v1
@@ -29,7 +29,6 @@ jobs:
 
       - name: Test
         run: |
-          cp ./.github/workflows/.bazelrc .
           "${GITHUB_WORKSPACE}/bin/bazel" test \
             --config=github \
             //:structure_test_at_workspace_root
