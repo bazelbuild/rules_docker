@@ -9,7 +9,7 @@ buildifier:
   warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
 bazel: 4.0.0 # keep in sync with .bazelversion
 tasks:
-  core_tests:
+  default_workspace:
     platform: ubuntu1804
     test_targets:
       - "--"
@@ -166,6 +166,16 @@ tasks:
       - cp ../../.bazelrc .
     test_targets:
       - //basic:all
+    test_flags:
+      - --config=bezel
+      - --test_output=errors
+  testing_java_image:
+    platform: ubuntu1804
+    working_directory: testing/java_image
+    shell_commands:
+      - cp ../../.bazelrc .
+    test_targets:
+      - //...
     test_flags:
       - --config=bezel
       - --test_output=errors
