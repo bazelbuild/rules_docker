@@ -2201,9 +2201,12 @@ container_image(name, base, data_path, directory, files, legacy_repository_namin
         <code>List of strings, optional</code>
         <p><a href="https://docs.docker.com/engine/reference/builder/#healthcheck">
         The test to perform to check that the container is healthy.</a></p>
-        <p>An empty list means to inherit the default.</p>
+        <p>
+        An empty list means to inherit the default. If <code>healthcheck_test</code> wasn't defined
+        <code>HEALTHCHECK</code> will be inherited from an upper layers.
+        </p>
         <p>Possible definition options are:</p>
-        <p><code>[]</code> : inherit healthcheck</p>
+        <p><code>None</code>/<code>[]</code> : inherit healthcheck</p>
         <p><code>["NONE"]</code> : disable healthcheck</p>
         <p><code>["CMD", "test", "-f", "file"]</code> : exec arguments directly</p>
         <p><code>["CMD-SHELL", "curl -q localhost:8080"]</code> : run command with system's default shell</p>
