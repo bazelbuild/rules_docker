@@ -244,6 +244,8 @@ container_pull = repository_rule(
     attrs = _container_pull_attrs,
     implementation = _impl,
     environ = [
+        "CONTAINER_PULL_HTTP_PROXY",
+        "CONTAINER_PULL_HTTPS_PROXY",
         "DOCKER_REPO_CACHE",
         "HOME",
         "PULLER_TIMEOUT",

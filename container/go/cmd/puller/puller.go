@@ -134,6 +134,20 @@ func main() {
 		Features:     strings.Fields(*features),
 	}
 
+	// check if http proxy solely for container pulls is defined
+	if httpPullProxy := ospkg.Getenv("CONTAINER_PULL_HTTP_PROXY"); httpPullProxy != "" {
+		err := ospkg.Setenv("HTTP_PROXY", httpPullProxy)
+		if err != nil {
+			log.Fatalf("Could not set HTTP_PROXY environment variable: %v", err)
+		}
+	}
+	if httpsPullProxy := ospkg.Getenv("CONTAINER_PULL_HTTPS_PROXY"); httpsPullProxy != "" {
+		err := ospkg.Setenv("HTTPS_PROXY", httpsPullProxy)
+		if err != nil {
+			log.Fatalf("Could not set HTTPS_PROXY environment variable: %v", err)
+		}
+	}
+
 	dur := time.Duration(*timeout) * time.Second
 	t := &http.Transport{
 		Dial: func(network, addr string) (net.Conn, error) {
