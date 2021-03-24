@@ -62,6 +62,38 @@ steps:
     id: "push-loader-linux-amd64"
     waitFor: ["build-linux-amd64"]
 
+# Step: build the puller and pusher release binary for Linux PPC64LE
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "build"
+      - "--platforms=@io_bazel_rules_go//go/toolchain:linux_ppc64le"
+      - "//container/go/cmd/puller:puller"
+      - "//container/go/cmd/loader:loader"
+    id: "build-linux-ppc64le"
+    waitFor: ["push-puller-linux-amd64", "push-loader-linux-amd64"]
+
+# Step: push the puller release binary for Linux PPC64LE
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/puller/puller_/puller"
+      - "gs://rules_docker/$COMMIT_SHA/puller-linux-ppc64le"
+    id: "push-puller-linux-ppc64le"
+    waitFor: ["build-linux-ppc64le"]
+
+# Step: push the loader release binary for Linux PPC64LE
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/loader/loader_/loader"
+      - "gs://rules_docker/$COMMIT_SHA/loader-linux-ppc64le"
+    id: "push-loader-linux-ppc64le"
+    waitFor: ["build-linux-ppc64le"]
+
 # Step: build the puller and pusher release binary for Linux ARM64
   - name: "l.gcr.io/google/bazel"
     args:
@@ -70,7 +102,7 @@ steps:
       - "//container/go/cmd/puller:puller"
       - "//container/go/cmd/loader:loader"
     id: "build-linux-arm64"
-    waitFor: ["push-puller-linux-amd64", "push-loader-linux-amd64"]
+    waitFor: ["push-puller-linux-ppc64le", "push-loader-linux-ppc64le"]
 
 # Step: push the puller release binary for Linux ARM64
   - name: "gcr.io/cloud-builders/gsutil"
