@@ -48,6 +48,14 @@ def repositories():
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-arm64")],
         )
 
+    if "go_puller_linux_ppc64le" not in excludes:
+        http_file(
+            name = "go_puller_linux_ppc64le",
+            executable = True,
+            sha256 = "912ee7c469b3e4bf15ba5d1f0ee500e7ec6724518862703fa8b09e4d58ce3ee6",
+            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-ppc64le")],
+        )
+
     if "go_puller_linux_s390x" not in excludes:
         http_file(
             name = "go_puller_linux_s390x",
@@ -78,6 +86,14 @@ def repositories():
             executable = True,
             sha256 = "a80966d17b25dbc9313e9fc1cae74ded5916fa64dba0d33438c8adad338b44d3",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-arm64")],
+        )
+
+    if "loader_linux_ppc64le" not in excludes:
+        http_file(
+            name = "loader_linux_ppc64le",
+            executable = True,
+            sha256 = "a80966d17b25dbc9313e9fc1cae74ded5916fa64dba0d33438c8adad338b44d3",
+            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-ppc64le")],
         )
 
     if "loader_linux_s390x" not in excludes:
