@@ -77,6 +77,12 @@ _container_pull_attrs = {
         cfg = "host",
         doc = "(optional) Exposed to provide a way to test other pullers on Linux",
     ),
+    "puller_linux_ppc64le": attr.label(
+        executable = True,
+        default = Label("@go_puller_linux_ppc64le//file:downloaded"),
+        cfg = "host",
+        doc = "(optional) Exposed to provide a way to test other pullers on Linux",
+    ),
     "puller_linux_s390x": attr.label(
         executable = True,
         default = Label("@go_puller_linux_s390x//file:downloaded"),
@@ -116,6 +122,8 @@ def _impl(repository_ctx):
         arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
         if arch == "arm64" or arch == "aarch64":
             puller = repository_ctx.attr.puller_linux_arm64
+        if arch == "ppc64le":
+            puller = repository_ctx.attr.puller_linux_ppc64le
         elif arch == "s390x":
             puller = repository_ctx.attr.puller_linux_s390x
 

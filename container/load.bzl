@@ -40,6 +40,8 @@ container_import(
         arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
         if arch == "arm64" or arch == "aarch64":
             loader = repository_ctx.attr._loader_linux_arm64
+        elif arch == "ppc64le":
+            loader = repository_ctx.attr._loader_linux_ppc64le
         elif arch == "s390x":
             loader = repository_ctx.attr._loader_linux_s390x
 
@@ -73,6 +75,11 @@ container_load = repository_rule(
         "_loader_linux_arm64": attr.label(
             executable = True,
             default = Label("@loader_linux_arm64//file:downloaded"),
+            cfg = "host",
+        ),
+        "_loader_linux_ppc64le": attr.label(
+            executable = True,
+            default = Label("@loader_linux_ppc64le//file:downloaded"),
             cfg = "host",
         ),
         "_loader_linux_s390x": attr.label(
