@@ -78,7 +78,7 @@ def _impl(repository_ctx):
     build_result = repository_ctx.execute(
         command,
         timeout = repository_ctx.attr.timeout,
-        quiet = repository_ctx.attr.quiet
+        quiet = repository_ctx.attr.quiet,
     )
     if build_result.return_code:
         fail("docker build command failed: {} ({})".format(
@@ -121,15 +121,15 @@ dockerfile_image = repository_rule(
             mandatory = True,
             doc = "The label for the Dockerfile to build the image from.",
         ),
-        "quiet": attr.bool(
-            mandatory = False,
-            default = False,
-            doc = "Print the stdout of the client docker when building the image."
-        ),
         "timeout": attr.int(
             mandatory = False,
             default = 3600,
             doc = "Maximum duration of the build image.",
+        ),
+        "quiet": attr.bool(
+            mandatory = False,
+            default = False,
+            doc = "Print the stdout of the client docker when building the image.",
         ),
         "vars": attr.string_list(
             doc = "List of environment vars to include in the build.",
