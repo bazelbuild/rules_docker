@@ -122,14 +122,14 @@ dockerfile_image = repository_rule(
             doc = "The label for the Dockerfile to build the image from.",
         ),
         "timeout": attr.int(
-            mandatory = False,
             default = 3600,
             doc = "Maximum duration of the build image.",
+            mandatory = False,
         ),
         "quiet": attr.bool(
-            mandatory = False,
             default = False,
             doc = "Print the stdout of the client docker when building the image.",
+            mandatory = False,
         ),
         "vars": attr.string_list(
             doc = "List of environment vars to include in the build.",
