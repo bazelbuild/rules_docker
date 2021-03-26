@@ -121,10 +121,11 @@ dockerfile_image = repository_rule(
             mandatory = True,
             doc = "The label for the Dockerfile to build the image from.",
         ),
+        # @unsorted-dict-items
         "timeout": attr.int(
             default = 3600,
-            doc = "Maximum duration of the build image.",
             mandatory = False,
+            doc = "Maximum duration of the build image.",
         ),
         "quiet": attr.bool(
             default = False,
