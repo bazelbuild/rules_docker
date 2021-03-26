@@ -128,8 +128,8 @@ dockerfile_image = repository_rule(
         ),
         "timeout": attr.int(
             default = 3600,
-            doc = "Maximum duration of the build image.",
             mandatory = False,
+            doc = "Maximum duration of the build image.",
         ),
         "vars": attr.string_list(
             doc = "List of environment vars to include in the build.",
