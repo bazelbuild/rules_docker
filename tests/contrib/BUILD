@@ -174,6 +174,8 @@ container_repro_test(
         "node",
     ],
     image = "//testdata:derivative_with_volume",
+    # NOTE(pcj): tagged as manual as this is incompatible with buildkite
+    tags = ["manual"],
     workspace_file = "//:WORKSPACE",
 )
 
