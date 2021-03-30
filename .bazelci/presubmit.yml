@@ -14,21 +14,14 @@ tasks:
     test_targets:
       - //...
     test_flags:
-      - --action_env=PATH
-      - --config=bezel
-      - --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test
-      - --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test
-      - --test_output=errors
+      - --config=buildkite_default
   default_workspace_darwin:
     platform: macos
     test_targets:
       - //...
     test_flags:
-      - --action_env=PATH
-      - --config=bezel
-      - --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test
-      - --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test
-      - --test_output=errors
+      - --config=buildkite_default
+      - --deleted_packages=tests/contrib
   testing_examples:
     platform: ubuntu1804
     working_directory: testing/examples

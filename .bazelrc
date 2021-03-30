@@ -65,3 +65,10 @@ build:bezel --build_event_publish_all_actions
 # Configuration specific to github actions test runner.
 test:github --test_output=errors --verbose_failures
 test:github --config=bezel
+
+# Configuration specific to buildkite CI testing the default workspace
+test:buildkite_default --config=bezel
+test:buildkite_default --action_env=PATH 
+test:buildkite_default --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test 
+test:buildkite_default --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test 
+test:buildkite_default --test_output=errors
