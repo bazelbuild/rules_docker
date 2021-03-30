@@ -71,6 +71,10 @@ compare_ids_fail_test(
         "@distroless_fixed_id_2//image",
     ],
     reg_exps = [".*Executed .* fail.*"],
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
 )
 
 compare_ids_fail_test(
@@ -78,6 +82,10 @@ compare_ids_fail_test(
     id = "wrong_id",
     images = ["@distroless_fixed_id//image"],
     reg_exps = [".*Executed .* fail.*"],
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
 )
 
 compare_ids_fail_test(
@@ -91,6 +99,10 @@ compare_ids_fail_test(
     id = "some_id",
     images = [],
     reg_exps = [".*No images provided for test.*"],
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
 )
 
 genrule(
@@ -104,6 +116,10 @@ compare_ids_fail_test(
     id = "some_id",
     images = ["invalid.tar"],
     reg_exps = [".*Unable to extract manifest\\.json, make sure .* is a valid docker image.*"],
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
 )
 
 compare_ids_fail_test(
@@ -124,6 +140,10 @@ compare_ids_fail_test(
     reg_exps = [
         ".*Unable to extract manifest\\.json, make sure .* is a valid docker image.*",
         ".*FAILED.*",
+    ],
+    tags = [
+        "buildkite-incompatible",
+        "manual",
     ],
 )
 
@@ -158,6 +178,10 @@ genrule(
 container_repro_test(
     name = "set_cmd_repro_test",
     image = "//tests/container:set_cmd",
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
     workspace_file = "//:WORKSPACE",
 )
 
@@ -174,20 +198,30 @@ container_repro_test(
         "node",
     ],
     image = "//testdata:derivative_with_volume",
-    # NOTE(pcj): tagged as manual as this is incompatible with buildkite
-    tags = ["manual"],
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
     workspace_file = "//:WORKSPACE",
 )
 
 container_repro_test(
     name = "rbe-test-xenial_repro_test",
     image = "//tests/docker/toolchain_container:rbe-test-xenial-with-pkgs",
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
     workspace_file = "//:WORKSPACE",
 )
 
 container_repro_test(
     name = "random_file_img_non_repro_test",
     image = ":img_with_random_file",
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
     want_reproducibility = False,
     workspace_file = "//:WORKSPACE",
 )
