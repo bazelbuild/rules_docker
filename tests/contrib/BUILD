@@ -92,6 +92,10 @@ compare_ids_fail_test(
     name = "test_compare_ids_test_one_tar_no_id_fails",
     images = ["@distroless_fixed_id//image"],
     reg_exps = [".*One tar provided\\. Need either second tar or an id to compare it to\\..*"],
+    tags = [
+        "buildkite-incompatible",
+        "manual",
+    ],
 )
 
 compare_ids_fail_test(
