@@ -18,20 +18,32 @@ load(
 )
 load("//docker/security:security_check.bzl", "security_check")
 
+#
+# NOTE(pcj): tests were tagged with "manual" to indicate that they should not be
+# routinely run.  The security_check python library ultimately calls "gcloud
+# alpha container images..." which is not supported on buildkite.
+#
+# Attempts to remove the security_check infrastructure completely failed as the
+# @ubuntu1604//image we are using contains references to it.
+#
+
 security_check(
     name = "security_check",
     image = "gcr.io/gcp-runtimes/ubuntu_16_0_4:latest",
+    tags = ["manual"],
 )
 
 file_test(
     name = "security_check_test",
     file = ":security_check.yaml",
     regexp = "tags:",
+    tags = ["manual"],
 )
 
 security_check(
     name = "security_check_expect_cve",
     image = "gcr.io/asci-toolchain/rbe-ubuntu16_04@sha256:1e95064e2b9b4807ddb39a9d56ebb275b126faa592d4c0b8f68dd0f16f751df1",
+    tags = ["manual"],
 )
 
 # If this test fails it might be the case that the vulnerability info for an
@@ -41,4 +53,5 @@ file_test(
     name = "security_check_expect_cve_test",
     file = ":security_check_expect_cve.yaml",
     regexp = "cveHigh",
+    tags = ["manual"],
 )

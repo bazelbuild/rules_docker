@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache 2.0
-
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -25,15 +23,25 @@ load(
 load("//contrib/automatic_container_release:metadata_merge.bzl", "metadata_merge")
 load("//contrib/automatic_container_release:packages_metadata.bzl", "packages_metadata")
 
+licenses(["notice"])  # Apache 2.0
+
+# NOTE(pcj): this test is tagged as manual due to dependency on system docker
+# that is not routinely available (line 50: /usr/bin/docker: No such file or
+# directory).
 configs_test(
     name = "configs_test",
     dependency_update_specs = ["deps_spec.yaml"],
     file_update_specs = ["file_updates.yaml"],
+    tags = ["manual"],
 )
 
+# NOTE(pcj): this test is tagged as manual due to dependency on system docker
+# that is not routinely available (line 50: /usr/bin/docker: No such file or
+# directory).
 configs_test(
     name = "configs_test_deps_spec_only",
     dependency_update_specs = ["deps_spec_no_fus_deps.yaml"],
+    tags = ["manual"],
 )
 
 packages_metadata(
