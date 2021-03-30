@@ -15,13 +15,13 @@ tasks:
       - //...
     test_flags:
       - --config=buildkite_default
-  default_workspace_darwin:
+  default_workspace_macos:
     platform: macos
     test_targets:
       - //...
     test_flags:
       - --config=buildkite_default
-      - --deleted_packages=tests/contrib
+      - --deleted_packages=tests/contrib,tests/docker/util
   testing_examples:
     platform: ubuntu1804
     working_directory: testing/examples
