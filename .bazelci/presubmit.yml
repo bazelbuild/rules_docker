@@ -7,7 +7,7 @@ buildifier:
   # rule-impl-return, uninitialized, return-value, rule-impl-return
   # TODO (suvanjan): Re-enable once issues are fixed.
   warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
-bazel: 3.5.0 # keep in sync with .bazelversion
+bazel: 4.0.0 # keep in sync with .bazelversion
 tasks:
   default_workspace:
     platform: ubuntu1804
