@@ -9,8 +9,18 @@ buildifier:
   warnings: "attr-cfg,attr-license,attr-non-empty,attr-output-default,attr-single-file,confusing-name,constant-glob,ctx-actions,ctx-args,depset-iteration,depset-union,dict-concatenation,duplicated-name,filetype,function-docstring,git-repository,http-archive,integer-division,load,load-on-top,module-docstring,name-conventions,native-build,native-package,no-effect,out-of-order-load,output-group,package-name,package-on-top,redefined-variable,repository-name,same-origin-load,string-iteration,unreachable,unsorted-dict-items,unused-variable"
 bazel: 3.5.0 # keep in sync with .bazelversion
 tasks:
-  default_workspace:
+  default_workspace_ubuntu1804:
     platform: ubuntu1804
+    test_targets:
+      - //...
+    test_flags:
+      - --action_env=PATH
+      - --config=bezel
+      - --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test
+      - --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test
+      - --test_output=errors
+  default_workspace_darwin:
+    platform: macos
     test_targets:
       - //...
     test_flags:
