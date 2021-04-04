@@ -15,5 +15,6 @@ ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/google-cl
 
 # Install python tools
 
-RUN wget https://bootstrap.pypa.io/3.5/get-pip.py && python3 get-pip.py \
-    && python3 -m pip install --upgrade setuptools wheel
+RUN wget https://bootstrap.pypa.io/pip/3.5/get-pip.py
+RUN python3 get-pip.py
+RUN python3 -m pip install --upgrade setuptools wheel

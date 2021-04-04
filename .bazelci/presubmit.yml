@@ -31,6 +31,8 @@ tasks:
       - //basic:all
       - //extended:all
       - //java_app:all
+      - //run_instruction_apt_pkgs:all
+      - //run_instruction_arbitrary:all
     test_flags:
       - --config=bezel
       - --test_output=errors
