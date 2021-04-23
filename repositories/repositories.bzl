@@ -27,6 +27,7 @@ load(
 CONTAINERREGISTRY_RELEASE = "v0.0.38"
 RULES_DOCKER_GO_BINARY_RELEASE = "aad94363e63d31d574cf701df484b3e8b868a96a"
 
+# buildifier: disable=unnamed-macro
 def repositories():
     """Download dependencies of container rules."""
     excludes = native.existing_rules().keys()
