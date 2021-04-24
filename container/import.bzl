@@ -76,10 +76,10 @@ def _container_import_impl(ctx):
     diff_ids = []
     for layer in ctx.files.layers:
         zipped, unzipped = _layer_pair(ctx, layer)
-        zipped_layers += [zipped]
-        unzipped_layers += [unzipped]
-        blobsums += [_sha256(ctx, zipped)]
-        diff_ids += [_sha256(ctx, unzipped)]
+        zipped_layers.append(zipped)
+        unzipped_layers.append(unzipped)
+        blobsums.append(_sha256(ctx, zipped))
+        diff_ids.append(_sha256(ctx, unzipped))
 
     manifest = None
     manifest_digest = None
