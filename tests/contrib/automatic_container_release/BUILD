@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache 2.0
-
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -24,6 +22,8 @@ load(
 )
 load("//contrib/automatic_container_release:metadata_merge.bzl", "metadata_merge")
 load("//contrib/automatic_container_release:packages_metadata.bzl", "packages_metadata")
+
+licenses(["notice"])  # Apache 2.0
 
 configs_test(
     name = "configs_test",

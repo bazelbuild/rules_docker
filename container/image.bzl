@@ -164,11 +164,11 @@ def _add_create_image_config_args(
 
     if base_config:
         args.add("-baseConfig", base_config)
-        inputs += [base_config]
+        inputs.append(base_config)
 
     if base_manifest:
         args.add("-baseManifest", base_manifest)
-        inputs += [base_manifest]
+        inputs.append(base_manifest)
 
     if architecture:
         args.add("-architecture", architecture)

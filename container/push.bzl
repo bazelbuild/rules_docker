@@ -95,7 +95,7 @@ def _impl(ctx):
     ))
 
     if ctx.attr.skip_unchanged_digest:
-        pusher_args += ["-skip-unchanged-digest"]
+        pusher_args.append("-skip-unchanged-digest")
     digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,

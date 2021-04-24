@@ -196,8 +196,8 @@ _attrs = {
 }
 
 _outputs = {
-    "out": "%{name}.tar",
     "build_script": "%{name}.build",
+    "out": "%{name}.tar",
 }
 
 # Export install_pkgs rule for other bazel rules to depend on.
