@@ -29,13 +29,6 @@ load(
 container_repositories()
 
 load(
-    "@io_bazel_rules_docker//repositories:images.bzl",
-    test_images = "images",
-)
-
-test_images()
-
-load(
     "@io_bazel_rules_docker//repositories:go_repositories.bzl",
     container_go_deps = "go_deps",
 )

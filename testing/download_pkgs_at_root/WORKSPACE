@@ -34,13 +34,6 @@ load(
 
 container_deps()
 
-load(
-    "@io_bazel_rules_docker//repositories:images.bzl",
-    test_images = "images",
-)
-
-test_images()
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # base_images_docker is needed to build ubuntu1604
