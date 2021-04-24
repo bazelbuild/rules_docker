@@ -1,6 +1,6 @@
 ---
 buildifier:
-  version: 0.22.0
+  version: 4.0.1
   # Check for issues with the format of our bazel config files.
   # All warnings from https://github.com/bazelbuild/buildtools/blob/master/WARNINGS.md
   # are enabled except:
