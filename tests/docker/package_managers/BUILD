@@ -106,7 +106,7 @@ add_apt_key(
     image = "@debian9//:builder.tar",
     keys = [
         "@bazel_gpg//file",
-        "@launchpad_openjdk_gpg//file",
+        "//tests/docker:launchpad_openjdk_gpg",
     ],
 )
 
