@@ -229,8 +229,6 @@ jar_app_layer = rule(
         "data": attr.label_list(allow_files = True),
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
-        # The rest of the dependencies.
-        "deps": attr.label_list(),
 
         # The rest of the dependencies.
         "deps": attr.label_list(),
