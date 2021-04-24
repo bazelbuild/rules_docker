@@ -37,6 +37,10 @@ load("//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
 
+load("//repositories:images.bzl", test_images = "images")
+
+test_images()
+
 load(
     "//container:container.bzl",
     "container_load",

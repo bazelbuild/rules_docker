@@ -20,7 +20,6 @@ repository.
 """
 
 load(":go_repositories.bzl", "go_deps")
-load(":images.bzl", "images")
 load(":py_repositories.bzl", "py_deps")
 
 def deps():
@@ -33,4 +32,3 @@ def deps():
     """
     go_deps()
     py_deps()
-    images()
