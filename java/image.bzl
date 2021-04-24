@@ -230,6 +230,8 @@ jar_app_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
 
+        # The rest of the dependencies.
+        "deps": attr.label_list(),
         # Override the defaults.
         "directory": attr.string(default = "/app"),
         # The full list of dependencies that have their own layers
@@ -239,10 +241,8 @@ jar_app_layer = rule(
         "legacy_run_behavior": attr.bool(default = False),
         # The main class to invoke on startup.
         "main_class": attr.string(mandatory = False),
-        "workdir": attr.string(default = ""),
         "runtime_deps": attr.label_list(),
-        # The rest of the dependencies.
-        "deps": attr.label_list(),
+        "workdir": attr.string(default = ""),
 
         # Whether the classpath should be passed as a file.
         "_classpath_as_file": attr.bool(default = False),

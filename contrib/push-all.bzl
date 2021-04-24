@@ -61,8 +61,8 @@ def _impl(ctx):
             is_executable = True,
         )
 
-        scripts += [out]
-        runfiles += [out]
+        scripts.append(out)
+        runfiles.append(out)
         runfiles += pusher_inputs
 
     ctx.actions.expand_template(
