@@ -104,7 +104,7 @@ container_test(
 pkg_tar(
     name = "test_tar",
     files = [
-        "@launchpad_openjdk_gpg//file",
+        "//tests/docker:launchpad_openjdk_gpg",
     ],
 )
 
