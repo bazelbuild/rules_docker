@@ -205,10 +205,6 @@ platforms:
     - "..."
     # tests/docker/security require gcloud setup to access asci-toolchains images
     - "-//tests/docker/security/..."
-    # Failing with
-    # Unable to load docker image from bazel-out/k8-fastbuild/bin/tests/docker/util/test_container_commit.build: archive/tar: invalid tar header
-    # TODO(alexeagle): re-enable after investigating
-    - "-//tests/docker/util:all"
     # contrib targets are not compatible with remote exec
     - "-//tests/contrib:derivative_with_volume_repro_test"
     - "-//tests/contrib:random_file_img_non_repro_test"
@@ -231,10 +227,6 @@ platforms:
     - "//tests/..."
     # tests/docker/security require gcloud setup to access asci-toolchains images
     - "-//tests/docker/security/..."
-    # Failing with
-    # Unable to load docker image from bazel-out/k8-fastbuild/bin/tests/docker/util/test_container_commit.build: archive/tar: invalid tar header
-    # TODO(alexeagle): re-enable after investigating
-    - "-//tests/docker/util:all"
     # contrib tests are not compatible with remote exec
     - "-//tests/contrib:derivative_with_volume_repro_test"
     - "-//tests/contrib:random_file_img_non_repro_test"
