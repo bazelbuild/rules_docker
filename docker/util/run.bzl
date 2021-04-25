@@ -266,9 +266,11 @@ _commit_attrs = {
         allow_files = True,
     ),
 }
+
+# @unsorted-dict-items
 _commit_outputs = {
-    "build": "%{name}.build",
     "out": "%{name}_commit.tar",
+    "build": "%{name}.build",
 }
 
 container_run_and_commit = rule(
