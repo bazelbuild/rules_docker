@@ -120,10 +120,8 @@ def get_from_target(ctx, name, attr_target, file_target = None):
     else:
         if not hasattr(attr_target, "files"):
             return {}
-        tar_files = [file for file in attr_target.files.to_list() if file.extension == "tar"]
-        if len(tar_files) != 1:
-            fail("Expected a list of 1 `.tar` file, got: {}".format(tar_files))
-        return _extract_layers(ctx, name, tar_files[0])
+        target = attr_target.files.to_list()[0]
+        return _extract_layers(ctx, name, target)
 
 def _add_join_layers_args(args, inputs, images):
     """Add args & inputs needed to call the Go join_layers for the given images
