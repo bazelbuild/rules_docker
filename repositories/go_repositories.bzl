@@ -49,32 +49,28 @@ def go_deps():
     if "com_github_pkg_errors" not in excludes:
         go_repository(
             name = "com_github_pkg_errors",
-            urls = ["https://github.com/pkg/errors/archive/v0.9.1.tar.gz"],
-            sha256 = "56bfd893023daa498508bfe161de1be83299fcf15376035e7df79cbd7d6fa608",
             importpath = "github.com/pkg/errors",
-            strip_prefix = "errors-0.9.1",
+            sum = "h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=",
+            version = "v0.9.1",
         )
     if "in_gopkg_yaml_v2" not in excludes:
         go_repository(
             name = "in_gopkg_yaml_v2",
-            urls = ["https://github.com/go-yaml/yaml/archive/v2.2.8.tar.gz"],
-            sha256 = "9632d0760e9a07c414f2b2b6cd453d6225e42ecea77906883b23f1f1d0546045",
             importpath = "gopkg.in/yaml.v2",
-            strip_prefix = "yaml-2.2.8",
+            sum = "h1:obN1ZagJSUGI0Ek/LBmuj4SNLPfIny3KsKFopxRdj10=",
+            version = "v2.2.8",
         )
     if "com_github_kylelemons_godebug" not in excludes:
         go_repository(
             name = "com_github_kylelemons_godebug",
-            urls = ["https://github.com/kylelemons/godebug/archive/v1.1.0.tar.gz"],
-            sha256 = "72cc6f274fbd165b7674280f836a6b400e80dbae055919e101920dedf50e79db",
             importpath = "github.com/kylelemons/godebug",
-            strip_prefix = "godebug-1.1.0",
+            sum = "h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=",
+            version = "v1.1.0",
         )
     if "com_github_ghodss_yaml" not in excludes:
         go_repository(
             name = "com_github_ghodss_yaml",
-            urls = ["https://github.com/ghodss/yaml/archive/v1.0.0.tar.gz"],
-            sha256 = "8a76b47cd171944612aae1cfa08bbb971b63fec16794c839252808392097de44",
             importpath = "github.com/ghodss/yaml",
-            strip_prefix = "yaml-1.0.0",
+            sum = "h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=",
+            version = "v1.0.0",
         )
