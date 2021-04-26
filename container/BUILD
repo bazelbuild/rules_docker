@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -180,13 +181,22 @@ bzl_library(
     name = "image",
     srcs = ["image.bzl"],
     deps = [
+        ":layer",
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
         "//skylib:label",
         "//skylib:path",
+        "@bazel_skylib//lib:dicts",
         "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
+)
+
+stardoc(
+    name = "image_doc",
+    out = "image.md",
+    input = ":image.bzl",
+    deps = [":image"],
 )
 
 bzl_library(
