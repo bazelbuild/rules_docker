@@ -157,7 +157,7 @@ container_pull(
 container_pull(
     name = "k8s_pause_arm64",
     architecture = "arm64",
-    digest = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
+    digest = "sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea",
     registry = "k8s.gcr.io",
     repository = "pause",
     tag = "3.1",
