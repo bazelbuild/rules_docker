@@ -148,7 +148,7 @@ container_pull(
 container_pull(
     name = "alpine_linux_ppc64le",
     architecture = "ppc64le",
-    digest = "sha256:402d21757a03a114d273bbe372fa4b9eca567e8b6c332fa7ebf982b902207242",
+    digest = "sha256:2bb501e6173d9d006e56de5bce2720eb06396803300fe1687b58a7ff32bf4c14",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
