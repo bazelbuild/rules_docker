@@ -62,6 +62,7 @@ container_pull(
     name = "alpine_linux_armv6_tar",
     architecture = "arm",
     cpu_variant = "v6",
+    digest = "sha256:dabea2944dcc2b86482b4f0b0fb62da80e0673e900c46c0e03b45919881a5d84",
     os = "linux",
     registry = "index.docker.io",
     repository = "library/alpine",
@@ -77,6 +78,7 @@ container_pull(
 
 container_pull(
     name = "alpine_linux_amd64_tar",
+    digest = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
@@ -85,6 +87,7 @@ container_pull(
 container_pull(
     name = "alpine_linux_ppc64le_tar",
     architecture = "ppc64le",
+    digest = "sha256:402d21757a03a114d273bbe372fa4b9eca567e8b6c332fa7ebf982b902207242",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
@@ -92,12 +95,14 @@ container_pull(
 
 container_pull(
     name = "distroless_base",
+    digest = "sha256:75f63d4edd703030d4312dc7528a349ca34d48bec7bd754652b2d47e5a0b7873",
     registry = "gcr.io",
     repository = "distroless/base",
 )
 
 container_pull(
     name = "distroless_cc",
+    digest = "sha256:c33fbcd3f924892f2177792bebc11f7a7e88ccbc247f0d0a01a812692259503a",
     registry = "gcr.io",
     repository = "distroless/cc",
 )
@@ -123,6 +128,7 @@ container_load(
 
 container_pull(
     name = "alpine_linux_amd64",
+    digest = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
@@ -132,6 +138,7 @@ container_pull(
     name = "alpine_linux_armv6",
     architecture = "arm",
     cpu_variant = "v6",
+    digest = "sha256:dabea2944dcc2b86482b4f0b0fb62da80e0673e900c46c0e03b45919881a5d84",
     os = "linux",
     registry = "index.docker.io",
     repository = "library/alpine",
@@ -141,6 +148,7 @@ container_pull(
 container_pull(
     name = "alpine_linux_ppc64le",
     architecture = "ppc64le",
+    digest = "sha256:402d21757a03a114d273bbe372fa4b9eca567e8b6c332fa7ebf982b902207242",
     registry = "index.docker.io",
     repository = "library/alpine",
     tag = "3.8",
@@ -149,6 +157,7 @@ container_pull(
 container_pull(
     name = "k8s_pause_arm64",
     architecture = "arm64",
+    digest = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39",
     registry = "k8s.gcr.io",
     repository = "pause",
     tag = "3.1",
@@ -156,6 +165,7 @@ container_pull(
 
 container_pull(
     name = "official_xenial",
+    digest = "sha256:89fd38d069a9a369525ade2bfb6922e62422db58813fccac0ecc1e59dfab0a59",
     registry = "index.docker.io",
     repository = "library/ubuntu",
     tag = "16.04",
@@ -225,12 +235,14 @@ http_archive(
 
 http_archive(
     name = "ubuntu1604",
+    sha256 = "eb50020790e22538676e17c0242b9272bdb5c81f7bc6b128a4abfa7ad31faf5b",
     strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/ubuntu1604",
     urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
 
 http_archive(
     name = "debian9",
+    sha256 = "eb50020790e22538676e17c0242b9272bdb5c81f7bc6b128a4abfa7ad31faf5b",
     strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/debian9",
     urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
 )
@@ -355,10 +367,6 @@ yarn_install(
     yarn_lock = "//testdata:yarn.lock",
 )
 
-load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
-
-install_bazel_dependencies()
-
 load(
     "//nodejs:image.bzl",
     _nodejs_image_repos = "repositories",
@@ -398,11 +406,10 @@ register_execution_platforms(
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "89a053218639b1c5e3589a859bb310e0a402dedbe4ee369560e66026ae5ef1f2",
-    strip_prefix = "bazel-toolchains-3.5.0",
+    sha256 = "1adf7a8e9901287c644dcf9ca08dd8d67a69df94bedbd57a841490a84dc1e9ed",
+    strip_prefix = "bazel-toolchains-5.0.0",
     urls = [
-        "https://github.com/bazelbuild/bazel-toolchains/releases/download/3.5.0/bazel-toolchains-3.5.0.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/3.5.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/v5.0.0.tar.gz",
     ],
 )
 
@@ -437,11 +444,12 @@ http_archive(
     name = "httplib2",
     build_file_content = """
 py_library(
-name = "httplib2",
-srcs = glob(["**/*.py"]),
-data = ["cacerts.txt"],
-visibility = ["//visibility:public"]
-)""",
+    name = "httplib2",
+    srcs = glob(["**/*.py"]),
+    data = ["cacerts.txt"],
+    visibility = ["//visibility:public"],
+)
+""",
     sha256 = "f2f35e29e99e8d9bb5921c17ede6ee10bd5bd971f2cd0b3aaaa20088754f89ba",
     strip_prefix = "httplib2-0.18.1/python3/httplib2/",
     type = "tar.gz",
@@ -455,16 +463,18 @@ http_archive(
     build_file_content = """
 # Rename six.py to __init__.py
 genrule(
-name = "rename",
-srcs = ["six.py"],
-outs = ["__init__.py"],
-cmd = "cat $< >$@",
+    name = "rename",
+    srcs = ["six.py"],
+    outs = ["__init__.py"],
+    cmd = "cat $< >$@",
 )
+
 py_library(
-name = "six",
-srcs = [":__init__.py"],
-visibility = ["//visibility:public"],
-)""",
+    name = "six",
+    srcs = [":__init__.py"],
+    visibility = ["//visibility:public"],
+)
+""",
     sha256 = "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5",
     strip_prefix = "six-1.9.0/",
     type = "tar.gz",
@@ -477,14 +487,15 @@ http_archive(
     name = "oauth2client",
     build_file_content = """
 py_library(
-name = "oauth2client",
-srcs = glob(["**/*.py"]),
-visibility = ["//visibility:public"],
-deps = [
-"@httplib2//:httplib2",
-"@six//:six",
-]
-)""",
+    name = "oauth2client",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "@httplib2//:httplib2",
+        "@six//:six",
+    ],
+)
+""",
     sha256 = "7230f52f7f1d4566a3f9c3aeb5ffe2ed80302843ce5605853bee1f08098ede46",
     strip_prefix = "oauth2client-4.0.0/oauth2client/",
     type = "tar.gz",

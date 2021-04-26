@@ -103,7 +103,7 @@ container_test(
 # toolchain_container with language_tool_layer with tars
 pkg_tar(
     name = "test_tar",
-    files = [
+    srcs = [
         "//tests/docker:launchpad_openjdk_gpg",
     ],
 )
