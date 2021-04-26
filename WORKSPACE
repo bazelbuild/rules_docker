@@ -242,9 +242,9 @@ http_archive(
 
 http_archive(
     name = "debian9",
-    sha256 = "eb50020790e22538676e17c0242b9272bdb5c81f7bc6b128a4abfa7ad31faf5b",
-    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/debian9",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
+    sha256 = "3c9453e45ccbe71a8d94a3ca51e8a86af143aff00c3f687c93aa9a1d7df08cb4",
+    strip_prefix = "base-images-docker-8a51d3e3dc7f20817b9a903bbd33181a1d8a63bf/debian9",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/8a51d3e3dc7f20817b9a903bbd33181a1d8a63bf.tar.gz"],
 )
 
 load("@ubuntu1604//:deps.bzl", ubuntu1604_deps = "deps")
