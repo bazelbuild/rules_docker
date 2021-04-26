@@ -165,7 +165,7 @@ container_pull(
 
 container_pull(
     name = "official_xenial",
-    digest = "sha256:89fd38d069a9a369525ade2bfb6922e62422db58813fccac0ecc1e59dfab0a59",
+    digest = "sha256:eed7e1076bbc1f342c4474c718e5438af4784f59a4e88ad687dbb98483b59ee4",
     registry = "index.docker.io",
     repository = "library/ubuntu",
     tag = "16.04",
