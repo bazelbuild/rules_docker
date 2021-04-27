@@ -326,39 +326,39 @@ def _impl(
         null_entrypoint = None):
     """Implementation for the container_image rule.
 
-  Args:
-    ctx: The bazel rule context
-    name: str, overrides ctx.label.name or ctx.attr.name
-    base: File, overrides ctx.attr.base and ctx.files.base[0]
-    files: File list, overrides ctx.files.files
-    file_map: Dict[str, File], defaults to {}
-    empty_files: str list, overrides ctx.attr.empty_files
-    empty_dirs: Dict[str, str], overrides ctx.attr.empty_dirs
-    directory: str, overrides ctx.attr.directory
-    entrypoint: str List, overrides ctx.attr.entrypoint
-    cmd: str List, overrides ctx.attr.cmd
-    creation_time: str, overrides ctx.attr.creation_time
-    symlinks: str Dict, overrides ctx.attr.symlinks
-    env: str Dict, overrides ctx.attr.env
-    layers: label List, overrides ctx.attr.layers
-    compression: str, overrides ctx.attr.compression
-    compression_options: str list, overrides ctx.attr.compression_options
-    experimental_tarball_format: str, overrides ctx.attr.experimental_tarball_format
-    debs: File list, overrides ctx.files.debs
-    tars: File list, overrides ctx.files.tars
-    architecture: str, overrides ctx.attr.architecture
-    operating_system: Operating system to target (e.g. linux, windows)
-    os_version: Operating system version to target
-    output_executable: File to use as output for script to load docker image
-    output_tarball: File, overrides ctx.outputs.out
-    output_config: File, overrides ctx.outputs.config
-    output_config_digest: File, overrides ctx.outputs.config_digest
-    output_digest: File, overrides ctx.outputs.digest
-    output_layer: File, overrides ctx.outputs.layer
-    workdir: str, overrides ctx.attr.workdir
-    null_cmd: bool, overrides ctx.attr.null_cmd
-    null_entrypoint: bool, overrides ctx.attr.null_entrypoint
-  """
+    Args:
+        ctx: The bazel rule context
+        name: str, overrides ctx.label.name or ctx.attr.name
+        base: File, overrides ctx.attr.base and ctx.files.base[0]
+        files: File list, overrides ctx.files.files
+        file_map: Dict[str, File], defaults to {}
+        empty_files: str list, overrides ctx.attr.empty_files
+        empty_dirs: Dict[str, str], overrides ctx.attr.empty_dirs
+        directory: str, overrides ctx.attr.directory
+        entrypoint: str List, overrides ctx.attr.entrypoint
+        cmd: str List, overrides ctx.attr.cmd
+        creation_time: str, overrides ctx.attr.creation_time
+        symlinks: str Dict, overrides ctx.attr.symlinks
+        env: str Dict, overrides ctx.attr.env
+        layers: label List, overrides ctx.attr.layers
+        compression: str, overrides ctx.attr.compression
+        compression_options: str list, overrides ctx.attr.compression_options
+        experimental_tarball_format: str, overrides ctx.attr.experimental_tarball_format
+        debs: File list, overrides ctx.files.debs
+        tars: File list, overrides ctx.files.tars
+        architecture: str, overrides ctx.attr.architecture
+        operating_system: Operating system to target (e.g. linux, windows)
+        os_version: Operating system version to target
+        output_executable: File to use as output for script to load docker image
+        output_tarball: File, overrides ctx.outputs.out
+        output_config: File, overrides ctx.outputs.config
+        output_config_digest: File, overrides ctx.outputs.config_digest
+        output_digest: File, overrides ctx.outputs.digest
+        output_layer: File, overrides ctx.outputs.layer
+        workdir: str, overrides ctx.attr.workdir
+        null_cmd: bool, overrides ctx.attr.null_cmd
+        null_entrypoint: bool, overrides ctx.attr.null_entrypoint
+    """
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
@@ -798,28 +798,28 @@ def _validate_command(name, argument, operating_system):
 def container_image(**kwargs):
     """Package a docker image.
 
-  This rule generates a sequence of genrules the last of which is named 'name',
-  so the dependency graph works out properly.  The output of this rule is a
-  tarball compatible with 'docker save/load' with the structure:
-    {layer-name}:
-      layer.tar
-      VERSION
-      json
-    {image-config-sha256}.json
-    ...
-    manifest.json
-    repositories
-    top     # an implementation detail of our rules, not consumed by Docker.
-  This rule appends a single new layer to the tarball of this form provided
-  via the 'base' parameter.
+    This rule generates a sequence of genrules the last of which is named 'name',
+    so the dependency graph works out properly.  The output of this rule is a
+    tarball compatible with 'docker save/load' with the structure:
+        {layer-name}:
+        layer.tar
+        VERSION
+        json
+        {image-config-sha256}.json
+        ...
+        manifest.json
+        repositories
+        top     # an implementation detail of our rules, not consumed by Docker.
+    This rule appends a single new layer to the tarball of this form provided
+    via the 'base' parameter.
 
-  The images produced by this rule are always named 'bazel/tmp:latest' when
-  loaded (an internal detail).  The expectation is that the images produced
-  by these rules will be uploaded using the 'docker_push' rule below.
+    The images produced by this rule are always named 'bazel/tmp:latest' when
+    loaded (an internal detail).  The expectation is that the images produced
+    by these rules will be uploaded using the 'docker_push' rule below.
 
-  Args:
-    **kwargs: See above.
-  """
+    Args:
+        **kwargs: See above.
+    """
     operating_system = None
 
     if ("operating_system" in kwargs):
