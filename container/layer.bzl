@@ -275,24 +275,86 @@ _layer_attrs = dicts.add({
     ),
     "compression": attr.string(default = "gzip"),
     "compression_options": attr.string_list(),
-    "data_path": attr.string(),
-    "debs": attr.label_list(allow_files = deb_filetype),
-    "directory": attr.string(default = "/"),
+    "data_path": attr.string(
+        doc = """Root path of the files.
+        
+        The directory structure from the files is preserved inside the
+        Docker image, but a prefix path determined by `data_path`
+        is removed from the directory structure. This path can
+        be absolute from the workspace root if starting with a `/` or
+        relative to the rule's directory. A relative path may starts with "./"
+        (or be ".") but cannot use go up with "..". By default, the
+        `data_path` attribute is unused, and all files should have no prefix.
+        """,
+    ),
+    "debs": attr.label_list(
+        allow_files = deb_filetype,
+        doc = """Debian packages to extract.
+        
+        Deprecated: A list of debian packages that will be extracted in the Docker image.
+        Note that this doesn't actually install the packages. Installation needs apt
+        or apt-get which need to be executed within a running container which
+        `container_image` can't do.""",
+    ),
+    "directory": attr.string(
+        default = "/",
+        doc = """Target directory.
+        
+        The directory in which to expand the specified files, defaulting to '/'.
+        Only makes sense accompanying one of files/tars/debs.""",
+    ),
     "empty_dirs": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "enable_mtime_preservation": attr.bool(default = False),
-    "env": attr.string_dict(),
-    "files": attr.label_list(allow_files = True),
-    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
+    "env": attr.string_dict(
+        doc = """Dictionary from environment variable names to their values when running the Docker image.
+       
+        See https://docs.docker.com/engine/reference/builder/#env
+
+        For example,
+
+            env = {
+                "FOO": "bar",
+                ...
+            }, 
+        
+	    The values of this field support make variables (e.g., `$(FOO)`)
+        and stamp variables; keys support make variables as well.""",
+    ),
+    "files": attr.label_list(
+        allow_files = True,
+        doc = """File to add to the layer.
+
+        A list of files that should be included in the Docker image.""",
+    ),
+    "mode": attr.string(
+        default = "0o555",  # 0o555 == a+rx
+        doc = "Set the mode of files added by the `files` attribute.",
+    ),
     "mtime": attr.int(default = _DEFAULT_MTIME),
     "operating_system": attr.string(
         default = "linux",
         mandatory = False,
     ),
     "portable_mtime": attr.bool(default = False),
-    "symlinks": attr.string_dict(),
-    "tars": attr.label_list(allow_files = tar_filetype),
+    "symlinks": attr.string_dict(
+        doc = """Symlinks to create in the Docker image.
+        
+        For example,
+        
+            symlinks = {
+                "/path/to/link": "/path/to/target",
+                ...
+            },
+        """,
+    ),
+    "tars": attr.label_list(
+        allow_files = tar_filetype,
+        doc = """Tar file to extract in the layer.
+        
+        A list of tar files whose content should be in the Docker image.""",
+    ),
 }, _hash_tools, _layer_tools, _zip_tools)
 
 _layer_outputs = {
