@@ -22,3 +22,102 @@ generated_file_test(
     src = "image.md",
     generated = ":image.md_",
 )
+
+stardoc(
+    name = "layer_doc",
+    out = "layer.md_",
+    header_template = ":header.vm",
+    input = "//container:layer.bzl",
+    deps = [
+        "//container:layer",
+        "@bazel_skylib//lib:dicts",
+    ],
+)
+
+generated_file_test(
+    name = "copy_layer",
+    src = "layer.md",
+    generated = ":layer.md_",
+)
+
+stardoc(
+    name = "bundle_doc",
+    out = "bundle.md_",
+    header_template = ":header.vm",
+    input = "//container:bundle.bzl",
+    deps = [
+        "//container:bundle",
+    ],
+)
+
+generated_file_test(
+    name = "copy_bundle",
+    src = "bundle.md",
+    generated = ":bundle.md_",
+)
+
+stardoc(
+    name = "import_doc",
+    out = "import.md_",
+    header_template = ":header.vm",
+    input = "//container:import.bzl",
+    deps = [
+        "//container:import",
+        "@bazel_skylib//lib:dicts",
+    ],
+)
+
+generated_file_test(
+    name = "copy_import",
+    src = "import.md",
+    generated = ":import.md_",
+)
+
+stardoc(
+    name = "load_doc",
+    out = "load.md_",
+    header_template = ":header.vm",
+    input = "//container:load.bzl",
+    deps = [
+        "//container:load",
+    ],
+)
+
+generated_file_test(
+    name = "copy_load",
+    src = "load.md",
+    generated = ":load.md_",
+)
+
+stardoc(
+    name = "pull_doc",
+    out = "pull.md_",
+    header_template = ":header.vm",
+    input = "//container:pull.bzl",
+    deps = [
+        "//container:pull",
+    ],
+)
+
+generated_file_test(
+    name = "copy_pull",
+    src = "pull.md",
+    generated = ":pull.md_",
+)
+
+stardoc(
+    name = "push_doc",
+    out = "push.md_",
+    header_template = ":header.vm",
+    input = "//container:push.bzl",
+    deps = [
+        "//container:push",
+        "@bazel_skylib//lib:dicts",
+    ],
+)
+
+generated_file_test(
+    name = "copy_push",
+    src = "push.md",
+    generated = ":push.md_",
+)
