@@ -644,7 +644,7 @@ _attrs = dicts.add(_layer.attrs, {
         The behavior between using `""` and `[]` may differ.
         Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
         for more details.
-	    
+    
         This field supports stamp variables.""",
     ),
     "experimental_tarball_format": attr.string(
@@ -681,7 +681,7 @@ _attrs = dicts.add(_layer.attrs, {
                 ...
             },
 
-	    The values of this field support stamp variables.""",
+        The values of this field support stamp variables.""",
     ),
     "launcher": attr.label(
         allow_single_file = True,
@@ -763,7 +763,7 @@ _attrs = dicts.add(_layer.attrs, {
         Because building the image never happens inside a Docker container,
         this user does not affect the other actions (e.g., adding files).
 
-	    This field supports stamp variables.""",
+        This field supports stamp variables.""",
     ),
     "volumes": attr.string_list(
         doc = """List of volumes to mount.
@@ -778,7 +778,7 @@ _attrs = dicts.add(_layer.attrs, {
         Because building the image never happens inside a Docker container,
         this working directory does not affect the other actions (e.g., adding files).
 
-	    This field supports stamp variables.""",
+        This field supports stamp variables.""",
     ),
     "_digester": attr.label(
         default = "//container/go/cmd/digester",

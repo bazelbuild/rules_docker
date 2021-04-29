@@ -319,7 +319,7 @@ _layer_attrs = dicts.add({
                 ...
             }, 
         
-	    The values of this field support make variables (e.g., `$(FOO)`)
+        The values of this field support make variables (e.g., `$(FOO)`)
         and stamp variables; keys support make variables as well.""",
     ),
     "files": attr.label_list(
