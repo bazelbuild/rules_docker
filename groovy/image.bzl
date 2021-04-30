@@ -72,14 +72,14 @@ def groovy_image(
 
     index = 0
     base = base or DEFAULT_JAVA_BASE
+    tags = kwargs.get("tags", None)
     for dep in layers:
         this_name = "%s.%d" % (name, index)
-        jar_dep_layer(name = this_name, base = base, dep = dep)
+        jar_dep_layer(name = this_name, base = base, dep = dep, tags = tags)
         base = this_name
         index += 1
 
     visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     jar_app_layer(
         name = name,
         base = base,

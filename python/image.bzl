@@ -108,11 +108,11 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
     # TODO(mattmoor): Consider making the directory into which the app
     # is placed configurable.
     base = base or DEFAULT_BASE
-    for index, dep in enumerate(layers):
-        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
-        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary_name)
-    visibility = kwargs.get("visibility", None)
     tags = kwargs.get("tags", None)
+    for index, dep in enumerate(layers):
+        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep, tags = tags)
+        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary_name, tags = tags)
+    visibility = kwargs.get("visibility", None)
     app_layer(
         name = name,
         base = base,
