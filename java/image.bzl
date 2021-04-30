@@ -420,13 +420,13 @@ def war_image(name, base = None, deps = [], layers = [], **kwargs):
     native.java_library(name = library_name, deps = deps + layers, **kwargs)
 
     base = base or DEFAULT_JETTY_BASE
+    tags = kwargs.get("tags", None)
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        _war_dep_layer(name = this_name, base = base, dep = dep)
+        _war_dep_layer(name = this_name, base = base, dep = dep, tags = tags)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     _war_app_layer(
         name = name,
         base = base,
