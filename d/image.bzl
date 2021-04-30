@@ -54,12 +54,12 @@ def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
         fail("kwarg does nothing when binary is specified", "deps")
 
     base = base or DEFAULT_BASE
+    tags = kwargs.get("tags", None)
     for index, dep in enumerate(layers):
-        base = app_layer(name = "%s_%d" % (name, index), base = base, dep = dep)
-        base = app_layer(name = "%s_%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
+        base = app_layer(name = "%s_%d" % (name, index), base = base, dep = dep, tags = tags)
+        base = app_layer(name = "%s_%d-symlinks" % (name, index), base = base, dep = dep, binary = binary, tags = tags)
 
     visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     app_layer(
         name = name,
         base = base,
