@@ -112,12 +112,12 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     if not base:
         base = STATIC_DEFAULT_BASE if kwargs.get("pure") == "on" else DEFAULT_BASE
 
+    tags = kwargs.get("tags", None)
     for index, dep in enumerate(layers):
-        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep)
-        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
+        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep, tags = tags)
+        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary, tags = tags)
 
     visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     restricted_to = kwargs.get("restricted_to", None)
     compatible_with = kwargs.get("compatible_with", None)
     app_layer(
