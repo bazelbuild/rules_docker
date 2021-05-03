@@ -138,11 +138,11 @@ container_pull(
     name = "alpine_linux_armv6",
     architecture = "arm",
     cpu_variant = "v6",
-    digest = "sha256:dabea2944dcc2b86482b4f0b0fb62da80e0673e900c46c0e03b45919881a5d84",
+    digest = "sha256:69e70a79f2d41ab5d637de98c1e0b055206ba40a8145e7bddb55ccc04e13cf8f",
     os = "linux",
     registry = "index.docker.io",
     repository = "library/alpine",
-    tag = "3.8",
+    tag = "3.13",
 )
 
 container_pull(
