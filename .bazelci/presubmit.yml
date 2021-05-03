@@ -78,6 +78,7 @@ platforms:
   ubuntu1804:
     test_targets:
     - "--"
+    - "//docs/..."
     # Tests that don't use the 'docker' tool.
     - "//container/go/pkg/compat:go_default_test"
     - "//container/go/pkg/oci:go_default_test"
