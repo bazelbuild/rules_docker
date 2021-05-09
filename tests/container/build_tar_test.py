@@ -30,12 +30,26 @@ class BuildTarTest(unittest.TestCase):
         output_file.add_tar("./tests/container/testdata/expected.tar")
 
       with tarfile.open(output_file_name) as output_file:
-        output_file.list(verbose=True)
         contained_names = output_file.getnames()
 
       # Assert all files from the source directory appear in the output tar file.
       for source_file in glob.iglob("./tests/container/testdata/files/*"):
         self.assertIn('./specifieddir/files/' + path.basename(source_file), contained_names)
+
+  def testAddsTarWithLongPrefix(self):
+    with tempfile.TemporaryDirectory() as tmp:
+      output_file_name = path.join(tmp, "output.tar")
+      prefix = 'a' * 99
+      with TarFile(output_file_name, directory="/" + prefix, compression=None, root_directory=".", default_mtime=None,
+                   enable_mtime_preservation=False, xz_path="", force_posixpath=False) as output_file:
+        output_file.add_tar("./tests/container/testdata/expected.tar")
+
+      with tarfile.open(output_file_name) as output_file:
+        contained_names = output_file.getnames()
+
+      # Assert all files from the source directory appear in the output tar file.
+      for source_file in glob.iglob("./tests/container/testdata/files/*"):
+        self.assertIn('./{}/files/{}'.format(prefix, path.basename(source_file)), contained_names)
 
   def testPackageNameParserValidMetadata(self):
     metadata = """
