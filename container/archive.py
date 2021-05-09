@@ -410,6 +410,14 @@ class TarFileWriter(object):
             tarinfo.linkname = '.' + root + link.lstrip('.')
         tarinfo.name = name
 
+        if 'path' in tarinfo.pax_headers:
+          # Modify the TarInfo's PAX header for the path name. These headers are used to define "long" path names for
+          # files within a tar file. This header is defined within this spec:
+          #     https://en.wikipedia.org/wiki/Tar_(computing)#POSIX.1-2001/pax
+          # When we read a tar file with this path type the tarfile module sets both the TarInfo.name and
+          # pax_headers['path'] so we need to manually update both.
+          tarinfo.pax_headers['path'] = name
+
         if tarinfo.isfile():
           # use extractfile(tarinfo) instead of tarinfo.name to preserve
           # seek position in intar
