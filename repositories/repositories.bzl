@@ -27,9 +27,9 @@ load(
 CONTAINERREGISTRY_RELEASE = "v0.0.38"
 RULES_DOCKER_GO_BINARY_RELEASE = "aad94363e63d31d574cf701df484b3e8b868a96a"
 
-def repositories():
+def repositories(excludes = []):
     """Download dependencies of container rules."""
-    excludes = native.existing_rules().keys()
+    excludes = excludes + native.existing_rules().keys()
 
     # Go binaries.
     if "go_puller_linux_amd64" not in excludes:

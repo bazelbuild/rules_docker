@@ -152,6 +152,8 @@ load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",
     container_repositories = "repositories",
 )
+# OPTIONAL: pass a list of external repos you want excluded because they will be loaded later:
+# container_repositories(excludes = ["rules_pkg"])
 container_repositories()
 
 load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
