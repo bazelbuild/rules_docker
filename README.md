@@ -613,10 +613,12 @@ nodejs_image(
     name = "nodejs_image",
     entry_point = "@your_workspace//path/to:file.js",
     # npm deps will be put into their own layer
-    data = [":file.js", "@npm//some-npm-dep"],
+    data = [":file.js", "@npm//some-npm-dep"],    
     ...
 )
 ```
+
+`nodejs_image` also supports the `launcher` and `launcher_args` attributes which are passed to `container_image` and used to prefix the image's `entry_point`.
 
 If you need to modify somehow the container produced by
 `nodejs_image` (e.g., `env`, `symlink`), see note above in

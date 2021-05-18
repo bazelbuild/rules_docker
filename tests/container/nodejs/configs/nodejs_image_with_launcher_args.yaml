@@ -1,0 +1,13 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  cmd: ["arg0", "arg1"]
+  env:
+    - key: PORT
+      value: "8080"
+    - key: DEBIAN_FRONTEND
+      value: "noninteractive"
+    - key: PATH
+      value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  entrypoint: ['/launcher.sh', 'foo', 'bar', '/app/tests/container/nodejs/nodejs_image_with_launcher_args.binary']
+  workdir: "/app/tests/container/nodejs/nodejs_image_with_launcher_args.binary.runfiles/io_bazel_rules_docker"
