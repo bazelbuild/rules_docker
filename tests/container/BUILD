@@ -240,7 +240,7 @@ file_test(
     name = "test_digest_output1",
     content = "sha256:4ec78686f1edd4f30cca6222f17ace5a2b9f8db9708727c3a140c954af0a534d",
     file = ":deb_image_with_dpkgs.digest",
-    tags = ["buildkite-macos-incompatible"],  # has different digest value on macos
+    tags = ["buildkite-macos-todo"],  # has different digest value on macos
 )
 
 file_test(
@@ -617,14 +617,14 @@ file_test(
     name = "alpine_custom_attr_digest_test",
     content = "sha256:2f3bf2d061a1bab130cdd98f10b73dfceb08bfbf94a610c62f20c787073e5178",
     file = ":new_push_test_legacy_from_container_img.digest",
-    tags = ["buildkite-macos-incompatible"],  # has different digest value on macos
+    tags = ["buildkite-macos-todo"],  # has different digest value on macos
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
     content = "sha256:249804db68a05bb88cc353d4aff090b084d8b8312665638d2f8d7bdaeaa423b3",
     file = ":new_alpine_linux_armv6_image_tar.digest",
-    tags = ["buildkite-macos-incompatible"],  # has different digest value on macos
+    tags = ["buildkite-macos-todo"],  # has different digest value on macos
 )
 
 # END_DO_NOT_IMPORT
