@@ -87,6 +87,9 @@ docker_toolchain = rule(
 def _toolchain_configure_impl(repository_ctx):
     if repository_ctx.attr.gzip_target and repository_ctx.attr.gzip_path:
         fail("Only one of gzip_target or gzip_path can be set.")
+    docker = repository_ctx.which("docker")
+    print("which docker: %s" % docker)
+
     tool_path = ""
     if repository_ctx.attr.docker_path:
         tool_path = repository_ctx.attr.docker_path

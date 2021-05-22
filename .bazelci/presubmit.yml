@@ -25,7 +25,7 @@ tasks:
       - --test_tag_filters=-buildkite-macos-todo
       - --config=buildkite
       # docker not found issues
-      - --deleted_packages=tests/contrib,tests/docker/util,tests/container
+      - --deleted_packages=tests/contrib,tests/docker/util
   testing_examples:
     platform: ubuntu1804
     working_directory: testing/examples
