@@ -18,6 +18,8 @@ tasks:
   default_workspace_macos:
     platform: macos
     test_targets:
+      # NOTE: per Philipp Wollermann, docker is not installed on the macos
+      # buildkite runners due to security concerns.
       - //tests/docker/util:test_extracted_file
       - //tests/docker/util:test_extracted_file_impl
       - //tests/docker/util:test_extract_script
