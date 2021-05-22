@@ -24,7 +24,6 @@ load(
 # /usr/bin/docker; on macos /usr/local/bin/docker.
 docker_toolchain_configure(
     name = "docker_config",
-    docker_path = "/usr/local/bin/docker",
 )
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
