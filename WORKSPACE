@@ -19,10 +19,7 @@ load(
     docker_toolchain_configure = "toolchain_configure",
 )
 
-docker_toolchain_configure(
-    name = "docker_config",
-    docker_path = "/usr/bin/docker",
-)
+docker_toolchain_configure(name = "docker_config")
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
 # instantiated recursively.
