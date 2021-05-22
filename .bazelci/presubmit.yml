@@ -18,6 +18,8 @@ tasks:
   default_workspace_macos:
     platform: macos
     test_targets:
+      # Use "bazel query 'kind(".*_test", ...)'" to refresh this list.
+      #
       # NOTE: per Philipp Wollermann, docker is not installed on the macos
       # buildkite runners due to security concerns.
       #

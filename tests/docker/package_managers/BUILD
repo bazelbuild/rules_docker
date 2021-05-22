@@ -58,7 +58,6 @@ sh_test(
     name = "download_pkgs_run_test",
     srcs = ["download_pkgs_run_test.sh"],
     data = [":test_download_pkgs.tar"],
-    tags = ["buildkite-macos-todo"],  # gpg key issue
 )
 
 add_apt_key(
@@ -84,7 +83,6 @@ sh_test(
     name = "download_pkgs_with_additional_repos_run_test",
     srcs = ["download_pkgs_with_additional_repos_run_test.sh"],
     data = [":test_download_pkgs_with_additional_repos.tar"],
-    tags = ["buildkite-macos-todo"],  # gpg key issue
 )
 
 install_pkgs(
@@ -116,7 +114,6 @@ container_test(
     name = "gpg_test",
     configs = [":gpg_test.yaml"],
     image = ":gpg_image",
-    tags = ["buildkite-macos-todo"],  # gpg key issue
 )
 
 # Testing reproducibility of install_pkgs
@@ -149,5 +146,4 @@ compare_ids_test(
         ":install_git_for_reproducibility_1",
         ":install_git_for_reproducibility_2",
     ],
-    tags = ["buildkite-macos-todo"],  # gpg key issue
 )

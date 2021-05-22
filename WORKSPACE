@@ -19,11 +19,9 @@ load(
     docker_toolchain_configure = "toolchain_configure",
 )
 
-# This will attempt to determine the location of the 'docker' binary that is
-# used in some parts of rules_docker.  On linux this is typically
-# /usr/bin/docker; on macos /usr/local/bin/docker.
 docker_toolchain_configure(
     name = "docker_config",
+    docker_path = "/usr/bin/docker",
 )
 
 # Consumers shouldn't need to do this themselves once WORKSPACE is
