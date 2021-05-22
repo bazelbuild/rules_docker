@@ -20,6 +20,7 @@ tasks:
     test_targets:
       - //...
     test_flags:
+      - --keep_going
       - --test_tag_filters=-buildkite-macos-incompatible
       - --config=buildkite
       - --deleted_packages=tests/contrib,tests/docker/util
