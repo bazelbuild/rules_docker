@@ -35,7 +35,6 @@ tasks:
       - //run_instruction_apt_pkgs:all
       - //run_instruction_arbitrary:all
     test_flags:
-      - --config=bezel
       - --test_output=errors
   testing_java_image:
     platform: ubuntu1804
@@ -44,8 +43,6 @@ tasks:
       - cp ../../.bazelrc .
     build_targets:
       - //...
-    build_flags:
-      - --config=bezel
   testing_download_pkgs_at_root:
     platform: ubuntu1804
     working_directory: testing/download_pkgs_at_root
@@ -54,7 +51,6 @@ tasks:
     test_targets:
       - //...
     test_flags:
-      - --config=bezel
       - --test_output=errors
   testing_custom_toolchain_flags:
     platform: ubuntu1804
@@ -64,5 +60,4 @@ tasks:
     test_targets:
       - //...
     test_flags:
-      - --config=bezel
       - --test_output=errors
