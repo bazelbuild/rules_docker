@@ -51,7 +51,6 @@ container_run_and_commit(
         "python3 -m pip install --upgrade setuptools wheel",
     ],
     image = ":gcloud_installer.tar",
-    tags = ["manual"],  # issue with thhe pip install
 )
 
 # Wrapper targets for the tarred images are required in order to be able to run
@@ -74,12 +73,10 @@ container_test(
     name = "bazel_gcloud_bazel_test",
     configs = ["//run_instruction_arbitrary/test_configs:bazel_gcloud.yaml"],
     image = ":bazel_gcloud_bazel_wrapper",
-    tags = ["manual"],  # issue with thhe pip install
 )
 
 container_test(
     name = "bazel_gcloud_dockerfile_test",
     configs = ["//run_instruction_arbitrary/test_configs:bazel_gcloud.yaml"],
     image = ":bazel_gcloud_dockerfile_wrapper",
-    tags = ["manual"],  # issue with thhe pip install
 )
