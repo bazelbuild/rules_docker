@@ -19,6 +19,10 @@ tasks:
     platform: macos
     test_targets:
       - //...
+      -  # These digests tests have different values on macos than linux so they are skipped on mac
+      - -//tests/container:alpine_custom_attr_digest_test
+      - -//tests/container:new_alpine_linux_armv6_image_tar_digest_test
+      - -//tests/container:test_digest_output1
     test_flags:
       - --config=buildkite
       - --deleted_packages=tests/contrib,tests/docker/util
