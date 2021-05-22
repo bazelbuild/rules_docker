@@ -46,7 +46,7 @@ container_run_and_commit(
         # Install kubernetes as a component of gcloud
         "/google-cloud-sdk/bin/gcloud components install --quiet kubectl",
         # Install Python tools
-        "wget https://bootstrap.pypa.io/3.5/get-pip.py",
+        "wget https://bootstrap.pypa.io/pip/3.5/get-pip.py",
         "python3 get-pip.py",
         "python3 -m pip install --upgrade setuptools wheel",
     ],

@@ -96,6 +96,7 @@ container_test(
         ":tests.yaml",
     ],
     image = ":rbe-test-xenial-with-pkgs",
+    tags = ["manual"],  # buildkite-incompatible
     verbose = True,
 )
 
