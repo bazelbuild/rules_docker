@@ -20,6 +20,8 @@ tasks:
     test_targets:
       # NOTE: per Philipp Wollermann, docker is not installed on the macos
       # buildkite runners due to security concerns.
+      #
+      # Tests excluded from macos
       - -//:structure_test_at_workspace_root
       - -//testing/new_pusher_tests:new_push_verify_pushed_configs_and_files
       - -//tests/container:alpine_amd64_image_test
@@ -30,6 +32,19 @@ tasks:
       - -//tests/container:alpine_ppc64le_image_test
       - -//tests/container:base_with_cmd_and_entrypoint_test
       - -//tests/container:deb_image_with_dpkgs_test
+      - -//tests/container:new_alpine_linux_armv6_image_oci_tar_test
+      - -//tests/container:new_alpine_linux_armv6_image_oci_test
+      - -//tests/container:new_alpine_linux_armv6_image_tar_digest_test
+      - -//tests/container:new_alpine_linux_armv6_image_tar_digest_test_impl
+      - -//tests/container:new_alpine_linux_armv6_image_tar_test
+      - -//tests/container:new_alpine_linux_ppc64le_image_oci_go_join_layers_test
+      - -//tests/container:new_alpine_linux_ppc64le_image_oci_tar_test
+      - -//tests/container:new_alpine_linux_ppc64le_image_oci_test
+      - -//tests/container:new_alpine_linux_ppc64le_image_tar_test
+      - -//tests/container:new_distroless_base_oci_test_0_tar_gz
+      - -//tests/container:new_distroless_base_oci_test_0_tar_gz_impl
+      - -//tests/container:new_distroless_base_oci_test_config
+      - -//tests/container:new_distroless_base_oci_test_config_impl
       - -//tests/container:null_cmd_and_entrypoint_empty_list_test
       - -//tests/container:null_cmd_and_entrypoint_empty_str_test
       - -//tests/container:null_cmd_and_entrypoint_none_test
@@ -95,6 +110,7 @@ tasks:
       - -//tests/docker/util:test_container_commit_metadata
       - -//tests/docker/util:test_extracted_file
       - -//tests/docker/util:test_extracted_file_impl
+      # Tests included on macos
       - //container:image_test
       - //container/go/pkg/compat:go_default_test
       - //container/go/pkg/oci:go_default_test
@@ -113,19 +129,6 @@ tasks:
       - //tests/container:distroless_fixed_id_image_digest_test_impl
       - //tests/container:k8s_pause_arm64_digest_test
       - //tests/container:k8s_pause_arm64_digest_test_impl
-      - //tests/container:new_alpine_linux_armv6_image_oci_tar_test
-      - //tests/container:new_alpine_linux_armv6_image_oci_test
-      - //tests/container:new_alpine_linux_armv6_image_tar_digest_test
-      - //tests/container:new_alpine_linux_armv6_image_tar_digest_test_impl
-      - //tests/container:new_alpine_linux_armv6_image_tar_test
-      - //tests/container:new_alpine_linux_ppc64le_image_oci_go_join_layers_test
-      - //tests/container:new_alpine_linux_ppc64le_image_oci_tar_test
-      - //tests/container:new_alpine_linux_ppc64le_image_oci_test
-      - //tests/container:new_alpine_linux_ppc64le_image_tar_test
-      - //tests/container:new_distroless_base_oci_test_0_tar_gz
-      - //tests/container:new_distroless_base_oci_test_0_tar_gz_impl
-      - //tests/container:new_distroless_base_oci_test_config
-      - //tests/container:new_distroless_base_oci_test_config_impl
       - //tests/container:pause_tar_test_0_tar_gz
       - //tests/container:pause_tar_test_0_tar_gz_impl
       - //tests/container:pause_tar_test_1_tar_gz
