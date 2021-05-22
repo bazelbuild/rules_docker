@@ -56,7 +56,7 @@ test:remote --google_default_credentials=true
 test:remote --remote_timeout=3600
 test:remote --keep_going
 
-build:bezel --bes_backend=grpcs://bzl.io:443
+build:bezel --bes_backend=grpcs://api.bzl.io:443
 build:bezel --bes_results_url=https://bzl.io/pipeline
 build:bezel --bes_timeout=5s
 

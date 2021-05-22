@@ -15,13 +15,14 @@ tasks:
       - //...
     test_flags:
       - --config=buildkite
-  default_workspace_macos:
-    platform: macos
-    test_targets:
-      - //...
-    test_flags:
-      - --config=buildkite
-      - --deleted_packages=tests/contrib,tests/docker/util
+  # TODO(user): re-enable testing on macos.
+  # default_workspace_macos:
+  #   platform: macos
+  #   test_targets:
+  #     - //...
+  #   test_flags:
+  #     - --config=buildkite
+  #     - --deleted_packages=tests/contrib,tests/docker/util
   testing_examples:
     platform: ubuntu1804
     working_directory: testing/examples
