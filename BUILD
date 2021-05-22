@@ -52,4 +52,5 @@ container_test(
     name = "structure_test_at_workspace_root",
     configs = ["//tests/container/configs:test.yaml"],
     image = "//testdata:link_with_files_base",
+    tags = ["buildkite-macos-todo"],  # docker not found?
 )
