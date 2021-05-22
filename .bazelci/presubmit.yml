@@ -67,9 +67,21 @@ tasks:
       - -//tests/contrib:random_file_img_non_repro_test
       - -//tests/contrib:rbe-test-xenial_repro_test
       - -//tests/contrib:set_cmd_repro_test
+      - -//tests/contrib:test_compare_ids_test
+      - -//tests/contrib:test_compare_ids_test_diff_ids_fails
+      - -//tests/contrib:test_compare_ids_test_diff_ids_fails_no_regex
+      - -//tests/contrib:test_compare_ids_test_invalid_tar_fails
+      - -//tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex
+      - -//tests/contrib:test_compare_ids_test_no_images_with_id_fails
+      - -//tests/contrib:test_compare_ids_test_one_tar_no_id_fails
+      - -//tests/contrib:test_compare_ids_test_wrong_id_fails
       - -//tests/contrib:test_dockerfile_image_docker
       - -//tests/contrib/automatic_container_release:configs_test
       - -//tests/contrib/automatic_container_release:configs_test_deps_spec_only
+      - -//tests/contrib/automatic_container_release:test_metadata_merge
+      - -//tests/contrib/automatic_container_release:test_metadata_merge_impl
+      - -//tests/contrib/automatic_container_release:test_packages_metadata
+      - -//tests/contrib/automatic_container_release:test_packages_metadata_impl
       - -//tests/docker/package_managers:download_pkgs_run_test
       - -//tests/docker/package_managers:download_pkgs_with_additional_repos_run_test
       - -//tests/docker/package_managers:gpg_test
@@ -83,7 +95,6 @@ tasks:
       - -//tests/docker/util:test_container_commit_metadata
       - -//tests/docker/util:test_extracted_file
       - -//tests/docker/util:test_extracted_file_impl
-
       - //container:image_test
       - //container/go/pkg/compat:go_default_test
       - //container/go/pkg/oci:go_default_test
@@ -131,19 +142,7 @@ tasks:
       - //tests/container:test_push_digest_output
       - //tests/container:test_push_digest_output_impl
       - //tests/contrib:rename_image_test
-      - //tests/contrib:test_compare_ids_test
-      - //tests/contrib:test_compare_ids_test_diff_ids_fails
-      - //tests/contrib:test_compare_ids_test_diff_ids_fails_no_regex
-      - //tests/contrib:test_compare_ids_test_invalid_tar_fails
-      - //tests/contrib:test_compare_ids_test_invalid_tar_fails_multi_regex
-      - //tests/contrib:test_compare_ids_test_no_images_with_id_fails
-      - //tests/contrib:test_compare_ids_test_one_tar_no_id_fails
-      - //tests/contrib:test_compare_ids_test_wrong_id_fails
       - //tests/contrib:test_id_compare_ids_test
-      - //tests/contrib/automatic_container_release:test_metadata_merge
-      - //tests/contrib/automatic_container_release:test_metadata_merge_impl
-      - //tests/contrib/automatic_container_release:test_packages_metadata
-      - //tests/contrib/automatic_container_release:test_packages_metadata_impl
       - //tests/docker/package_managers:test_download_pkgs_docker_cp
       - //tests/docker/package_managers:test_download_pkgs_docker_cp_impl
       - //tests/docker/package_managers:test_download_pkgs_docker_run
