@@ -29,11 +29,13 @@ configs_test(
     name = "configs_test",
     dependency_update_specs = ["deps_spec.yaml"],
     file_update_specs = ["file_updates.yaml"],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 configs_test(
     name = "configs_test_deps_spec_only",
     dependency_update_specs = ["deps_spec_no_fus_deps.yaml"],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 packages_metadata(
