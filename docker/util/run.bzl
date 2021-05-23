@@ -95,7 +95,7 @@ def _extract_impl(
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _extract_attrs = {
     "commands": attr.string_list(
@@ -227,7 +227,7 @@ def _commit_impl(
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _commit_attrs = {
     "commands": attr.string_list(

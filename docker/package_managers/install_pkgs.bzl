@@ -141,7 +141,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _attrs = {
     "image_tar": attr.label(
