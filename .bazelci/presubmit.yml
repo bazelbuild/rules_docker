@@ -5,6 +5,8 @@ buildifier:
 bazel: 4.0.0
   # Check for issues with the format of our bazel config files.
   warnings: "-function-docstring-args,-print,-skylark-comment,-provider-params,-unnamed-macro"
+  # List of lint warnings rules_docker does not pass.  Good first issue for new contributors.
+  warnings: "-rule-impl-return,-function-docstring-args,-print,-skylark-comment,-provider-params,-unnamed-macro"
 bazel: 3.5.0 # keep in sync with .bazelversion
 tasks:
   default_workspace_ubuntu1804:
