@@ -1,13 +1,8 @@
 ---
 buildifier:
   version: 4.0.1
-  warnings: "-rule-impl-return,-uninitialized,-return-value,-rule-impl-return"
-bazel: 4.0.0
-  # Check for issues with the format of our bazel config files.
-  warnings: "-function-docstring-args,-print,-skylark-comment,-provider-params,-unnamed-macro"
-  # List of lint warnings rules_docker does not pass.  Good first issue for new contributors.
   warnings: "-rule-impl-return,-return-value,-function-docstring-args,-print,-skylark-comment,-provider-params,-unnamed-macro"
-bazel: 3.5.0 # keep in sync with .bazelversion
+bazel: 4.0.0
 tasks:
   default_workspace_ubuntu1804:
     platform: ubuntu1804
