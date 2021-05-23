@@ -46,6 +46,7 @@ def _is_filetype(filename, extensions):
     for filetype in extensions:
         if filename.endswith(filetype):
             return True
+    return False
 
 def _is_tgz(layer):
     return _is_filetype(layer.basename, tgz_filetype)
