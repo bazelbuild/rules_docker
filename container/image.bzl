@@ -728,7 +728,7 @@ _attrs = dicts.add(_layer.attrs, {
     "os_version": attr.string(
         doc = "The desired OS version to be used in the container image config.",
     ),
-    # Skylark doesn't support int_list...
+    # Starlark doesn't support int_list...
     "ports": attr.string_list(
         doc = """List of ports to expose.
         
