@@ -346,7 +346,7 @@ download_pkgs(<a href="#download_pkgs-name">name</a>, <a href="#download_pkgs-ad
 </pre>
 
 This rule creates a script to download packages within a container.
-The script bunldes all the packages in a tarball.
+The script bundles all the packages in a tarball.
 
 ### Attributes
 
