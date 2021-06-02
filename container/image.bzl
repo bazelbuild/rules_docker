@@ -28,6 +28,8 @@ load(
     "@io_bazel_rules_docker//container:providers.bzl",
     "ImageInfo",
     "LayerInfo",
+    "STAMP_ATTR",
+    "StampSettingInfo",
 )
 load(
     "//container:layer.bzl",
@@ -105,14 +107,7 @@ def _add_create_image_config_args(
     args.add_all(ctx.attr.ports, before_each = "-ports")
     args.add_all(ctx.attr.volumes, before_each = "-volumes")
 
-    stamp = None
-
-    # If base image is having enabled stamping then it is propagated
-    # to child images.
-    if ctx.attr.stamp == True:
-        stamp = ctx.attr.stamp
-    elif ctx.attr.base and ImageInfo in ctx.attr.base:
-        stamp = ctx.attr.base[ImageInfo].stamp
+    stamp = ctx.attr.stamp[StampSettingInfo].value
 
     if creation_time:
         args.add("-creationTime", creation_time)
@@ -540,31 +535,11 @@ def _impl(
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
-    # Stamp attribute needs to be propagated between definitions to enhance actions
-    # with ability to determine properly whether root image has activated stamping.
-    #
-    # This covers the following example case:
-    # container_image(
-    #     name = “base_image”,
-    #     base = “@base//image”,
-    #     stamp = True,
-    # )
-    #
-    # lang_image(
-    #     base = “:base_image”,
-    # )
-    stamp = None
-    if ctx.attr.stamp:
-        stamp = ctx.attr.stamp
-    elif ctx.attr.base and ImageInfo in ctx.attr.base:
-        stamp = ctx.attr.base[ImageInfo].stamp
-
     return [
         ImageInfo(
             container_parts = container_parts,
             legacy_run_behavior = ctx.attr.legacy_run_behavior,
             docker_run_flags = docker_run_flags,
-            stamp = stamp,
         ),
         DefaultInfo(
             executable = build_executable,
@@ -745,16 +720,7 @@ _attrs = dicts.add(_layer.attrs, {
         Setting this attribute to `gcr.io/dummy` would set the default tag to
         `gcr.io/dummy/package_name:target`.""",
     ),
-    "stamp": attr.bool(
-        default = False,
-        doc = """If true, enable use of workspace status variables
-        (e.g. `BUILD_USER`, `BUILD_EMBED_LABEL`,
-        and custom values set using `--workspace_status_command`)
-        in tags.
-
-        These fields are specified in attributes using Python format
-        syntax, e.g. `foo{BUILD_USER}bar`.""",
-    ),
+    "stamp": STAMP_ATTR,
     "user": attr.string(
         doc = """The user that the image should run as.
 

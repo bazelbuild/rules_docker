@@ -253,14 +253,18 @@ to use `container_push` with custom docker authentication credentials.
 
 ## Varying image names
 
-A common request from folks using `container_push` or `container_bundle` is to
+A common request from folks using
+`container_push`, `container_bundle`, or `container_image` is to
 be able to vary the tag that is pushed or embedded.  There are two options
 at present for doing this.
 
 ### Stamping
 
-The first option is to use stamping. Stamping is enabled when a supported
-attribute contains a python format placeholder (e.g. `{BUILD_USER}`).
+The first option is to use stamping.
+Stamping is enabled when bazel is run with `--stamp`.
+This enables replacements in stamp-aware attributes.
+A python format placeholder (e.g. `{BUILD_USER}`)
+is replaced by the value of the corresponding workspace-status variable.
 
 ```python
 # A common pattern when users want to avoid trampling
@@ -272,31 +276,29 @@ container_push(
   # Any of these components may have variables.
   registry = "gcr.io",
   repository = "my-project/my-image",
+  # This will be replaced with the current user when built with --stamp
   tag = "{BUILD_USER}",
 )
 ```
 
+> Rules that are sensitive to stamping can also be forced to stamp or non-stamp mode
+> irrespective of the `--stamp` flag to Bazel. Use the `build_context_data` rule
+> to make a target that provides `StampSettingInfo`, and pass this to the
+> `build_context_data` attribute.
+
 The next natural question is: "Well what variables can I use?"  This
 option consumes the workspace-status variables Bazel defines in
-`stable-status.txt` and `volatile-status.txt`.  These files will appear
-in the target's runfiles:
+`bazel-out/stable-status.txt` and `bazel-out/volatile-status.txt`.
 
-```shell
-$ bazel build //docker/testdata:push_stamp
-...
+> Note that changes to the stable-status file
+> cause a rebuild of the action, while volatile-status does not.
 
-$ cat bazel-bin/docker/testdata/push_stamp.runfiles/io_bazel_rules_docker/stable-status.txt
-BUILD_EMBED_LABEL
-BUILD_HOST bazel
-BUILD_USER mattmoor
+You can add more stamp variables via `--workspace_status_command`,
+see the [bazel docs](https://docs.bazel.build/versions/master/user-manual.html#workspace_status).
+A common example is to provide the current git SHA, with
+`--workspace_status_command="echo STABLE_GIT_SHA $(git rev-parse HEAD)"`
 
-$ cat bazel-bin/docker/testdata/push_stamp.runfiles/io_bazel_rules_docker/volatile-status.txt
-BUILD_TIMESTAMP 1498740967769
-
-```
-
-You can augment these variables via `--workspace_status_command`,
-including through the use of [`.bazelrc`](https://github.com/kubernetes/kubernetes/blob/81ce94ae1d8f5d04058eeb214e9af498afe78ff2/build/root/.bazelrc#L6).
+That flag is typically passed in the `.bazelrc` file, see for example [`.bazelrc` in kubernetes](https://github.com/kubernetes/kubernetes/blob/81ce94ae1d8f5d04058eeb214e9af498afe78ff2/build/root/.bazelrc#L6).
 
 
 ### Make variables
