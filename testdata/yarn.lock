@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@bazel/typescript@2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-2.0.3.tgz#0be019014ef973f3a415c4671c65d943afc62023"
-  integrity sha512-yESlesTHX7gOuBzuc61HtHB8h/gRCaEB3C6guJnBVPuz4tGMLJ069fJz/SW/pfgrACP7ixqWqHXIAEnPsRU+tw==
+"@bazel/typescript@3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-3.5.0.tgz#605493f4f0a5297df8a7fcccb86a1a80ea2090bb"
+  integrity sha512-BtGFp4nYFkQTmnONCzomk7dkmOwaINBL3piq+lykBlcc6UxLe9iCAnZpOyPypB1ReN3k3SRNAa53x6oGScQxMg==
   dependencies:
     protobufjs "6.8.8"
     semver "5.6.0"
@@ -149,7 +149,7 @@ tsutils@2.27.2:
   dependencies:
     tslib "^1.8.1"
 
-typescript@3.9.6:
-  version "3.9.6"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.6.tgz#8f3e0198a34c3ae17091b35571d3afd31999365a"
-  integrity sha512-Pspx3oKAPJtjNwE92YS05HQoY7z2SFyOpHo9MqJor3BXAGNaPUs83CuVp9VISFkSjyRfiTpmKuAYGJB7S7hOxw==
+typescript@4.2.4:
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.4.tgz#8610b59747de028fda898a8aef0e103f156d0961"
+  integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==

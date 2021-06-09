@@ -40,6 +40,7 @@ load(
 )
 load("//d:image.bzl", "d_image")
 load("//docker:docker.bzl", "docker_push")
+load("//go:image.bzl", "go_image")
 load("//groovy:image.bzl", "groovy_image")
 load(
     "//java:image.bzl",
@@ -954,6 +955,14 @@ container_image(
     launcher = ":launcher",
     launcher_args = ["-env-append=CUSTOM_MESSAGE=Launched via launcher!"],
     legacy_run_behavior = False,
+)
+
+go_image(
+    name = "flag_image",
+    srcs = ["flag_main.go"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
 )
 
 d_image(

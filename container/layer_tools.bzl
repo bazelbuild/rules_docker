@@ -183,6 +183,12 @@ def assemble(
         arguments = [args],
         tools = inputs,
         outputs = [output],
+        execution_requirements = {
+            # This action produces large output files, but doesn't require much CPU to compute.
+            # It's not economical to send this to the remote-cache, instead local cache misses
+            # should just run join_layers again.
+            "no-remote-cache": "1",
+        },
         mnemonic = "JoinLayers",
     )
 
@@ -264,7 +270,7 @@ def incremental_load(
         if run:
             # Args are embedded into the image, so omitted here.
             run_statements.append(
-                "\"${DOCKER}\" ${DOCKER_FLAGS} run %s %s" % (run_flags, tag_reference),
+                "\"${DOCKER}\" ${DOCKER_FLAGS} run %s %s \"$@\"" % (run_flags, tag_reference),
             )
 
     ctx.actions.expand_template(

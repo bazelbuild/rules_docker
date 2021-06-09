@@ -126,6 +126,12 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
             installables_tar,
             image_util,
         ],
+        execution_requirements = {
+            # This action produces large output files, and isn't economical to
+            # upload to a remote cache.
+            "no-remote-cache": "1",
+        },
+        mnemonic = "ExtractImageId",
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         executable = script,
         use_default_shell_env = True,
@@ -141,7 +147,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _attrs = {
     "image_tar": attr.label(
@@ -196,8 +202,8 @@ _attrs = {
 }
 
 _outputs = {
-    "build_script": "%{name}.build",
     "out": "%{name}.tar",
+    "build_script": "%{name}.build",
 }
 
 # Export install_pkgs rule for other bazel rules to depend on.

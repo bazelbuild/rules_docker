@@ -235,16 +235,16 @@ http_archive(
 
 http_archive(
     name = "ubuntu1604",
-    sha256 = "eb50020790e22538676e17c0242b9272bdb5c81f7bc6b128a4abfa7ad31faf5b",
-    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/ubuntu1604",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
+    sha256 = "aa772738311761ca9bbd94a507d15e78a81755c885641a5a3523a9b3eecb5516",
+    strip_prefix = "base-images-docker-01267e68a505f32188553a2706bd7096bd9ea6f5/ubuntu1604",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/01267e68a505f32188553a2706bd7096bd9ea6f5.tar.gz"],
 )
 
 http_archive(
     name = "debian9",
-    sha256 = "eb50020790e22538676e17c0242b9272bdb5c81f7bc6b128a4abfa7ad31faf5b",
-    strip_prefix = "base-images-docker-36456edd3cc5a4d17852439cdcb038022cd912e5/debian9",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/36456edd3cc5a4d17852439cdcb038022cd912e5.tar.gz"],
+    sha256 = "aa772738311761ca9bbd94a507d15e78a81755c885641a5a3523a9b3eecb5516",
+    strip_prefix = "base-images-docker-01267e68a505f32188553a2706bd7096bd9ea6f5/debian9",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/01267e68a505f32188553a2706bd7096bd9ea6f5.tar.gz"],
 )
 
 load("@ubuntu1604//:deps.bzl", ubuntu1604_deps = "deps")
@@ -343,9 +343,9 @@ rust_repositories()
 # For our d_image test
 http_archive(
     name = "io_bazel_rules_d",
-    sha256 = "5cad228cf0a0f2e67deb08bfac1800e683854b4e13389376751d52f33e99df73",
-    strip_prefix = "rules_d-7e3bab5bf72f70c773a7240c496301cf80c6d9ec",
-    urls = ["https://github.com/bazelbuild/rules_d/archive/7e3bab5bf72f70c773a7240c496301cf80c6d9ec.tar.gz"],
+    sha256 = "e9a1368f0bb3a513b839f14df8d753d42ae81b437ff107526ad62eebd2b24332",
+    strip_prefix = "rules_d-40c63a7bd74036be3edaf782d34269c2debed5fd",
+    urls = ["https://github.com/bazelbuild/rules_d/archive/40c63a7bd74036be3edaf782d34269c2debed5fd.tar.gz"],
 )
 
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
@@ -354,8 +354,8 @@ d_repositories()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "10fffa29f687aa4d8eb6dfe8731ab5beb63811ab00981fc84a93899641fd4af1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.0.3/rules_nodejs-2.0.3.tar.gz"],
+    sha256 = "10f534e1c80f795cffe1f2822becd4897754d18564612510c59b3c73544ae7c6",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.5.0/rules_nodejs-3.5.0.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")

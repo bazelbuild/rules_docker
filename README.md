@@ -1,8 +1,8 @@
 # Bazel Container Image Rules
 
-Travis CI | Bazel CI
-:---: | :---:
-[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
+| Bazel CI |
+| :------: |
+[![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg?branch=master)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
 
 ## Basic Rules
 
@@ -1263,7 +1263,7 @@ file at the root of this project.
 
 Use of these features require a python toolchain to be registered.
 `//py_images/image.bzl:deps` and `//py3_images/image.bzl:deps` register a
-default python toolchain (`//toolchains/python:container_py_toolchain`)
+default python toolchain (`//toolchains:container_py_toolchain`)
 that defines the path to python tools inside the default container used
 for these rules.
 
@@ -1271,7 +1271,7 @@ for these rules.
 
 If you are using a custom base for `py_image` or `py3_image` builds that has
 python tools installed in a different location to those defined in
-`//toolchains/python:container_py_toolchain`, you will need to create a
+`//toolchains:container_py_toolchain`, you will need to create a
 toolchain that points to these paths and register it _before_ the call to
 `py*_images/image.bzl:deps` in your `WORKSPACE`.
 

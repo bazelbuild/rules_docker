@@ -1,4 +1,6 @@
-# Copyright 2017 The Bazel Authors. All rights reserved.
+#!/usr/bin/env bash
+set -ex
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+source ./testing/e2e/util.sh
 
-load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
+# Tests that the flags are passed correctly.
 
-container_test(
-    name = "new_push_verify_pushed_configs_and_files",
-    configs = ["@io_bazel_rules_docker//tests/container/configs:verify_new_pusher.yaml"],
-    image = "@verify_new_pusher_image_contents//image",
-    tags = ["manual"],  # buildkite-incompatible
-)
+# Must be invoked from the root of the repo.
+ROOT=$PWD
+
+function test_flag() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run testdata:flag_image -- -arg='Hello World!')" "Hello World!"
+}
+
+# Call function above
+test_flag
