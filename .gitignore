@@ -53,3 +53,6 @@ bazel-testlogs
 
 # Npm packages
 node_modules
+
+# JetBrains garbage
+.idea/

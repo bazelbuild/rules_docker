@@ -115,6 +115,8 @@ def nodejs_image(
         data = [],
         layers = [],
         binary = None,
+        launcher = None,
+        launcher_args = None,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
 
@@ -125,6 +127,8 @@ def nodejs_image(
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     binary: An alternative binary target to use instead of generating one.
+    launcher: The container_image launcher to set.
+    launcher_args: The args for the container_image launcher.
     **kwargs: See nodejs_binary.
   """
 
@@ -168,4 +172,6 @@ def nodejs_image(
         args = kwargs.get("args"),
         data = data,
         testonly = kwargs.get("testonly"),
+        launcher = launcher,
+        launcher_args = launcher_args,
     )
