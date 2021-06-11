@@ -83,6 +83,7 @@ function test_bazel_run_docker_import_incremental() {
   do
     bazel run $target
   done
+  exit 1
 }
 
 function test_bazel_build_then_run_docker_build_clean() {
