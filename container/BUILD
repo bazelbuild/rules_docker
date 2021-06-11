@@ -167,6 +167,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "container.docs",
+    srcs = ["container.docs.bzl"],
+    deps = ["container"],
+)
+
+bzl_library(
     name = "flatten",
     srcs = ["flatten.bzl"],
     deps = [

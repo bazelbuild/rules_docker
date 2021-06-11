@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules for manipulation container images."""
+"""Rules for manipulating container images."""
 
 load("//container:bundle.bzl", _container_bundle = "container_bundle")
 load("//container:flatten.bzl", _container_flatten = "container_flatten")

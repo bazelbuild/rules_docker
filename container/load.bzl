@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for loading an image from 'docker save' tarball or the current
-   container_pull tarball format into OCI intermediate layout.
+"container_load rule"
+_DOC = """A repository rule that examines the contents of a docker save tarball and creates a container_import target.
 
-This extracts the tarball amd creates a filegroup of the untarred objects in OCI layout.
+This extracts the tarball amd creates a filegroup of the untarred objects in OCI intermediate layout.
+The created target can be referenced as `@label_name//image`.
 """
 
 def _impl(repository_ctx):
@@ -55,8 +56,11 @@ container_import(
         fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
 
 container_load = repository_rule(
+    doc = _DOC,
     attrs = {
         "file": attr.label(
+            doc = """A label targeting a single file which is a compressed or uncompressed tar,
+            as obtained through `docker save IMAGE`.""",
             allow_single_file = True,
             mandatory = True,
         ),
