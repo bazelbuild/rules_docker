@@ -113,7 +113,7 @@ tasks:
       - //container/go/pkg/compat:go_default_test
       - //container/go/pkg/oci:go_default_test
       - //docker/util:config_stripper_test
-      - //docs:copy_image
+      - //docs:all
       - //tests/container:alpine_custom_attr_digest_test
       - //tests/container:alpine_custom_attr_digest_test_impl
       - //tests/container:alpine_linux_armv6_tar_test_image_tar

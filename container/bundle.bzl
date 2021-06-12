@@ -27,6 +27,8 @@ load(
     _string_to_label = "string_to_label",
 )
 
+_DOC = """A rule that aliases and saves N images into a single `docker save` tarball."""
+
 def _container_bundle_impl(ctx):
     """Implementation for the container_bundle rule."""
 
@@ -96,6 +98,7 @@ def _container_bundle_impl(ctx):
     ]
 
 container_bundle_ = rule(
+    doc = _DOC,
     attrs = dicts.add({
         "image_target_strings": attr.string_list(),
         # Implicit dependencies.

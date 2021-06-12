@@ -42,6 +42,8 @@ load(
     _zip_tools = "tools",
 )
 
+_DOC = "A rule that assembles data into a tarball which can be use as in layers attr in container_image rule."
+
 _DEFAULT_MTIME = -1
 
 def _magic_path(ctx, f, output_layer):
@@ -374,6 +376,7 @@ layer = struct(
 )
 
 container_layer_ = rule(
+    doc = _DOC,
     attrs = _layer_attrs,
     executable = False,
     outputs = _layer_outputs,
