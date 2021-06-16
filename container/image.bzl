@@ -317,6 +317,7 @@ def _impl(ctx, files=None, file_map=None, empty_files=None, directory=None,
                 container_parts = container_parts)
 
 _attrs = dict({
+    "architecture" : "arm64",
     "base": attr.label(allow_files = container_filetype),
     "data_path": attr.string(),
     "directory": attr.string(default = "/"),
