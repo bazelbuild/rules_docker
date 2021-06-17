@@ -41,7 +41,8 @@ users will write something like:
 
 def _generate_install_commands(tar, installation_cleanup_commands):
     return """
-tar -xvf {tar}
+tar -xf {tar}
+export DEBIAN_FRONTEND=noninteractive
 dpkg -i --force-depends ./*.deb
 dpkg --configure -a
 apt-get install -f

@@ -38,21 +38,22 @@ trap "rm -rf $tmpdir" EXIT
 mkdir -p $(dirname $tmpdir/%{installables_tar})
 cp -L $(pwd)/%{installables_tar} $tmpdir/%{installables_tar}
 cp -L $(pwd)/%{installer_script} $tmpdir/installer.sh
-# Temporarily create a container so we can mount the named volume
-# and copy files.  It's okay if /bin/true doesn't exist inside the
-# image; we are never going to run the image anyways.
-vid=$($DOCKER $DOCKER_FLAGS volume create)
-cid=$($DOCKER $DOCKER_FLAGS create -v $vid:/tmp/pkginstall $image_id /bin/true)
-for f in $tmpdir/*; do
-    $DOCKER $DOCKER_FLAGS cp $f $cid:/tmp/pkginstall
-done
-$DOCKER $DOCKER_FLAGS rm $cid
 
-cid=$($DOCKER $DOCKER_FLAGS run -d -v $vid:/tmp/pkginstall --privileged $image_id /tmp/pkginstall/installer.sh)
+# Subshells are used to have multiple traps.
+(
+    vid=$($DOCKER $DOCKER_FLAGS volume create)
+    trap "$DOCKER $DOCKER_FLAGS volume rm $vid" EXIT
 
-$DOCKER $DOCKER_FLAGS attach $cid || true
+    (
+        cid=$($DOCKER $DOCKER_FLAGS create -v $vid:/tmp/pkginstall --privileged $image_id /tmp/pkginstall/installer.sh)
+        trap "$DOCKER $DOCKER_FLAGS rm $cid" EXIT
+        for f in $tmpdir/*; do
+            $DOCKER $DOCKER_FLAGS cp $f $cid:/tmp/pkginstall
+        done
 
-reset_cmd $image_id $cid %{output_image_name}
-$DOCKER $DOCKER_FLAGS save %{output_image_name} > %{output_file_name}
-$DOCKER $DOCKER_FLAGS rm $cid
-$DOCKER $DOCKER_FLAGS volume rm $vid
+        $DOCKER $DOCKER_FLAGS start -a $cid
+
+        reset_cmd $image_id $cid %{output_image_name}
+        $DOCKER $DOCKER_FLAGS save %{output_image_name} > %{output_file_name}
+    )
+)
