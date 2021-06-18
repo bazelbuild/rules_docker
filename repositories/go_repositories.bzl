@@ -37,8 +37,15 @@ def go_deps():
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            commit = "c061b3f39cff652d18f95ee23ebfd39cb3f5ee89",  # v0.5.1
+            urls = ["https://api.github.com/repos/google/go-containerregistry/tarball/c061b3f39cff652d18f95ee23ebfd39cb3f5ee89"],  # v0.5.1
+            sha256 = "742b8a99f43800ec2e7e6d6c5bf04b7ac3887af597ac85986c84aed37b160ebf",
             importpath = "github.com/google/go-containerregistry",
+            strip_prefix = "google-go-containerregistry-c061b3f",
+            type = "tar.gz",
+            build_directives = [
+                # Silence Go module warnings about unused modules.
+                "gazelle:exclude pkg/authn/k8schain",
+            ],
         )
     if "com_github_pkg_errors" not in excludes:
         go_repository(
@@ -49,7 +56,6 @@ def go_deps():
             strip_prefix = "pkg-errors-614d223",
             type = "tar.gz",
         )
-
     if "in_gopkg_yaml_v2" not in excludes:
         go_repository(
             name = "in_gopkg_yaml_v2",
