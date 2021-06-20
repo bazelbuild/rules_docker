@@ -5,6 +5,13 @@ buildifier:
   warnings: "-function-docstring-args,-print,-provider-params,-unnamed-macro"
 bazel: 4.0.0
 tasks:
+  default_workspace_windows:
+    platform: windows
+    test_targets:
+      - //...
+    test_flags:
+      - --keep_going
+      - --config=buildkite
   default_workspace_ubuntu1804:
     platform: ubuntu1804
     test_targets:
