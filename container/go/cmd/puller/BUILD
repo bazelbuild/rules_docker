@@ -22,7 +22,9 @@ gazelle(name = "gazelle")
 
 go_binary(
     name = "puller",
+    cgo = False,
     embed = [":go_default_library"],
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 

@@ -30,6 +30,8 @@ go_library(
 
 go_binary(
     name = "loader",
+    cgo = False,
     embed = [":go_default_library"],
+    pure = "on",
     visibility = ["//visibility:public"],
 )

@@ -66,22 +66,22 @@ container_load = repository_rule(
         ),
         "_loader_darwin": attr.label(
             executable = True,
-            default = Label("@loader_darwin//file:downloaded"),
+            default = Label("@io_bazel_rules_docker//precompiled/darwin_amd64:loader"),
             cfg = "host",
         ),
         "_loader_linux_amd64": attr.label(
             executable = True,
-            default = Label("@loader_linux_amd64//file:downloaded"),
+            default = Label("@io_bazel_rules_docker//precompiled/linux_amd64:loader"),
             cfg = "host",
         ),
         "_loader_linux_arm64": attr.label(
             executable = True,
-            default = Label("@loader_linux_arm64//file:downloaded"),
+            default = Label("@io_bazel_rules_docker//precompiled/linux_arm64:loader"),
             cfg = "host",
         ),
         "_loader_linux_s390x": attr.label(
             executable = True,
-            default = Label("@loader_linux_s390x//file:downloaded"),
+            default = Label("@io_bazel_rules_docker//precompiled/linux_s390x:loader"),
             cfg = "host",
         ),
     },
