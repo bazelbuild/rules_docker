@@ -182,9 +182,6 @@ container_repro_test(
         "node",
     ],
     image = "//testdata:derivative_with_volume",
-    # FIXME(alex.eagle): failing on master due to PyYaml upgrade
-    # https://buildkite.com/bazel/rules-docker-docker/builds/5615
-    tags = ["manual"],
     workspace_file = "//:WORKSPACE",
 )
 
