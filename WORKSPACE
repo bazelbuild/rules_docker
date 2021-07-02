@@ -39,6 +39,11 @@ container_deps()
 
 load("//repositories:images.bzl", test_images = "images")
 
+# py_deps are test dependencies only
+load("//repositories:py_repositories.bzl", "py_deps")
+
+py_deps()
+
 test_images()
 
 load(

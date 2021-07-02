@@ -20,7 +20,6 @@ repository.
 """
 
 load(":go_repositories.bzl", "go_deps")
-load(":py_repositories.bzl", "py_deps")
 
 def deps():
     """Pull in external dependencies needed by rules in this repo.
@@ -31,4 +30,3 @@ def deps():
     already.
     """
     go_deps()
-    py_deps()
