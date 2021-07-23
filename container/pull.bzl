@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 "container_pull rule"
+
+load("//internal:execution.bzl", "env_execute", "executable_extension")
+
 _DOC = """A repository rule that pulls down a Docker base image in a manner suitable for use with the `base` attribute of `container_image`.
 
 This is based on google/containerregistry using google/go-containerregistry.
@@ -88,30 +91,6 @@ _container_pull_attrs = {
     "platform_features": attr.string_list(
         doc = "Specifies platform features when pulling a multi-platform manifest list.",
     ),
-    "puller_darwin": attr.label(
-        executable = True,
-        default = Label("@go_puller_darwin//file:downloaded"),
-        cfg = "host",
-        doc = "Exposed to provide a way to test other pullers on macOS",
-    ),
-    "puller_linux_amd64": attr.label(
-        executable = True,
-        default = Label("@go_puller_linux_amd64//file:downloaded"),
-        cfg = "host",
-        doc = "Exposed to provide a way to test other pullers on Linux",
-    ),
-    "puller_linux_arm64": attr.label(
-        executable = True,
-        default = Label("@go_puller_linux_arm64//file:downloaded"),
-        cfg = "host",
-        doc = "Exposed to provide a way to test other pullers on Linux",
-    ),
-    "puller_linux_s390x": attr.label(
-        executable = True,
-        default = Label("@go_puller_linux_s390x//file:downloaded"),
-        cfg = "host",
-        doc = "Exposed to provide a way to test other pullers on Linux",
-    ),
     "registry": attr.string(
         mandatory = True,
         doc = "The registry from which we are pulling.",
@@ -148,18 +127,9 @@ def _impl(repository_ctx):
 
     import_rule_tags = "[\"{}\"]".format("\", \"".join(repository_ctx.attr.import_tags))
 
-    puller = repository_ctx.attr.puller_linux_amd64
-    if repository_ctx.os.name.lower().startswith("mac os"):
-        puller = repository_ctx.attr.puller_darwin
-    elif repository_ctx.os.name.lower().startswith("linux"):
-        arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        if arch == "arm64" or arch == "aarch64":
-            puller = repository_ctx.attr.puller_linux_arm64
-        elif arch == "s390x":
-            puller = repository_ctx.attr.puller_linux_s390x
-
+    puller = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/puller{}".format(executable_extension(repository_ctx)))))
     args = [
-        repository_ctx.path(puller),
+        puller,
         "-directory",
         repository_ctx.path("image"),
         "-os",
@@ -235,7 +205,28 @@ def _impl(repository_ctx):
             ),
         }
 
-    result = repository_ctx.execute(args, **kwargs)
+    env = {
+        k: v
+        for k, v in repository_ctx.os.environ.items()
+        if k.lower() in (
+            "home",
+
+            # Unfortunately we explicitly need to pass along PATH. This prevents these CI failures:
+            # https://buildkite-cloud.s3.amazonaws.com/logs-by-pipeline/975a9deb-b320-454c-bbbd-f48ff8715013/a909ba30-d7c1-4933-8967-b065cd26ada6/3627cc09-b972-4ef9-b016-1769b5f1bc1e.log?response-content-disposition=inline&response-content-type=text%2Fplain&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQPCP3C7L5YYASYPJ%2F20210729%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210729T213055Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCICqdixAGiKRYKDt8QoxMj7%2BIE4VZd5Rwb7B7CFJW9NfCAiBXkBktAUfAPq8cOenf6KF9kTc3PyhSw5TSHv7%2FSKhVEiqDBAiU%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDAzMjM3OTcwNTMwMyIMIiMXgpHDsdYY4RRAKtcDDszOZv8juVR38UnAiiD2vJ8h84KRTCElNivvtY%2BlQbvG%2BZi%2F%2F%2BPMfiiI%2FQux5hVtQxaXZ%2BUJd68NU9z5AebTBGhkdakldB2Req%2FrCvfiwX%2BMVu0utYhLyajesuNOK4NnT%2FI7sDWVbw0uUBejPhguOVvvCVBLiXkCFyja9JcW8A9flVag%2FKhkzKlzX6yUyLaFCmLD1POVSH6Q4lv9cELfEUaB7PRh%2FQOmaQFAshYILTpJaUaYVeVR5svHDF5757bX4KIxO56tYdm7gLkRRFpkLIl2r4t7jqgxMdJVTDi7qGLrqcREXlpWsDFSNpqf1h%2FPo7nRzp8rVHdTXR4jGcEVeErOS1pgcSeM5itZ2GTlEmTHrWurc9f3ObRslpE41AlPBlt7EaEBLIp%2Bro4rSl5lGBymM84Jmnc7aZ%2Bbm9qeORXJSnAiHJso08j8BvZYFQsMhC5vzboBXVA9jOFnIk8j8l6Wntn2f7WFJVCquALTWJRk6b3Sr5sprls4ziKYcNo5aF89587WuW14x8TCNWAFSr%2B7xlc%2FPoNynkrMnyNHZz3nhg47fBZ6NmBxhcGhIX%2BNICovHL%2B5jU7xUI6Np7%2BUQa1j7WoyIdwfulfd1gmS1ffCPpwCoRTVMMn%2Fi4gGOqYBU60X2DnTnnbCj%2BOuqPxUY8rIPArYmSjCnMhWkurutk43xD01CJijrS92WSMSpZ17mKE35ezJnYwcnD2tKULWhNEjuucai7SSeh1%2FrD%2BprREeVMNh3r8aaDZJ84BH0y1Qv0qV0DRB0if7puecit027w98NpH0I%2BEfSu2WsBhkOkcmHuqIqF0iNNx%2Bu292PQ3LtTM7qwMECzZLqgat%2FRV%2BeJ61hxVsgw%3D%3D&X-Amz-Signature=19b6022f09bafab8b72b9ec16bd970af72328d1aafe4303f93a1dcd3540c73ef
+            # TODO(gravypod): Find out how to avoid needing to do this. Might need to refactor puller.
+            "path",
+
+            # Only allow environment variables that influence the pusher through.
+            "ssh_auth_sock",
+            "ssl_cert_file",
+            "ssl_cert_dir",
+            "http_proxy",
+            "https_proxy",
+            "no_proxy",
+        )
+    }
+
+    result = env_execute(repository_ctx, args, environment = env, **kwargs)
     if result.return_code:
         fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args])))
 

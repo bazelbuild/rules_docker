@@ -78,7 +78,7 @@ bzl_library(
 bzl_library(
     name = "container.docs",
     srcs = ["container.docs.bzl"],
-    deps = ["container"],
+    deps = [":container"],
 )
 
 bzl_library(
@@ -98,6 +98,7 @@ bzl_library(
         ":layer",
         ":layer_tools",
         ":providers",
+        "//internal:execution_bzl",
         "//skylib:filetype",
         "//skylib:hash",
         "//skylib:label",

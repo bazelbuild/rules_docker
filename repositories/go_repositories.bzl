@@ -21,6 +21,10 @@ repository.
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load(
+    "//internal:rules_docker_repository_tools.bzl",
+    "rules_docker_repository_tools",
+)
 
 # TODO: `go_repository_default_config` is only useful for working around
 # https://github.com/bazelbuild/rules_docker/issues/1902 and could likely be
@@ -39,6 +43,12 @@ def go_deps(go_repository_default_config = "@//:WORKSPACE"):
     go_rules_dependencies()
     go_register_toolchains()
     gazelle_dependencies(go_repository_default_config = go_repository_default_config)
+
+    rules_docker_repository_tools(
+        name = "rules_docker_repository_tools",
+        go_cache = "@bazel_gazelle_go_repository_cache//:go.env",
+    )
+
     excludes = native.existing_rules().keys()
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
