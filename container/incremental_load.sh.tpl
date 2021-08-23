@@ -242,11 +242,41 @@ function read_variables() {
 # An optional "docker run" statement for invoking a loaded container.
 # This is not executed if the single argument --norun is passed or
 # no run_statements are generated (in which case, 'run' is 'False').
-if [[ "a$*" != "a--norun" && "%{run}" == "True" ]]; then
+if [[ "%{run}" == "True" ]]; then
+  docker_args=()
+  container_args=()
+
+  # Search remaining params looking for docker and container args.
+  #
+  # It is assumed that they will follow the pattern:
+  # [dockerargs...] -- [container args...]
+  #
+  # "--norun" is treated as a "virtual" additional parameter to
+  # "docker run", since it cannot conflict with any "docker run"
+  # arguments.  If "--norun" needs to be passed to the container,
+  # it can be safely placed after "--".
+  while test $# -gt 0
+  do
+      case "$1" in
+          --norun) # norun as a "docker run" option means exit
+              exit
+              ;;
+          --) # divider between docker and container args
+              shift
+              container_args=("$@")
+              break
+              ;;
+          *)  # potential "docker run" option
+              docker_args+=("$1")
+              shift
+              ;;
+      esac
+  done
+
   # Once we've loaded the images for all layers, we no longer need the temporary files on disk.
   # We can clean up before we exec docker, since the exit handler will no longer run.
   cleanup
 
   # This generated and injected by docker_*.
-  exec %{run_statements}
+  exec %{run_statement} "${docker_args[@]}" "%{run_tag}" "${container_args[@]}"
 fi

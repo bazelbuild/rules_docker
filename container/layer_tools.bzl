@@ -207,18 +207,21 @@ def incremental_load(
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
-    # Default to interactively launching the container,
-    # and cleaning up when it exits.
-
-    run_flags = run_flags or "-i --rm"
-
     if len(images) > 1 and run:
         fail("Bazel run does not currently support execution of " +
              "multiple containers (only loading).")
 
+    # Default to interactively launching the container, and cleaning up when
+    # it exits. These template variables are unused if "run" is not set, so
+    # it is harmless to always define them as a function of the first image.
+    run_flags = run_flags or "-i --rm"
+    run_statement = "\"${DOCKER}\" ${DOCKER_FLAGS} run %s" % run_flags
+    run_tag = images.keys()[0]
+    if stamp:
+        run_tag = run_tag.replace("{", "${")
+
     load_statements = []
     tag_statements = []
-    run_statements = []
 
     # TODO(mattmoor): Consider adding cleanup_statements.
     for tag in images:
@@ -258,11 +261,6 @@ def incremental_load(
                 _get_runfile_path(ctx, image["config_digest"]),
             ),
         ]
-        if run:
-            # Args are embedded into the image, so omitted here.
-            run_statements += [
-                "\"${DOCKER}\" ${DOCKER_FLAGS} run %s %s" % (run_flags, tag_reference),
-            ]
 
     ctx.actions.expand_template(
         template = ctx.file.incremental_load_template,
@@ -270,7 +268,8 @@ def incremental_load(
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_tool_path}": toolchain_info.tool_path,
             "%{load_statements}": "\n".join(load_statements),
-            "%{run_statements}": "\n".join(run_statements),
+            "%{run_statement}": run_statement,
+            "%{run_tag}": run_tag,
             "%{run}": str(run),
             # If this rule involves stamp variables than load them as bash
             # variables, and turn references to them into bash variable
