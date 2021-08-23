@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rule for loading an image from 'docker save' tarball or the current
-   container_pull tarball format into OCI intermediate layout.
+"container_load rule"
+_DOC = """A repository rule that examines the contents of a docker save tarball and creates a container_import target.
 
-This extracts the tarball amd creates a filegroup of the untarred objects in OCI layout.
+This extracts the tarball amd creates a filegroup of the untarred objects in OCI intermediate layout.
+The created target can be referenced as `@label_name//image`.
 """
 
 def _impl(repository_ctx):
@@ -33,9 +34,15 @@ container_import(
     layers = glob(["*.tar.gz"]),
 )""")
 
-    loader = repository_ctx.attr._loader_linux
+    loader = repository_ctx.attr._loader_linux_amd64
     if repository_ctx.os.name.lower().startswith("mac os"):
         loader = repository_ctx.attr._loader_darwin
+    elif repository_ctx.os.name.lower().startswith("linux"):
+        arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
+        if arch == "arm64" or arch == "aarch64":
+            loader = repository_ctx.attr._loader_linux_arm64
+        elif arch == "s390x":
+            loader = repository_ctx.attr._loader_linux_s390x
 
     result = repository_ctx.execute([
         repository_ctx.path(loader),
@@ -49,8 +56,11 @@ container_import(
         fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
 
 container_load = repository_rule(
+    doc = _DOC,
     attrs = {
         "file": attr.label(
+            doc = """A label targeting a single file which is a compressed or uncompressed tar,
+            as obtained through `docker save IMAGE`.""",
             allow_single_file = True,
             mandatory = True,
         ),
@@ -59,9 +69,19 @@ container_load = repository_rule(
             default = Label("@loader_darwin//file:downloaded"),
             cfg = "host",
         ),
-        "_loader_linux": attr.label(
+        "_loader_linux_amd64": attr.label(
             executable = True,
-            default = Label("@loader_linux//file:downloaded"),
+            default = Label("@loader_linux_amd64//file:downloaded"),
+            cfg = "host",
+        ),
+        "_loader_linux_arm64": attr.label(
+            executable = True,
+            default = Label("@loader_linux_arm64//file:downloaded"),
+            cfg = "host",
+        ),
+        "_loader_linux_s390x": attr.label(
+            executable = True,
+            default = Label("@loader_linux_s390x//file:downloaded"),
             cfg = "host",
         ),
     },

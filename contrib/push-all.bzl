@@ -61,17 +61,22 @@ def _impl(ctx):
             is_executable = True,
         )
 
-        scripts += [out]
-        runfiles += [out]
+        scripts.append(out)
+        runfiles.append(out)
         runfiles += pusher_inputs
 
     ctx.actions.expand_template(
         template = ctx.file._all_tpl,
         substitutions = {
-            "%{push_statements}": "\n".join([
+            "%{async_push_statements}": "\n".join([
                 "async \"%s\"" % _get_runfile_path(ctx, command)
                 for command in scripts
             ]),
+            "%{push_statements}": "\n".join([
+                "\"%s\"" % _get_runfile_path(ctx, command)
+                for command in scripts
+            ]),
+            "%{sequential}": "true" if ctx.attr.sequential else "",
         },
         output = ctx.outputs.executable,
         is_executable = True,
@@ -99,6 +104,10 @@ container_push = rule(
                 "Docker",
             ],
             doc = "The form to push: Docker or OCI.",
+        ),
+        "sequential": attr.bool(
+            default = False,
+            doc = "If true, push images sequentially.",
         ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),

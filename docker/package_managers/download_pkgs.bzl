@@ -27,19 +27,19 @@ def _generate_add_additional_repo_commands(ctx, additional_repos):
 
 def _generate_download_commands(ctx, packages, additional_repos):
     return """#!/usr/bin/env bash
-set -ex
+set -e
 {add_additional_repo_commands}
 # Remove /var/lib/apt/lists/* in the base image. apt-get update -y command will create them.
 rm -rf /var/lib/apt/lists/*
 # Fetch Index
-apt-get update -y
+apt-get update -y -qq
 # Make partial dir
 mkdir -p /tmp/install/./partial
 # Install command
-apt-get install --no-install-recommends -y -q -o Dir::Cache="/tmp/install" -o Dir::Cache::archives="." {packages} --download-only
+apt-get install --no-install-recommends -y -qq -o Dir::Cache="/tmp/install" -o Dir::Cache::archives="." {packages} --download-only
 
 items=$(ls /tmp/install/*.deb)
-if [ $items = ""]; then
+if [ -z "$items" ]; then
     echo "Did not find the .deb files for debian packages {packages} in /tmp/install. Did apt-get actually succeed?" && false
 fi
 # Generate csv listing the name & versions of the debian packages.
@@ -47,20 +47,17 @@ fi
 # Name,Version
 # gcc,7.1
 # clang,9.1
-echo "Generating metadata CSV file {installables}_metadata.csv"
 echo Name,Version > {installables}_metadata.csv
 dpkg_deb_path=$(which dpkg-deb)
 for item in $items; do
-    echo "Adding information about $item to metadata CSV"
     pkg_name=$($dpkg_deb_path -f $item Package)
-    if [ $pkg_name = ""]; then
+    if [ $pkg_name = "" ]; then
         echo "Failed to get name of the package for $item" && false
     fi
     pkg_version=$($dpkg_deb_path -f $item Version)
-    if [ $pkg_version = ""]; then
+    if [ $pkg_version = "" ]; then
         echo "Failed to get the version of the package for $item" && false
     fi
-    echo "Package $pkg_name, Version $pkg_version"
     echo -n "$pkg_name," >> {installables}_metadata.csv
     echo $pkg_version >> {installables}_metadata.csv
 done;

@@ -31,7 +31,7 @@ load(
 
 def _get_runfile_path(ctx, f):
     if ctx.attr.windows_paths:
-        return "%RUNFILES%\{}".format(runfile(ctx, f).replace("/", "\\"))
+        return "%RUNFILES%\\{}".format(runfile(ctx, f).replace("/", "\\"))
     else:
         return "${RUNFILES}/%s" % runfile(ctx, f)
 
@@ -95,7 +95,7 @@ def _impl(ctx):
     ))
 
     if ctx.attr.skip_unchanged_digest:
-        pusher_args += ["-skip-unchanged-digest"]
+        pusher_args.append("-skip-unchanged-digest")
     digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
@@ -132,6 +132,9 @@ def _impl(ctx):
             executable = exe,
             runfiles = runfiles,
         ),
+        OutputGroupInfo(
+            exe = [exe],
+        ),
         PushInfo(
             registry = registry,
             repository = repository,
@@ -142,10 +145,10 @@ def _impl(ctx):
         ),
     ]
 
-_container_push = rule(
+container_push_ = rule(
     attrs = dicts.add({
         "extension": attr.string(
-            doc = "(optional) The file extension for the push script.",
+            doc = "The file extension for the push script.",
         ),
         "format": attr.string(
             mandatory = True,
@@ -170,7 +173,7 @@ _container_push = rule(
         ),
         "repository_file": attr.label(
             allow_single_file = True,
-            doc = "(optional) The label of the file with repository value. Overrides 'repository'.",
+            doc = "The label of the file with repository value. Overrides 'repository'.",
         ),
         "skip_unchanged_digest": attr.bool(
             default = False,
@@ -182,11 +185,11 @@ _container_push = rule(
         ),
         "tag": attr.string(
             default = "latest",
-            doc = "(optional) The tag of the image, default to 'latest'.",
+            doc = "The tag of the image.",
         ),
         "tag_file": attr.label(
             allow_single_file = True,
-            doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
+            doc = "The label of the file with tag value. Overrides 'tag'.",
         ),
         "tag_tpl": attr.label(
             mandatory = True,
@@ -218,16 +221,16 @@ _container_push = rule(
 
 # Pushes a container image to a registry.
 def container_push(name, format, image, registry, repository, **kwargs):
-    _container_push(
+    container_push_(
         name = name,
         format = format,
         image = image,
         registry = registry,
         repository = repository,
-        extension = select({
+        extension = kwargs.pop("extension", select({
             "@bazel_tools//src/conditions:host_windows": ".bat",
             "//conditions:default": "",
-        }),
+        })),
         tag_tpl = select({
             "@bazel_tools//src/conditions:host_windows": Label("//container:push-tag.bat.tpl"),
             "//conditions:default": Label("//container:push-tag.sh.tpl"),

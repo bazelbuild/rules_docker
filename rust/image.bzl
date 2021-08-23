@@ -16,7 +16,7 @@
 The signature of this rule is compatible with rust_binary.
 """
 
-load("@io_bazel_rules_rust//rust:rust.bzl", "rust_binary")
+load("@rules_rust//rust:rust.bzl", "rust_binary")
 load(
     "//cc:image.bzl",
     "DEFAULT_BASE",
@@ -35,16 +35,16 @@ def repositories():
 def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     """Constructs a container image wrapping a rust_binary target.
 
-  Args:
-    name: Name of the rust_image target.
-    base: Base image to use for the rust_image.
-    deps: Dependencies of the rust_image target.
-    binary: An alternative binary target to use instead of generating one.
-    layers: Augments "deps" with dependencies that should be put into
-           their own layers.
-    **kwargs: See rust_binary.
+    Args:
+        name: Name of the rust_image target.
+        base: Base image to use for the rust_image.
+        deps: Dependencies of the rust_image target.
+        layers: Augments "deps" with dependencies that should be put into their own layers.
+        binary: An alternative binary target to use instead of generating one.
+        **kwargs: See rust_binary.
   """
     if layers:
+        # buildifier: disable=print
         print("rust_image does not benefit from layers=[], got: %s" % layers)
 
     if not binary:
@@ -54,12 +54,12 @@ def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwarg
         fail("kwarg does nothing when binary is specified", "deps")
 
     base = base or DEFAULT_BASE
+    tags = kwargs.get("tags", None)
     for index, dep in enumerate(layers):
-        base = app_layer(name = "%s_%d" % (name, index), base = base, dep = dep)
-        base = app_layer(name = "%s_%d-symlinks" % (name, index), base = base, dep = dep, binary = binary)
+        base = app_layer(name = "%s_%d" % (name, index), base = base, dep = dep, tags = tags)
+        base = app_layer(name = "%s_%d-symlinks" % (name, index), base = base, dep = dep, binary = binary, tags = tags)
 
     visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     app_layer(
         name = name,
         base = base,

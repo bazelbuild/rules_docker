@@ -27,6 +27,8 @@ load(
     _string_to_label = "string_to_label",
 )
 
+_DOC = """A rule that aliases and saves N images into a single `docker save` tarball."""
+
 def _container_bundle_impl(ctx):
     """Implementation for the container_bundle rule."""
 
@@ -54,12 +56,12 @@ def _container_bundle_impl(ctx):
 
         layer = _get_layers(ctx, ctx.label.name, image_target_dict[target])
         images[tag] = layer
-        runfiles += [layer.get("config")]
-        runfiles += [layer.get("config_digest")]
+        runfiles.append(layer.get("config"))
+        runfiles.append(layer.get("config_digest"))
         runfiles += layer.get("unzipped_layer", [])
         runfiles += layer.get("diff_id", [])
         if layer.get("legacy"):
-            runfiles += [layer.get("legacy")]
+            runfiles.append(layer.get("legacy"))
 
     _incr_load(
         ctx,
@@ -71,6 +73,10 @@ def _container_bundle_impl(ctx):
         ctx,
         images,
         ctx.outputs.tar_output,
+        # Experiment: currently only support experimental_tarball_format in
+        # container_image for testing optimization.
+        # TODO(#1695): Update this.
+        "legacy",
         stamp = stamp,
     )
 
@@ -92,6 +98,7 @@ def _container_bundle_impl(ctx):
     ]
 
 container_bundle_ = rule(
+    doc = _DOC,
     attrs = dicts.add({
         "image_target_strings": attr.string_list(),
         # Implicit dependencies.

@@ -232,7 +232,7 @@ function test_new_container_push_legacy_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting unauthenticated new container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img_with_auth  2>&1)" "unsupported status code 401"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_legacy_from_container_img_with_auth  2>&1)" "status code 401"
   bazel clean
 }
 
@@ -341,7 +341,7 @@ function test_new_container_push_oci_with_auth() {
   cd "${ROOT}/testing/default_toolchain"
   bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
   echo "Attempting unauthenticated new container_push..."
-  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci  2>&1)" "unsupported status code 401"
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:new_push_test_oci  2>&1)" "status code 401"
   bazel clean
 }
 

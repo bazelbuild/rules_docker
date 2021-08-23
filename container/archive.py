@@ -19,6 +19,7 @@ import io
 import os
 import subprocess
 import tarfile
+import posixpath
 
 # Use a deterministic mtime that doesn't confuse other programs.
 # See: https://github.com/bazelbuild/bazel/issues/1299
@@ -183,10 +184,10 @@ class TarFileWriter(object):
     """
     if not (name == self.root_directory or name.startswith('/') or
             name.startswith(self.root_directory + '/')):
-      name = os.path.join(self.root_directory, name)
+      name = posixpath.join(self.root_directory, name)
     if mtime is None:
       mtime = self.default_mtime
-    if os.path.isdir(path):
+    if posixpath.isdir(path):
       # Remove trailing '/' (index -1 => last character)
       if name[-1] == '/':
         name = name[:-1]
@@ -208,8 +209,8 @@ class TarFileWriter(object):
       filelist = os.listdir(path)
       filelist.sort()
       for f in filelist:
-        new_name = os.path.join(name, f)
-        new_path = os.path.join(path, f)
+        new_name = posixpath.join(name, f)
+        new_path = posixpath.join(path, f)
         self.add_dir(new_name, new_path, uid, gid, uname, gname, mtime, mode,
                      depth - 1)
     else:
@@ -262,13 +263,13 @@ class TarFileWriter(object):
       mtime: modification time to put in the archive.
       mode: unix permission mode of the file, default 0644 (0755).
     """
-    if file_content and os.path.isdir(file_content):
+    if file_content and posixpath.isdir(file_content):
       # Recurse into directory
       self.add_dir(name, file_content, uid, gid, uname, gname, mtime, mode)
       return
     if not (name == self.root_directory or name.startswith('/') or
             name.startswith(self.root_directory + '/')):
-      name = os.path.join(self.root_directory, name)
+      name = posixpath.join(self.root_directory, name)
     if kind == tarfile.DIRTYPE:
       name = name.rstrip('/')
       if name in self.directories:
@@ -338,7 +339,7 @@ class TarFileWriter(object):
     if root and root[0] not in ['/', '.']:
       # Root prefix should start with a '/', adds it if missing
       root = '/' + root
-    compression = os.path.splitext(tar)[-1][1:]
+    compression = posixpath.splitext(tar)[-1][1:]
     if compression == 'tgz':
       compression = 'gz'
     elif compression == 'bzip2':
@@ -390,7 +391,7 @@ class TarFileWriter(object):
         name = tarinfo.name
         if (not name.startswith('/') and
             not name.startswith(self.root_directory)):
-          name = os.path.join(self.root_directory, name)
+          name = posixpath.join(self.root_directory, name)
         if root is not None:
           if name.startswith('.'):
             name = '.' + root + name.lstrip('.')
@@ -409,6 +410,14 @@ class TarFileWriter(object):
           if link.startswith('.') and tarinfo.type == tarfile.LNKTYPE:
             tarinfo.linkname = '.' + root + link.lstrip('.')
         tarinfo.name = name
+
+        if 'path' in tarinfo.pax_headers:
+          # Modify the TarInfo's PAX header for the path name. These headers are used to define "long" path names for
+          # files within a tar file. This header is defined within this spec:
+          #     https://en.wikipedia.org/wiki/Tar_(computing)#POSIX.1-2001/pax
+          # When we read a tar file with this path type the tarfile module sets both the TarInfo.name and
+          # pax_headers['path'] so we need to manually update both.
+          tarinfo.pax_headers['path'] = name
 
         if tarinfo.isfile():
           # use extractfile(tarinfo) instead of tarinfo.name to preserve

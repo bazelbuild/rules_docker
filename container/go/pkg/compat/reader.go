@@ -106,9 +106,6 @@ type ImageParts struct {
 //   val4 is the diffID file.
 // to an ImageParts object.
 func ImagePartsFromArgs(config, baseManifest, imgTarball string, layers []string) (ImageParts, error) {
-	if config == "" {
-		return ImageParts{}, errors.Errorf("image config was not provided")
-	}
 	result := ImageParts{Config: config, BaseManifest: baseManifest, ImageTarball: imgTarball}
 	for _, l := range layers {
 		lp, err := LayerPartsFromString(l)
@@ -293,6 +290,13 @@ func (r *reader) loadLayers() error {
 
 // ReadImage loads a v1.Image from the given ImageParts
 func ReadImage(parts ImageParts) (v1.Image, error) {
+	// Special case: if we only have a tarball, we can instantiate the image
+	// directly from that. Otherwise, we'll process the image layers
+	// individually as specified in the config.
+	if parts.ImageTarball != "" && parts.Config == "" {
+		return tarball.ImageFromPath(parts.ImageTarball, nil)
+	}
+
 	r := reader{parts: parts}
 	r.layerLookup = make(map[v1.Hash]v1.Layer)
 	if err := r.loadMetadata(); err != nil {
