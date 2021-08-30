@@ -1,0 +1,40 @@
+workspace(name = "examples_basic")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "5d31ad261b9582515ff52126bf53b954526547a3e26f6c25a9d64c48a31e45ac",
+    strip_prefix = "rules_docker-0.18.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.18.0/rules_docker-v0.18.0.tar.gz"],
+)
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "7ac0fa88c0c4ad6f5b9ffb5e09ef81e235492c873659e6bb99efb89d11246bcb",
+    strip_prefix = "bazel-skylib-1.0.3",
+    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/1.0.3.tar.gz"],
+)
+
+register_toolchains(
+    # Register the default docker toolchain that expects the 'docker'
+    # executable to be in the PATH
+    "@io_bazel_rules_docker//toolchains/docker:default_linux_toolchain",
+    "@io_bazel_rules_docker//toolchains/docker:default_windows_toolchain",
+    "@io_bazel_rules_docker//toolchains/docker:default_osx_toolchain",
+)
+
+load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure="toolchain_configure"
+)
+docker_toolchain_configure(name = "docker_config")
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "alpine_linux_amd64",
+    digest = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    tag = "3.8",
+)

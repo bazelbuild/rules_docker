@@ -12,34 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])  # Apache 2.0
-
-filegroup(
-    name = "distro",
-    srcs = glob(["*.bzl"]) + ["BUILD"],
-    visibility = ["//:__pkg__"],
+container_image(
+    name = "basic_alpine",
+    base = "@alpine_linux_amd64//image",
+    cmd = ["Hello World!"],
+    entrypoint = ["echo"],
 )
 
-bzl_library(
-    name = "filetype",
-    srcs = ["filetype.bzl"],
-)
+# Tests
 
-bzl_library(
-    name = "label",
-    srcs = ["label.bzl"],
-)
-
-bzl_library(
-    name = "path",
-    srcs = ["path.bzl"],
-)
-
-bzl_library(
-    name = "zip",
-    srcs = ["zip.bzl"],
+container_test(
+    name = "basic_alpine_bazel_test",
+    configs = ["test.yaml"],
+    image = ":basic_alpine",
 )

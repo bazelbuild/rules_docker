@@ -30,6 +30,14 @@ exports_files(["extract_image_id.py"])
 
 exports_files(["cmp_images.sh.tpl"])
 
+filegroup(
+    name = "distro",
+    srcs = [
+        "BUILD",
+        "test.bzl",
+    ],
+)
+
 py_binary(
     name = "extract_image_id",
     srcs = [":extract_image_id.py"],

@@ -532,3 +532,20 @@ http_archive(
         "https://github.com/bazelbuild/stardoc/archive/d93ee5347e2d9c225ad315094507e018364d5a67.tar.gz",
     ],
 )
+
+# For bazel-in-bazel testing
+http_archive(
+name = "build_bazel_integration_testing",
+    urls = [
+        "https://github.com/bazelbuild/bazel-integration-testing/archive/165440b2dbda885f8d1ccb8d0f417e6cf8c54f17.zip",
+    ],
+    strip_prefix = "bazel-integration-testing-165440b2dbda885f8d1ccb8d0f417e6cf8c54f17",
+    sha256 = "2401b1369ef44cc42f91dc94443ef491208dbd06da1e1e10b702d8c189f098e3",
+)
+
+load("@build_bazel_integration_testing//tools:repositories.bzl", "bazel_binaries")
+
+load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
+
+# Depend on the Bazel binaries for running bazel-in-bazel tests
+bazel_binaries(versions = SUPPORTED_BAZEL_VERSIONS)

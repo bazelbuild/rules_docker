@@ -29,6 +29,14 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "distro",
+    srcs = [
+        "BUILD",
+    ] + glob(["*.bzl"], exclude = ["*.docs.bzl"]),
+    visibility = ["//:__pkg__"],
+)
+
 # TODO(xingao): Flip legacy_create_init to False if possible.
 py_binary(
     name = "build_tar",

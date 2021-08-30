@@ -17,6 +17,15 @@ load(":toolchain.bzl", "docker_toolchain")
 
 package(default_visibility = ["//visibility:private"])
 
+filegroup(
+    name = "distro",
+    srcs = [
+        "BUILD",
+        "toolchain.bzl",
+    ],
+    visibility = ["//:__pkg__"],
+)
+
 bzl_library(
     name = "docker",
     srcs = ["toolchain.bzl"],
