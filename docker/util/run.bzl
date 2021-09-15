@@ -222,7 +222,7 @@ def _commit_impl(
     ctx.actions.run_shell(
         outputs = [output_image_tar],
         inputs = runfiles,
-        command = script,
+        command = "bash -e " + script.path,
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         use_default_shell_env = True,
     )
