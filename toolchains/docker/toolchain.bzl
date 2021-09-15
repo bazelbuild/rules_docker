@@ -18,6 +18,7 @@ This module defines docker toolchain rules
 DockerToolchainInfo = provider(
     doc = "Docker toolchain rule parameters",
     fields = {
+        "build_tar_target": "Optional Bazel target for the build_tar tool",
         "client_config": "A custom directory for the docker client " +
                          "config.json. If DOCKER_CONFIG is not specified, " +
                          "the value of the DOCKER_CONFIG environment variable " +
@@ -39,6 +40,7 @@ DockerToolchainInfo = provider(
 def _docker_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         info = DockerToolchainInfo(
+            build_tar_target = ctx.attr.build_tar_target,
             docker_flags = ctx.attr.docker_flags,
             client_config = ctx.attr.client_config,
             gzip_path = ctx.attr.gzip_path,
@@ -55,6 +57,12 @@ def _docker_toolchain_impl(ctx):
 docker_toolchain = rule(
     implementation = _docker_toolchain_impl,
     attrs = {
+        "build_tar_target": attr.label(
+            allow_files = True,
+            doc = "Bazel target for the build_tar tool.",
+            cfg = "host",
+            executable = True,
+        ),
         "client_config": attr.string(
             default = "",
             doc = "A custom directory for the docker client config.json. If " +
@@ -121,6 +129,10 @@ def _toolchain_configure_impl(repository_ctx):
     docker_flags = []
     docker_flags += repository_ctx.attr.docker_flags
 
+    build_tar_attr = ""
+    if repository_ctx.attr.build_tar_target:
+        build_tar_attr = "build_tar_target = \"%s\"," % repository_ctx.attr.build_tar_target
+
     # If client_config is not set we need to pass an empty string to the
     # template.
     client_config = repository_ctx.attr.client_config or ""
@@ -128,6 +140,7 @@ def _toolchain_configure_impl(repository_ctx):
         "BUILD",
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
+            "%{BUILD_TAR_ATTR}": "%s" % build_tar_attr,
             "%{DOCKER_CONFIG}": "%s" % client_config,
             "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
             "%{DOCKER_TOOL}": "%s" % tool_path,
@@ -152,6 +165,13 @@ def _toolchain_configure_impl(repository_ctx):
 # Repository rule to generate a docker_toolchain target
 toolchain_configure = repository_rule(
     attrs = {
+        "build_tar_target": attr.label(
+            executable = True,
+            cfg = "host",
+            allow_files = True,
+            mandatory = False,
+            doc = "The bazel target for the build_tar tool.",
+        ),
         "client_config": attr.string(
             mandatory = False,
             doc = "A custom directory for the docker client " +

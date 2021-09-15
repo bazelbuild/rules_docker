@@ -125,6 +125,8 @@ load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
 )
 docker_toolchain_configure(
   name = "docker_config",
+  # OPTIONAL: Bazel target for the build_tar tool, must be compatible with build_tar.py
+  build_tar_target="<enter absolute path (i.e., must start with repo name @...//:...) to an executable build_tar target>",
   # OPTIONAL: Path to a directory which has a custom docker client config.json.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.

@@ -102,7 +102,10 @@ def build_layer(
     """
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     layer = output_layer
-    build_layer_exec = ctx.executable.build_layer
+    if toolchain_info.build_tar_target:
+        build_layer_exec = toolchain_info.build_tar_target.files_to_run.executable
+    else:
+        build_layer_exec = ctx.executable.build_layer
     args = ctx.actions.args()
     args.add(layer, format = "--output=%s")
     args.add(directory, format = "--directory=%s")
