@@ -3,11 +3,11 @@
 set -e
 
 # Setup tools and load utils
-TO_JSON_TOOL="%{to_json_tool}"
+TO_JSON_TOOL="\"%{to_json_tool}\""
 source %{util_script}
 
 # Resolve the docker tool path
-DOCKER="%{docker_tool_path}"
+DOCKER="\"%{docker_tool_path}\""
 DOCKER_FLAGS="%{docker_flags}"
 
 if [[ -z "$DOCKER" ]]; then

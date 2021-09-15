@@ -6,7 +6,7 @@ set -e
 source %{util_script}
 
 # Resolve the docker tool path
-DOCKER="%{docker_tool_path}"
+DOCKER="\"%{docker_tool_path}\""
 DOCKER_FLAGS="%{docker_flags}"
 
 if [[ -z "$DOCKER" ]]; then
@@ -37,4 +37,3 @@ $DOCKER $DOCKER_FLAGS rmi %{output_image}
 
 # Delete the intermediate tar
 rm $OUTPUT_IMAGE_TAR
-
