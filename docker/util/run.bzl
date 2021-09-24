@@ -479,4 +479,4 @@ commit_layer = struct(
 
 def _process_commands(command_list):
     # Use the $ to allow escape characters in string
-    return 'sh -c $\"{0}\"'.format(" && ".join(command_list))
+    return 'cmd $\"{0}\"'.format(" && ".join(command_list))
