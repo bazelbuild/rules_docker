@@ -115,6 +115,7 @@ _extract_attrs = {
     "extra_deps": attr.label_list(
         doc = "Extra dependency to be passed as inputs",
         mandatory = False,
+        allow_files = True,
     ),
     "image": attr.label(
         executable = True,
