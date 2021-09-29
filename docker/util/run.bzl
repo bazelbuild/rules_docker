@@ -67,6 +67,7 @@ def _extract_impl(
     extract_file = extract_file or ctx.attr.extract_file
     output_file = output_file or ctx.outputs.out
     script = script_file or ctx.outputs.script
+    extra_deps = extra_deps or ctx.attr.extra_deps
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
@@ -110,6 +111,11 @@ _extract_attrs = {
     "extract_file": attr.string(
         doc = "Path to file to extract from container.",
         mandatory = True,
+    ),
+    "extra_deps": attr.label_list(
+        doc = "Extra dependency to be passed as inputs",
+        mandatory = False,
+        default = None,
     ),
     "image": attr.label(
         executable = True,
