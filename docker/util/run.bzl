@@ -67,7 +67,7 @@ def _extract_impl(
     extract_file = extract_file or ctx.attr.extract_file
     output_file = output_file or ctx.outputs.out
     script = script_file or ctx.outputs.script
-    extra_deps = extra_deps or ctx.attr.extra_deps
+    extra_deps = extra_deps or ctx.files.extra_deps
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
