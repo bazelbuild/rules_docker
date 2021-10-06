@@ -85,17 +85,19 @@ func writeOutput(outputTarball string, tarballFormat string, tagToConfigs, tagTo
 	if err != nil {
 		return errors.Wrap(err, "unable to load images from the given tarballs")
 	}
+	parts := compat.ImageParts{
+		Images: images,
+		Layers: layerParts,
+	}
+	r := compat.Reader{Parts: parts}
 	for tag, configFile := range tagToConfigs {
 		// Manifest file may not have been specified and this is ok as it's
 		// only required if the base images has foreign layers.
 		manifestFile := tagToBaseManifests[tag]
-		parts := compat.ImageParts{
-			Config:       configFile,
-			BaseManifest: manifestFile,
-			Images:       images,
-			Layers:       layerParts,
-		}
-		img, err := compat.ReadImage(parts)
+		r.Parts.Config = configFile
+		r.Parts.BaseManifest = manifestFile
+
+		img, err := r.ReadImage()
 		if err != nil {
 			return errors.Wrapf(err, "unable to load image %v corresponding to config %s", tag, configFile)
 		}
