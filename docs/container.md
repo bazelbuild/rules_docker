@@ -8,8 +8,8 @@ Load these from `@io_bazel_rules_docker//container:container.bzl`.
 ## container_bundle
 
 <pre>
-container_bundle(<a href="#container_bundle-name">name</a>, <a href="#container_bundle-extract_config">extract_config</a>, <a href="#container_bundle-image_target_strings">image_target_strings</a>, <a href="#container_bundle-image_targets">image_targets</a>, <a href="#container_bundle-images">images</a>,
-                 <a href="#container_bundle-incremental_load_template">incremental_load_template</a>, <a href="#container_bundle-stamp">stamp</a>, <a href="#container_bundle-tar_output">tar_output</a>)
+container_bundle(<a href="#container_bundle-name">name</a>, <a href="#container_bundle-experimental_tarball_format">experimental_tarball_format</a>, <a href="#container_bundle-extract_config">extract_config</a>, <a href="#container_bundle-image_target_strings">image_target_strings</a>,
+                 <a href="#container_bundle-image_targets">image_targets</a>, <a href="#container_bundle-images">images</a>, <a href="#container_bundle-incremental_load_template">incremental_load_template</a>, <a href="#container_bundle-stamp">stamp</a>, <a href="#container_bundle-tar_output">tar_output</a>)
 </pre>
 
 A rule that aliases and saves N images into a single `docker save` tarball.
@@ -20,6 +20,7 @@ A rule that aliases and saves N images into a single `docker save` tarball.
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="container_bundle-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="container_bundle-experimental_tarball_format"></a>experimental_tarball_format |  The tarball format to use when producing an image .tar file. Defaults to "legacy", which contains uncompressed layers. If set to "compressed", the resulting tarball will contain compressed layers, but is only loadable by newer versions of docker. This is an experimental attribute, which is subject to change or removal: do not depend on its exact behavior.   | String | optional | "legacy" |
 | <a id="container_bundle-extract_config"></a>extract_config |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container/go/cmd/extract_config:extract_config |
 | <a id="container_bundle-image_target_strings"></a>image_target_strings |  -   | List of strings | optional | [] |
 | <a id="container_bundle-image_targets"></a>image_targets |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |

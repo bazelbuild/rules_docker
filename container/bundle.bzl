@@ -73,10 +73,7 @@ def _container_bundle_impl(ctx):
         ctx,
         images,
         ctx.outputs.tar_output,
-        # Experiment: currently only support experimental_tarball_format in
-        # container_image for testing optimization.
-        # TODO(#1695): Update this.
-        "legacy",
+        ctx.attr.experimental_tarball_format,
         stamp = stamp,
     )
 
@@ -109,6 +106,19 @@ container_bundle_ = rule(
             mandatory = False,
         ),
         "tar_output": attr.output(),
+        "experimental_tarball_format": attr.string(
+            values = [
+                "legacy",
+                "compressed",
+            ],
+            default = "legacy",
+            doc = ("The tarball format to use when producing an image .tar file. " +
+                   "Defaults to \"legacy\", which contains uncompressed layers. " +
+                   "If set to \"compressed\", the resulting tarball will contain " +
+                   "compressed layers, but is only loadable by newer versions of " +
+                   "docker. This is an experimental attribute, which is subject " +
+                   "to change or removal: do not depend on its exact behavior."),
+        ),
     }, _layer_tools),
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],

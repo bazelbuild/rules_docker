@@ -988,6 +988,7 @@ container_image(
 # would take substantially longer for this target.
 container_bundle(
     name = "container_bundle_with_install_pkgs",
+    experimental_tarball_format = "compressed",
     images = {
         "install_pkgs_1:latest": ":test_install_pkgs",
         "install_pkgs_2:latest": ":test_install_git_for_reproducibility_1",
