@@ -37,6 +37,9 @@ load(
 load(":go.bzl", BASE_DIGESTS = "DIGESTS")
 load(":static.bzl", STATIC_DIGESTS = "DIGESTS")
 
+# If you update this list, update update_deps.sh at the workspace root to pull new images digests for all archs
+GOARCH_CONSTRAINTS = ["amd64", "arm", "arm64", "ppc64le", "s390x"]
+
 def repositories():
     """Import the dependencies of the go_image rule.
 
@@ -44,50 +47,88 @@ def repositories():
     idempotent if folks call it themselves.
     """
     _go_deps()
-
     excludes = native.existing_rules().keys()
-    if "go_image_base" not in excludes:
-        container_pull(
-            name = "go_image_base",
-            registry = "gcr.io",
-            repository = "distroless/base",
-            digest = BASE_DIGESTS["latest"],
-        )
-    if "go_debug_image_base" not in excludes:
-        container_pull(
-            name = "go_debug_image_base",
-            registry = "gcr.io",
-            repository = "distroless/base",
-            digest = BASE_DIGESTS["debug"],
-        )
-    if "go_image_static" not in excludes:
-        container_pull(
-            name = "go_image_static",
-            registry = "gcr.io",
-            repository = "distroless/static",
-            digest = STATIC_DIGESTS["latest"],
-        )
-    if "go_debug_image_static" not in excludes:
-        container_pull(
-            name = "go_debug_image_static",
-            registry = "gcr.io",
-            repository = "distroless/static",
-            digest = STATIC_DIGESTS["debug"],
-        )
+    for goarch in GOARCH_CONSTRAINTS:
+        go_image_base = "go_image_base_" + goarch
+        if go_image_base not in excludes:
+            container_pull(
+                name = go_image_base,
+                architecture = goarch,
+                registry = "gcr.io",
+                repository = "distroless/base",
+                digest = BASE_DIGESTS["latest_" + goarch],
+            )
+        go_debug_image_base = "go_debug_image_base_" + goarch
+        if go_debug_image_base not in excludes:
+            container_pull(
+                name = go_debug_image_base,
+                architecture = goarch,
+                registry = "gcr.io",
+                repository = "distroless/base",
+                digest = BASE_DIGESTS["debug_" + goarch],
+            )
+        go_image_static = "go_image_static_" + goarch
+        if go_image_static not in excludes:
+            container_pull(
+                name = go_image_static,
+                architecture = goarch,
+                registry = "gcr.io",
+                repository = "distroless/static",
+                digest = STATIC_DIGESTS["latest_" + goarch],
+            )
+        go_debug_image_static = "go_debug_image_static_" + goarch
+        if go_debug_image_static not in excludes:
+            container_pull(
+                name = go_debug_image_static,
+                architecture = goarch,
+                registry = "gcr.io",
+                repository = "distroless/static",
+                digest = STATIC_DIGESTS["debug_" + goarch],
+            )
 
-DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:debug": "@go_debug_image_base//image",
-    "@io_bazel_rules_docker//:fastbuild": "@go_image_base//image",
-    "@io_bazel_rules_docker//:optimized": "@go_image_base//image",
-    "//conditions:default": "@go_image_base//image",
-})
+    # Provide aliases for the old targets. As alias cannot be used in WORKSPACE we sadly have to rewrite them all
+    container_pull(
+        name = "go_image_base",
+        architecture = "amd64",
+        registry = "gcr.io",
+        repository = "distroless/base",
+        digest = BASE_DIGESTS["latest_amd64"],
+    )
+    container_pull(
+        name = "go_debug_image_base",
+        architecture = "amd64",
+        registry = "gcr.io",
+        repository = "distroless/base",
+        digest = BASE_DIGESTS["debug_amd64"],
+    )
+    container_pull(
+        name = "go_image_static",
+        architecture = "amd64",
+        registry = "gcr.io",
+        repository = "distroless/static",
+        digest = STATIC_DIGESTS["latest_amd64"],
+    )
+    container_pull(
+        name = "go_debug_image_static",
+        architecture = "amd64",
+        registry = "gcr.io",
+        repository = "distroless/static",
+        digest = STATIC_DIGESTS["debug_amd64"],
+    )
 
-STATIC_DEFAULT_BASE = select({
-    "@io_bazel_rules_docker//:debug": "@go_debug_image_static//image",
-    "@io_bazel_rules_docker//:fastbuild": "@go_image_static//image",
-    "@io_bazel_rules_docker//:optimized": "@go_image_static//image",
-    "//conditions:default": "@go_image_static//image",
-})
+DEFAULT_BASE = {goarch: select({
+    "@io_bazel_rules_docker//:debug": "@go_debug_image_base_{}//image".format(goarch),
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_base_{}//image".format(goarch),
+    "@io_bazel_rules_docker//:optimized": "@go_image_base_{}//image".format(goarch),
+    "//conditions:default": "@go_image_base_{}//image".format(goarch),
+}) for goarch in GOARCH_CONSTRAINTS}
+
+STATIC_DEFAULT_BASE = {goarch: select({
+    "@io_bazel_rules_docker//:debug": "@go_debug_image_static_{}//image".format(goarch),
+    "@io_bazel_rules_docker//:fastbuild": "@go_image_static_{}//image".format(goarch),
+    "@io_bazel_rules_docker//:optimized": "@go_image_static_{}//image".format(goarch),
+    "//conditions:default": "@go_image_static_{}//image".format(goarch),
+}) for goarch in GOARCH_CONSTRAINTS}
 
 def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     """Constructs a container image wrapping a go_binary target.
@@ -110,7 +151,10 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
         fail("kwarg does nothing when binary is specified", "deps")
 
     if not base:
-        base = STATIC_DEFAULT_BASE if kwargs.get("pure") == "on" else DEFAULT_BASE
+        arch = kwargs.get("goarch", "amd64")
+        if arch not in GOARCH_CONSTRAINTS:
+            fail("provided goarch is not available as a base image. Base image needs to be provided")
+        base = STATIC_DEFAULT_BASE[arch] if kwargs.get("pure") == "on" else DEFAULT_BASE[arch]
 
     tags = kwargs.get("tags", None)
     for index, dep in enumerate(layers):
@@ -131,4 +175,5 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
         testonly = kwargs.get("testonly"),
         restricted_to = restricted_to,
         compatible_with = compatible_with,
+        architecture = kwargs.get("goarch"),
     )

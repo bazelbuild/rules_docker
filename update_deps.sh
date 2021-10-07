@@ -16,8 +16,8 @@
 set -eu
 set -o pipefail
 
-bazel run //container/go/cmd/update_deps -- --repository=gcr.io/distroless/base --output=$PWD/go/go.bzl
-bazel run //container/go/cmd/update_deps -- --repository=gcr.io/distroless/static --output=$PWD/go/static.bzl
+bazel run //container/go/cmd/update_deps -- --repository=gcr.io/distroless/base --output=$PWD/go/go.bzl --architectures=amd64,arm,arm64,ppc64le,s390x
+bazel run //container/go/cmd/update_deps -- --repository=gcr.io/distroless/static --output=$PWD/go/static.bzl --architectures=amd64,arm,arm64,ppc64le,s390x
 bazel run //container/go/cmd/update_deps -- --repository=gcr.io/distroless/cc --output=$PWD/cc/cc.bzl
 bazel run //container/go/cmd/update_deps -- --repository=gcr.io/distroless/python2.7 --output=$PWD/python/python.bzl
 bazel run //container/go/cmd/update_deps -- --repository=gcr.io/distroless/python3 --output=$PWD/python3/python3.bzl

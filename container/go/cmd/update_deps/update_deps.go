@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/crane"
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 const digestTemplate = `# Copyright 2017 The Bazel Authors. All rights reserved.
@@ -48,21 +48,41 @@ const digestTemplate = `# Copyright 2017 The Bazel Authors. All rights reserved.
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 
+{{- if not .MultiArch }}
 DIGESTS = {
-    # "{{.Debug}}" circa {{.Date}}
-    "debug": "{{.DebugTag}}",
+	# "{{.Debug}}" circa {{.Date}}
+	{{- range $arch, $digest := .DebugTags }}
+    "debug": "{{ $digest }}",
+	{{- end }}
     # "{{.Latest}}" circa {{.Date}}
-    "latest": "{{.LatestTag}}",
+	{{- range $arch, $digest := .LatestTags }}
+    "latest": "{{ $digest }}",
+	{{- end }}
 }
+{{- else }}
+DIGESTS = {
+	# "{{.Debug}}" circa {{.Date}}
+	{{- range $arch, $digest := .DebugTags }}
+    "debug_{{ $arch }}": "{{ $digest }}",
+	{{- end }}
+    # "{{.Latest}}" circa {{.Date}}
+	{{- range $arch, $digest := .LatestTags }}
+    "latest_{{ $arch }}": "{{ $digest }}",
+	{{- end }}
+}
+{{- end }}
 `
 
 var (
+	archs      = flag.String("architectures", "", "List of architectures to be considered (comma separated list). Default is amd64 only.")
 	repository = flag.String("repository", "", "The repository for which to resolve tags.")
 	output     = flag.String("output", "", "The output file to which we write the values.")
 )
 
 type Data struct {
-	DebugTag, LatestTag, Debug, Latest, Date string
+	DebugTags, LatestTags map[string]string
+	Debug, Latest, Date   string
+	MultiArch             bool
 }
 
 func main() {
@@ -74,22 +94,33 @@ func main() {
 	if *output == "" {
 		log.Fatalln("Required option -output was not specified.")
 	}
-	options := []crane.Option{}
-	options = append(options, crane.WithPlatform(&v1.Platform{Architecture: "amd64", OS: "linux"}))
-
-	latest := *repository + ":latest"
-	latestDigest, err := crane.Digest(latest, options...)
-	if err != nil {
-		log.Fatalf("Computing digest for %s: %v", latest, err)
+	architectures := []string{"amd64"}
+	if *archs != "" {
+		architectures = strings.Split(*archs, ",")
 	}
 
+	latest := *repository + ":latest"
 	debug := *repository + ":debug"
-	debugDigest, err := crane.Digest(debug, options...)
-	if err != nil {
-		if !strings.Contains(err.Error(), "MANIFEST_UNKNOWN: Failed to fetch") {
-			log.Fatalf("Computing digest for %s: %v", debug, err)
+	debugDigests := map[string]string{}
+	latestDigests := map[string]string{}
+	for _, arch := range architectures {
+		options := []crane.Option{}
+		options = append(options, crane.WithPlatform(&v1.Platform{Architecture: arch, OS: "linux"}))
+
+		latestDigest, err := crane.Digest(latest, options...)
+		if err != nil {
+			log.Fatalf("Computing digest for %s: %v", latest, err)
 		}
-		debugDigest = latestDigest
+		latestDigests[arch] = latestDigest
+
+		debugDigest, err := crane.Digest(debug, options...)
+		if err != nil {
+			if !strings.Contains(err.Error(), "MANIFEST_UNKNOWN: Failed to fetch") {
+				log.Fatalf("Computing digest for %s: %v", debug, err)
+			}
+			debugDigest = latestDigest
+		}
+		debugDigests[arch] = debugDigest
 	}
 
 	now := time.Now()
@@ -99,11 +130,12 @@ func main() {
 	t := template.Must(template.New("digestTemplate").Parse(digestTemplate))
 
 	r := Data{
-		DebugTag:  debugDigest,
-		LatestTag: latestDigest,
-		Debug:     debug,
-		Latest:    latest,
-		Date:      date,
+		DebugTags:  debugDigests,
+		LatestTags: latestDigests,
+		Debug:      debug,
+		Latest:     latest,
+		Date:       date,
+		MultiArch:  (*archs != ""),
 	}
 
 	f, err := os.Create(*output)
@@ -114,6 +146,6 @@ func main() {
 
 	err = t.Execute(f, r)
 	if err != nil {
-		log.Fatalf("Executing template:", err)
+		log.Fatalf("Executing template: %v", err)
 	}
 }

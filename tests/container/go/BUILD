@@ -40,6 +40,31 @@ container_test(
     image = ":go_image",
 )
 
+# go_image(
+#     name = "go_image_arm",
+#     srcs = ["//testdata:main.go"],
+#     args = [
+#         "arg0",
+#         "arg1",
+#         "$(location :BUILD)",
+#     ],
+#     data = [":BUILD"],
+#     goarch = "arm64",
+#     goos = "linux",
+#     importpath = "github.com/bazelbuild/rules_docker/docker/tests/container/go",
+#     pure = "off",  # we should be using gcr.io/distroless/base as a base image
+#     tags = [
+#         "tag1",
+#         "tag2",
+#     ],
+# )
+
+# container_test(
+#     name = "go_image_arm_test",
+#     configs = ["//tests/container/go/configs:go_image.yaml"],
+#     image = ":go_image_arm",
+# )
+
 go_image(
     name = "go_static_image",
     srcs = ["//testdata:main.go"],
@@ -62,3 +87,28 @@ container_test(
     configs = ["//tests/container/go/configs:go_static_image.yaml"],
     image = ":go_static_image",
 )
+
+# go_image(
+#     name = "go_static_image_arm",
+#     srcs = ["//testdata:main.go"],
+#     args = [
+#         "arg0",
+#         "arg1",
+#         "$(location :BUILD)",
+#     ],
+#     data = [":BUILD"],
+#     goarch = "arm64",
+#     goos = "linux",
+#     importpath = "github.com/bazelbuild/rules_docker/docker/tests/container/go",
+#     pure = "on",  # we should be using gcr.io/distroless/static as a base image
+#     tags = [
+#         "tag1",
+#         "tag2",
+#     ],
+# )
+
+# container_test(
+#     name = "go_static_image_arm_test",
+#     configs = ["//tests/container/go/configs:go_static_image.yaml"],
+#     image = ":go_static_image_arm",
+# )
