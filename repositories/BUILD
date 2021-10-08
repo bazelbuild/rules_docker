@@ -47,3 +47,9 @@ bzl_library(
     srcs = ["py_repositories.bzl"],
     visibility = ["//visibility:private"],
 )
+
+# needed for stardoc
+bzl_library(
+    name = "repositories",
+    srcs = glob(["*.bzl"]),
+)
