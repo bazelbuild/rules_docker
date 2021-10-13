@@ -49,8 +49,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to determine parts of the image from the specified arguments: %v", err)
 	}
-	r := compat.Reader{Parts: imgParts}
-	img, err := r.ReadImage()
+	img, err := compat.ReadImage(imgParts)
 	if err != nil {
 		log.Fatalf("Error reading image: %v", err)
 	}

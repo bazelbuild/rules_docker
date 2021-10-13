@@ -296,7 +296,7 @@ func (r *Reader) loadLayers() error {
 	return nil
 }
 
-// ReadImage loads a v1.Image from the given ImageParts
+// ReadImage loads a v1.Image from the ImageParts section in the reader.
 func (r *Reader) ReadImage() (v1.Image, error) {
 	// Special case: if we only have a tarball, we can instantiate the image
 	// directly from that. Otherwise, we'll process the image layers
@@ -342,4 +342,11 @@ func (r *Reader) ReadImage() (v1.Image, error) {
 		return nil, errors.Wrap(err, "unable to initialize image from parts")
 	}
 	return img, nil
+}
+
+// ReadImage loads a v1.Image from the given ImageParts
+func ReadImage(parts ImageParts) (v1.Image, error) {
+	r := Reader{Parts: parts}
+	img, err := r.ReadImage()
+	return img, err
 }
