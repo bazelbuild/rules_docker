@@ -48,6 +48,7 @@ def repositories():
     """
     _go_deps()
     excludes = native.existing_rules().keys()
+
     for goarch in GOARCH_CONSTRAINTS:
         go_image_base = "go_image_base_" + goarch
         if go_image_base not in excludes:

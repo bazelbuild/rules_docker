@@ -50,25 +50,25 @@ const digestTemplate = `# Copyright 2017 The Bazel Authors. All rights reserved.
 
 {{- if not .MultiArch }}
 DIGESTS = {
-	# "{{.Debug}}" circa {{.Date}}
-	{{- range $arch, $digest := .DebugTags }}
+    # "{{.Debug}}" circa {{.Date}}
+    {{- range $arch, $digest := .DebugTags }}
     "debug": "{{ $digest }}",
-	{{- end }}
+    {{- end }}
     # "{{.Latest}}" circa {{.Date}}
-	{{- range $arch, $digest := .LatestTags }}
+    {{- range $arch, $digest := .LatestTags }}
     "latest": "{{ $digest }}",
-	{{- end }}
+    {{- end }}
 }
 {{- else }}
 DIGESTS = {
-	# "{{.Debug}}" circa {{.Date}}
-	{{- range $arch, $digest := .DebugTags }}
+    # "{{.Debug}}" circa {{.Date}}
+    {{- range $arch, $digest := .DebugTags }}
     "debug_{{ $arch }}": "{{ $digest }}",
-	{{- end }}
+    {{- end }}
     # "{{.Latest}}" circa {{.Date}}
-	{{- range $arch, $digest := .LatestTags }}
+    {{- range $arch, $digest := .LatestTags }}
     "latest_{{ $arch }}": "{{ $digest }}",
-	{{- end }}
+    {{- end }}
 }
 {{- end }}
 `

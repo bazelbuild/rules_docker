@@ -18,8 +18,8 @@
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 DIGESTS = {
-	# "gcr.io/distroless/java/jetty:debug" circa 2021-10-08 23:17 -0400
+    # "gcr.io/distroless/java/jetty:debug" circa 2021-10-14 18:19 -0400
     "debug": "sha256:0e9dbeb0c9eb4cb2698baea1723f87899bf93fa3906be44d59f0b636fb758158",
-    # "gcr.io/distroless/java/jetty:latest" circa 2021-10-08 23:17 -0400
+    # "gcr.io/distroless/java/jetty:latest" circa 2021-10-14 18:19 -0400
     "latest": "sha256:68183b2ad2e8d80a5165360b0a2bb3fdef52608ac39d6afd9e8cd7ed213330f1",
 }

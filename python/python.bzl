@@ -18,8 +18,8 @@
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 DIGESTS = {
-	# "gcr.io/distroless/python2.7:debug" circa 2021-10-08 23:17 -0400
+    # "gcr.io/distroless/python2.7:debug" circa 2021-10-14 18:19 -0400
     "debug": "sha256:85f45e3b5ab66da2eb04c10d29519deb21bf14bcfa8fa6769817db4f031ad3c9",
-    # "gcr.io/distroless/python2.7:latest" circa 2021-10-08 23:17 -0400
+    # "gcr.io/distroless/python2.7:latest" circa 2021-10-14 18:19 -0400
     "latest": "sha256:83b8dc7881f3e3c85740bfffd32b7ce64527757e74c68d6a31102a7d1b2a977b",
 }

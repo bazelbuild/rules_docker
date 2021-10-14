@@ -18,8 +18,8 @@
 # To regenerate this file, run ./update_deps.sh from the root of the
 # git repository.
 DIGESTS = {
-	# "gcr.io/google-appengine/debian9:debug" circa 2021-10-08 23:17 -0400
+    # "gcr.io/google-appengine/debian9:debug" circa 2021-10-14 18:19 -0400
     "debug": "sha256:8e4639cb270046abd646f7cc7c16363b778149513a2f27b86494e135b2760dbf",
-    # "gcr.io/google-appengine/debian9:latest" circa 2021-10-08 23:17 -0400
+    # "gcr.io/google-appengine/debian9:latest" circa 2021-10-14 18:19 -0400
     "latest": "sha256:8e4639cb270046abd646f7cc7c16363b778149513a2f27b86494e135b2760dbf",
 }
