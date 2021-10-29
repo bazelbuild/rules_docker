@@ -28,6 +28,12 @@ fileExistenceTests:
   - name: 'copy_txt_file_exists'
     path: '/file_to_copy.txt'
     shouldExist: true
+  - name: 'target_txt_exists'
+    path: '/target_test.txt'
+    shouldExist: true
+  - name: 'base_txt_not_exists'
+    path: '/target_test_base.txt'
+    shouldExist: false
 
 fileContentTests:
   - name: "Alpine version check"
@@ -42,6 +48,9 @@ fileContentTests:
   - name: 'copy_txt_file_contains'
     path: '/file_to_copy.txt'
     expectedContents: ['Another file to copy']
+  - name: 'target_txt_contains'
+    path: '/target_test.txt'
+    expectedContents: ['Hello from test stage']
 
 commandTests:
   - name: "gcc_test"

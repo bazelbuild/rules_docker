@@ -398,6 +398,7 @@ dockerfile_image(
         "ALPINE_version": "3.9",
     },
     dockerfile = "//testdata/dockerfile_build:Dockerfile",
+    target = "test",
     vars = [
         "SOME_VAR",
     ],
