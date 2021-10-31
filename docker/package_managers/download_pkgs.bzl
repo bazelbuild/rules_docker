@@ -18,6 +18,10 @@ load(
     "//skylib:path.bzl",
     "runfile",
 )
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
 
 def _generate_add_additional_repo_commands(ctx, additional_repos):
     return """printf "{repos}" >> /etc/apt/sources.list.d/{name}_repos.list""".format(

@@ -46,6 +46,7 @@ def _docker_toolchain_impl(ctx):
             gzip_path = ctx.attr.gzip_path,
             gzip_target = ctx.attr.gzip_target,
             tool_path = ctx.attr.tool_path,
+            tool_target = ctx.attr.tool_target,
             xz_path = ctx.attr.xz_path,
             xz_target = ctx.attr.xz_target,
         ),

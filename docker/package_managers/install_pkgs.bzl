@@ -39,6 +39,11 @@ users will write something like:
 
 """
 
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
+
 def _generate_install_commands(tar, installation_cleanup_commands):
     return """
 tar -xvf {tar}

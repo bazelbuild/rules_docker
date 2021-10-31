@@ -20,6 +20,10 @@ load(
     "//skylib:path.bzl",
     "runfile",
 )
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)

@@ -135,7 +135,10 @@ bzl_library(
 bzl_library(
     name = "layer_tools",
     srcs = ["layer_tools.bzl"],
-    deps = ["//skylib:path"],
+    deps = [
+        "//skylib:docker",
+        "//skylib:path",
+    ],
 )
 
 bzl_library(

@@ -29,6 +29,10 @@ load(
     "//skylib:zip.bzl",
     _zip_tools = "tools",
 )
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
 
 def _extract_impl(
         ctx,
