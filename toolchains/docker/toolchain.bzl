@@ -29,7 +29,7 @@ DockerToolchainInfo = provider(
                        "Should only be set if gzip_path is unset.",
         "tool_path": "Path to the docker executable",
         "tool_target": "Bazel target for the docker tool. " +
-                        "Should only be set if tool_path is unset.",
+                       "Should only be set if tool_path is unset.",
         "xz_path": "Optional path to the xz binary. This is used by " +
                    "build_tar.py when the Python lzma module is unavailable. " +
                    "If not set found via which.",
