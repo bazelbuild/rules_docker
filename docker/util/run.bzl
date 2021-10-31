@@ -79,7 +79,7 @@ def _extract_impl(
             "%{commands}": _process_commands(commands),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{extract_file}": extract_file,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
@@ -196,7 +196,7 @@ def _commit_impl(
         output = image_utils,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
         },
         is_executable = True,
     )
@@ -209,7 +209,7 @@ def _commit_impl(
             "%{commands}": _process_commands(commands),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
             "%{output_image}": "bazel/%s:%s" % (
@@ -344,7 +344,7 @@ def _commit_layer_impl(
         output = image_utils,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
         },
         is_executable = True,
     )
@@ -370,7 +370,7 @@ def _commit_layer_impl(
             "%{commands}": _process_commands(commands),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{env_file_path}": env_file.path,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_last_layer_extractor_path}": ctx.executable._last_layer_extractor_tool.path,
