@@ -265,6 +265,7 @@ def java_image(
         runtime_deps = [],
         layers = [],
         jvm_flags = [],
+        classpath_as_file = None,
         **kwargs):
     """Builds a container image overlaying the java_binary.
 
@@ -327,6 +328,7 @@ def java_image(
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        classpath_as_file = classpath_as_file,
     )
 
 def _war_dep_layer_impl(ctx):
