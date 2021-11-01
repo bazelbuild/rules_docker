@@ -201,7 +201,7 @@ def _jar_app_layer_impl(ctx):
         "/usr/bin/java",
         "-cp",
         # Support optionally passing the classpath as a file.
-        "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
+        "@" + classpath_path if ctx.attr.classpath_as_file else classpath,
     ] + jvm_flags + ([ctx.attr.main_class] + args if ctx.attr.main_class != "" else [])
 
     file_map = {
@@ -245,7 +245,7 @@ jar_app_layer = rule(
         "workdir": attr.string(default = ""),
 
         # Whether the classpath should be passed as a file.
-        "_classpath_as_file": attr.bool(default = False),
+        "classpath_as_file": attr.bool(default = False),
         "_jdk": attr.label(
             default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
             providers = [java_common.JavaRuntimeInfo],
