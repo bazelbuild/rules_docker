@@ -52,6 +52,23 @@ java_image(
 )
 
 java_image(
+    name = "java_classpath_as_file_image",
+    srcs = ["//testdata:Binary.java"],
+    args = [
+        "arg0",
+        "arg1",
+        "$(location :BUILD)",
+    ],
+    classpath_as_file = True,
+    data = [":BUILD"],
+    jvm_flags = [
+        "-Dbuild.location=$(location :BUILD)",
+    ],
+    layers = [":java_image_library"],
+    main_class = "examples.images.Binary",
+)
+
+java_image(
     name = "java_runfiles_image",
     srcs = ["//testdata:Runfiles.java"],
     data = [
@@ -89,6 +106,12 @@ container_test(
     name = "java_image_test",
     configs = ["//tests/container/java/configs:java_image.yaml"],
     image = ":java_image",
+)
+
+container_test(
+    name = "java_classpath_as_file_image_test",
+    configs = ["//tests/container/java/configs:java_classpath_as_file_image.yaml"],
+    image = ":java_classpath_as_file_image",
 )
 
 container_test(
