@@ -34,8 +34,32 @@ kt_jvm_image(
     deps = [],
 )
 
+kt_jvm_image(
+    name = "kt_jvm_classpath_as_file_image",
+    srcs = [
+        "//testdata:Binary.kt",
+        "//testdata:Library.kt",
+    ],
+    args = [
+        "arg0",
+        "arg1",
+        "$(location :BUILD)",
+    ],
+    classpath_as_file = True,
+    data = [":BUILD"],
+    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
+    main_class = "examples.images.Binary",
+    deps = [],
+)
+
 container_test(
     name = "kotlin_image_test",
     configs = ["//tests/container/kotlin/configs:kt_jvm_image.yaml"],
     image = ":kt_jvm_image",
+)
+
+container_test(
+    name = "kotlin_classpath_as_file_image_test",
+    configs = ["//tests/container/kotlin/configs:kt_jvm_classpath_as_file_image.yaml"],
+    image = ":kt_jvm_classpath_as_file_image",
 )
