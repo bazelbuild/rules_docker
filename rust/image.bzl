@@ -16,7 +16,7 @@
 The signature of this rule is compatible with rust_binary.
 """
 
-load("@rules_rust//rust:rust.bzl", "rust_binary")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
 load(
     "//cc:image.bzl",
     "DEFAULT_BASE",
