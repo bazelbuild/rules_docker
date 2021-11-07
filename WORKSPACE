@@ -336,7 +336,7 @@ http_archive(
     sha256 = "d6a8bc37502f252ef190b37945c922e0d0104dc2250940a3ea5f9c42e7a0dc10",
     strip_prefix = "rules_rust-e2f0fccda912daac686b533ad77c5bc5d2f2ddb7",
     urls = [
-        # Master branch as of 2021-11-05
+        # `main` branch as of 2021-11-05
         "https://github.com/bazelbuild/rules_rust/archive/e2f0fccda912daac686b533ad77c5bc5d2f2ddb7.tar.gz",
     ],
 )
