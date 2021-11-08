@@ -31,7 +31,7 @@ load(
 
 def _get_runfile_path(ctx, f):
     if ctx.attr.windows_paths:
-        return "%RUNFILES%\{}".format(runfile(ctx, f).replace("/", "\\"))
+        return "%RUNFILES%\\{}".format(runfile(ctx, f).replace("/", "\\"))
     else:
         return "${RUNFILES}/%s" % runfile(ctx, f)
 
