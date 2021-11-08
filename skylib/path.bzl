@@ -59,7 +59,7 @@ def canonicalize(path):
 
     # Strip ./ from the beginning if specified.
     # There is no way to handle .// correctly (no function that would make
-    # that possible and Skylark is not turing complete) so just consider it
+    # that possible and Starlark is not turing complete) so just consider it
     # as an absolute path. A path of / should preserve the entire
     # path up to the repository root.
 

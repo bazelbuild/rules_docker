@@ -46,6 +46,7 @@ def _is_filetype(filename, extensions):
     for filetype in extensions:
         if filename.endswith(filetype):
             return True
+    return False
 
 def _is_tgz(layer):
     return _is_filetype(layer.basename, tgz_filetype)
@@ -76,10 +77,10 @@ def _container_import_impl(ctx):
     diff_ids = []
     for layer in ctx.files.layers:
         zipped, unzipped = _layer_pair(ctx, layer)
-        zipped_layers += [zipped]
-        unzipped_layers += [unzipped]
-        blobsums += [_sha256(ctx, zipped)]
-        diff_ids += [_sha256(ctx, unzipped)]
+        zipped_layers.append(zipped)
+        unzipped_layers.append(unzipped)
+        blobsums.append(_sha256(ctx, zipped))
+        diff_ids.append(_sha256(ctx, unzipped))
 
     manifest = None
     manifest_digest = None
@@ -125,6 +126,10 @@ def _container_import_impl(ctx):
         ctx,
         images,
         ctx.outputs.out,
+        # Experiment: currently only support experimental_tarball_format in
+        # container_image for testing optimization.
+        # TODO(#1695): Update this.
+        "legacy",
     )
 
     runfiles = ctx.runfiles(
@@ -165,12 +170,25 @@ def _container_import_impl(ctx):
     ] + pull_info
 
 container_import = rule(
+    doc = "A rule that imports a docker image into our intermediate form.",
     attrs = dicts.add({
         "base_image_digest": attr.string(doc = "The digest of the image"),
         "base_image_registry": attr.string(doc = "The registry from which we pulled the image"),
         "base_image_repository": attr.string(doc = "The repository from which we pulled the image"),
-        "config": attr.label(allow_files = [".json"]),
+        "config": attr.label(
+            doc = """A json configuration file containing the image's metadata.
+
+            This appears in `docker save` tarballs as `.json` and is referenced by `manifest.json` in the config field.
+            """,
+            allow_files = [".json"],
+        ),
         "layers": attr.label_list(
+            doc = """The list of layer .tar.gz files in the order they appear in the config.json's layer section,
+            or in the order that they appear in the `Layers` field of the docker save tarballs'
+            `manifest.json` (these may or may not be gzipped).
+            
+            Note that the layers should each have a different basename.
+            """,
             allow_files = tar_filetype + tgz_filetype,
             mandatory = True,
         ),

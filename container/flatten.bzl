@@ -46,6 +46,7 @@ def _impl(ctx):
     return [FlattenInfo()]
 
 container_flatten = rule(
+    doc = "A rule to flatten container images.",
     attrs = dicts.add({
         "image": attr.label(
             allow_single_file = [".tar"],

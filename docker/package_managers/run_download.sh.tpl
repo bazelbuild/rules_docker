@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 
 function guess_runfiles() {
     if [ -d ${BASH_SOURCE[0]}.runfiles ]; then

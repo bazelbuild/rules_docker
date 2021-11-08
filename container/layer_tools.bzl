@@ -129,11 +129,11 @@ def _add_join_layers_args(args, inputs, images):
     for tag in images:
         image = images[tag]
         args.add(image["config"], format = "--tag=" + tag + "=%s")
-        inputs += [image["config"]]
+        inputs.append(image["config"])
 
         if image.get("manifest"):
             args.add(image["manifest"], format = "--basemanifest=" + tag + "=%s")
-            inputs += [image["manifest"]]
+            inputs.append(image["manifest"])
 
         for i in range(0, len(image["diff_id"])):
             # There's no way to do this with attrs w/o resolving paths here afaik
@@ -152,12 +152,13 @@ def _add_join_layers_args(args, inputs, images):
 
         if image.get("legacy"):
             args.add("--tarball", image["legacy"])
-            inputs += [image["legacy"]]
+            inputs.append(image["legacy"])
 
 def assemble(
         ctx,
         images,
         output,
+        experimental_tarball_format,
         stamp = False):
     """Create the full image from the list of layers.
 
@@ -165,10 +166,12 @@ def assemble(
        ctx: The context
        images: List of images/layers to assemple
        output: The output path for the image tar
+       experimental_tarball_format: The format of the image tarball: "legacy" | "compressed"
        stamp: Whether to stamp the produced image
     """
     args = ctx.actions.args()
     args.add(output, format = "--output=%s")
+    args.add(experimental_tarball_format, format = "--experimental-tarball-format=%s")
     inputs = []
     if stamp:
         args.add_all([ctx.info_file, ctx.version_file], format_each = "--stamp-info-file=%s")
@@ -180,6 +183,12 @@ def assemble(
         arguments = [args],
         tools = inputs,
         outputs = [output],
+        execution_requirements = {
+            # This action produces large output files, but doesn't require much CPU to compute.
+            # It's not economical to send this to the remote-cache, instead local cache misses
+            # should just run join_layers again.
+            "no-remote-cache": "1",
+        },
         mnemonic = "JoinLayers",
     )
 
@@ -226,15 +235,15 @@ def incremental_load(
 
         # First load the legacy base image, if it exists.
         if image.get("legacy"):
-            load_statements += [
+            load_statements.append(
                 "load_legacy '%s'" % _get_runfile_path(ctx, image["legacy"]),
-            ]
+            )
 
         pairs = zip(image["diff_id"], image["unzipped_layer"])
 
         # Import the config and the subset of layers not present
         # in the daemon.
-        load_statements += [
+        load_statements.append(
             "import_config '%s' %s" % (
                 _get_runfile_path(ctx, image["config"]),
                 " ".join([
@@ -245,11 +254,11 @@ def incremental_load(
                     for (diff_id, unzipped_layer) in pairs
                 ]),
             ),
-        ]
+        )
 
         # Now tag the imported config with the specified tag.
         tag_reference = tag if not stamp else tag.replace("{", "${")
-        tag_statements += [
+        tag_statements.append(
             "tag_layer \"%s\" '%s'" % (
                 # Turn stamp variable references into bash variables.
                 # It is notable that the only legal use of '{' in a
@@ -257,12 +266,12 @@ def incremental_load(
                 tag_reference,
                 _get_runfile_path(ctx, image["config_digest"]),
             ),
-        ]
+        )
         if run:
             # Args are embedded into the image, so omitted here.
-            run_statements += [
-                "\"${DOCKER}\" ${DOCKER_FLAGS} run %s %s" % (run_flags, tag_reference),
-            ]
+            run_statements.append(
+                "\"${DOCKER}\" ${DOCKER_FLAGS} run %s %s \"$@\"" % (run_flags, tag_reference),
+            )
 
     ctx.actions.expand_template(
         template = ctx.file.incremental_load_template,

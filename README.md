@@ -1,8 +1,8 @@
 # Bazel Container Image Rules
 
-Travis CI | Bazel CI
-:---: | :---:
-[![Build Status](https://travis-ci.org/bazelbuild/rules_docker.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_docker) | [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
+| Bazel CI |
+| :------: |
+[![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg?branch=master)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
 
 ## Basic Rules
 
@@ -44,12 +44,6 @@ __NOTE:__ `container_push` and `container_pull` make use of
 registry interactions.
 
 ## Language Rules
-
-Note: Some of these rules are not supported on Mac. Specifically `go_image`
-cannot be used from Bazel running on a Mac. Other rules may also fail
-arbitrarily on Mac due to unforeseen toolchain issues that need to be resolved in
-Bazel and upstream rules repos. Please see [#943](https://github.com/bazelbuild/rules_docker/issues/943)
-for more details.
 
 * [py_image](#py_image) ([signature](
 https://docs.bazel.build/versions/master/be/python.html#py_binary))
@@ -145,6 +139,9 @@ docker_toolchain_configure(
   # OPTIONAL: Path to the xz binary.
   # Should be set explicitly for remote execution.
   xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
+  # OPTIONAL: Bazel target for the xz tool.
+  # Either xz_path or xz_target should be set explicitly for remote execution.
+  xz_target="<enter absolute path (i.e., must start with repo name @...//:...) to an executable xz target>",
   # OPTIONAL: List of additional flags to pass to the docker command.
   docker_flags = [
     "--tls",
@@ -619,10 +616,12 @@ nodejs_image(
     name = "nodejs_image",
     entry_point = "@your_workspace//path/to:file.js",
     # npm deps will be put into their own layer
-    data = [":file.js", "@npm//some-npm-dep"],
+    data = [":file.js", "@npm//some-npm-dep"],    
     ...
 )
 ```
+
+`nodejs_image` also supports the `launcher` and `launcher_args` attributes which are passed to `container_image` and used to prefix the image's `entry_point`.
 
 If you need to modify somehow the container produced by
 `nodejs_image` (e.g., `env`, `symlink`), see note above in
@@ -949,7 +948,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # You *must* import the Rust rules before setting up the rust_image rules.
 http_archive(
-    name = "io_bazel_rules_rust",
+    name = "rules_rust",
     # Replace with a real SHA256 checksum
     sha256 = "{SHA256}"
     # Replace with a real commit SHA
@@ -957,7 +956,7 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_rust/archive/{HEAD}.tar.gz"],
 )
 
-load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
+load("@rules_rust//rust:repositories.bzl", "rust_repositories")
 
 rust_repositories()
 
@@ -1267,7 +1266,7 @@ file at the root of this project.
 
 Use of these features require a python toolchain to be registered.
 `//py_images/image.bzl:deps` and `//py3_images/image.bzl:deps` register a
-default python toolchain (`//toolchains/python:container_py_toolchain`)
+default python toolchain (`//toolchains:container_py_toolchain`)
 that defines the path to python tools inside the default container used
 for these rules.
 
@@ -1275,7 +1274,7 @@ for these rules.
 
 If you are using a custom base for `py_image` or `py3_image` builds that has
 python tools installed in a different location to those defined in
-`//toolchains/python:container_py_toolchain`, you will need to create a
+`//toolchains:container_py_toolchain`, you will need to create a
 toolchain that points to these paths and register it _before_ the call to
 `py*_images/image.bzl:deps` in your `WORKSPACE`.
 
@@ -1306,1071 +1305,45 @@ shared layers and letting them diverge could result in sub-optimal push and pull
 <a name="container_pull"></a>
 ## container_pull
 
-```python
-container_pull(name, registry, repository, digest, tag)
-```
-
-A repository rule that pulls down a Docker base image in a manner suitable for
-use with `container_image`'s `base` attribute.
-
-**NOTE:** `container_pull` now supports authentication using custom docker client
-configuration. See [here](#container_pull-custom-client-configuration) for details.
-
-**NOTE:** Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
-
-**NOTE:** Set `DOCKER_REPO_CACHE` env variable to make the container puller
-cache downloaded layers at the directory specified as a value to this env
-variable. The caching feature hasn't been thoroughly tested and may be thread
-unsafe. If you notice flakiness after enabling it, see the warning below on how
-to workaround it.
-
-**NOTE:** `container_pull` is suspected to have thread safety issues. To
-ensure multiple `container_pull`(s) don't execute concurrently, please use the
-bazel startup flag `--loading_phase_threads=1` in your bazel invocation.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this repository rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>registry</code></td>
-      <td>
-        <p><code>Registry Domain; required</code></p>
-        <p>The registry from which to pull the base image.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>repository</code></td>
-      <td>
-        <p><code>Repository; required</code></p>
-        <p>The `repository` of images to pull from.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>digest</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>The `digest` of the Docker image to pull from the specified
-           `repository`.</p>
-        <p>
-          <strong>Note:</strong> For reproducible builds, use of `digest`
-          is recommended.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tag</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>The `tag` of the Docker image to pull from the specified `repository`.
-           If neither this nor `digest` is specified, this attribute defaults
-           to `latest`.  If both are specified, then `tag` is ignored.</p>
-        <p>
-          <strong>Note:</strong> For reproducible builds, use of `digest`
-          is recommended.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>os</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired operating system. For example,
-           <code>linux</code> or
-           <code>windows</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>os_version</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired operating system version. For example,
-           <code>10.0.10586</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>os_features</code></td>
-      <td>
-        <p><code>string list; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired operating system features. For example,
-           on Windows this might be <code>["win32k"]</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>architecture</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired CPU architecture. For example,
-           <code>amd64</code> or <code>arm</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>cpu_variant</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired CPU variant. For example, for ARM you
-           may need to use <code>v6</code> or <code>v7</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>platform_features</code></td>
-      <td>
-        <p><code>string list; optional</code></p>
-        <p>When the specified image refers to a multi-platform
-           <a href="https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list">
-           manifest list</a>, the desired features. For example, this may
-           include CPU features such as <code>["sse4", "aes"]</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>puller_darwin</code></td>
-      <td>
-        <p><code>label; optional</code></p>
-        <p>A Mac 64-bit binary that implements the functionality provided by
-           <code>//container/go/cmd/puller</code>. Visible for testing purposes
-           only.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>puller_linux</code></td>
-      <td>
-        <p><code>label; optional</code></p>
-        <p>A Linux 64-bit binary that implements the functionality provided by
-           <code>//container/go/cmd/puller</code>. Visible for testing purposes
-           only.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>docker_client_config</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>Specifies the directory to look for the docker client configuration. Don't use this directly.
-           Specify the docker configuration directory using a custom docker toolchain configuration. Look
-           for the <code>client_config</code> attribute in <code>docker_toolchain_configure</code> <a href="#setup">here</a> for
-           details. See <a href="#container_pull-custom-client-configuration">here</a> for an example on
-           how to use <code>container_pull</code> after configuring the docker toolchain</p>
-        <p>When left unspecified (ie not set explicitly or set by the docker toolchain), docker will use
-        the directory specified via the DOCKER_CONFIG environment variable. If DOCKER_CONFIG isn't set,
-        docker falls back to $HOME/.docker.
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+**MOVED**: See [docs/container.md](/docs/container.md#container_pull)
 
 <a name="container_push"></a>
 ## container_push
 
-```python
-container_push(name, image, registry, repository, tag)
-```
-
-An executable rule that pushes a Docker image to a Docker registry on `bazel run`.
-
-**NOTE:** `container_push` now supports authentication using custom docker client
-configuration. See [here](#container_push-custom-client-configuration) for details.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>format</code></td>
-      <td>
-        <p><code>Kind, required</code></p>
-        <p>The desired format of the published image.  Currently, this supports
-	   <code>Docker</code> and <code>OCI</code></p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>image</code></td>
-      <td>
-        <p><code>Label; required</code></p>
-        <p>The label containing a Docker image to publish.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>registry</code></td>
-      <td>
-        <p><code>Registry Domain; required</code></p>
-        <p>The registry to which to publish the image.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>repository</code></td>
-      <td>
-        <p><code>Repository; required</code></p>
-        <p>The `repository` of images to which to push.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tag</code></td>
-      <td>
-        <p><code>string; optional</code></p>
-        <p>The `tag` of the Docker image to push to the specified `repository`.
-           This attribute defaults to `latest`.</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>stamp</code></td>
-      <td>
-        <p><code>Bool; optional</code></p>
-        <p>Deprecated: it is now automatically inferred.</p>
-        <p>If true, enable use of workspace status variables
-        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
-        and custom values set using <code>--workspace_status_command</code>)
-        in tags.</p>
-        <p>These fields are specified in the tag using Python format
-        syntax, e.g.
-        <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+**MOVED**: See [docs/container.md](/docs/container.md#container_push)
 
 <a name="container_layer"></a>
 ## container_layer
 
-```python
-container_layer(data_path, directory, empty_dirs, files, mode, tars, debs, symlinks, env)
-```
-
-A rule that assembles data into a tarball which can be use as in `layers` attr in `container_image` rule.
-
-<table class="table table-condensed table-bordered table-implicit">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Implicit output targets</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code><i>name</i>-layer.tar</code></td>
-      <td>
-        <code>A tarball of current layer</code>
-        <p>
-            A data tarball corresponding to the layer.
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <code>Name, required</code>
-        <p>A unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>data_path</code></td>
-      <td>
-        <code>String, optional</code>
-        <p>Root path of the files.</p>
-        <p>
-          The directory structure from the files is preserved inside the
-          Docker image, but a prefix path determined by <code>data_path</code>
-          is removed from the directory structure. This path can
-          be absolute from the workspace root if starting with a `/` or
-          relative to the rule's directory. A relative path may starts with "./"
-          (or be ".") but cannot use go up with "..". By default, the
-          <code>data_path</code> attribute is unused, and all files should have no prefix.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>directory</code></td>
-      <td>
-        <code>String, optional</code>
-        <p>Target directory.</p>
-        <p>
-          The directory in which to expand the specified files, defaulting to '/'.
-          Only makes sense accompanying one of files/tars/debs.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>empty_dirs</code></td>
-      <td>
-        <code>List of directories, optional</code>
-        <p>Directory to add to the layer.</p>
-        <p>
-          A list of empty directories that should be created in the Docker image.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>files</code></td>
-      <td>
-        <code>List of files, optional</code>
-        <p>File to add to the layer.</p>
-        <p>
-          A list of files that should be included in the Docker image.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>mode</code></td>
-      <td>
-        <code>String, default to 0o555</code>
-        <p>
-          Set the mode of files added by the <code>files</code> attribute.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tars</code></td>
-      <td>
-        <code>List of files, optional</code>
-        <p>Tar file to extract in the layer.</p>
-        <p>
-          A list of tar files whose content should be in the Docker image.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>debs</code></td>
-      <td>
-        <code>List of files, optional</code>
-        <p>Debian packages to extract.</p>
-        <p>
-          Deprecated: A list of debian packages that will be extracted in the Docker image.
-          Note that this doesn't actually install the packages. Installation needs apt
-          or apt-get which need to be executed within a running container which
-          <code>container_layer</code> can't do.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>symlinks</code></td>
-      <td>
-        <code>Dictionary, optional</code>
-        <p>Symlinks to create in the Docker image.</p>
-        <p>
-          <code>
-          symlinks = {
-           "/path/to/link": "/path/to/target",
-           ...
-          },
-          </code>
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>env</code></td>
-      <td>
-        <code>Dictionary from strings to strings, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#env">Dictionary
-               from environment variable names to their values when running the
-               Docker image.</a></p>
-        <p>
-          <code>
-          env = {
-            "FOO": "bar",
-            ...
-          },
-          </code>
-        </p>
-	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>compression</code></td>
-      <td>
-        <code>String, optional</code>
-        <p>Compression method for image layers. Currently only <code>gzip</code> is supported.</p>
-        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
-        <p>
-          <code>
-          compression = "gzip",
-          </code>
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>compression_options</code></td>
-      <td>
-        <code>List of strings, optional</code>
-        <p>Command-line options for the compression tool. Possible values depend on `compression` method.</p>
-        <p>This affects the compressed layer, which is by the `container_push` rule.</p>
-        <p>
-          <code>
-          compression_options = ["--fast"],
-          </code>
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+**MOVED**: See [docs/container.md](/docs/container.md#container_layer)
 
 <a name="container_image"></a>
 ## container_image
 
-```python
-container_image(name, base, data_path, directory, files, legacy_repository_naming, mode, tars, debs, symlinks, entrypoint, cmd, creation_time, env, labels, ports, volumes, workdir, layers, repository)
-```
-
-<table class="table table-condensed table-bordered table-implicit">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Implicit output targets</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code><i>name</i>.tar</code></td>
-      <td>
-        <code>The full Docker image</code>
-        <p>
-            A full Docker image containing all the layers, identical to
-            what <code>docker save</code> would return. This is
-            only generated on demand.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code><i>name</i>.digest</code></td>
-      <td>
-        <code>The full Docker image's digest</code>
-        <p>
-            An image digest that can be used to refer to that image. Unlike tags,
-            digest references are immutable i.e. always refer to the same content.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code><i>name</i>-layer.tar</code></td>
-      <td>
-        <code>An image of the current layer</code>
-        <p>
-            A Docker image containing only the layer corresponding to
-            that target. It is used for incremental loading of the layer.
-        </p>
-        <p>
-            <b>Note:</b> this target is not suitable for direct consumption.
-            It is used for incremental loading and non-docker rules should
-            depends on the Docker image (<i>name</i>.tar) instead.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code><i>name</i></code></td>
-      <td>
-        <code>Incremental image loader</code>
-        <p>
-            The incremental image loader. It will load only changed
-            layers inside the Docker registry.
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <code>Name, required</code>
-        <p>A unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>base</code></td>
-      <td>
-        <code>File, optional</code>
-        <p>
-            The base layers on top of which to overlay this layer, equivalent to
-            FROM.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>data_path</code></td>
-      <td>
-        <code>String, optional</code>
-        <p>Root path of the files.</p>
-        <p>
-          The directory structure from the files is preserved inside the
-          Docker image, but a prefix path determined by <code>data_path</code>
-          is removed from the directory structure. This path can
-          be absolute from the workspace root if starting with a `/` or
-          relative to the rule's directory. A relative path may starts with "./"
-          (or be ".") but cannot use go up with "..". By default, the
-          <code>data_path</code> attribute is unused, and all files should have no prefix.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>directory</code></td>
-      <td>
-        <code>String, optional</code>
-        <p>Target directory.</p>
-        <p>
-          The directory in which to expand the specified files, defaulting to '/'.
-          Only makes sense accompanying one of files/tars/debs.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>files</code></td>
-      <td>
-        <code>List of files, optional</code>
-        <p>File to add to the layer.</p>
-        <p>
-          A list of files that should be included in the Docker image.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>legacy_repository_naming</code></td>
-      <td>
-        <code>Bool, default to False</code>
-        <p>
-          Whether to use the legacy strategy for setting the repository name
-          embedded in the resulting tarball.
-          e.g. <code>bazel/{target.replace('/', '_')}</code>
-          vs. <code>bazel/{target}</code>
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>mode</code></td>
-      <td>
-        <code>String, default to 0o555</code>
-        <p>
-          Set the mode of files added by the <code>files</code> attribute.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>tars</code></td>
-      <td>
-        <code>List of files, optional</code>
-        <p>Tar file to extract in the layer.</p>
-        <p>
-          A list of tar files whose content should be in the Docker image.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>debs</code></td>
-      <td>
-        <code>List of files, optional</code>
-        <p>Debian packages to extract.</p>
-        <p>
-          Deprecated: A list of debian packages that will be extracted in the Docker image.
-          Note that this doesn't actually install the packages. Installation needs apt
-          or apt-get which need to be executed within a running container which
-          <code>container_image</code> can't do.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>symlinks</code></td>
-      <td>
-        <code>Dictionary, optional</code>
-        <p>Symlinks to create in the Docker image.</p>
-        <p>
-          <code>
-          symlinks = {
-           "/path/to/link": "/path/to/target",
-           ...
-          },
-          </code>
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>user</code></td>
-      <td>
-        <code>String, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#user">The user
-               that the image should run as.</a></p>
-        <p>Because building the image never happens inside a Docker container,
-               this user does not affect the other actions (e.g.,
-               adding files).</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>entrypoint</code></td>
-      <td>
-        <code>String or string list, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#entrypoint">List
-               of entrypoints to add in the image.</a></p>
-        <p>
-          The behavior between using <code>""</code> and <code>[]</code> may differ.
-          Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
-          for more details.
-        </p>
-        <p>
-          Set <code>entrypoint</code> to <code>None</code>, <code>[]</code>
-          or <code>""</code> will set the <code>Entrypoint</code> of the image
-          to be <code>null</code>.
-        </p>
-	      <p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>cmd</code></td>
-      <td>
-        <code>String or string list, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#cmd">List
-               of commands to execute in the image.</a></p>
-        <p>
-          The behavior between using <code>""</code> and <code>[]</code> may differ.
-          Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
-          for more details.
-        </p>
-        <p>
-          Set <code>cmd</code> to <code>None</code>, <code>[]</code>
-          or <code>""</code> will set the <code>Cmd</code> of the image to be
-          <code>null</code>.
-        </p>
-	      <p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>creation_time</code></td>
-      <td>
-        <code>String, optional, default to {BUILD_TIMESTAMP} when stamp = True, otherwise 0</code>
-        <p>The image's creation timestamp.</p>
-        <p>Acceptable formats: Integer or floating point seconds since Unix
-           Epoch, RFC 3339 date/time.</p>
-        <p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>env</code></td>
-      <td>
-        <code>Dictionary from strings to strings, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#env">Dictionary
-               from environment variable names to their values when running the
-               Docker image.</a></p>
-        <p>
-          <code>
-          env = {
-            "FOO": "bar",
-            ...
-          },
-          </code>
-        </p>
-	<p>The values of this field support make variables (e.g., <code>$(FOO)</code>) and stamp variables; keys support make variables as well.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>labels</code></td>
-      <td>
-        <code>Dictionary from strings to strings, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#label">Dictionary
-               from custom metadata names to their values. You can also put a
-               file name prefixed by '@' as a value. Then the value is replaced
-               with the contents of the file.</a></p>
-        <p>
-          <code>
-          labels = {
-            "com.example.foo": "bar",
-            "com.example.baz": "@metadata.json",
-            ...
-          },
-          </code>
-        </p>
-	<p>The values of this field support stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>ports</code></td>
-      <td>
-        <code>String list, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#expose">List
-               of ports to expose.</a></p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>volumes</code></td>
-      <td>
-        <code>String list, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#volumes">List
-               of volumes to mount.</a></p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>workdir</code></td>
-      <td>
-        <code>String, optional</code>
-        <p><a href="https://docs.docker.com/engine/reference/builder/#workdir">Initial
-               working directory when running the Docker image.</a></p>
-        <p>Because building the image never happens inside a Docker container,
-               this working directory does not affect the other actions (e.g.,
-               adding files).</p>
-	<p>This field supports stamp variables.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>layers</code></td>
-      <td>
-        <code>Label list, optional</code>
-        <p>List of <code>container_layer</code> targets. </p>
-        <p>The data from each <code>container_layer</code> will be part of container image, and the environment variable will be available in the image as well.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>repository</code></td>
-      <td>
-        <code>String, default to `bazel`</code>
-        <p>The repository for the default tag for the image.</a></p>
-        <p>Images generated by <code>container_image</code> are tagged by default to
-           <code>bazel/package_name:target</code> for a <code>container_image</code> target at
-           <code>//package/name:target</code>. Setting this attribute to
-           <code>gcr.io/dummy</code> would set the default tag to
-           <code>gcr.io/dummy/package_name:target</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>stamp</code></td>
-      <td>
-        <p><code>Bool; optional</code></p>
-        <p>If true, enable use of workspace status variables
-        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
-        and custom values set using <code>--workspace_status_command</code>)
-        in tags.</p>
-        <p>These fields are specified in attributes using Python format
-        syntax, e.g. <code>foo{BUILD_USER}bar</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>launcher</code></td>
-      <td>
-        <p><code>Label; optional</code></p>
-        <p>If present, prefix the image's ENTRYPOINT with this file.
-        Note that the launcher should be a container-compatible (OS & Arch)
-        single executable file without any runtime dependencies (as none
-        of its runfiles will be included in the image).
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>launcher_args</code></td>
-      <td>
-        <p><code>String list; optional</code></p>
-        <p>Optional arguments for the <code>launcher</code> attribute.
-        Only valid when <code>launcher</code> is specified.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>legacy_run_behavior</code></td>
-      <td>
-        <p><code>Bool; optional, default to True</code></p>
-        <p>If set to False, <code>bazel run</code> on the
-        <code>container_image</code> target will directly invoke
-        <code>docker run</code>.</p>
-        <p>Note that it defaults to <code>False</code> when using
-        <code>lang_image</code> rules.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>docker_run_flags</code></td>
-      <td>
-        <p><code>String; optional</code></p>
-        <p>Optional flags to use with <code>docker run</code> command.</p>
-        <p>Only used when <code>legacy_run_behavior</code> is set to
-        <code>False</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>architecture</code></td>
-      <td>
-        <p><code>String; optional, default to amd64</code></p>
-        <p>The desired CPU architecture to be used as label in the container image.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>os_version</code></td>
-      <td>
-        <p><code>String; optional</code></p>
-        <p>The desired OS version to be used in the container image config.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>compression</code></td>
-      <td>
-        <code>String, optional</code>
-        <p>Compression method for image layer. Currently only <code>gzip</code> is supported.</p>
-        <p>
-          This affects the compressed layer, which is by the `container_push` rule.
-          It doesn't affect the layers specified by the `layers` attribute.
-        </p>
-        <p>
-          <code>
-          compression = "gzip",
-          </code>
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>compression_options</code></td>
-      <td>
-        <code>List of strings, optional</code>
-        <p>Command-line options for the compression tool. Possible values depend on `compression` method.</p>
-        <p>
-          This affects the compressed layer, which is used by the `container_push` rule.
-          It doesn't affect the layers specified by the `layers` attribute.
-        </p>
-        <p>
-          <code>
-          compression_options = ["--fast"],
-          </code>
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Toolchains</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>@io_bazel_rules_docker//toolchains/docker:toolchain_type</code></td>
-      <td>
-        See <a href="toolchains/docker/readme.md#how-to-use-the-docker-toolchain">How to use the Docker Toolchain</a> for details
-      </td>
-    </tr>
-  </tbody>
-</table>
+**MOVED**: See [docs/container.md](/docs/container.md#container_image)
 
 <a name="container_bundle"></a>
 ## container_bundle
 
-```python
-container_bundle(name, images)
-```
-
-A rule that aliases and saves N images into a single `docker save` tarball.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>images</code></td>
-      <td>
-        <p><code>Map of Tag to image Label; required</code></p>
-        <p>A collection of the images to save into the tarball.</p>
-        <p>The keys are the tags with which to alias the image specified by the
-           value. These tags may contain make variables (<code>$FOO</code>),
-           and if <code>stamp</code> is set to true, may also contain workspace
-           status variables (<code>{BAR}</code>).</p>
-        <p>The values may be the output of <code>container_pull</code>,
-           <code>container_image</code>, or a <code>docker save</code> tarball.</p>
-      </td>
-    </tr>
-    <tr>Toolchains
-      <td><code>stamp</code></td>
-      <td>
-        <p><code>Bool; optional</code></p>
-        <p>Deprecated: it is now automatically inferred.</p>
-        <p>If true, enable use of workspace status variables
-        (e.g. <code>BUILD_USER</code>, <code>BUILD_EMBED_LABEL</code>,
-        and custom values set using <code>--workspace_status_command</code>)
-        in tags.</p>
-        <p>These fields are specified in the tag using Python format
-        syntax, e.g.
-        <code>example.org/{BUILD_USER}/image:{BUILD_EMBED_LABEL}</code>.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+**MOVED**: See [docs/container.md](/docs/container.md#container_bundle)
 
 <a name="container_import"></a>
 ## container_import
 
-```python
-container_import(name, config, layers)
-```
-
-A rule that imports a docker image into our intermediate form.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>config</code></td>
-      <td>
-        <p><code>The v2.2 image's json configuration; required</code></p>
-        <p>A json configuration file containing the image's metadata.</p>
-        <p>This appears in `docker save` tarballs as `<hex>.json` and is
-           referenced by `manifest.json` in the config field.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>layers</code></td>
-      <td>
-        <p><code>The list of layer `.tar`s or `.tar.gz`s; required</code></p>
-        <p>The list of layer <code>.tar.gz</code> files in the order they
-           appear in the <code>config.json</code>'s layer section, or in the
-           order that they appear in <code>docker save</code> tarballs'
-           <code>manifest.json</code> <code>Layers</code> field (these may or
-           may not be gzipped). Note that the layers should each have a
-           different basename.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+**MOVED**: See [docs/container.md](/docs/container.md#container_import)
 
 <a name="container_load"></a>
 ## container_load
 
-```python
-container_load(name, file)
-```
+**MOVED**: See [docs/container.md](/docs/container.md#container_load)
 
-A repository rule that examines the contents of a `docker save` tarball and
-creates a `container_import` target. The created target can be referenced as
-`@label_name//image`.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>file</code></td>
-      <td>
-        <p><code>The `docker save` tarball file; required</code></p>
-        <p>A label targeting a single file which is a compressed or
-           uncompressed tar, as obtained through `docker save IMAGE`.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
 
 ## Adopters
 Here's a (non-exhaustive) list of companies that use `rules_docker` in production. Don't see yours? [You can add it in a PR!](https://github.com/bazelbuild/rules_docker/edit/master/README.md)
   * [Amaiz](https://github.com/amaizfinance)
   * [Aura Devices](https://auradevices.io/)
   * [Button](https://usebutton.com)
+  * [Domino Data Lab](https://www.dominodatalab.com/)
   * [Canva](https://canva.com)
   * [Etsy](https://www.etsy.com)
   * [Evertz](https://evertz.com/)

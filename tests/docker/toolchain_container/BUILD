@@ -96,6 +96,7 @@ container_test(
         ":tests.yaml",
     ],
     image = ":rbe-test-xenial-with-pkgs",
+    tags = ["manual"],  # buildkite-incompatible
     verbose = True,
 )
 
@@ -103,8 +104,8 @@ container_test(
 # toolchain_container with language_tool_layer with tars
 pkg_tar(
     name = "test_tar",
-    files = [
-        "@launchpad_openjdk_gpg//file",
+    srcs = [
+        "//tests/docker:launchpad_openjdk_gpg",
     ],
 )
 

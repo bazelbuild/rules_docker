@@ -44,9 +44,15 @@ bazel-genfiles
 bazel-out
 bazel-testlogs
 
+# Bazel IDE dlugin Directories
+.ijwb
+
 # Eclipse and PyDev
 .project
 .pydevproject
 
 # Npm packages
 node_modules
+
+# JetBrains garbage
+.idea/

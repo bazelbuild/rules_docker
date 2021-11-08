@@ -42,7 +42,7 @@ class TarFile(object):
 
   @staticmethod
   def parse_pkg_name(metadata, filename):
-    pkg_name_match = TarFile.PKG_NAME_RE.match(str(metadata))
+    pkg_name_match = TarFile.PKG_NAME_RE.match(metadata)
     if pkg_name_match:
       return pkg_name_match.group('pkg_name')
     else:
@@ -231,7 +231,7 @@ class TarFile(object):
         control_file = tar.extractfile(control_file_member[0])
         metadata = b''.join(control_file.readlines())
         destination_file = os.path.join(TarFile.DPKG_STATUS_DIR,
-                                        TarFile.parse_pkg_name(metadata, deb))
+                                        TarFile.parse_pkg_name(metadata.decode("utf-8"), deb))
         with self.write_temp_file(data=metadata) as metadata_file:
           self.add_file(metadata_file, destination_file)
     except (KeyError, TypeError) as e:

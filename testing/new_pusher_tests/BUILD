@@ -18,4 +18,5 @@ container_test(
     name = "new_push_verify_pushed_configs_and_files",
     configs = ["@io_bazel_rules_docker//tests/container/configs:verify_new_pusher.yaml"],
     image = "@verify_new_pusher_image_contents//image",
+    tags = ["manual"],  # buildkite-incompatible
 )

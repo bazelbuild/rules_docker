@@ -55,3 +55,9 @@ test:remote --google_default_credentials=true
 
 test:remote --remote_timeout=3600
 test:remote --keep_going
+
+# Configuration specific to buildkite CI testing the default workspace
+test:buildkite --action_env=PATH 
+test:buildkite --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test 
+test:buildkite --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test 
+test:buildkite --test_output=errors

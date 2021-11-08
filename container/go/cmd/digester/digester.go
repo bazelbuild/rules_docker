@@ -42,14 +42,15 @@ func main() {
 	if *dst == "" {
 		log.Fatalln("Required option -dst was not specified.")
 	}
-	if *imgConfig == "" {
-		log.Fatalln("Option --config is required.")
+	if *imgTarball == "" && *imgConfig == "" {
+		log.Fatalln("Neither --tarball nor --config was specified.")
 	}
 	imgParts, err := compat.ImagePartsFromArgs(*imgConfig, *baseManifest, *imgTarball, layers)
 	if err != nil {
 		log.Fatalf("Unable to determine parts of the image from the specified arguments: %v", err)
 	}
-	img, err := compat.ReadImage(imgParts)
+	r := compat.Reader{Parts: imgParts}
+	img, err := r.ReadImage()
 	if err != nil {
 		log.Fatalf("Error reading image: %v", err)
 	}

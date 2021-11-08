@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package(default_visibility = ["//visibility:public"])
-
 load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
@@ -24,6 +22,8 @@ load("//contrib:test.bzl", "container_test")
 load("//docker/package_managers:apt_key.bzl", "add_apt_key")
 load("//docker/package_managers:download_pkgs.bzl", "download_pkgs")
 load("//docker/package_managers:install_pkgs.bzl", "install_pkgs")
+
+package(default_visibility = ["//visibility:public"])
 
 download_pkgs(
     name = "test_download_pkgs",
@@ -106,7 +106,7 @@ add_apt_key(
     image = "@debian9//:builder.tar",
     keys = [
         "@bazel_gpg//file",
-        "@launchpad_openjdk_gpg//file",
+        "//tests/docker:launchpad_openjdk_gpg",
     ],
 )
 

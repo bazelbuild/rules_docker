@@ -37,46 +37,40 @@ def go_deps():
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            urls = ["https://api.github.com/repos/google/go-containerregistry/tarball/e5f4efd48dbff3ab3165a944d6777f8db28f0ccb"],  # v0.1.2
-            strip_prefix = "google-go-containerregistry-e5f4efd",
-            sha256 = "44ab9b4a959950922ca11f9fe511010f649c2af034dace12da37a33a4fae3ded",
+            urls = ["https://github.com/google/go-containerregistry/archive/v0.5.1.tar.gz"],
+            sha256 = "c3e28d8820056e7cc870dbb5f18b4f7f7cbd4e1b14633a6317cef895fdb35203",
             importpath = "github.com/google/go-containerregistry",
-            type = "tar.gz",
+            strip_prefix = "go-containerregistry-0.5.1",
+            build_directives = [
+                # Silence Go module warnings about unused modules.
+                "gazelle:exclude pkg/authn/k8schain",
+            ],
         )
     if "com_github_pkg_errors" not in excludes:
         go_repository(
             name = "com_github_pkg_errors",
-            urls = ["https://api.github.com/repos/pkg/errors/tarball/614d223910a179a466c1767a985424175c39b465"],  # v0.9.1
-            sha256 = "208d21a7da574026f68a8c9818fa7c6ede1b514ef9e72dc733b496ddcb7792a6",
             importpath = "github.com/pkg/errors",
-            strip_prefix = "pkg-errors-614d223",
-            type = "tar.gz",
+            sum = "h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=",
+            version = "v0.9.1",
         )
-
     if "in_gopkg_yaml_v2" not in excludes:
         go_repository(
             name = "in_gopkg_yaml_v2",
-            urls = ["https://api.github.com/repos/go-yaml/yaml/tarball/53403b58ad1b561927d19068c655246f2db79d48"],  # v2.2.8
-            sha256 = "7c8b9e36fac643f1b4a5fc1dc578fb569fc3a1d611c02c3338f4efa84de729fa",
             importpath = "gopkg.in/yaml.v2",
-            strip_prefix = "go-yaml-yaml-53403b5",
-            type = "tar.gz",
+            sum = "h1:obN1ZagJSUGI0Ek/LBmuj4SNLPfIny3KsKFopxRdj10=",
+            version = "v2.2.8",
         )
     if "com_github_kylelemons_godebug" not in excludes:
         go_repository(
             name = "com_github_kylelemons_godebug",
-            urls = ["https://api.github.com/repos/kylelemons/godebug/tarball/9ff306d4fbead574800b66369df5b6144732d58e"],  # v1.1.0
-            sha256 = "6151c487936ab72cffbf804626228083c9b3abfc908a2bb41b1160e1e5780aaf",
             importpath = "github.com/kylelemons/godebug",
-            strip_prefix = "kylelemons-godebug-9ff306d",
-            type = "tar.gz",
+            sum = "h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=",
+            version = "v1.1.0",
         )
     if "com_github_ghodss_yaml" not in excludes:
         go_repository(
             name = "com_github_ghodss_yaml",
-            urls = ["https://api.github.com/repos/ghodss/yaml/tarball/0ca9ea5df5451ffdf184b4428c902747c2c11cd7"],  # v1.0.0
-            sha256 = "d4bd43ce9348fc1b52af3b7de7a8e62a30d5a02d9137319f312cd95380014f6e",
             importpath = "github.com/ghodss/yaml",
-            strip_prefix = "ghodss-yaml-0ca9ea5",
-            type = "tar.gz",
+            sum = "h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=",
+            version = "v1.0.0",
         )

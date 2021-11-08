@@ -67,6 +67,7 @@ def _extract_impl(
     extract_file = extract_file or ctx.attr.extract_file
     output_file = output_file or ctx.outputs.out
     script = script_file or ctx.outputs.script
+    extra_deps = extra_deps or ctx.files.extra_deps
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
@@ -95,7 +96,7 @@ def _extract_impl(
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _extract_attrs = {
     "commands": attr.string_list(
@@ -110,6 +111,11 @@ _extract_attrs = {
     "extract_file": attr.string(
         doc = "Path to file to extract from container.",
         mandatory = True,
+    ),
+    "extra_deps": attr.label_list(
+        doc = "Extra dependency to be passed as inputs",
+        mandatory = False,
+        allow_files = True,
     ),
     "image": attr.label(
         executable = True,
@@ -227,7 +233,7 @@ def _commit_impl(
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _commit_attrs = {
     "commands": attr.string_list(
@@ -266,6 +272,8 @@ _commit_attrs = {
         allow_files = True,
     ),
 }
+
+# @unsorted-dict-items
 _commit_outputs = {
     "out": "%{name}_commit.tar",
     "build": "%{name}.build",
@@ -384,6 +392,12 @@ def _commit_layer_impl(
         outputs = [output_layer_tar, output_diff_id],
         inputs = runfiles,
         executable = script,
+        execution_requirements = {
+            # This action produces large output files, and isn't economical to
+            # upload to a remote cache.
+            "no-remote-cache": "1",
+        },
+        mnemonic = "RunAndCommitLayer",
         tools = [ctx.executable._extract_image_id, ctx.executable._last_layer_extractor_tool],
         use_default_shell_env = True,
     )

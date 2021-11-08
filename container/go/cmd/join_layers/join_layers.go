@@ -33,6 +33,7 @@ import (
 
 var (
 	outputTarball  = flag.String("output", "", "Path to the output image tarball.")
+	tarballFormat  = flag.String("experimental-tarball-format", "legacy", "Which format to use for the image tarball: \"legacy\" (default) | \"compressed\"")
 	tags           utils.ArrayStringFlags
 	basemanifests  utils.ArrayStringFlags
 	layers         utils.ArrayStringFlags
@@ -78,23 +79,25 @@ func loadImageTarballs(imageTarballs []string) ([]v1.Image, error) {
 // the images defined by the given tag to config & manifest maps with the
 // layers defined by the given LayerParts deriving from images in the given
 // tarballs.
-func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name.Tag]string, imageTarballs []string, layerParts []compat.LayerParts) error {
+func writeOutput(outputTarball string, tarballFormat string, tagToConfigs, tagToBaseManifests map[name.Tag]string, imageTarballs []string, layerParts []compat.LayerParts) error {
 	tagToImg := make(map[name.Tag]v1.Image)
 	images, err := loadImageTarballs(imageTarballs)
 	if err != nil {
 		return errors.Wrap(err, "unable to load images from the given tarballs")
 	}
+	parts := compat.ImageParts{
+		Images: images,
+		Layers: layerParts,
+	}
+	r := compat.Reader{Parts: parts}
 	for tag, configFile := range tagToConfigs {
 		// Manifest file may not have been specified and this is ok as it's
 		// only required if the base images has foreign layers.
 		manifestFile := tagToBaseManifests[tag]
-		parts := compat.ImageParts{
-			Config:       configFile,
-			BaseManifest: manifestFile,
-			Images:       images,
-			Layers:       layerParts,
-		}
-		img, err := compat.ReadImage(parts)
+		r.Parts.Config = configFile
+		r.Parts.BaseManifest = manifestFile
+
+		img, err := r.ReadImage()
 		if err != nil {
 			return errors.Wrapf(err, "unable to load image %v corresponding to config %s", tag, configFile)
 		}
@@ -108,7 +111,15 @@ func writeOutput(outputTarball string, tagToConfigs, tagToBaseManifests map[name
 	if err != nil {
 		return errors.Wrapf(err, "unable to create image tarball file %q for writing", outputTarball)
 	}
-	return legacyTarball.MultiWrite(refToImage, o)
+
+	if tarballFormat == "legacy" {
+		return legacyTarball.MultiWrite(refToImage, o)
+	} else if tarballFormat == "compressed" {
+		return tarball.MultiRefWrite(refToImage, o)
+	} else {
+		// TODO(#1695): Also support OCI layout?
+		return errors.Errorf("invalid tarball format: %q", tarballFormat)
+	}
 }
 
 func main() {
@@ -139,7 +150,7 @@ func main() {
 		}
 		layerParts = append(layerParts, layer)
 	}
-	if err := writeOutput(*outputTarball, tagToConfig, tagToBaseManifest, sourceImages, layerParts); err != nil {
+	if err := writeOutput(*outputTarball, *tarballFormat, tagToConfig, tagToBaseManifest, sourceImages, layerParts); err != nil {
 		log.Fatalf("Failed to generate output at %s: %v", *outputTarball, err)
 	}
 }

@@ -301,6 +301,28 @@ class ImageTest(unittest.TestCase):
             # Assume that any value for 'created' within a reasonable bound is fine.
             self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
 
+    def test_with_base_stamped_image(self):
+        # {BUILD_TIMESTAMP} should be the default when `stamp = True` is configured
+        # in the base image and `creation_time` isn't explicitly defined.
+        with TestImage('with_base_stamped_image') as img:
+            self.assertEqual(3, len(img.fs_layers()))
+            cfg = json.loads(img.config_file())
+            created_str = cfg.get('created', '')
+            self.assertNotEqual('', created_str)
+
+            now = datetime.datetime.utcnow()
+
+            created = datetime.datetime.strptime(
+                created_str, '%Y-%m-%dT%H:%M:%SZ')
+
+            # The BUILD_TIMESTAMP is set by Bazel to Java's CurrentTimeMillis / 1000,
+            # or env['SOURCE_DATE_EPOCH']. For Bazel versions before 0.12, there was
+            # a bug where CurrentTimeMillis was not divided by 1000.
+            # See https://github.com/bazelbuild/bazel/issues/2240
+            # https://bazel-review.googlesource.com/c/bazel/+/48211
+            # Assume that any value for 'created' within a reasonable bound is fine.
+            self.assertLessEqual(now - created, datetime.timedelta(minutes=15))
+
     def test_with_env(self):
         with TestBundleImage(
                 'with_env', 'bazel/%s:with_env' % TEST_DATA_TARGET_BASE) as img:
@@ -861,7 +883,9 @@ class ImageTest(unittest.TestCase):
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/linker',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/linker/index.js',
-                './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/linker/runfiles_helper.js',
+                './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/runfiles',
+                './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/runfiles/index.js',
+                './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/runfiles/runfile_helper_main.js',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/node',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/node/node_patches.js',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/internal/coverage',
@@ -896,6 +920,7 @@ class ImageTest(unittest.TestCase):
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map/lib/util.js',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map-support',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map-support/package.json',
+                './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map-support/register.js',
                 './app/testdata/nodejs_image_binary.runfiles/build_bazel_rules_nodejs/third_party/github.com/source-map-support/source-map-support.js',
                 './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image_lib.js',
                 './app/testdata/nodejs_image_binary.runfiles/io_bazel_rules_docker/testdata/nodejs_image_lib.d.ts',
