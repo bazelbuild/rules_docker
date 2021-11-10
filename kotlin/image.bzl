@@ -34,6 +34,7 @@ def kt_jvm_image(
         deps = [],
         layers = [],
         jvm_flags = [],
+        classpath_as_file = None,
         **kwargs):
     """Builds a container image overlaying the kt_jvm_binary.
 
@@ -92,6 +93,7 @@ def kt_jvm_image(
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        classpath_as_file = classpath_as_file,
     )
 
 def repositories():

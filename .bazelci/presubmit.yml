@@ -69,12 +69,15 @@ tasks:
       - -//tests/container/go:go_image_test
       - -//tests/container/go:go_static_image_test
       - -//tests/container/groovy:groovy_image_test
+      - -//tests/container/groovy:groovy_classpath_as_file_image_test
       - -//tests/container/java:java_image_test
+      - -//tests/container/java:java_classpath_as_file_image_test
       - -//tests/container/java:java_partial_entrypoint_image_test
       - -//tests/container/java:java_runfiles_as_lib_image_test
       - -//tests/container/java:java_runfiles_image_test
       - -//tests/container/java:simple_java_entrypoint_image_test
       - -//tests/container/kotlin:kotlin_image_test
+      - -//tests/container/kotlin:kotlin_classpath_as_file_image_test
       - -//tests/container/nodejs:nodejs_image_custom_binary_test
       - -//tests/container/nodejs:nodejs_image_custom_binary_with_args_test
       - -//tests/container/nodejs:nodejs_image_empty_list_args_test
@@ -86,6 +89,7 @@ tasks:
       - -//tests/container/python3:py3_image_test
       - -//tests/container/rust:rust_image_test
       - -//tests/container/scala:scala_image_test
+      - -//tests/container/scala:scala_classpath_as_file_image_test
       - -//tests/contrib:derivative_with_volume_repro_test
       - -//tests/contrib:random_file_img_non_repro_test
       - -//tests/contrib:rbe-test-xenial_repro_test

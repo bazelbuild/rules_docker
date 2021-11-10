@@ -33,6 +33,7 @@ def groovy_image(
         deps = [],
         layers = [],
         jvm_flags = [],
+        classpath_as_file = None,
         **kwargs):
     """Builds a container image overlaying the groovy_binary.
 
@@ -93,6 +94,7 @@ def groovy_image(
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        classpath_as_file = classpath_as_file,
     )
 
 def repositories():
