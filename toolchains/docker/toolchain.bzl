@@ -31,6 +31,8 @@ DockerToolchainInfo = provider(
         "xz_path": "Optional path to the xz binary. This is used by " +
                    "build_tar.py when the Python lzma module is unavailable. " +
                    "If not set found via which.",
+        "xz_target": "Optional Bazel target for the xz tool. " +
+                     "Should only be set if xz_path is unset.",
     },
 )
 
@@ -43,6 +45,7 @@ def _docker_toolchain_impl(ctx):
             gzip_target = ctx.attr.gzip_target,
             tool_path = ctx.attr.tool_path,
             xz_path = ctx.attr.xz_path,
+            xz_target = ctx.attr.xz_target,
         ),
     )
     return [toolchain_info]
@@ -81,23 +84,34 @@ docker_toolchain = rule(
             doc = "Optional path to the xz binary. This is used by " +
                   "build_tar.py when the Python lzma module is unavailable.",
         ),
+        "xz_target": attr.label(
+            allow_files = True,
+            doc = "Bazel target for the xz tool. " +
+                  "Should only be set if xz_path is unset.",
+            cfg = "host",
+            executable = True,
+        ),
     },
 )
 
 def _toolchain_configure_impl(repository_ctx):
     if repository_ctx.attr.gzip_target and repository_ctx.attr.gzip_path:
         fail("Only one of gzip_target or gzip_path can be set.")
+    if repository_ctx.attr.xz_target and repository_ctx.attr.xz_path:
+        fail("Only one of xz_target or xz_path can be set.")
     tool_path = ""
     if repository_ctx.attr.docker_path:
         tool_path = repository_ctx.attr.docker_path
     elif repository_ctx.which("docker"):
         tool_path = repository_ctx.which("docker")
 
-    xz_path = ""
-    if repository_ctx.attr.xz_path:
-        xz_path = repository_ctx.attr.xz_path
+    xz_attr = ""
+    if repository_ctx.attr.xz_target:
+        xz_attr = "xz_target = \"%s\"," % repository_ctx.attr.xz_target
+    elif repository_ctx.attr.xz_path:
+        xz_attr = "xz_path = \"%s\"," % repository_ctx.attr.xz_path
     elif repository_ctx.which("xz"):
-        xz_path = repository_ctx.which("xz")
+        xz_attr = "xz_path = \"%s\"," % repository_ctx.which("xz")
 
     gzip_attr = ""
     if repository_ctx.attr.gzip_target:
@@ -118,7 +132,7 @@ def _toolchain_configure_impl(repository_ctx):
             "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
             "%{DOCKER_TOOL}": "%s" % tool_path,
             "%{GZIP_ATTR}": "%s" % gzip_attr,
-            "%{XZ_TOOL_PATH}": "%s" % xz_path,
+            "%{XZ_ATTR}": "%s" % xz_attr,
         },
         False,
     )
@@ -175,6 +189,14 @@ toolchain_configure = repository_rule(
             doc = "The full path to the xz binary. If not specified, it will " +
                   "be searched for in the path. If not available, running commands " +
                   "that use xz will fail.",
+        ),
+        "xz_target": attr.label(
+            executable = True,
+            cfg = "host",
+            allow_files = True,
+            mandatory = False,
+            doc = "The bazel target for the xz tool. " +
+                  "Can only be set if xz_path is not set.",
         ),
     },
     environ = [

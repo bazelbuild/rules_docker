@@ -139,6 +139,9 @@ docker_toolchain_configure(
   # OPTIONAL: Path to the xz binary.
   # Should be set explicitly for remote execution.
   xz_path="<enter absolute path to the xz binary (in the remote exec env) here>",
+  # OPTIONAL: Bazel target for the xz tool.
+  # Either xz_path or xz_target should be set explicitly for remote execution.
+  xz_target="<enter absolute path (i.e., must start with repo name @...//:...) to an executable xz target>",
   # OPTIONAL: List of additional flags to pass to the docker command.
   docker_flags = [
     "--tls",

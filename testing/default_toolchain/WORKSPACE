@@ -22,12 +22,22 @@ local_repository(
 )
 
 load(
+    "//:local_tool.bzl",
+    "local_tool",
+)
+
+local_tool(
+    name = "xz",
+)
+
+load(
     "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     docker_toolchain_configure = "toolchain_configure",
 )
 
 docker_toolchain_configure(
     name = "docker_config",
+    xz_target = "@xz//:xz",
 )
 
 load(

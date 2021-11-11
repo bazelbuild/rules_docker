@@ -117,11 +117,11 @@ func ImagePartsFromArgs(config, baseManifest, imgTarball string, layers []string
 	return result, nil
 }
 
-// reader maintains the state necessary to build a legacyImage object from an
+// Reader maintains the state necessary to build a legacyImage object from an
 // ImageParts object.
-type reader struct {
+type Reader struct {
 	// parts is the ImageParts being loaded.
-	parts ImageParts
+	Parts ImageParts
 	// baseManifest is the manifest of the very first base image in the chain
 	// of images being loaded.
 	baseManifest *v1.Manifest
@@ -130,32 +130,35 @@ type reader struct {
 	// layerLookup is a map from the diffID of a layer to the layer
 	// itself.
 	layerLookup map[v1.Hash]v1.Layer
+	// loadedImageCache is a cache of all images that have been loaded into memory,
+	// to prevent costly reloads.
+	loadedImageCache map[v1.Hash]bool
 }
 
 // loadMetadata loads the image metadata for the image parts in the given
 // reader.
-func (r *reader) loadMetadata() error {
-	cf, err := os.Open(r.parts.Config)
+func (r *Reader) loadMetadata() error {
+	cf, err := os.Open(r.Parts.Config)
 	if err != nil {
-		return errors.Wrapf(err, "unable to open image config file %s", r.parts.Config)
+		return errors.Wrapf(err, "unable to open image config file %s", r.Parts.Config)
 	}
 	c, err := v1.ParseConfigFile(cf)
 	if err != nil {
-		return errors.Wrapf(err, "unable to parse image config from %s", r.parts.Config)
+		return errors.Wrapf(err, "unable to parse image config from %s", r.Parts.Config)
 	}
 	r.config = c
-	if r.parts.BaseManifest == "" {
+	if r.Parts.BaseManifest == "" {
 		// Base manifest is optional. It's only needed for images whose base
 		// manifests have foreign layers.
 		return nil
 	}
-	mf, err := os.Open(r.parts.BaseManifest)
+	mf, err := os.Open(r.Parts.BaseManifest)
 	if err != nil {
-		return errors.Wrapf(err, "unable to open base image manifest file %s", r.parts.BaseManifest)
+		return errors.Wrapf(err, "unable to open base image manifest file %s", r.Parts.BaseManifest)
 	}
 	m, err := v1.ParseManifest(mf)
 	if err != nil {
-		return errors.Wrapf(err, "unable to parse base image manifest from %s", r.parts.BaseManifest)
+		return errors.Wrapf(err, "unable to parse base image manifest from %s", r.Parts.BaseManifest)
 	}
 	r.baseManifest = m
 	return nil
@@ -209,7 +212,7 @@ func (l *foreignLayer) MediaType() (types.MediaType, error) {
 
 // loadForeignLayers loads the foreign layers from the base manifest in the
 // given reader into the layer lookup.
-func (r *reader) loadForeignLayers() error {
+func (r *Reader) loadForeignLayers() error {
 	if r.baseManifest == nil {
 		// No base manifest so no foreign layers to load.
 		return nil
@@ -237,8 +240,12 @@ func (r *reader) loadForeignLayers() error {
 
 // loadImages loads the layers from the given images into the layers lookup
 // in the given reader.
-func (r *reader) loadImages(images []v1.Image) error {
+func (r *Reader) loadImages(images []v1.Image) error {
 	for _, img := range images {
+		digest, _ := img.Digest()
+		if r.loadedImageCache[digest] {
+			continue
+		}
 		layers, err := img.Layers()
 		if err != nil {
 			return errors.Wrap(err, "unable to get the layers in image")
@@ -250,6 +257,7 @@ func (r *reader) loadImages(images []v1.Image) error {
 			}
 			r.layerLookup[diffID] = l
 		}
+		r.loadedImageCache[digest] = true
 	}
 	return nil
 }
@@ -257,24 +265,24 @@ func (r *reader) loadImages(images []v1.Image) error {
 // loadImgTarball loads the layers from the image tarball in the parts section
 // of the given reader if one was specified into the layers lookup in the given
 // reader.
-func (r *reader) loadImgTarball() error {
-	if r.parts.ImageTarball == "" {
+func (r *Reader) loadImgTarball() error {
+	if r.Parts.ImageTarball == "" {
 		return nil
 	}
-	img, err := tarball.ImageFromPath(r.parts.ImageTarball, nil)
+	img, err := tarball.ImageFromPath(r.Parts.ImageTarball, nil)
 	if err != nil {
-		return errors.Wrapf(err, "unable to load image from tarball %s", r.parts.ImageTarball)
+		return errors.Wrapf(err, "unable to load image from tarball %s", r.Parts.ImageTarball)
 	}
 	if err := r.loadImages([]v1.Image{img}); err != nil {
-		return errors.Wrapf(err, "unable to load the layers from image loaded from tarball %s", r.parts.ImageTarball)
+		return errors.Wrapf(err, "unable to load the layers from image loaded from tarball %s", r.Parts.ImageTarball)
 	}
 	return nil
 }
 
 // loadLayers loads layers specified as parts in the ImageParts section in the
 // given reader.
-func (r *reader) loadLayers() error {
-	for _, l := range r.parts.Layers {
+func (r *Reader) loadLayers() error {
+	for _, l := range r.Parts.Layers {
 		layer, err := l.V1Layer()
 		if err != nil {
 			return errors.Wrap(err, "unable to build a v1.Layer from the specified parts")
@@ -288,24 +296,28 @@ func (r *reader) loadLayers() error {
 	return nil
 }
 
-// ReadImage loads a v1.Image from the given ImageParts
-func ReadImage(parts ImageParts) (v1.Image, error) {
+// ReadImage loads a v1.Image from the ImageParts section in the reader.
+func (r *Reader) ReadImage() (v1.Image, error) {
 	// Special case: if we only have a tarball, we can instantiate the image
 	// directly from that. Otherwise, we'll process the image layers
 	// individually as specified in the config.
-	if parts.ImageTarball != "" && parts.Config == "" {
-		return tarball.ImageFromPath(parts.ImageTarball, nil)
+	if r.Parts.ImageTarball != "" && r.Parts.Config == "" {
+		return tarball.ImageFromPath(r.Parts.ImageTarball, nil)
 	}
 
-	r := reader{parts: parts}
-	r.layerLookup = make(map[v1.Hash]v1.Layer)
+	if r.layerLookup == nil {
+		r.layerLookup = make(map[v1.Hash]v1.Layer)
+	}
+	if r.loadedImageCache == nil {
+		r.loadedImageCache = make(map[v1.Hash]bool)
+	}
 	if err := r.loadMetadata(); err != nil {
 		return nil, errors.Wrap(err, "unable to load image metadata")
 	}
 	if err := r.loadForeignLayers(); err != nil {
 		return nil, errors.Wrap(err, "unable to load foreign layers specified in the base manifest")
 	}
-	if err := r.loadImages(r.parts.Images); err != nil {
+	if err := r.loadImages(r.Parts.Images); err != nil {
 		return nil, errors.Wrap(err, "unable to load layers from the images in the given image parts")
 	}
 	if err := r.loadImgTarball(); err != nil {
@@ -318,16 +330,23 @@ func ReadImage(parts ImageParts) (v1.Image, error) {
 	for _, diffID := range r.config.RootFS.DiffIDs {
 		layer, ok := r.layerLookup[diffID]
 		if !ok {
-			return nil, errors.Errorf("unable to locate layer with diffID %v as indicated in image config %s", diffID, parts.Config)
+			return nil, errors.Errorf("unable to locate layer with diffID %v as indicated in image config %s", diffID, r.Parts.Config)
 		}
 		layers = append(layers, layer)
 	}
 	img := &legacyImage{
-		configPath: parts.Config,
+		configPath: r.Parts.Config,
 		layers:     layers,
 	}
 	if err := img.init(); err != nil {
 		return nil, errors.Wrap(err, "unable to initialize image from parts")
 	}
 	return img, nil
+}
+
+// ReadImage loads a v1.Image from the given ImageParts
+func ReadImage(parts ImageParts) (v1.Image, error) {
+	r := Reader{Parts: parts}
+	img, err := r.ReadImage()
+	return img, err
 }
