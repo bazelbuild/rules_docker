@@ -20,6 +20,7 @@ stardoc(
 # If these fail, run `bazel run //docs:update`
 diff_test(
     name = "check_container",
+    failure_message = "Please run bazel run //docs:update",
     file1 = "container.md",
     file2 = ":container_doc",
 )
