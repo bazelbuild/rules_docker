@@ -86,6 +86,7 @@ _dep_layer = rule(
     outputs = lang_image.outputs,
     toolchains = lang_image.toolchains,
     implementation = _dep_layer_impl,
+    cfg = lang_image.cfg,
 )
 
 def _npm_deps_runfiles(dep):
@@ -107,6 +108,7 @@ _npm_deps_layer = rule(
     outputs = lang_image.outputs,
     toolchains = lang_image.toolchains,
     implementation = _npm_deps_layer_impl,
+    cfg = lang_image.cfg,
 )
 
 def nodejs_image(

@@ -108,7 +108,7 @@ A rule that assembles data into a tarball which can be use as in layers attr in 
 | <a id="container_layer-empty_dirs"></a>empty_dirs |  -   | List of strings | optional | [] |
 | <a id="container_layer-empty_files"></a>empty_files |  -   | List of strings | optional | [] |
 | <a id="container_layer-enable_mtime_preservation"></a>enable_mtime_preservation |  -   | Boolean | optional | False |
-| <a id="container_layer-env"></a>env |  Dictionary from environment variable names to their values when running the Docker image.<br><br>        See https://docs.docker.com/engine/reference/builder/#env<br><br>        For example,<br><br>            env = {                 "FOO": "bar",                 ...             }, <br><br>        The values of this field support make variables (e.g., <code>$(FOO)</code>)         and stamp variables; keys support make variables as well.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| <a id="container_layer-env"></a>env |  Dictionary from environment variable names to their values when running the Docker image.<br><br>        See https://docs.docker.com/engine/reference/builder/#env<br><br>        For example,<br><br>            env = {                 "FOO": "bar",                 ...             },<br><br>        The values of this field support make variables (e.g., <code>$(FOO)</code>)         and stamp variables; keys support make variables as well.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="container_layer-extract_config"></a>extract_config |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container/go/cmd/extract_config:extract_config |
 | <a id="container_layer-files"></a>files |  File to add to the layer.<br><br>        A list of files that should be included in the Docker image.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | <a id="container_layer-incremental_load_template"></a>incremental_load_template |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container:incremental_load_template |
@@ -414,6 +414,7 @@ You can write a customized container_image rule by writing something like:
         executable = True,
         outputs = _container.image.outputs,
         implementation = _impl,
+        cfg = _container.image.cfg,
     )
 
 

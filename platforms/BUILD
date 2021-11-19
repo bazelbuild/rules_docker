@@ -56,3 +56,29 @@ platform(
     ],
     parents = ["@buildkite_config//config:platform"],
 )
+
+_IMAGE_TRANSITION_CONSTRAINTS = [
+    ("cpu", "@platforms//cpu"),
+    ("os", "@platforms//os"),
+]
+
+[[
+    # Use a constraint value which will never be valid to prevent
+    # accidentally leaving the associated constraint setting unset.
+    constraint_value(
+        name = "image_transition_{}_unset".format(name),
+        constraint_setting = constraint_setting,
+    ),
+    label_setting(
+        name = "image_transition_{}".format(name),
+        build_setting_default = ":image_transition_{}_unset".format(name),
+    ),
+] for name, constraint_setting in _IMAGE_TRANSITION_CONSTRAINTS]
+
+platform(
+    name = "image_transition",
+    constraint_values = [
+        ":image_transition_{}".format(name)
+        for name, _ in _IMAGE_TRANSITION_CONSTRAINTS
+    ],
+)

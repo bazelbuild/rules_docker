@@ -155,12 +155,14 @@ key = struct(
     attrs = _attrs,
     outputs = _outputs,
     implementation = _impl,
+    cfg = _container.image.cfg,
 )
 
 add_apt_key = rule(
-    attrs = _attrs,
-    outputs = _outputs,
-    implementation = _impl,
+    attrs = key.attrs,
+    outputs = key.outputs,
+    implementation = key.implementation,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     executable = True,
+    cfg = key.cfg,
 )

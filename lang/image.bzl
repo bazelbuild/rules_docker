@@ -272,6 +272,7 @@ image = struct(
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _app_layer_impl,
+    cfg = _container.image.cfg,
 )
 
 _app_layer = rule(
@@ -280,6 +281,7 @@ _app_layer = rule(
     outputs = image.outputs,
     toolchains = image.toolchains,
     implementation = image.implementation,
+    cfg = image.cfg,
 )
 
 # Convenience function that instantiates the _app_layer rule and returns
