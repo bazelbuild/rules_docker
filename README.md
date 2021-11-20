@@ -218,8 +218,20 @@ You can load this into your local Docker client by running:
 `bazel run my/image:helloworld`.
 
 For the `lang_image` targets, this will also **run** the
-container to maximize compatibility with `lang_binary` rules.  You can suppress
-this behavior by passing the single flag: `bazel run :foo -- --norun`
+container using `docker run` to maximize compatibility with `lang_binary` rules.
+
+Arguments to this command are forwarded to docker, meaning the command
+
+```bash
+bazel run my/image:helloworld -- -p 8080:80 -- arg0
+```
+
+will perform the following steps:
+* load the `my/image:helloworld` target into your local Docker client
+* start a container using this image where `arg0` is passed to the image entrypoint
+* port forward 8080 on the host to port 80 on the container, as per `docker run` documentation
+
+You can suppress this behavior by passing the single flag: `bazel run :foo -- --norun`
 
 Alternatively, you can build a `docker load` compatible bundle with:
 `bazel build my/image:helloworld.tar`.  This will produce the file:
