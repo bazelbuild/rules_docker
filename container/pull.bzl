@@ -22,7 +22,7 @@ construct new images.
 NOTE: `container_pull` now supports authentication using custom docker client configuration.
 See [here](https://github.com/bazelbuild/rules_docker#container_pull-custom-client-configuration) for details.
 
-NOTE: Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
+NOTE: Set `PULLER_TIMEOUT` env variable to change the default 600s timeout for all container_pull targets.
 
 NOTE: Set `DOCKER_REPO_CACHE` env variable to make the container puller cache downloaded layers at the directory specified as a value to this env variable.
 The caching feature hasn't been thoroughly tested and may be thread unsafe.
@@ -123,6 +123,11 @@ _container_pull_attrs = {
         Note: For reproducible builds, use of `digest` is recommended.
         """,
     ),
+    "timeout": attr.int(
+        doc = """Timeout in seconds to fetch the image from the registry.
+
+        This attribute will be overridden by the PULLER_TIMEOUT environment variable, if it is set.""",
+    ),
 }
 
 def _impl(repository_ctx):
@@ -210,6 +215,9 @@ def _impl(repository_ctx):
             kwargs["timeout"] = int(timeout_in_secs)
         else:
             fail("'%s' is invalid value for PULLER_TIMEOUT. Must be an integer." % (timeout_in_secs))
+    elif repository_ctx.attr.timeout > 0:
+        args.extend(["-timeout", str(repository_ctx.attr.timeout)])
+        kwargs["timeout"] = repository_ctx.attr.timeout
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:

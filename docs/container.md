@@ -152,7 +152,8 @@ The created target can be referenced as `@label_name//image`.
 <pre>
 container_pull(<a href="#container_pull-name">name</a>, <a href="#container_pull-architecture">architecture</a>, <a href="#container_pull-cpu_variant">cpu_variant</a>, <a href="#container_pull-digest">digest</a>, <a href="#container_pull-docker_client_config">docker_client_config</a>, <a href="#container_pull-import_tags">import_tags</a>, <a href="#container_pull-os">os</a>,
                <a href="#container_pull-os_features">os_features</a>, <a href="#container_pull-os_version">os_version</a>, <a href="#container_pull-platform_features">platform_features</a>, <a href="#container_pull-puller_darwin">puller_darwin</a>, <a href="#container_pull-puller_linux_amd64">puller_linux_amd64</a>,
-               <a href="#container_pull-puller_linux_arm64">puller_linux_arm64</a>, <a href="#container_pull-puller_linux_s390x">puller_linux_s390x</a>, <a href="#container_pull-registry">registry</a>, <a href="#container_pull-repo_mapping">repo_mapping</a>, <a href="#container_pull-repository">repository</a>, <a href="#container_pull-tag">tag</a>)
+               <a href="#container_pull-puller_linux_arm64">puller_linux_arm64</a>, <a href="#container_pull-puller_linux_s390x">puller_linux_s390x</a>, <a href="#container_pull-registry">registry</a>, <a href="#container_pull-repo_mapping">repo_mapping</a>, <a href="#container_pull-repository">repository</a>, <a href="#container_pull-tag">tag</a>,
+               <a href="#container_pull-timeout">timeout</a>)
 </pre>
 
 A repository rule that pulls down a Docker base image in a manner suitable for use with the `base` attribute of `container_image`.
@@ -165,7 +166,7 @@ construct new images.
 NOTE: `container_pull` now supports authentication using custom docker client configuration.
 See [here](https://github.com/bazelbuild/rules_docker#container_pull-custom-client-configuration) for details.
 
-NOTE: Set `PULLER_TIMEOUT` env variable to change the default 600s timeout.
+NOTE: Set `PULLER_TIMEOUT` env variable to change the default 600s timeout for all container_pull targets.
 
 NOTE: Set `DOCKER_REPO_CACHE` env variable to make the container puller cache downloaded layers at the directory specified as a value to this env variable.
 The caching feature hasn't been thoroughly tested and may be thread unsafe.
@@ -200,6 +201,7 @@ please use the bazel startup flag `--loading_phase_threads=1` in your bazel invo
 | <a id="container_pull-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | required |  |
 | <a id="container_pull-repository"></a>repository |  The name of the image.   | String | required |  |
 | <a id="container_pull-tag"></a>tag |  The <code>tag</code> of the Docker image to pull from the specified <code>repository</code>.<br><br>        If neither this nor <code>digest</code> is specified, this attribute defaults to <code>latest</code>.         If both are specified, then <code>tag</code> is ignored.<br><br>        Note: For reproducible builds, use of <code>digest</code> is recommended.   | String | optional | "latest" |
+| <a id="container_pull-timeout"></a>timeout |  Timeout in seconds to fetch the image from the registry.<br><br>        This attribute will be overridden by the PULLER_TIMEOUT environment variable, if it is set.   | Integer | optional | 0 |
 
 
 <a id="#container_push"></a>
