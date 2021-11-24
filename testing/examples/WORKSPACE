@@ -43,20 +43,25 @@ _java_image_repos()
 
 container_pull(
     name = "alpine_linux_amd64",
+    digest = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
     registry = "index.docker.io",
     repository = "library/alpine",
+    # tag field is ignored since digest is set
     tag = "3.8",
 )
 
 container_pull(
     name = "ubuntu1604",
+    digest = "sha256:8f0b64fd212007183434b8b3271b723700ab14e4230b5bec1415b79aaa3ac97b",
     registry = "l.gcr.io",
     repository = "google/ubuntu1604",
+    # tag field is ignored since digest is set
     tag = "latest",
 )
 
 container_pull(
     name = "bazel_image",
+    digest = "sha256:ace9881e6e9c5d48b5fd637321361aeffe54000265894a65f7d818dc1065bd80",
     registry = "launcher.gcr.io",
     repository = "google/bazel",
 )
