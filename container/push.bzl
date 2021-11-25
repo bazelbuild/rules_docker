@@ -82,7 +82,7 @@ def _impl(ctx):
     tarball = image.get("legacy")
     if tarball:
         print("Pushing an image based on a tarball can be very " +
-              "expensive.  If the image is the output of a " +
+              "expensive. If the image set on %s is the output of a " % ctx.label +
               "container_build, consider dropping the '.tar' extension. " +
               "If the image is checked in, consider using " +
               "container_import instead.")
