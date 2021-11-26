@@ -17,7 +17,7 @@ Bazel rule for publishing images.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo")
+load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo", "STAMP_ATTR", "StampSettingInfo")
 load(
     "//container:layer_tools.bzl",
     _gen_img_args = "generate_args_for_image",
@@ -61,11 +61,7 @@ def _impl(ctx):
         tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
         pusher_input.append(ctx.file.tag_file)
 
-    # If any stampable attr contains python format syntax (which is how users
-    # configure stamping), we enable stamping.
-    if ctx.attr.stamp:
-        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
-    stamp = "{" in tag or "{" in registry or "{" in repository
+    stamp = ctx.attr.stamp[StampSettingInfo].value
     stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
     for f in stamp_inputs:
         pusher_args += ["-stamp-info-file", "%s" % _get_runfile_path(ctx, f)]
@@ -139,7 +135,6 @@ def _impl(ctx):
             registry = registry,
             repository = repository,
             tag = tag,
-            stamp = stamp,
             stamp_inputs = stamp_inputs,
             digest = ctx.outputs.digest,
         ),
@@ -179,10 +174,7 @@ container_push_ = rule(
             default = False,
             doc = "Only push images if the digest has changed, default to False",
         ),
-        "stamp": attr.bool(
-            default = False,
-            mandatory = False,
-        ),
+        "stamp": STAMP_ATTR,
         "tag": attr.string(
             default = "latest",
             doc = "The tag of the image.",

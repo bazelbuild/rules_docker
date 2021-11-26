@@ -1,0 +1,30 @@
+"Helpers to determine when to stamp build outputs"
+
+load(":stamp.bzl", "stamp_setting")
+
+package(default_visibility = ["//visibility:public"])
+
+# Detect if the build is running under --stamp
+config_setting(
+    name = "stamp",
+    values = {"stamp": "true"},
+)
+
+# Enable stamping based on the --stamp flag
+stamp_setting(
+    name = "use_stamp_flag",
+    stamp = select({
+        "@io_bazel_rules_docker//stamp:stamp": True,
+        "//conditions:default": False,
+    }),
+)
+
+stamp_setting(
+    name = "always",
+    stamp = True,
+)
+
+stamp_setting(
+    name = "never",
+    stamp = False,
+)

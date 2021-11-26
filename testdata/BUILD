@@ -335,18 +335,19 @@ container_image(
     name = "with_stamped_creation_time",
     base = ":base_with_volume",
     creation_time = "{BUILD_TIMESTAMP}",
-    stamp = True,
+    stamp = "//stamp:always",
 )
 
 container_image(
     name = "with_base_stamped_image",
     base = ":with_stamped_creation_time",
+    stamp = "//stamp:always",
 )
 
 container_image(
     name = "with_default_stamped_creation_time",
     base = ":base_with_volume",
-    stamp = True,
+    stamp = "//stamp:always",
 )
 
 container_image(
@@ -408,7 +409,7 @@ container_image(
     labels = {
         "BUILDER": "{BUILD_USER}",
     },
-    stamp = True,
+    stamp = "//stamp:always",
 )
 
 [genrule(
@@ -466,6 +467,7 @@ docker_push(
     image = ":link_with_files_base",
     registry = "gcr.io",
     repository = "convoy-adapter/bazel-oci-test",
+    stamp = "//stamp:always",
     tag = "{BUILD_USER}",
 )
 
@@ -474,6 +476,7 @@ oci_push(
     image = ":link_with_files_base",
     registry = "gcr.io",
     repository = "convoy-adapter/bazel-oci-test",
+    stamp = "//stamp:always",
     tag = "{BUILD_USER}",
 )
 
@@ -516,6 +519,7 @@ container_bundle(
         # Pad username so that it is long enough.
         "example.com/aaaaa{BUILD_USER}:stamped": ":with_user",
     },
+    stamp = "//stamp:always",
 )
 
 # Generate a dummy debian package with a test/ directory
