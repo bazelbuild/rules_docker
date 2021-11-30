@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -o errexit
 
 # Resolve the docker tool path
 DOCKER="%{docker_tool_path}"
@@ -34,10 +34,13 @@ $DOCKER $DOCKER_FLAGS load -i %{base_image_tar}
 # Prepare directory structure. 'docker cp' will not create
 # intermediate paths.
 tmpdir=$(mktemp -d)
-trap "rm -rf $tmpdir" EXIT
+log=$(mktemp)
+trap "rm -rf $tmpdir $log" EXIT
 mkdir -p $(dirname $tmpdir/%{installables_tar})
 cp -L $(pwd)/%{installables_tar} $tmpdir/%{installables_tar}
 cp -L $(pwd)/%{installer_script} $tmpdir/installer.sh
+
+(
 # Temporarily create a container so we can mount the named volume
 # and copy files.  It's okay if /bin/true doesn't exist inside the
 # image; we are never going to run the image anyways.
@@ -56,3 +59,8 @@ reset_cmd $image_id $cid %{output_image_name}
 $DOCKER $DOCKER_FLAGS save %{output_image_name} > %{output_file_name}
 $DOCKER $DOCKER_FLAGS rm $cid
 $DOCKER $DOCKER_FLAGS volume rm $vid
+) > "$log" 2>&1
+
+if (( $? )); then
+    cat "$log"
+fi
