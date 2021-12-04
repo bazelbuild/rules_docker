@@ -48,6 +48,8 @@ def _impl(ctx):
 
         pusher_args, pusher_inputs = _gen_img_args(ctx, image, _get_runfile_path)
         pusher_args += ["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs]
+        if ctx.attr.skip_unchanged_digest:
+            pusher_args.append("--skip-unchanged-digest")
         pusher_args.append("--dst={}".format(tag))
         pusher_args.append("--format={}".format(ctx.attr.format))
         out = ctx.actions.declare_file("%s.%d.push" % (ctx.label.name, index))
@@ -108,6 +110,10 @@ container_push = rule(
         "sequential": attr.bool(
             default = False,
             doc = "If true, push images sequentially.",
+        ),
+        "skip_unchanged_digest": attr.bool(
+            default = False,
+            doc = "Only push images if the digest has changed, default to False",
         ),
         "_all_tpl": attr.label(
             default = Label("//contrib:push-all.sh.tpl"),
