@@ -27,7 +27,15 @@ load(
     _string_to_label = "string_to_label",
 )
 
-_DOC = """A rule that aliases and saves N images into a single `docker save` tarball."""
+_DOC = """A rule that aliases and saves N images into a single `docker save` tarball.
+
+This can be consumed in 2 different ways:
+
+  - The output tarball could be used for `docker load` to load all images to docker daemon.
+
+  - The emitted BundleInfo provider could be consumed by contrib/push-all.bzl rules to
+    create an executable target which tag and push multiple images to a container registry.
+"""
 
 def _container_bundle_impl(ctx):
     """Implementation for the container_bundle rule."""
