@@ -6,7 +6,11 @@ load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 write_file(
     name = "gen_header",
     out = "header.vm",
-    content = ["${moduleDocstring}"],
+    content = [
+        "<!-- Generated with Stardoc, Do Not Edit! -->",
+        "",
+        "${moduleDocstring}",
+    ],
 )
 
 stardoc(
