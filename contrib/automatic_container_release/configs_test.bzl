@@ -20,6 +20,10 @@ load(
     "//skylib:path.bzl",
     "runfile",
 )
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
 
 def _get_runfile_path(ctx, f):
     return "${RUNFILES}/%s" % runfile(ctx, f)
@@ -70,7 +74,7 @@ def _impl(ctx):
         substitutions = {
             "%{cmd_args}": " ".join(cmd_args),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_path}": toolchain_info.tool_path,
+            "%{docker_path}": docker_path(toolchain_info),
             "%{image_name}": ctx.attr._checker + ":" + ctx.attr.checker_tag,
             "%{spec_container_paths}": " ".join(spec_container_paths),
             "%{specs}": " ".join(specs),

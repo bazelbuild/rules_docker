@@ -11,34 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Common functions for docker library"""
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+def docker_path(toolchain_info):
+    """Resolve the user-supplied docker path, if any.
 
-package(default_visibility = ["//visibility:public"])
+    Args:
+       toolchain_info: The DockerToolchainInfo
 
-licenses(["notice"])  # Apache 2.0
-
-bzl_library(
-    name = "docker",
-    srcs = ["docker.bzl"],
-)
-
-bzl_library(
-    name = "filetype",
-    srcs = ["filetype.bzl"],
-)
-
-bzl_library(
-    name = "label",
-    srcs = ["label.bzl"],
-)
-
-bzl_library(
-    name = "path",
-    srcs = ["path.bzl"],
-)
-
-bzl_library(
-    name = "zip",
-    srcs = ["zip.bzl"],
-)
+    Returns:
+       Path to docker
+    """
+    if toolchain_info.tool_target:
+        return toolchain_info.tool_target.files_to_run.executable.path
+    else:
+        return toolchain_info.tool_path

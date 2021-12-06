@@ -22,6 +22,10 @@ load(
     "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
 
 def _extract_layers(ctx, name, artifact):
     config_file = ctx.actions.declare_file(name + "." + artifact.basename + ".config")
@@ -277,7 +281,7 @@ def incremental_load(
         template = ctx.file.incremental_load_template,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{load_statements}": "\n".join(load_statements),
             "%{run_statements}": "\n".join(run_statements),
             "%{run}": str(run),

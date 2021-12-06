@@ -22,7 +22,7 @@ docker_toolchain(
     name = "toolchain",
     client_config = "%{DOCKER_CONFIG}",
     %{GZIP_ATTR}
-    tool_path = "%{DOCKER_TOOL}",
+    %{TOOL_ATTR}
     docker_flags = ["%{DOCKER_FLAGS}"],
     %{XZ_ATTR}
 )
