@@ -67,22 +67,22 @@ container_load = repository_rule(
         "_loader_darwin": attr.label(
             executable = True,
             default = Label("@loader_darwin//file:downloaded"),
-            cfg = "host",
+            cfg = "exec",
         ),
         "_loader_linux_amd64": attr.label(
             executable = True,
             default = Label("@loader_linux_amd64//file:downloaded"),
-            cfg = "host",
+            cfg = "exec",
         ),
         "_loader_linux_arm64": attr.label(
             executable = True,
             default = Label("@loader_linux_arm64//file:downloaded"),
-            cfg = "host",
+            cfg = "exec",
         ),
         "_loader_linux_s390x": attr.label(
             executable = True,
             default = Label("@loader_linux_s390x//file:downloaded"),
-            cfg = "host",
+            cfg = "exec",
         ),
     },
     implementation = _impl,
