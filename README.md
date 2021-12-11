@@ -226,7 +226,7 @@ Arguments to this command are forwarded to docker, meaning the command
 bazel run my/image:helloworld -- -p 8080:80 -- arg0
 ```
 
-will perform the following steps:
+performs the following steps:
 * load the `my/image:helloworld` target into your local Docker client
 * start a container using this image where `arg0` is passed to the image entrypoint
 * port forward 8080 on the host to port 80 on the container, as per `docker run` documentation
