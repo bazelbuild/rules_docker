@@ -4,14 +4,17 @@
 | :------: |
 [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg?branch=master)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
 
+Generated API documentation is in the docs folder, or you can browse it online at
+<https://docs.aspect.dev/rules_docker>
+
 ## Basic Rules
 
-* [container_image](#container_image-1) ([example](#container_image))
-* [container_bundle](#container_bundle-1) ([example](#container_bundle))
-* [container_import](#container_import)
-* [container_load](#container_load)
-* [container_pull](#container_pull-1) ([example](#container_pull))
-* [container_push](#container_push-1) ([example](#container_push))
+* [container_image](/docs/container.md#container_image) ([example](#container_image))
+* [container_bundle](/docs/container.md#container_bundle) ([example](#container_bundle))
+* [container_import](/docs/container.md#container_import)
+* [container_load](/docs/container.md#container_load)
+* [container_pull](/docs/container.md#container_pull) ([example](#container_pull))
+* [container_push](/docs/container.md#container_push) ([example](#container_push))
 
 These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
 these (mostly) legacy names still exist largely for backwards-compatibility.  We
