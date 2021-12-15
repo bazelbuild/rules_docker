@@ -82,6 +82,8 @@ def _add_create_image_config_args(
         null_cmd,
         null_entrypoint,
         creation_time,
+        author,
+        created_by,
         env,
         workdir,
         layer_names,
@@ -115,6 +117,12 @@ def _add_create_image_config_args(
         # If stamping is enabled, and the creation_time is not manually defined,
         # default to '{BUILD_TIMESTAMP}'.
         args.add("-creationTime", "{BUILD_TIMESTAMP}")
+
+    if author:
+        args.add("-author", author)
+
+    if created_by:
+        args.add("-createdBy", created_by)
 
     for key, value in labels.items():
         args.add("-labels", "{}={}".format(key, value))
@@ -174,6 +182,8 @@ def _image_config(
         entrypoint = None,
         cmd = None,
         creation_time = None,
+        author = None,
+        created_by = None,
         env = None,
         base_config = None,
         base_manifest = None,
@@ -217,6 +227,8 @@ def _image_config(
         null_cmd,
         null_entrypoint,
         creation_time,
+        author,
+        created_by,
         env,
         workdir,
         layer_names,
@@ -278,6 +290,8 @@ def _impl(
         entrypoint = None,
         cmd = None,
         creation_time = None,
+        author = None,
+        created_by = None,
         symlinks = None,
         env = None,
         layers = None,
@@ -333,6 +347,8 @@ def _impl(
         entrypoint: str List, overrides ctx.attr.entrypoint
         cmd: str List, overrides ctx.attr.cmd
         creation_time: str, overrides ctx.attr.creation_time
+        author: str, overrides ctx.attr.author
+        created_by: str, overrides ctx.attr.created_by
         symlinks: str Dict, overrides ctx.attr.symlinks
         env: str Dict, overrides ctx.attr.env
         layers: label List, overrides ctx.attr.layers
@@ -364,6 +380,8 @@ def _impl(
     operating_system = operating_system or ctx.attr.operating_system
     os_version = os_version or ctx.attr.os_version
     creation_time = creation_time or ctx.attr.creation_time
+    author = author or ctx.attr.author
+    created_by = created_by or ctx.attr.created_by
     build_executable = output_executable or ctx.outputs.build_script
     output_tarball = output_tarball or ctx.outputs.out
     output_digest = output_digest or ctx.outputs.digest
@@ -449,6 +467,8 @@ def _impl(
             entrypoint = entrypoint,
             cmd = cmd,
             creation_time = creation_time,
+            author = author,
+            created_by = created_by,
             env = layer.env,
             base_config = config_file,
             base_manifest = manifest_file,
@@ -602,6 +622,18 @@ _attrs = dicts.add(_layer.attrs, {
         This field supports stamp variables.
         
         If not set, defaults to {BUILD_TIMESTAMP} when stamp = True, otherwise 0""",
+    ),
+    "author": attr.string(
+        default = "Bazel",
+        doc = """The image's `author` tag.
+
+        If not set, defaults to `Bazel`""",
+    ),
+    "created_by": attr.string(
+        default = "bazel build...",
+        doc = """The image's `created_by` tag.
+
+        If not set, defaults to `bazel build...`""",
     ),
     "docker_run_flags": attr.string(
         doc = """Optional flags to use with `docker run` command.

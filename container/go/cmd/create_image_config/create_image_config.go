@@ -35,6 +35,8 @@ var (
 	outputConfig       = flag.String("outputConfig", "", "The output image config file to generate.")
 	outputManifest     = flag.String("outputManifest", "", "The output manifest file to generate.")
 	creationTimeString = flag.String("creationTime", "", "The creation timestamp. Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC 3339 date/time.")
+	authorString       = flag.String("author", "Bazel", "The author tag value.")
+	createdByString    = flag.String("createdBy", "bazel build...", "The created_by tag value.")
 	user               = flag.String("user", "", "The username to run the commands under.")
 	workdir            = flag.String("workdir", "", "Set the working directory of the layer.")
 	nullEntryPoint     = flag.Bool("nullEntryPoint", false, "If true, Entrypoint will be set to null.")
@@ -99,8 +101,8 @@ func main() {
 		Architecture:       *architecture,
 		OperatingSystem:    *operatingSystem,
 		OSVersion:          *osVersion,
-		CreatedBy:          "bazel build ...",
-		Author:             "Bazel",
+		CreatedBy:          *createdByString,
+		Author:             *authorString,
 		LabelsArray:        labelsArray,
 		Ports:              ports,
 		Volumes:            volumes,
