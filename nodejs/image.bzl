@@ -117,6 +117,8 @@ def nodejs_image(
         binary = None,
         launcher = None,
         launcher_args = None,
+        node_repository_name = "nodejs",
+        include_node_repo_args = True,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
 
@@ -142,10 +144,12 @@ def nodejs_image(
 
     nodejs_layers = [
         # Put the Node binary into its own layers.
-        "@nodejs//:node",
-        "@nodejs//:node_files",
-        "@nodejs//:bin/node_repo_args.sh",
+        "@%s//:node" % node_repository_name,
+        "@%s//:node_files" % node_repository_name,
     ]
+
+    if include_node_repo_args:
+        nodejs_layers.append("@%s//:bin/node_repo_args.sh" % node_repository_name)
 
     all_layers = nodejs_layers + layers
 
