@@ -22,6 +22,7 @@ load(
     "//skylib:docker.bzl",
     "docker_path",
 )
+load("@bazel_skylib//lib:types.bzl", "types")
 
 def _generate_add_additional_repo_commands(ctx, additional_repos):
     return """printf "{repos}" >> /etc/apt/sources.list.d/{name}_repos.list""".format(
@@ -85,6 +86,8 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         output_script: File, overrides ctx.outputs.build_script
         output_metadata: File, overrides ctx.outputs.metadata_csv
     """
+    if types.is_depset(packages):
+        packages = packages.to_list()
     image_tar = image_tar or ctx.file.image_tar
     packages = depset(packages or ctx.attr.packages)
     additional_repos = depset(additional_repos or ctx.attr.additional_repos)
