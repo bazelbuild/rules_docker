@@ -328,4 +328,5 @@ container_repro_test = rule(
     }),
     test = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
+    cfg = _container.image.cfg,
 )

@@ -297,7 +297,7 @@ _layer_attrs = dicts.add({
     "compression_options": attr.string_list(),
     "data_path": attr.string(
         doc = """Root path of the files.
-        
+
         The directory structure from the files is preserved inside the
         Docker image, but a prefix path determined by `data_path`
         is removed from the directory structure. This path can
@@ -310,7 +310,7 @@ _layer_attrs = dicts.add({
     "debs": attr.label_list(
         allow_files = deb_filetype,
         doc = """Debian packages to extract.
-        
+
         Deprecated: A list of debian packages that will be extracted in the Docker image.
         Note that this doesn't actually install the packages. Installation needs apt
         or apt-get which need to be executed within a running container which
@@ -319,7 +319,7 @@ _layer_attrs = dicts.add({
     "directory": attr.string(
         default = "/",
         doc = """Target directory.
-        
+
         The directory in which to expand the specified files, defaulting to '/'.
         Only makes sense accompanying one of files/tars/debs.""",
     ),
@@ -329,7 +329,7 @@ _layer_attrs = dicts.add({
     "enable_mtime_preservation": attr.bool(default = False),
     "env": attr.string_dict(
         doc = """Dictionary from environment variable names to their values when running the Docker image.
-       
+
         See https://docs.docker.com/engine/reference/builder/#env
 
         For example,
@@ -337,8 +337,8 @@ _layer_attrs = dicts.add({
             env = {
                 "FOO": "bar",
                 ...
-            }, 
-        
+            },
+
         The values of this field support make variables (e.g., `$(FOO)`)
         and stamp variables; keys support make variables as well.""",
     ),
@@ -360,9 +360,9 @@ _layer_attrs = dicts.add({
     "portable_mtime": attr.bool(default = False),
     "symlinks": attr.string_dict(
         doc = """Symlinks to create in the Docker image.
-        
+
         For example,
-        
+
             symlinks = {
                 "/path/to/link": "/path/to/target",
                 ...
@@ -372,7 +372,7 @@ _layer_attrs = dicts.add({
     "tars": attr.label_list(
         allow_files = tar_filetype,
         doc = """Tar file to extract in the layer.
-        
+
         A list of tar files whose content should be in the Docker image.""",
     ),
 }, _hash_tools, _layer_tools, _zip_tools)
@@ -390,10 +390,10 @@ layer = struct(
 
 container_layer_ = rule(
     doc = _DOC,
-    attrs = _layer_attrs,
+    attrs = layer.attrs,
     executable = False,
-    outputs = _layer_outputs,
-    implementation = _impl,
+    outputs = layer.outputs,
+    implementation = layer.implementation,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
 )
 
