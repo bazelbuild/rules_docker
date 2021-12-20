@@ -974,7 +974,7 @@ def container_image(**kwargs):
             layers inside the Docker registry.
 
     This rule references the `@io_bazel_rules_docker//toolchains/docker:toolchain_type`.
-    See [How to use the Docker Toolchain](toolchains/docker/readme.md#how-to-use-the-docker-toolchain) for details.
+    See [How to use the Docker Toolchain](/toolchains/docker/readme.md#how-to-use-the-docker-toolchain) for details.
 
     Args:
         **kwargs: Attributes are described by `container_image_` above.
