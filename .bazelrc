@@ -18,8 +18,6 @@
 build --incompatible_use_python_toolchains
 test --incompatible_use_python_toolchains
 
-build --incompatible_disable_depset_items
-
 # The flags below enable running tests using Remote Build Execution
 # for the provided toolchain.
 # Note that your WORKSPACE must contain an rbe_autoconfig target with
