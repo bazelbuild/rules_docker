@@ -1,5 +1,7 @@
 # Bazel Docker run Rules
 
+Load these from `@io_bazel_rules_docker//docker/util:run.bzl`.
+
 Rules in this directory provide functionality to run commands inside
 a docker container.
 Note these rules require a docker binary to be present and configured
