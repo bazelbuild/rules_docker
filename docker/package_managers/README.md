@@ -16,6 +16,9 @@ properly via
 
 ## add_apt_key
 
+Load these from `@io_bazel_rules_docker//docker/package_managers:apt_key.bzl`.
+
+
 <pre>
 add_apt_key(<a href="#add_apt_key-name">name</a>, <a href="#add_apt_key-base">base</a>, <a href="#add_apt_key-build_layer">build_layer</a>, <a href="#add_apt_key-cmd">cmd</a>, <a href="#add_apt_key-commands">commands</a>, <a href="#add_apt_key-create_image_config">create_image_config</a>, <a href="#add_apt_key-creation_time">creation_time</a>, <a href="#add_apt_key-data_path">data_path</a>, <a href="#add_apt_key-debs">debs</a>, <a href="#add_apt_key-directory">directory</a>, <a href="#add_apt_key-docker_run_flags">docker_run_flags</a>, <a href="#add_apt_key-empty_dirs">empty_dirs</a>, <a href="#add_apt_key-empty_files">empty_files</a>, <a href="#add_apt_key-entrypoint">entrypoint</a>, <a href="#add_apt_key-env">env</a>, <a href="#add_apt_key-extract_config">extract_config</a>, <a href="#add_apt_key-extract_file">extract_file</a>, <a href="#add_apt_key-files">files</a>, <a href="#add_apt_key-gpg_image">gpg_image</a>, <a href="#add_apt_key-gzip">gzip</a>, <a href="#add_apt_key-image">image</a>, <a href="#add_apt_key-incremental_load_template">incremental_load_template</a>, <a href="#add_apt_key-join_layers">join_layers</a>, <a href="#add_apt_key-keys">keys</a>, <a href="#add_apt_key-label_file_strings">label_file_strings</a>, <a href="#add_apt_key-label_files">label_files</a>, <a href="#add_apt_key-labels">labels</a>, <a href="#add_apt_key-launcher">launcher</a>, <a href="#add_apt_key-launcher_args">launcher_args</a>, <a href="#add_apt_key-layers">layers</a>, <a href="#add_apt_key-legacy_repository_naming">legacy_repository_naming</a>, <a href="#add_apt_key-legacy_run_behavior">legacy_run_behavior</a>, <a href="#add_apt_key-mode">mode</a>, <a href="#add_apt_key-null_cmd">null_cmd</a>, <a href="#add_apt_key-null_entrypoint">null_entrypoint</a>, <a href="#add_apt_key-operating_system">operating_system</a>, <a href="#add_apt_key-output_file">output_file</a>, <a href="#add_apt_key-ports">ports</a>, <a href="#add_apt_key-repository">repository</a>, <a href="#add_apt_key-sha256">sha256</a>, <a href="#add_apt_key-stamp">stamp</a>, <a href="#add_apt_key-symlinks">symlinks</a>, <a href="#add_apt_key-tars">tars</a>, <a href="#add_apt_key-user">user</a>, <a href="#add_apt_key-volumes">volumes</a>, <a href="#add_apt_key-workdir">workdir</a>)
 </pre>
@@ -341,6 +344,9 @@ add_apt_key(<a href="#add_apt_key-name">name</a>, <a href="#add_apt_key-base">ba
 
 ## download_pkgs
 
+
+Load these from `@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl`.
+
 <pre>
 download_pkgs(<a href="#download_pkgs-name">name</a>, <a href="#download_pkgs-additional_repos">additional_repos</a>, <a href="#download_pkgs-image_tar">image_tar</a>, <a href="#download_pkgs-packages">packages</a>)
 </pre>
@@ -398,6 +404,10 @@ The script bundles all the packages in a tarball.
 <a name="#install_pkgs"></a>
 
 ## install_pkgs
+
+
+Load these from `@io_bazel_rules_docker//docker/package_managers:install_pkgs.bzl`.
+
 
 <pre>
 install_pkgs(<a href="#install_pkgs-name">name</a>, <a href="#install_pkgs-image_tar">image_tar</a>, <a href="#install_pkgs-installables_tar">installables_tar</a>, <a href="#install_pkgs-installation_cleanup_commands">installation_cleanup_commands</a>, <a href="#install_pkgs-output_image_name">output_image_name</a>)
