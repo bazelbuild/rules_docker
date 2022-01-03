@@ -21,12 +21,18 @@ repository.
 
 load(":go_repositories.bzl", "go_deps")
 
-def deps():
+# TODO: `go_repository_default_config` is only useful for working around
+# https://github.com/bazelbuild/rules_docker/issues/1902 and could likely be
+# removed after https://github.com/bazelbuild/rules_docker/issues/1787
+def deps(go_repository_default_config = "@//:WORKSPACE"):
     """Pull in external dependencies needed by rules in this repo.
 
     Pull in all dependencies needed to run rules in this
     repository. This function assumes the repositories imported by the macro
     'repositories' in //repositories:repositories.bzl have been imported
     already.
+
+    Args:
+        go_repository_default_config (str, optional): A file used to determine the root of the workspace.
     """
-    go_deps()
+    go_deps(go_repository_default_config = go_repository_default_config)
