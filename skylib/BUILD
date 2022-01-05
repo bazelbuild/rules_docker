@@ -42,3 +42,8 @@ bzl_library(
     name = "zip",
     srcs = ["zip.bzl"],
 )
+
+bzl_library(
+    name = "hash",
+    srcs = ["hash.bzl"],
+)
