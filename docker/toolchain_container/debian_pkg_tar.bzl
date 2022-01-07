@@ -105,7 +105,7 @@ def _generate_deb_tar(
             ctx,
             name = image_with_keys,
             image_tar = ctx.files.base[0],
-            keys = keys.to_list(),
+            keys = keys,
             output_executable = image_with_keys_output_executable,
             output_tarball = image_with_keys_output_tarball,
             output_layer = image_with_keys_output_layer,

@@ -329,7 +329,7 @@ def _toolchain_container_impl(ctx):
         files = files,
         packages = packages,
         additional_repos = additional_repos,
-        keys = keys,
+        keys = keys.to_list(),
         installables_tars = installables_tars,
         installation_cleanup_commands = installation_cleanup_commands,
     )
