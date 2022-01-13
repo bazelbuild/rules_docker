@@ -430,41 +430,52 @@ function test_new_container_pull_image_with_11_layers() {
   docker stop -t 0 $cid
 }
 
-# Tests failing on GCB due to isssues with local registry
-test_container_push
-test_container_push_all
-test_container_push_tag_file
-test_container_push_with_auth
-test_container_push_with_stamp
-test_new_container_push_compat
-test_new_container_push_oci
-test_new_container_push_tar
-test_new_container_push_with_stamp
-test_new_container_push_oci_tag_file
-test_new_container_push_oci_with_auth
-test_new_container_push_legacy
-test_new_container_push_legacy_tag_file
-test_new_container_push_legacy_with_auth
-test_new_container_push_skip_unchanged_digest_unchanged
-test_new_container_push_skip_unchanged_digest_changed
-test_container_pull_with_auth
-test_container_pull_cache
-test_new_container_pull_image_with_11_layers
+function run_all_tests() {
+    # Tests failing on GCB due to isssues with local registry
+    test_container_push
+    test_container_push_all
+    test_container_push_tag_file
+    test_container_push_with_auth
+    test_container_push_with_stamp
+    test_new_container_push_compat
+    test_new_container_push_oci
+    test_new_container_push_tar
+    test_new_container_push_with_stamp
+    test_new_container_push_oci_tag_file
+    test_new_container_push_oci_with_auth
+    test_new_container_push_legacy
+    test_new_container_push_legacy_tag_file
+    test_new_container_push_legacy_with_auth
+    test_new_container_push_skip_unchanged_digest_unchanged
+    test_new_container_push_skip_unchanged_digest_changed
+    test_container_pull_with_auth
+    test_container_pull_cache
+    test_new_container_pull_image_with_11_layers
 
-# Tests failing on GCB due to permissions issue related to building tars
-test_py_image_complex -c opt
-test_py_image_complex -c dbg
-test_py3_image_with_custom_run_flags -c opt
-test_py3_image_with_custom_run_flags -c dbg
-test_java_image -c opt
-test_java_image -c dbg
-test_war_image
-test_war_image_with_custom_run_flags
+    # Tests failing on GCB due to permissions issue related to building tars
+    test_py_image_complex -c opt
+    test_py_image_complex -c dbg
+    test_py3_image_with_custom_run_flags -c opt
+    test_py3_image_with_custom_run_flags -c dbg
+    test_java_image -c opt
+    test_java_image -c dbg
+    test_war_image
+    test_war_image_with_custom_run_flags
 
-# Test failing on GCB due to clang not finding ld.gold
-test_rust_image -c opt
-test_rust_image -c dbg
+    # Test failing on GCB due to clang not finding ld.gold
+    test_rust_image -c opt
+    test_rust_image -c dbg
 
-# Test failing on GCB due to not finding cc
-test_d_image -c opt
-test_d_image -c dbg
+    # Test failing on GCB due to not finding cc
+    test_d_image -c opt
+    test_d_image -c dbg
+}
+
+f="$@"
+if [[ $(type -t "$f") == function ]]; then
+    # run a single test if provided
+    "$f"
+else
+    # run all tests otherwise
+    run_all_tests
+fi
