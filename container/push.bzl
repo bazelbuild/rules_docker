@@ -47,6 +47,12 @@ def _impl(ctx):
 
     # Parse and get destination registry to be pushed to
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
+
+    # If a registry file is provided, override <registry> with file value
+    if ctx.file.registry_file:
+        registry = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.registry_file))
+        pusher_input.append(ctx.file.registry_file)
+
     repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
 
     # If a repository file is provided, override <repository> with tag value
@@ -161,6 +167,10 @@ container_push_ = rule(
         "registry": attr.string(
             mandatory = True,
             doc = "The registry to which we are pushing.",
+        ),
+        "registry_file": attr.label(
+            allow_single_file = True,
+            doc = "The label of the file with registry value. Overrides 'registry'.",
         ),
         "repository": attr.string(
             mandatory = True,

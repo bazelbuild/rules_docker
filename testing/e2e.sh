@@ -112,6 +112,26 @@ function test_container_push() {
   docker stop -t 0 $cid
 }
 
+function test_container_push_registry_file() {
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  bazel build tests/container:push_registry_file_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_registry_file_test)" '--dst=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.registry)'
+
+  docker stop -t 0 $cid
+}
+
+function test_container_push_repository_file() {
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+  bazel build tests/container:push_repository_file_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_repository_file_test)" '--dst=localhost:5000/docker/test:$(cat ${RUNFILES}/io_bazel_rules_docker/tests/container/test.repository)'
+
+  docker stop -t 0 $cid
+}
+
 function test_container_push_tag_file() {
   cd "${ROOT}"
   clear_docker_full
@@ -433,6 +453,8 @@ function test_new_container_pull_image_with_11_layers() {
 # Tests failing on GCB due to isssues with local registry
 test_container_push
 test_container_push_all
+test_container_push_registry_file
+test_container_push_repository_file
 test_container_push_tag_file
 test_container_push_with_auth
 test_container_push_with_stamp

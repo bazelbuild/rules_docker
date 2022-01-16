@@ -335,6 +335,44 @@ container_push(
 )
 
 genrule(
+    name = "push_registry_file",
+    srcs = [],
+    outs = ["test.registry"],
+    cmd = """echo localhost:5000 > $@""",
+    output_to_bindir = 1,
+)
+
+container_push(
+    name = "push_registry_file_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "",
+    registry_file = ":test.registry",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "push_repository_file",
+    srcs = [],
+    outs = ["test.repository"],
+    cmd = """echo docker/test > $@""",
+    output_to_bindir = 1,
+)
+
+container_push(
+    name = "push_repository_file_test",
+    format = "Docker",
+    image = ":set_cmd",
+    registry = "localhost:5000",
+    repository = "",
+    repository_file = ":test.repository",
+    tag = "test",
+    tags = ["manual"],
+)
+
+genrule(
     name = "push_tag_file",
     srcs = [],
     outs = ["test.tag"],
