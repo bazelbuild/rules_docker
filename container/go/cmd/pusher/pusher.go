@@ -121,11 +121,21 @@ func main() {
 		log.Printf("Destination %s was resolved to %s after stamping.", *dst, stamped)
 	}
 
+	digest, err := img.Digest()
+	if err != nil {
+		log.Printf("Failed to digest image: %v", err)
+	}
+
 	if err := push(stamped, img); err != nil {
 		log.Fatalf("Error pushing image to %s: %v", stamped, err)
 	}
 
-	log.Printf("Successfully pushed %s image to %s", *format, stamped)
+	digestStr := ""
+	if !strings.Contains(stamped, "@") {
+		digestStr = fmt.Sprintf(" - %s@%s", strings.Split(stamped, ":")[0], digest)
+	}
+
+	log.Printf("Successfully pushed %s image to %s%s", *format, stamped, digestStr)
 }
 
 // digestExists checks whether an image's digest exists in a repository.
