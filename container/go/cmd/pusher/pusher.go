@@ -130,7 +130,12 @@ func main() {
 		log.Fatalf("Error pushing image to %s: %v", stamped, err)
 	}
 
-	log.Printf("Successfully pushed %s image to %s (digest: %s)", *format, stamped, digest)
+	digestStr := ""
+	if !strings.Contains(stamped, "@") {
+		digestStr = fmt.Sprintf(" - %s@%s", strings.Split(stamped, ":")[0], digest)
+	}
+
+	log.Printf("Successfully pushed %s image to %s%s", *format, stamped, digestStr)
 }
 
 // digestExists checks whether an image's digest exists in a repository.
