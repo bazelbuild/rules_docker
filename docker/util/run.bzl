@@ -20,7 +20,7 @@ the host machine.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//skylib:hash.bzl",
     _hash_tools = "tools",
 )
 load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")

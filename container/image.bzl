@@ -20,7 +20,7 @@ more specialized build leveraging the same implementation.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//skylib:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )

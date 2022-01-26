@@ -99,10 +99,10 @@ bzl_library(
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
+        "//skylib:hash",
         "//skylib:label",
         "//skylib:path",
         "@bazel_skylib//lib:dicts",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
@@ -113,9 +113,9 @@ bzl_library(
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
+        "//skylib:hash",
         "//skylib:path",
         "//skylib:zip",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
@@ -126,9 +126,9 @@ bzl_library(
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
+        "//skylib:hash",
         "//skylib:path",
         "//skylib:zip",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 

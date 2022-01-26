@@ -87,7 +87,7 @@ A rule that imports a docker image into our intermediate form.
 | <a id="container_import-layers"></a>layers |  The list of layer .tar.gz files in the order they appear in the config.json's layer section,             or in the order that they appear in the <code>Layers</code> field of the docker save tarballs'             <code>manifest.json</code> (these may or may not be gzipped).<br><br>            Note that the layers should each have a different basename.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | required |  |
 | <a id="container_import-manifest"></a>manifest |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="container_import-repository"></a>repository |  -   | String | optional | "bazel" |
-| <a id="container_import-sha256"></a>sha256 |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //tools/build_defs/hash:sha256 |
+| <a id="container_import-sha256"></a>sha256 |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container/go/cmd/sha256:sha256 |
 
 
 <a id="#container_layer"></a>
@@ -126,7 +126,7 @@ A rule that assembles data into a tarball which can be use as in layers attr in 
 | <a id="container_layer-mtime"></a>mtime |  -   | Integer | optional | -1 |
 | <a id="container_layer-operating_system"></a>operating_system |  -   | String | optional | "linux" |
 | <a id="container_layer-portable_mtime"></a>portable_mtime |  -   | Boolean | optional | False |
-| <a id="container_layer-sha256"></a>sha256 |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //tools/build_defs/hash:sha256 |
+| <a id="container_layer-sha256"></a>sha256 |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container/go/cmd/sha256:sha256 |
 | <a id="container_layer-symlinks"></a>symlinks |  Symlinks to create in the Docker image.<br><br>        For example,<br><br>            symlinks = {                 "/path/to/link": "/path/to/target",                 ...             },   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="container_layer-tars"></a>tars |  Tar file to extract in the layer.<br><br>        A list of tar files whose content should be in the Docker image.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 
