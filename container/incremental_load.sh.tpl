@@ -278,5 +278,5 @@ if [[ "%{run}" == "True" ]]; then
   cleanup
 
   # This generated and injected by docker_*.
-  exec %{run_statement} "${docker_args[@]}" "%{run_tag}" "${container_args[@]}"
+  eval exec %{run_statement} "${docker_args[@]}" "%{run_tag}" "${container_args[@]:-}"
 fi
