@@ -71,7 +71,7 @@ func checkClientConfig(configDir string) error {
 }
 
 func main() {
-	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer.tar.gz,layer.tar,<file with digest>,<file with diffID>.")
+	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball (ignored), digest file, diff ID file). e.g., --layer layer.tar.gz,,<file with digest>,<file with diffID>.")
 	flag.Var(&stampInfoFile, "stamp-info-file", "The list of paths to the stamp info files used to substitute supported attribute when a python format placeholder is provivided in dst, e.g., {BUILD_USER}.")
 	flag.Parse()
 

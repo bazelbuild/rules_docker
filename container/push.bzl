@@ -69,10 +69,10 @@ def _impl(ctx):
 
     # Construct container_parts for input to pusher.
     image = _get_layers(ctx, ctx.label.name, ctx.attr.image)
-    pusher_img_args, pusher_img_inputs = _gen_img_args(ctx, image, _get_runfile_path)
+    pusher_img_args, pusher_img_inputs = _gen_img_args(ctx, image, _get_runfile_path, include_uncompressed_layers = False)
     pusher_args += pusher_img_args
     pusher_input += pusher_img_inputs
-    digester_img_args, digester_img_inputs = _gen_img_args(ctx, image)
+    digester_img_args, digester_img_inputs = _gen_img_args(ctx, image, include_uncompressed_layers = False)
     digester_input += digester_img_inputs
     digester_args += digester_img_args
     tarball = image.get("legacy")

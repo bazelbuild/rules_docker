@@ -59,7 +59,7 @@ def _file_path(ctx, val):
     """
     return val.path
 
-def generate_args_for_image(ctx, image, to_path = _file_path):
+def generate_args_for_image(ctx, image, to_path = _file_path, include_uncompressed_layers = True):
     """Generates arguments & inputs for the given image.
 
     Args:
@@ -67,6 +67,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         image: The image parts dictionary as returned by 'get_from_target'.
         to_path: A function to transform the string paths as they
                         are added as arguments.
+        include_uncompressed_layers: whether to include uncompressed layers in the output
 
     Returns:
         The arguments to call the pusher, digester & flatenner with to load
@@ -80,7 +81,8 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
     args = ["--config={}".format(to_path(ctx, image["config"]))]
     inputs = [image["config"]]
     inputs += compressed_layers
-    inputs += uncompressed_layers
+    if include_uncompressed_layers:
+        inputs += uncompressed_layers
     inputs += digest_files
     inputs += diff_id_files
     for i, compressed_layer in enumerate(compressed_layers):
@@ -90,7 +92,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         args.append(
             "--layer={},{},{},{}".format(
                 to_path(ctx, compressed_layer),
-                to_path(ctx, uncompressed_layer),
+                to_path(ctx, uncompressed_layer) if include_uncompressed_layers else "",
                 to_path(ctx, digest_file),
                 to_path(ctx, diff_id_file),
             ),
