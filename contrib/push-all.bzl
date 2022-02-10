@@ -71,11 +71,11 @@ def _impl(ctx):
         template = ctx.file._all_tpl,
         substitutions = {
             "%{async_push_statements}": "\n".join([
-                "async \"%s\"" % _get_runfile_path(ctx, command)
+                "async \"%s\" \"$@\"" % _get_runfile_path(ctx, command)
                 for command in scripts
             ]),
             "%{push_statements}": "\n".join([
-                "\"%s\"" % _get_runfile_path(ctx, command)
+                "\"%s\" \"$@\"" % _get_runfile_path(ctx, command)
                 for command in scripts
             ]),
             "%{sequential}": "true" if ctx.attr.sequential else "",
