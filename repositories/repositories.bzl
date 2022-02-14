@@ -18,6 +18,7 @@ load(
     "http_archive",
     "http_file",
 )
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load(
     "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
     _docker_toolchain_configure = "toolchain_configure",
@@ -185,10 +186,11 @@ def repositories():
         )
 
     if "rules_pkg" not in excludes:
-        http_archive(
+        git_repository(
             name = "rules_pkg",
-            sha256 = "aeca78988341a2ee1ba097641056d168320ecc51372ef7ff8e64b139516a4937",
-            urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.6-1/rules_pkg-0.2.6.tar.gz"],
+            commit = "d915e26874383c36f83cd5795b2ac6f2a19d543f",  # 2022-02-14
+            remote = "https://github.com/bazelbuild/rules_pkg.git",
+            shallow_since = "1644870117 -0500"
         )
 
     native.register_toolchains(
