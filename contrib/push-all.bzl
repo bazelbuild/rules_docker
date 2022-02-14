@@ -39,8 +39,6 @@ def _impl(ctx):
     if stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
 
-    stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
-
     scripts = []
     runfiles = []
     for index, tag in enumerate(images.keys()):
