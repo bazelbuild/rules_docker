@@ -12,20 +12,23 @@ if [[ -z "$DOCKER" ]]; then
 fi
 
 # Redirect output to a log so we can be silent on success
+# intentionally don't use traps here as there might already be traps set
 logfile=$(mktemp)
-trap "rm $logfile" EXIT
 
 if ! (
-    # Load the image and remember its name
-    image_id=$(%{image_id_extractor_path} %{image_tar})
-    $DOCKER $DOCKER_FLAGS load -i %{image_tar}
+    if %{legacy_load_behavior}; then
+        # Load the image and remember its name
+        image_id=$(%{image_id_extractor_path} %{image_tar})
+        $DOCKER $DOCKER_FLAGS load -i %{image_tar}
 
-    id=$($DOCKER $DOCKER_FLAGS run -d %{docker_run_flags} $image_id %{commands})
-
+        id=$($DOCKER $DOCKER_FLAGS run -d %{docker_run_flags} $image_id %{commands})
+    fi
+    
     retcode=$($DOCKER $DOCKER_FLAGS wait $id)
 
+
     # Print any error that occurred in the container.
-    if [ $retcode != 0 ]; then
+    if [ "$retcode" != 0 ]; then
         $DOCKER $DOCKER_FLAGS logs $id && false
         exit $retcode
     fi

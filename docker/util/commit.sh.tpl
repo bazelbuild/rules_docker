@@ -15,20 +15,34 @@ if [[ -z "$DOCKER" ]]; then
     exit 1
 fi
 
-logfile=$(output_logfile)
+# Redirect output to a log so we can be silent on success
+# intentionally don't use traps here as there might already be traps set
+logfile=$(mktemp)
 
 if ! (
-    # Load the image and remember its name
-    image_id=$(%{image_id_extractor_path} %{image_tar})
-    $DOCKER $DOCKER_FLAGS load -i %{image_tar}
-
-    readonly id=$($DOCKER $DOCKER_FLAGS create %{docker_run_flags} $image_id %{commands})
     retcode=0
-    if $DOCKER $DOCKER_FLAGS start -a "${id}"; then
-        reset_cmd $image_id $id %{output_image}
-        $DOCKER $DOCKER_FLAGS save %{output_image} -o %{output_tar}
+
+    if %{legacy_load_behavior}; then
+        # Load the image and remember its name
+        image_id=$(%{image_id_extractor_path} %{image_tar})
+        $DOCKER $DOCKER_FLAGS load -i %{image_tar}
+
+        readonly id=$($DOCKER $DOCKER_FLAGS create %{docker_run_flags} $image_id %{commands})
+        if $DOCKER $DOCKER_FLAGS start -a "${id}"; then
+            reset_cmd $image_id $id %{output_image}
+            $DOCKER $DOCKER_FLAGS save %{output_image} -o %{output_tar}
+        else
+            retcode=$?
+        fi
     else
-        retcode=$?
+        # Actually wait for the container to finish running its commands
+        retcode=$($DOCKER $DOCKER_FLAGS wait $id)
+        # Trigger a failure if the run had a non-zero exit status
+        if [ "$retcode" != 0 ]; then
+            $DOCKER $DOCKER_FLAGS logs $id && false
+        fi
+        reset_parent_cmd %{parent_config} $id %{output_image}
+        $DOCKER $DOCKER_FLAGS save %{output_image} -o %{output_tar}
     fi
 
     $DOCKER $DOCKER_FLAGS rm $id

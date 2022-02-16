@@ -196,7 +196,8 @@ def incremental_load(
         output,
         stamp = False,
         run = False,
-        run_flags = None):
+        run_flags = None,
+        action_run = False):
     """Generate the incremental load statement.
 
 
@@ -207,6 +208,7 @@ def incremental_load(
        stamp: Whether to stamp the produced image
        run: Whether to run the script or not
        run_flags: Additional run flags
+       action_run: bool, whether output_executable is going to be run as an action
     """
     stamp_files = []
     if stamp:
@@ -237,7 +239,7 @@ def incremental_load(
         # First load the legacy base image, if it exists.
         if image.get("legacy"):
             load_statements.append(
-                "load_legacy '%s'" % _get_runfile_path(ctx, image["legacy"]),
+                "load_legacy '%s'" % (image["legacy"].path if action_run else _get_runfile_path(ctx, image["legacy"])),
             )
 
         pairs = zip(image["diff_id"], image["unzipped_layer"])
@@ -246,11 +248,11 @@ def incremental_load(
         # in the daemon.
         load_statements.append(
             "import_config '%s' %s" % (
-                _get_runfile_path(ctx, image["config"]),
+                image["config"].path if action_run else _get_runfile_path(ctx, image["config"]),
                 " ".join([
                     "'%s' '%s'" % (
-                        _get_runfile_path(ctx, diff_id),
-                        _get_runfile_path(ctx, unzipped_layer),
+                        diff_id.path if action_run else _get_runfile_path(ctx, diff_id),
+                        unzipped_layer.path if action_run else _get_runfile_path(ctx, unzipped_layer),
                     )
                     for (diff_id, unzipped_layer) in pairs
                 ]),
@@ -265,7 +267,7 @@ def incremental_load(
                 # It is notable that the only legal use of '{' in a
                 # tag would be for stamp variables, '$' is not allowed.
                 tag_reference,
-                _get_runfile_path(ctx, image["config_digest"]),
+                image["config_digest"].path if action_run else _get_runfile_path(ctx, image["config_digest"]),
             ),
         )
 
@@ -274,6 +276,7 @@ def incremental_load(
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_tool_path}": docker_path(toolchain_info),
+            "%{action_run}": str(action_run),
             "%{load_statements}": "\n".join(load_statements),
             "%{run_statement}": run_statement,
             "%{run_tag}": run_tag,
@@ -282,7 +285,7 @@ def incremental_load(
             # variables, and turn references to them into bash variable
             # references.
             "%{stamp_statements}": "\n".join([
-                "read_variables %s" % _get_runfile_path(ctx, f)
+                "read_variables %s" % (f.path if action_run else _get_runfile_path(ctx, f))
                 for f in stamp_files
             ]),
             "%{tag_statements}": "\n".join(tag_statements),

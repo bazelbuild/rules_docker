@@ -19,13 +19,18 @@ set -eu
 # This is a generated file that loads all docker layers built by "docker_build".
 
 function guess_runfiles() {
-    if [ -d ${BASH_SOURCE[0]}.runfiles ]; then
-        # Runfiles are adjacent to the current script.
-        echo "$( cd ${BASH_SOURCE[0]}.runfiles && pwd )"
+    if [[ "%{action_run}" == "True" ]]; then
+        # The script is running as an action
+        pwd
     else
-        # The current script is within some other script's runfiles.
-        mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        echo $mydir | sed -e 's|\(.*\.runfiles\)/.*|\1|'
+        if [ -d ${BASH_SOURCE[0]}.runfiles ]; then
+            # Runfiles are adjacent to the current script.
+            echo "$( cd ${BASH_SOURCE[0]}.runfiles && pwd )"
+        else
+            # The current script is within some other script's runfiles.
+            mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+            echo $mydir | sed -e 's|\(.*\.runfiles\)/.*|\1|'
+        fi
     fi
 }
 
@@ -136,7 +141,7 @@ function import_config() {
   local tmp_dir="$(mktemp -d)"
   echo "${tmp_dir}" >> "${TEMP_FILES}"
 
-  cd "${tmp_dir}"
+  pushd "${tmp_dir}" >/dev/null
 
   # Docker elides layer reads from the tarball when it
   # already has a copy of the layer with the same basis
@@ -212,6 +217,8 @@ EOF
   # and then streaming exactly the layers we've established are
   # needed into the Docker daemon.
   tar cPh "${MISSING[@]}" | "${DOCKER}" ${DOCKER_FLAGS} load
+
+  popd >/dev/null
 }
 
 function tag_layer() {
@@ -279,13 +286,10 @@ if [[ "%{run}" == "True" ]]; then
       esac
   done
 
-  # Once we've loaded the images for all layers, we no longer need the temporary files on disk.
-  # We can clean up before we exec docker, since the exit handler will no longer run.
-  cleanup
-
+  # This generated and injected by docker_*.
+  args=(%{run_statement})
   # Bash treats empty arrays as unset variables for the purposes of `set -u`, so we only
   # conditionally add these arrays to our args.
-  args=(%{run_statement})
   if [[ ${#docker_args[@]} -gt 0 ]]; then
     args+=("${docker_args[@]}")
   fi
@@ -294,6 +298,14 @@ if [[ "%{run}" == "True" ]]; then
     args+=("${container_args[@]}")
   fi
 
-  # This generated and injected by docker_*.
-  eval exec "${args[@]}"
+  if [[ "%{action_run}" == "True" ]]; then
+    # This will be used by other scripts that are concatenated to this one.
+    id=$("${args[@]}")
+  else
+    # Once we've loaded the images for all layers, we no longer need the temporary files on disk.
+    # We can clean up before we exec docker, since the exit handler will no longer run.
+    cleanup
+
+    eval exec "${args[@]}"
+  fi
 fi

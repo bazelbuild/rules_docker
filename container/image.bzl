@@ -297,7 +297,9 @@ def _impl(
         output_layer = None,
         workdir = None,
         null_cmd = None,
-        null_entrypoint = None):
+        null_entrypoint = None,
+        action_run = False,
+        docker_run_flags = None):
     """Implementation for the container_image rule.
 
     You can write a customized container_image rule by writing something like:
@@ -354,6 +356,7 @@ def _impl(
         workdir: str, overrides ctx.attr.workdir
         null_cmd: bool, overrides ctx.attr.null_cmd
         null_entrypoint: bool, overrides ctx.attr.null_entrypoint
+        action_run: bool, whether output_executable is going to be run as an action
     """
     name = name or ctx.label.name
     entrypoint = entrypoint or ctx.attr.entrypoint
@@ -371,7 +374,6 @@ def _impl(
     output_config = output_config or ctx.outputs.config
     output_config_digest = output_config_digest or ctx.outputs.config_digest
     output_layer = output_layer or ctx.outputs.layer
-    build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
 
@@ -381,15 +383,19 @@ def _impl(
     # We do not use the default argument of attrs.string() in order to distinguish between
     # an image using the default and an image intentionally overriding the base's run flags.
     # Since this is a string attribute, the default value is the empty string.
-    if ctx.attr.docker_run_flags != "":
-        docker_run_flags = ctx.attr.docker_run_flags
-    elif ctx.attr.base and ImageInfo in ctx.attr.base:
-        docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
-    else:
-        # Run the container using host networking, so that the service is
-        # available to the developer without having to poke around with
-        # docker inspect.
-        docker_run_flags = "-i --rm --network=host"
+    docker_run_flags_are_default = False
+    if docker_run_flags == None:
+        if ctx.attr.docker_run_flags != "":
+            docker_run_flags = ctx.attr.docker_run_flags
+        elif ctx.attr.base and ImageInfo in ctx.attr.base:
+            docker_run_flags = ctx.attr.base[ImageInfo].docker_run_flags
+        else:
+            docker_run_flags_are_default = True
+
+            # Run the container using host networking, so that the service is
+            # available to the developer without having to poke around with
+            # docker inspect.
+            docker_run_flags = "-i --rm --network=host"
 
     if ctx.attr.launcher:
         if not file_map:
@@ -509,6 +515,7 @@ def _impl(
         build_executable,
         run = not ctx.attr.legacy_run_behavior,
         run_flags = docker_run_flags,
+        action_run = action_run,
     )
 
     _assemble_image(
@@ -540,7 +547,7 @@ def _impl(
         ImageInfo(
             container_parts = container_parts,
             legacy_run_behavior = ctx.attr.legacy_run_behavior,
-            docker_run_flags = docker_run_flags,
+            docker_run_flags = "" if docker_run_flags_are_default and not ctx.attr.legacy_run_behavior else docker_run_flags,
         ),
         DefaultInfo(
             executable = build_executable,

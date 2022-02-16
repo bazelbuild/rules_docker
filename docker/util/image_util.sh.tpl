@@ -21,15 +21,21 @@ reset_cmd() {
     $DOCKER $DOCKER_FLAGS commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
 }
 
-function output_logfile {
-    readonly filename=$(mktemp)
+reset_parent_cmd() {
+    local parent_config=$1
+    local container_id=$2
+    local output_image_name=$3
 
-    function cleanup {
-        test -f "$filename"
-        cat "$filename"
-        rm "$filename"
-    }
-    trap cleanup EXIT
+    # Resolve the docker tool path
+    DOCKER="%{docker_tool_path}"
+    DOCKER_FLAGS="%{docker_flags}"
 
-    echo $filename
+    local config cmd regex
+    config=$(< "${parent_config}")
+    cmd='["/bin/sh", "-c"]'
+    regex='\"Cmd\" ?: ?(\[[^]]*\])'
+    if [[ config =~ regex ]]; then
+        cmd=${BASH_REMATCH[1]}
+    fi
+    $DOCKER $DOCKER_FLAGS commit -c "CMD $cmd" "${container_id}" "${output_image_name}"
 }
