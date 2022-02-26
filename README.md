@@ -1255,6 +1255,12 @@ docker_toolchain_configure(
   client_config="/path/to/docker/client/config",
 )
 
+# Alternatively, specify the Bazel label for the config.json
+docker_toolchain_configure(
+  name = "docker_config",
+  client_config="@//path/to/docker/client:config.json",
+)
+
 # Load the custom version of container_pull created by the docker toolchain
 # configuration.
 load("@docker_config//:pull.bzl", authenticated_container_pull="container_pull")
