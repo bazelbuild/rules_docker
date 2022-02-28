@@ -68,8 +68,8 @@ docker_toolchain = rule(
         ),
         "client_config": attr.string(
             default = "",
-            doc = "A custom directory for the docker client config.json. If " +
-                  "DOCKER_CONFIG is not specified, the value of the " +
+            doc = "A custom directory or a Bazel label for the docker client config.json. " +
+                  "If DOCKER_CONFIG is not specified, the value of the " +
                   "DOCKER_CONFIG environment variable will be used. " +
                   "DOCKER_CONFIG is not defined, the home directory will be " +
                   "used.",
@@ -189,7 +189,7 @@ toolchain_configure = repository_rule(
         ),
         "client_config": attr.string(
             mandatory = False,
-            doc = "A custom directory for the docker client " +
+            doc = "A custom directory or a Bazel label for the docker client" +
                   "config.json. If DOCKER_CONFIG is not specified, the value " +
                   "of the DOCKER_CONFIG environment variable will be used. " +
                   "DOCKER_CONFIG is not defined, the default set for the " +
