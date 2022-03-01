@@ -56,13 +56,20 @@ def repositories():
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-s390x")],
         )
 
-    if "go_puller_darwin" not in excludes:
+    if "go_puller_darwin_amd64" not in excludes:
         http_file(
-            name = "go_puller_darwin",
+            name = "go_puller_darwin_amd64",
             executable = True,
             sha256 = "4855c4f5927f8fb0f885510ab3e2a166d5fa7cde765fbe9aec97dc6b2761bb22",
             urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-darwin-amd64")],
         )
+
+    if "go_puller_darwin_arm64" not in excludes:
+       http_file(
+            name = "go_puller_darwin_arm64",
+            executable = True,
+            urls = [("https://github.com/ray-project/rules_docker/releases/download/darwin-arm64/puller-darwin-arm64")],
+       )
 
     if "loader_linux_amd64" not in excludes:
         http_file(
