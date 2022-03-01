@@ -233,8 +233,9 @@ def _impl(repository_ctx):
     if repository_ctx.attr.cred_helpers:
         kwargs["environment"] = {
             "PATH": "{}:{}".format(
-                ":".join([str(repository_ctx.path(helper).dirname) for helper in repository_ctx.attr.cred_helpers]), 
-                repository_ctx.os.environ.get("PATH"))
+                ":".join([str(repository_ctx.path(helper).dirname) for helper in repository_ctx.attr.cred_helpers]),
+                repository_ctx.os.environ.get("PATH"),
+            ),
         }
 
     result = repository_ctx.execute(args, **kwargs)
