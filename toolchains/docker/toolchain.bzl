@@ -173,6 +173,7 @@ def _toolchain_configure_impl(repository_ctx):
             Label("@io_bazel_rules_docker//toolchains/docker:pull.bzl.tpl"),
             {
                 "%{docker_client_config}": "%s" % client_config,
+                "%{cred_helpers}": str(repository_ctx.attr.cred_helpers),
             },
             False,
         )
@@ -195,6 +196,14 @@ toolchain_configure = repository_rule(
                   "DOCKER_CONFIG is not defined, the default set for the " +
                   "docker tool (typically, the home directory) will be " +
                   "used.",
+        ),
+        "cred_helpers": attr.string_list(
+            mandatory = False,
+            doc = """Labels to a list of credential helpers binaries that are configured in `client_config`.
+
+            More about credential helpers: https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
+            """,
+            default = [],
         ),
         "docker_flags": attr.string_list(
             mandatory = False,
