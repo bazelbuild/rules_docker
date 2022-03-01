@@ -3,7 +3,7 @@ buildifier:
   version: 4.0.1
   # Keep this argument in sync with .pre-commit-config.yml
   warnings: "-function-docstring-args,-print,-provider-params,-unnamed-macro"
-bazel: 4.0.0
+bazel: 5.0.0
 tasks:
   default_workspace_ubuntu1804:
     platform: ubuntu1804
