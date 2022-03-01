@@ -37,6 +37,14 @@ load("//repositories:deps.bzl", container_deps = "deps")
 
 container_deps()
 
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains")
+
+go_register_toolchains(version = "1.17.6")
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE")
+
 load("//repositories:images.bzl", test_images = "images")
 
 # py_deps are test dependencies only
