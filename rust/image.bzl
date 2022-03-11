@@ -32,16 +32,17 @@ def repositories():
     """
     _repositories()
 
-def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+def rust_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
     """Constructs a container image wrapping a rust_binary target.
 
-    Args:
-        name: Name of the rust_image target.
-        base: Base image to use for the rust_image.
-        deps: Dependencies of the rust_image target.
-        layers: Augments "deps" with dependencies that should be put into their own layers.
-        binary: An alternative binary target to use instead of generating one.
-        **kwargs: See rust_binary.
+  Args:
+    name: Name of the rust_image target.
+    base: Base image to use for the rust_image.
+    deps: Dependencies of the rust_image target.
+    layers: Augments "deps" with dependencies that should be put into their own layers.
+    env: Environment variables for the rust_image.
+    binary: An alternative binary target to use instead of generating one.
+    **kwargs: See rust_binary.
   """
     if layers:
         # buildifier: disable=print
@@ -63,6 +64,7 @@ def rust_image(name, base = None, deps = [], layers = [], binary = None, **kwarg
     app_layer(
         name = name,
         base = base,
+        env = env,
         binary = binary,
         visibility = visibility,
         tags = tags,

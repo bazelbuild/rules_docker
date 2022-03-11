@@ -31,6 +31,7 @@ nodejs_image(
         "@npm//jsesc",
     ],
     entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
+    env = {"NODEJS_IMAGE_TEST_KEY": "nodejs_image_test_value"},
 )
 
 nodejs_image(

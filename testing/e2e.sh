@@ -77,6 +77,7 @@ function test_war_image() {
   ID=$(docker run -d -p 8080:8080 bazel/testdata:war_image)
   sleep 5
   EXPECT_CONTAINS "$(curl localhost:8080)" "Hello World"
+  EXPECT_CONTAINS "$(curl localhost:8080)" "WAR_IMAGE_TEST_KEY=war_image_test_value"
   docker rm -f "${ID}"
 }
 

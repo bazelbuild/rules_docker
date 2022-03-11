@@ -33,23 +33,25 @@ def kt_jvm_image(
         srcs = [],
         deps = [],
         layers = [],
+        env = {},
         jvm_flags = [],
         classpath_as_file = None,
         **kwargs):
     """Builds a container image overlaying the kt_jvm_binary.
 
-    Args:
-        name: Name of the kt_jvm_image target.
-        base: Base image to use for the kt_jvm_image.
-        main_class: The main entrypoint class in the kotlin image.
-        srcs: List of kotlin source files that will be used to build the binary
-            to be included in the kt_jvm_image.
-        deps: The dependencies of the kt_jvm_image target.
-        jvm_flags: The flags to pass to the JVM when running the kotlin image.
-        layers: Augments "deps" with dependencies that should be put into
-            their own layers.
-        **kwargs: See kt_jvm_binary.
-    """
+  Args:
+    name: Name of the kt_jvm_image target.
+    base: Base image to use for the kt_jvm_image.
+    main_class: The main entrypoint class in the kotlin image.
+    srcs: List of kotlin source files that will be used to build the binary
+        to be included in the kt_jvm_image.
+    deps: The dependencies of the kt_jvm_image target.
+    layers: Augments "deps" with dependencies that should be put into
+        their own layers.
+    env: Environment variables for the kt_jvm_image.
+    jvm_flags: The flags to pass to the JVM when running the kotlin image.
+    **kwargs: See kt_jvm_binary.
+  """
     binary_name = name + ".binary"
 
     # This is an inlined copy of kt_jvm_binary so that we properly collect
@@ -83,6 +85,7 @@ def kt_jvm_image(
     jar_app_layer(
         name = name,
         base = base,
+        env = env,
         binary = binary_name,
         main_class = main_class,
         jvm_flags = jvm_flags,

@@ -33,6 +33,7 @@ groovy_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"GROOVY_IMAGE_TEST_KEY": "groovy_image_test_value"},
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",

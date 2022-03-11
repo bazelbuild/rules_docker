@@ -29,6 +29,7 @@ kt_jvm_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"KT_JVM_IMAGE_TEST_KEY": "kt_jvm_image_test_value"},
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     main_class = "examples.images.Binary",
     deps = [],

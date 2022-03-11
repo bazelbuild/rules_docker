@@ -33,6 +33,7 @@ scala_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"SCALA_IMAGE_TEST_KEY": "scala_image_test_value"},
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",

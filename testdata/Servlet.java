@@ -33,5 +33,6 @@ public class Servlet extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
       PrintWriter out = resp.getWriter();
       out.println(Library.SayHello());
+      out.printf("WAR_IMAGE_TEST_KEY=%s\n", System.getenv("WAR_IMAGE_TEST_KEY"));
   }
 }

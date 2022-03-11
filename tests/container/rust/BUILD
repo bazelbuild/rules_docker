@@ -26,6 +26,7 @@ rust_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"RUST_IMAGE_TEST_KEY": "rust_image_test_value"},
 )
 
 container_test(
