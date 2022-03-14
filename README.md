@@ -4,6 +4,9 @@
 | :------: |
 [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg?branch=master)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
 
+**rules_docker needs maintainers! Currently it is on minimal life support.**
+If your company can afford to help, please come [join the discussion](https://github.com/bazelbuild/rules_docker/discussions/2038)
+
 Generated API documentation is in the docs folder, or you can browse it online at
 <https://docs.aspect.dev/rules_docker>
 
