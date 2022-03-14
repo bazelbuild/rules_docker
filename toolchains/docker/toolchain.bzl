@@ -68,8 +68,8 @@ docker_toolchain = rule(
         ),
         "client_config": attr.string(
             default = "",
-            doc = "A custom directory or a Bazel label for the docker client config.json. " +
-                  "If DOCKER_CONFIG is not specified, the value of the " +
+            doc = "A custom directory for the docker client config.json. If " +
+                  "DOCKER_CONFIG is not specified, the value of the " +
                   "DOCKER_CONFIG environment variable will be used. " +
                   "DOCKER_CONFIG is not defined, the home directory will be " +
                   "used.",
@@ -151,12 +151,17 @@ def _toolchain_configure_impl(repository_ctx):
     # If client_config is not set we need to pass an empty string to the
     # template.
     client_config = repository_ctx.attr.client_config or ""
+    if client_config.startswith("@") or client_config.startswith("//"):
+        client_config_path = repository_ctx.path(Label(client_config)).dirname
+    else:
+        client_config_path = client_config
+
     repository_ctx.template(
         "BUILD",
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{BUILD_TAR_ATTR}": "%s" % build_tar_attr,
-            "%{DOCKER_CONFIG}": "%s" % client_config,
+            "%{DOCKER_CONFIG}": "%s" % client_config_path,
             "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
             "%{TOOL_ATTR}": "%s" % tool_attr,
             "%{GZIP_ATTR}": "%s" % gzip_attr,
