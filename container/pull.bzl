@@ -47,9 +47,8 @@ _container_pull_attrs = {
     "digest": attr.string(
         doc = "The digest of the image to pull.",
     ),
-    "docker_client_config": attr.string(
-        doc = """Specifies a custom directory to look for the docker client configuration, or a Bazel label of
-            the config.json file.
+    "docker_client_config": attr.label(
+        doc = """Specifies  a Bazel label of the config.json file.
 
             Don't use this directly.
             Instead, specify the docker configuration directory using a custom docker toolchain configuration.
@@ -172,10 +171,8 @@ def _impl(repository_ctx):
 
     # Use the custom docker client config directory if specified.
     docker_client_config = repository_ctx.attr.docker_client_config
-    if docker_client_config.startswith("@") or docker_client_config.startswith("//"):
-        args += ["-client-config-dir", repository_ctx.path(Label(docker_client_config)).dirname]
-    elif docker_client_config:
-        args += ["-client-config-dir", docker_client_config]
+    if docker_client_config:
+        args += ["-client-config-dir", repository_ctx.path(docker_client_config).dirname]
 
     cache_dir = repository_ctx.os.environ.get("DOCKER_REPO_CACHE")
     if cache_dir:
