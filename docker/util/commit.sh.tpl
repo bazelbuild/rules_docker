@@ -24,7 +24,7 @@ if ! (
 
     readonly id=$($DOCKER $DOCKER_FLAGS create %{docker_run_flags} $image_id %{commands})
     retcode=0
-    if docker start -a "${id}"; then
+    if $DOCKER $DOCKER_FLAGS start -a "${id}"; then
         reset_cmd $image_id $id %{output_image}
         $DOCKER $DOCKER_FLAGS save %{output_image} -o %{output_tar}
     else

@@ -23,7 +23,7 @@ if ! (
 
     readonly id=$($DOCKER $DOCKER_FLAGS create %{docker_run_flags} --env-file %{env_file_path} $image_id %{commands})
     retcode=0
-    if docker start -a "${id}"; then
+    if $DOCKER $DOCKER_FLAGS start -a "${id}"; then
         OUTPUT_IMAGE_TAR="%{output_layer_tar}.image.tar"
         reset_cmd $image_id $id %{output_image}
         $DOCKER $DOCKER_FLAGS save %{output_image} -o $OUTPUT_IMAGE_TAR
