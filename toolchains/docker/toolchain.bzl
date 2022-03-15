@@ -179,7 +179,6 @@ def _toolchain_configure_impl(repository_ctx):
         False,
     )
 
-
 # Repository rule to generate a docker_toolchain target
 toolchain_configure = repository_rule(
     attrs = {
@@ -193,7 +192,7 @@ toolchain_configure = repository_rule(
         "client_config": attr.label(
             mandatory = False,
             doc = "A Bazel label for the docker client config.json. " +
-                 " If DOCKER_CONFIG is not specified, the value " +
+                  " If DOCKER_CONFIG is not specified, the value " +
                   "of the DOCKER_CONFIG environment variable will be used. " +
                   "DOCKER_CONFIG is not defined, the default set for the " +
                   "docker tool (typically, the home directory) will be " +
