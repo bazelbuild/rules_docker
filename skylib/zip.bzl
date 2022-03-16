@@ -50,12 +50,6 @@ def _gzip(ctx, artifact, out, decompress, options, mnemonic):
             ) + (options or []),
             inputs = [artifact],
             outputs = [out],
-            execution_requirements = {
-                # This action produces large output files, but doesn't require much CPU to compute.
-                # It's not economical to send this to the remote-cache, instead local cache misses
-                # should just run gzip again.
-                "no-remote-cache": "1",
-            },
             mnemonic = mnemonic,
             tools = ctx.attr._zipper[DefaultInfo].default_runfiles.files,
         )
@@ -75,13 +69,6 @@ def _gzip(ctx, artifact, out, decompress, options, mnemonic):
             input_manifests = input_manifests,
             inputs = [artifact],
             outputs = [out],
-            execution_requirements = {
-                # See comment above.
-                # In this case it's not guaranteed that the user's gzip implementation
-                # is actually faster than a network fetch, but we guess that any typical
-                # one should be.
-                "no-remote-cache": "1",
-            },
             use_default_shell_env = True,
             mnemonic = mnemonic,
             tools = tools,
