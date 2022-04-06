@@ -35,4 +35,5 @@ if ! (
     exit "$retcode"
 ) > "$logfile" 2>&1; then
     cat $logfile
+    exit 1
 fi
