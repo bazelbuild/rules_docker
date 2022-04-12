@@ -207,3 +207,7 @@ tasks:
       - //...
     test_flags:
       - --test_output=errors
+  testing_e2e:
+    platform: ubuntu1804
+    shell_commands:
+      - testing/e2e.sh
