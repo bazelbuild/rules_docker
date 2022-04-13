@@ -64,6 +64,7 @@ def _add_create_image_config_args(
         manifest,
         config,
         labels,
+        labels_files,
         label_files,
         entrypoint,
         cmd,
@@ -107,6 +108,10 @@ def _add_create_image_config_args(
 
     for key, value in labels.items():
         args.add("-labels", "{}={}".format(key, value))
+
+    for labels_file in ctx.files.labels_files:
+        args.add("-labelsFile", labels_file)
+    inputs += ctx.files.labels_files
 
     for key, value in env.items():
         args.add("-env", "%s" % "=".join([
@@ -175,6 +180,7 @@ def _image_config(
         null_entrypoint = False,
         null_cmd = False,
         labels = None,
+        labels_files = None,
         label_files = None,
         label_file_strings = None):
     """Create the configuration for a new container image."""
@@ -205,6 +211,7 @@ def _image_config(
         manifest,
         config,
         labels_fixed,
+        labels_files,
         label_files,
         entrypoint,
         cmd,
@@ -677,6 +684,20 @@ _attrs = dicts.add(_layer.attrs, {
             },
 
         The values of this field support stamp variables.""",
+    ),
+    "labels_files": attr.label_list(
+        doc = """List of JSON files contains simple string-to-string dictionary with
+        labels.
+
+        Example of file content:
+
+            {
+                "com.example.foo": "bar",
+                "com.example.baz": "@metadata.json"
+            }
+
+        The values of this field support stamp variables.""",
+        allow_files = True,
     ),
     "launcher": attr.label(
         allow_single_file = True,
