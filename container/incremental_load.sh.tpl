@@ -115,7 +115,13 @@ function find_diffbase() {
     NEW_DIFF_IDS+=("${diff_id}")
   done
 
-  TOTAL_DIFF_IDS=($(cat "${name}" | python3 -mjson.tool | \
+
+  PYTHON="python"
+  if command -v python3 &>/dev/null; then
+      PYTHON="python3"
+  fi
+
+  TOTAL_DIFF_IDS=($(cat "${name}" | $PYTHON -mjson.tool | \
       grep -E '^ +"sha256:' | cut -d'"' -f 2 | cut -d':' -f 2))
 
   LEGACY_COUNT=$((${#TOTAL_DIFF_IDS[@]} - ${#NEW_DIFF_IDS[@]}))
