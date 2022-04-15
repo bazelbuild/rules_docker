@@ -170,7 +170,10 @@ container_push_ = rule(
         ),
         "skip_unchanged_digest": attr.bool(
             default = False,
-            doc = "Only push images if the digest has changed, default to False",
+            doc = "Check if the container registry already contain the image's digest. If yes, skip the push for that image. " +
+                  "Default to False. " +
+                  "Note that there is no transactional guarantee between checking for digest existence and pushing the digest. " +
+                  "This means that you should try to avoid running the same container_push targets in parallel.",
         ),
         "stamp": STAMP_ATTR,
         "tag": attr.string(
