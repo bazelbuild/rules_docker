@@ -133,7 +133,7 @@ docker_toolchain_configure(
   # OPTIONAL: Path to a directory which has a custom docker client config.json.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="<enter absolute path to your docker config directory here>",
+  client_config="<enter Bazel label to your docker config.json here>",
   # OPTIONAL: Path to the docker binary.
   # Should be set explicitly for remote execution.
   docker_path="<enter absolute path to the docker binary (in the remote exec env) here>",
@@ -1150,13 +1150,12 @@ load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
 
 docker_toolchain_configure(
   name = "docker_config",
-  # Replace this with an absolute path to a directory which has a custom docker
-  # client config.json. Note relative paths are not supported.
-  # Docker allows you to specify custom authentication credentials
+  # Replace this with a Bazel label to the config.json file. Note absolute or relative 
+  # paths are not supported. Docker allows you to specify custom authentication credentials
   # in the client configuration JSON file.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="/path/to/docker/client/config-dir",
+  client_config="@//path/to/docker:client.json",
 )
 ```
 In `BUILD` file:
@@ -1250,14 +1249,8 @@ load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
 # Configure the docker toolchain.
 docker_toolchain_configure(
   name = "docker_config",
-  # Path to the directory which has a custom docker client config.json with
+  # Bazel label to a custom docker client config.json with
   # authentication credentials for registry.gitlab.com (used in this example).
-  client_config="/path/to/docker/client/config",
-)
-
-# Alternatively, specify the Bazel label for the config.json
-docker_toolchain_configure(
-  name = "docker_config",
   client_config="@//path/to/docker/client:config.json",
 )
 

@@ -20,9 +20,9 @@ DockerToolchainInfo = provider(
     fields = {
         "build_tar_target": "Optional Bazel target for the build_tar tool",
         "client_config": "A custom directory for the docker client " +
-                         "config.json. If DOCKER_CONFIG is not specified, " +
+                         "config.json. If this is not specified, " +
                          "the value of the DOCKER_CONFIG environment variable " +
-                         "will be used. DOCKER_CONFIG is not defined, the " +
+                         "will be used. If DOCKER_CONFIG is not defined, the " +
                          "home directory will be used.",
         "docker_flags": "Additional flags to the docker command",
         "gzip_path": "Optional path to the gzip binary.",
@@ -66,11 +66,15 @@ docker_toolchain = rule(
             cfg = "host",
             executable = True,
         ),
+        # client_config cannot be a Bazel label because this attribute will be used in
+        # container_push's implmentation to get the path. Because container_push is
+        # a regular Bazel rule, it cannot convert a Label into an absolute path.
+        # toolchain_configure is responsible for generating this attribute from a Label.
         "client_config": attr.string(
             default = "",
-            doc = "A custom directory or a Bazel label for the docker client config.json. " +
-                  "If DOCKER_CONFIG is not specified, the value of the " +
-                  "DOCKER_CONFIG environment variable will be used. " +
+            doc = "An absolute path to a custom directory for the docker client " +
+                  "config.json. If this is not specified, the value of the " +
+                  "DOCKER_CONFIG environment variable will be used. If " +
                   "DOCKER_CONFIG is not defined, the home directory will be " +
                   "used.",
         ),
@@ -148,15 +152,30 @@ def _toolchain_configure_impl(repository_ctx):
     if repository_ctx.attr.build_tar_target:
         build_tar_attr = "build_tar_target = \"%s\"," % repository_ctx.attr.build_tar_target
 
-    # If client_config is not set we need to pass an empty string to the
-    # template.
-    client_config = repository_ctx.attr.client_config or ""
+    if repository_ctx.attr.client_config:
+        # Generate a custom variant authenticated version of the repository rule
+        # container_push if a custom docker client config directory was specified.
+        repository_ctx.template(
+            "pull.bzl",
+            Label("@io_bazel_rules_docker//toolchains/docker:pull.bzl.tpl"),
+            {
+                "%{docker_client_config}": str(repository_ctx.attr.client_config),
+                "%{cred_helpers}": str(repository_ctx.attr.cred_helpers),
+            },
+            False,
+        )
+        client_config_dir = repository_ctx.path(repository_ctx.attr.client_config).dirname
+    else:
+        # If client_config is not set we need to pass an empty string to the
+        # toolchain.
+        client_config_dir = ""
+
     repository_ctx.template(
         "BUILD",
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{BUILD_TAR_ATTR}": "%s" % build_tar_attr,
-            "%{DOCKER_CONFIG}": "%s" % client_config,
+            "%{DOCKER_CONFIG}": "%s" % client_config_dir,
             "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
             "%{TOOL_ATTR}": "%s" % tool_attr,
             "%{GZIP_ATTR}": "%s" % gzip_attr,
@@ -164,19 +183,6 @@ def _toolchain_configure_impl(repository_ctx):
         },
         False,
     )
-
-    # Generate a custom variant authenticated version of the repository rule
-    # container_push if a custom docker client config directory was specified.
-    if client_config != "":
-        repository_ctx.template(
-            "pull.bzl",
-            Label("@io_bazel_rules_docker//toolchains/docker:pull.bzl.tpl"),
-            {
-                "%{docker_client_config}": "%s" % client_config,
-                "%{cred_helpers}": str(repository_ctx.attr.cred_helpers),
-            },
-            False,
-        )
 
 # Repository rule to generate a docker_toolchain target
 toolchain_configure = repository_rule(
@@ -188,12 +194,12 @@ toolchain_configure = repository_rule(
             mandatory = False,
             doc = "The bazel target for the build_tar tool.",
         ),
-        "client_config": attr.string(
+        "client_config": attr.label(
             mandatory = False,
-            doc = "A custom directory or a Bazel label for the docker client" +
-                  "config.json. If DOCKER_CONFIG is not specified, the value " +
+            doc = "A Bazel label for the docker client config.json. " +
+                  "If this is not specified, the value " +
                   "of the DOCKER_CONFIG environment variable will be used. " +
-                  "DOCKER_CONFIG is not defined, the default set for the " +
+                  "If DOCKER_CONFIG is not defined, the default set for the " +
                   "docker tool (typically, the home directory) will be " +
                   "used.",
         ),

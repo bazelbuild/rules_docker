@@ -148,7 +148,7 @@ function test_new_container_push_skip_unchanged_digest_changed() {
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_1 2>&1)" "Successfully pushed Docker image"
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_2 2>&1)" "Successfully pushed Docker image"
-  EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["changed_tag1","changed_tag2"]}'
+  EXPECT_CONTAINS "$(curl -s localhost:5000/v2/docker/test/tags/list | jq --sort-keys -c '(.. | arrays) |= sort')" '{"name":"docker/test","tags":["changed_tag1","changed_tag2"]}'
 }
 
 function test_new_container_push_compat() {
@@ -261,12 +261,12 @@ function test_new_container_push_with_stamp() {
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
   # Push a legacy image with stamp substitution
-  bazel run tests/container:new_push_stamped_test_legacy
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_legacy 2>&1)" "Successfully pushed Docker image"
+  bazel run --stamp tests/container:new_push_stamped_test_legacy
+  EXPECT_CONTAINS "$(bazel run --stamp @io_bazel_rules_docker//tests/container:new_push_stamped_test_legacy 2>&1)" "Successfully pushed Docker image"
 
   # Push a oci image with stamp substitution
-  bazel run tests/container:new_push_stamped_test_oci
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_oci 2>&1)" "Successfully pushed OCI image"
+  bazel run --stamp tests/container:new_push_stamped_test_oci
+  EXPECT_CONTAINS "$(bazel run --stamp @io_bazel_rules_docker//tests/container:new_push_stamped_test_oci 2>&1)" "Successfully pushed OCI image"
   docker stop -t 0 $cid
 }
 
@@ -371,7 +371,7 @@ function test_container_push_with_stamp() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  bazel run tests/container:push_stamped_test
+  bazel run --stamp tests/container:push_stamped_test
   docker stop -t 0 $cid
 }
 

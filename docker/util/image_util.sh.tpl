@@ -20,3 +20,16 @@ reset_cmd() {
 
     $DOCKER $DOCKER_FLAGS commit -c "CMD $fmt_cmd" "${container_id}" "${output_image_name}"
 }
+
+function output_logfile {
+    readonly filename=$(mktemp)
+
+    function cleanup {
+        test -f "$filename"
+        cat "$filename"
+        rm "$filename"
+    }
+    trap cleanup EXIT
+
+    echo $filename
+}
