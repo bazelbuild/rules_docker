@@ -20,7 +20,7 @@ DockerToolchainInfo = provider(
     fields = {
         "build_tar_target": "Optional Bazel target for the build_tar tool",
         "client_config": "A custom directory for the docker client " +
-                         "config.json. If DOCKER_CONFIG is not specified, " +
+                         "config.json. If this is not specified, " +
                          "the value of the DOCKER_CONFIG environment variable " +
                          "will be used. DOCKER_CONFIG is not defined, the " +
                          "home directory will be used.",
@@ -66,10 +66,14 @@ docker_toolchain = rule(
             cfg = "host",
             executable = True,
         ),
+        # client_config cannot be a Bazel label because this attribute will be used in 
+        # container_push's implmentation to get the path. Because container_push is
+        # a regular Bazel rule, it cannot convert a Label into an absolute path.
+        # toolchain_configure is responsible for generating this attribute from a Label.
         "client_config": attr.string(
             default = "",
-            doc = "A custom directory for the docker client config.json. If " +
-                  "DOCKER_CONFIG is not specified, the value of the " +
+            doc = "An absolute path to a custom directory for the docker client " +
+                  "config.json. If this is not specified, the value of the " +
                   "DOCKER_CONFIG environment variable will be used. " +
                   "DOCKER_CONFIG is not defined, the home directory will be " +
                   "used.",
@@ -192,7 +196,7 @@ toolchain_configure = repository_rule(
         "client_config": attr.label(
             mandatory = False,
             doc = "A Bazel label for the docker client config.json. " +
-                  " If DOCKER_CONFIG is not specified, the value " +
+                  "If this is not specified, the value " +
                   "of the DOCKER_CONFIG environment variable will be used. " +
                   "DOCKER_CONFIG is not defined, the default set for the " +
                   "docker tool (typically, the home directory) will be " +
