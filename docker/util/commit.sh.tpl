@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -o errexit
 
 # Setup tools and load utils
 TO_JSON_TOOL="%{to_json_tool}"
@@ -15,18 +15,25 @@ if [[ -z "$DOCKER" ]]; then
     exit 1
 fi
 
-# Load the image and remember its name
-image_id=$(%{image_id_extractor_path} %{image_tar})
-$DOCKER $DOCKER_FLAGS load -i %{image_tar}
+logfile=$(output_logfile)
 
-id=$($DOCKER $DOCKER_FLAGS run -d %{docker_run_flags} $image_id %{commands})
-# Actually wait for the container to finish running its commands
-retcode=$($DOCKER $DOCKER_FLAGS wait $id)
-# Trigger a failure if the run had a non-zero exit status
-if [ $retcode != 0 ]; then
-  $DOCKER $DOCKER_FLAGS logs $id && false
+if ! (
+    # Load the image and remember its name
+    image_id=$(%{image_id_extractor_path} %{image_tar})
+    $DOCKER $DOCKER_FLAGS load -i %{image_tar}
+
+    readonly id=$($DOCKER $DOCKER_FLAGS create %{docker_run_flags} $image_id %{commands})
+    retcode=0
+    if $DOCKER $DOCKER_FLAGS start -a "${id}"; then
+        reset_cmd $image_id $id %{output_image}
+        $DOCKER $DOCKER_FLAGS save %{output_image} -o %{output_tar}
+    else
+        retcode=$?
+    fi
+
+    $DOCKER $DOCKER_FLAGS rm $id
+    exit "$retcode"
+) > "$logfile" 2>&1; then
+    cat $logfile
+    exit 1
 fi
-
-reset_cmd $image_id $id %{output_image}
-$DOCKER $DOCKER_FLAGS save %{output_image} -o %{output_tar}
-$DOCKER $DOCKER_FLAGS rm $id
