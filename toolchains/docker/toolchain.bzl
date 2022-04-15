@@ -66,7 +66,7 @@ docker_toolchain = rule(
             cfg = "host",
             executable = True,
         ),
-        # client_config cannot be a Bazel label because this attribute will be used in 
+        # client_config cannot be a Bazel label because this attribute will be used in
         # container_push's implmentation to get the path. Because container_push is
         # a regular Bazel rule, it cannot convert a Label into an absolute path.
         # toolchain_configure is responsible for generating this attribute from a Label.
