@@ -49,7 +49,6 @@ load(
 )
 load("//kotlin:image.bzl", "kt_jvm_image")
 load("//nodejs:image.bzl", "nodejs_image")
-load("//oci:oci.bzl", "oci_push")
 load("//python:image.bzl", "py_image", "py_layer")
 load("//python3:image.bzl", "py3_image")
 load("//scala:image.bzl", "scala_image")
@@ -464,15 +463,6 @@ container_flatten(
 
 docker_push(
     name = "push_stamp",
-    image = ":link_with_files_base",
-    registry = "gcr.io",
-    repository = "convoy-adapter/bazel-oci-test",
-    stamp = "//stamp:always",
-    tag = "{BUILD_USER}",
-)
-
-oci_push(
-    name = "push_stamp_oci",
     image = ":link_with_files_base",
     registry = "gcr.io",
     repository = "convoy-adapter/bazel-oci-test",
