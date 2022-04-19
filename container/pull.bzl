@@ -64,6 +64,13 @@ _container_pull_attrs = {
             """,
         mandatory = False,
     ),
+    "cred_helpers": attr.label_list(
+        doc = """Labels to a list of credential helper binaries that are configured in `docker_client_config`.
+
+        More about credential helpers: https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
+        """,
+        mandatory = False,
+    ),
     "import_tags": attr.string_list(
         default = [],
         doc = "Tags to be propagated to generated rules.",
@@ -219,6 +226,14 @@ def _impl(repository_ctx):
     elif repository_ctx.attr.timeout > 0:
         args.extend(["-timeout", str(repository_ctx.attr.timeout)])
         kwargs["timeout"] = repository_ctx.attr.timeout
+
+    if repository_ctx.attr.cred_helpers:
+        kwargs["environment"] = {
+            "PATH": "{}:{}".format(
+                ":".join([str(repository_ctx.path(helper).dirname) for helper in repository_ctx.attr.cred_helpers]),
+                repository_ctx.os.environ.get("PATH"),
+            ),
+        }
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:

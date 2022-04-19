@@ -7,5 +7,6 @@ def container_pull(**kwargs):
         fail("docker_client_config attribute should not be set on the container_pull created by the custom docker toolchain configuration")
     _container_pull(
         docker_client_config="%{docker_client_config}",
+        cred_helpers=%{cred_helpers},
         **kwargs
     )
