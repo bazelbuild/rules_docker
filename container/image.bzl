@@ -562,6 +562,11 @@ _attrs = dicts.add(_layer.attrs, {
         allow_files = container_filetype,
         doc = "The base layers on top of which to overlay this layer, equivalent to FROM.",
     ),
+    "abi": attr.string(
+        doc = """The optional [ABI](https://en.wikipedia.org/wiki/Application_binary_interface)
+        representationt to use for the image.
+        """,
+    ),
     "cmd": attr.string_list(
         doc = """List of commands to execute in the image.
 
@@ -770,7 +775,7 @@ _outputs["config_digest"] = "%{name}.json.sha256"
 _outputs["build_script"] = "%{name}.executable"
 
 def _image_transition_impl(settings, attr):
-    return dicts.add(settings, {
+    transitions = dicts.add(settings, {
         "//command_line_option:platforms": "@io_bazel_rules_docker//platforms:image_transition",
         "@io_bazel_rules_docker//platforms:image_transition_cpu": "@platforms//cpu:" + {
             # Architecture aliases.
@@ -781,6 +786,13 @@ def _image_transition_impl(settings, attr):
         "@io_bazel_rules_docker//platforms:image_transition_os": "@platforms//os:" + attr.operating_system,
     })
 
+    if attr.abi:
+        transitions = dicts.add(transitions, {
+            "@io_bazel_rules_docker//platforms:image_transition_abi": "@platforms//abi:" + attr.abi,
+        })
+
+    return transitions
+
 _image_transition = transition(
     implementation = _image_transition_impl,
     inputs = [],
@@ -788,6 +800,7 @@ _image_transition = transition(
         "//command_line_option:platforms",
         "@io_bazel_rules_docker//platforms:image_transition_cpu",
         "@io_bazel_rules_docker//platforms:image_transition_os",
+        "@io_bazel_rules_docker//platforms:image_transition_abi",
     ],
 )
 

@@ -60,6 +60,7 @@ platform(
 _IMAGE_TRANSITION_CONSTRAINTS = [
     ("cpu", "@platforms//cpu"),
     ("os", "@platforms//os"),
+    ("abi", "@platforms//abi"),
 ]
 
 [[
