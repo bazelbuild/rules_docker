@@ -283,6 +283,17 @@ if [[ "%{run}" == "True" ]]; then
   # We can clean up before we exec docker, since the exit handler will no longer run.
   cleanup
 
+  # Bash treats empty arrays as unset variables for the purposes of `set -u`, so we only
+  # conditionally add these arrays to our args.
+  args=(%{run_statement})
+  if [[ ${#docker_args[@]} -gt 0 ]]; then
+    args+=("${docker_args[@]}")
+  fi
+  args+=("%{run_tag}")
+  if [[ ${#container_args[@]} -gt 0 ]]; then
+    args+=("${container_args[@]}")
+  fi
+
   # This generated and injected by docker_*.
-  eval exec %{run_statement} "${docker_args[@]}" "%{run_tag}" "${container_args[@]:-}"
+  eval exec "${args[@]}"
 fi
