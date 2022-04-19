@@ -65,7 +65,7 @@ _container_pull_attrs = {
         mandatory = False,
     ),
     "cred_helpers": attr.label_list(
-        doc = """Labels to a list of credential helpers binaries that are configured in `docker_client_config`.
+        doc = """Labels to a list of credential helper binaries that are configured in `docker_client_config`.
 
         More about credential helpers: https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
         """,
