@@ -214,18 +214,22 @@ def incremental_load(
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
-    if len(images) > 1 and run:
-        fail("Bazel run does not currently support execution of " +
-             "multiple containers (only loading).")
+    if run:
+        if len(images) != 1:
+            fail("Bazel run currently only supports the execution of a single " +
+                 "container. Only loading multiple containers is supported")
 
-    # Default to interactively launching the container, and cleaning up when
-    # it exits. These template variables are unused if "run" is not set, so
-    # it is harmless to always define them as a function of the first image.
-    run_flags = run_flags or "-i --rm"
-    run_statement = "\"${DOCKER}\" ${DOCKER_FLAGS} run %s" % run_flags
-    run_tag = images.keys()[0]
-    if stamp:
-        run_tag = run_tag.replace("{", "${")
+        # Default to interactively launching the container, and cleaning up when
+        # it exits. These template variables are unused if "run" is not set, so
+        # it is harmless to always define them as a function of the first image.
+        run_flags = run_flags or "-i --rm"
+        run_statement = "\"${DOCKER}\" ${DOCKER_FLAGS} run %s" % run_flags
+        run_tag = images.keys()[0]
+        if stamp:
+            run_tag = run_tag.replace("{", "${")
+    else:
+        run_statement = ""
+        run_tag = ""
 
     load_statements = []
     tag_statements = []
