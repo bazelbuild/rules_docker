@@ -88,6 +88,8 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
     """
     if types.is_depset(packages):
         packages = packages.to_list()
+    if types.is_depset(additional_repos):
+        additional_repos = additional_repos.to_list()
     image_tar = image_tar or ctx.file.image_tar
     packages = depset(packages or ctx.attr.packages)
     additional_repos = depset(additional_repos or ctx.attr.additional_repos)
