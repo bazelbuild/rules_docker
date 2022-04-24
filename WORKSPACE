@@ -240,9 +240,9 @@ http_archive(
 
 http_archive(
     name = "ubuntu1604",
-    sha256 = "aa772738311761ca9bbd94a507d15e78a81755c885641a5a3523a9b3eecb5516",
-    strip_prefix = "base-images-docker-01267e68a505f32188553a2706bd7096bd9ea6f5/ubuntu1604",
-    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/01267e68a505f32188553a2706bd7096bd9ea6f5.tar.gz"],
+    sha256 = "e7e4c84f99df99f2a616d5328c41b5237c57c2550b0bd95a3de3888ad595e724",
+    strip_prefix = "base-images-docker-49320166744d93e4ca7754bc192484f9ce8c1686/ubuntu1604",
+    urls = ["https://github.com/GoogleContainerTools/base-images-docker/archive/49320166744d93e4ca7754bc192484f9ce8c1686.tar.gz"],
 )
 
 http_archive(
