@@ -30,6 +30,7 @@ load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
 load(":empty_layers.bzl", "empty_layers")
 load(":pull_info_validation_test.bzl", "pull_info_validation_test")
+load(":transitions.bzl", "templated_file", "transition_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -998,4 +999,81 @@ container_bundle(
         "localhost:5000/image3:latest": "//testdata:with_label",
         "localhost:5000/image4:latest": "//testdata:with_double_label",
     },
+)
+
+genrule(
+    name = "got_os",
+    outs = ["got_os.txt"],
+    cmd = select({
+        "@platforms//os:windows": "echo windows > \"$@\"",
+        "@platforms//os:linux": "echo linux > \"$@\"",
+        "@platforms//os:macos": "echo macos > \"$@\"",
+    }),
+)
+
+genrule(
+    name = "got_arch",
+    outs = ["got_arch.txt"],
+    cmd = select({
+        "@platforms//cpu:arm64": "echo arm64 > \"$@\"",
+        "@platforms//cpu:aarch64": "echo arm64 > \"$@\"",
+        "@platforms//cpu:x86_64": "echo x86_64 > \"$@\"",
+        "@platforms//cpu:arm": "echo arm > \"$@\"",
+    }),
+)
+
+container_image(
+    name = "transitioned_image",
+    architecture = "arm64",
+    files = [
+        ":got_arch",
+        ":got_os",
+    ],
+    operating_system = "windows",
+)
+
+templated_file(
+    name = "transitions_off",
+    out = "transitions_off.yaml",
+    substitutions =
+        select({
+            "@platforms//os:linux": ["%WANT_OS%=linux"],
+            "@platforms//os:macos": ["%WANT_OS%=macos"],
+        }) + select({
+            "@platforms//cpu:arm64": ["%WANT_ARCH%=arm64"],
+            "@platforms//cpu:aarch64": ["%WANT_ARCH%=arm64"],
+            "@platforms//cpu:x86_64": ["%WANT_ARCH%=x86_64"],
+        }),
+    template = "//tests/container/configs:transitions_off.yaml.tpl",
+)
+
+container_test(
+    name = "_transitions_on_test_base",
+    configs = ["//tests/container/configs:transitions_on.yaml"],
+    driver = "tar",
+    image = ":transitioned_image",
+    # marked manual, because it will only pass if transitions are enabled
+    # enabled or disabled
+    tags = ["manual"],
+)
+
+transition_test(
+    name = "transitions_on_test",
+    actual = ":_transitions_on_test_base",
+    transitions_enabled = True,
+)
+
+container_test(
+    name = "_transitions_off_test_base",
+    configs = ["transitions_off"],
+    driver = "tar",
+    image = ":transitioned_image",
+    # marked manual, because it will only pass if transitions are disabled
+    tags = ["manual"],
+)
+
+transition_test(
+    name = "transitions_off_test",
+    actual = ":_transitions_off_test_base",
+    transitions_enabled = False,
 )

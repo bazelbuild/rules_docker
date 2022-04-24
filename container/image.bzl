@@ -770,7 +770,15 @@ _outputs["config_digest"] = "%{name}.json.sha256"
 _outputs["build_script"] = "%{name}.executable"
 
 def _image_transition_impl(settings, attr):
-    return dicts.add(settings, {
+    if not settings["@io_bazel_rules_docker//transitions:enable"]:
+        # Once bazel < 5.0 is not supported we can return an empty dict here
+        return {
+            "//command_line_option:platforms": settings["//command_line_option:platforms"],
+            "@io_bazel_rules_docker//platforms:image_transition_cpu": "//plaftorms:image_transition_cpu_unset",
+            "@io_bazel_rules_docker//platforms:image_transition_os": "//plaftorms:image_transition_os_unset",
+        }
+
+    return {
         "//command_line_option:platforms": "@io_bazel_rules_docker//platforms:image_transition",
         "@io_bazel_rules_docker//platforms:image_transition_cpu": "@platforms//cpu:" + {
             # Architecture aliases.
@@ -779,11 +787,14 @@ def _image_transition_impl(settings, attr):
             "ppc64le": "ppc",
         }.get(attr.architecture, attr.architecture),
         "@io_bazel_rules_docker//platforms:image_transition_os": "@platforms//os:" + attr.operating_system,
-    })
+    }
 
 _image_transition = transition(
     implementation = _image_transition_impl,
-    inputs = [],
+    inputs = [
+        "@io_bazel_rules_docker//transitions:enable",
+        "//command_line_option:platforms",
+    ],
     outputs = [
         "//command_line_option:platforms",
         "@io_bazel_rules_docker//platforms:image_transition_cpu",
