@@ -131,6 +131,7 @@ install_pkgs(
     image_tar = "@ubuntu1604//:ubuntu1604_vanilla.tar",
     installables_tar = ":download_pkg_git.tar",
     output_image_name = "test_install_pkgs_duplicate",
+    tags = ["no-cache"],
 )
 
 install_pkgs(
@@ -138,6 +139,7 @@ install_pkgs(
     image_tar = "@ubuntu1604//:ubuntu1604_vanilla.tar",
     installables_tar = ":download_pkg_git.tar",
     output_image_name = "test_install_pkgs_duplicate",
+    tags = ["no-cache"],
 )
 
 compare_ids_test(
