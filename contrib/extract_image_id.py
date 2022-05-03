@@ -23,7 +23,7 @@ import sys
 import tarfile
 
 
-def get_id(tar_path):
+def get_id(tar_path, mode = "id"):
   """Extracts the id of a docker image from its tarball.
 
   Args:
@@ -51,14 +51,25 @@ def get_id(tar_path):
   # Get the manifest dictionary from JSON
   manifest = decoder.decode(manifest)[0]
 
-  # The name of the config file is of the form <image_id>.json
-  config_file = manifest["Config"]
+  if (mode == "id"):
 
-  # Get the id
-  id_ = config_file.split(".")[0]
+    # The name of the config file is of the form <image_id>.json
+    config_file = manifest["Config"]
 
-  return id_
+    # Get the id
+    id_ = config_file.split(".")[0]
 
+    return id_
+
+  elif (mode == "tag"):
+    return manifest["RepoTags"][0]
+
+  return ""
 
 if __name__ == "__main__":
-  print(get_id(sys.argv[1]))
+  mode = "id"
+
+  if (len(sys.argv) == 3):
+    mode = sys.argv[2]
+
+  print(get_id(sys.argv[1], mode))
