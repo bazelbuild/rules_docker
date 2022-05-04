@@ -37,7 +37,7 @@ def go_deps(go_repository_default_config = "@//:WORKSPACE"):
         go_repository_default_config (str, optional): A file used to determine the root of the workspace.
     """
     go_rules_dependencies()
-    go_register_toolchains()
+    go_register_toolchains(version = "1.18")
     gazelle_dependencies(go_repository_default_config = go_repository_default_config)
     excludes = native.existing_rules().keys()
     if "com_github_google_go_containerregistry" not in excludes:
