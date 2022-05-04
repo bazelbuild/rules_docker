@@ -180,8 +180,8 @@ def repositories():
     if "bazel_gazelle" not in excludes:
         http_archive(
             name = "bazel_gazelle",
-            sha256 = "cdb02a887a7187ea4d5a27452311a75ed8637379a1287d8eeb952138ea485f7d",
-            urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.21.1/bazel-gazelle-v0.21.1.tar.gz"],
+            sha256 = "3e51b2a0db7f3b1dcb973f07caf358e64301dcaa40f92bccec0e490f46b18afc",
+            urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz"],
         )
 
     if "rules_pkg" not in excludes:
