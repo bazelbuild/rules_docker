@@ -134,8 +134,6 @@ def _impl(ctx):
         PushInfo(
             registry = registry,
             repository = repository,
-            tag = tag,
-            stamp_inputs = stamp_inputs,
             digest = ctx.outputs.digest,
         ),
     ]
