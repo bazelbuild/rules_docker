@@ -402,7 +402,7 @@ image.implementation(<a href="#image.implementation-ctx">ctx</a>, <a href="#imag
                      <a href="#image.implementation-entrypoint">entrypoint</a>, <a href="#image.implementation-cmd">cmd</a>, <a href="#image.implementation-creation_time">creation_time</a>, <a href="#image.implementation-symlinks">symlinks</a>, <a href="#image.implementation-env">env</a>, <a href="#image.implementation-layers">layers</a>, <a href="#image.implementation-compression">compression</a>,
                      <a href="#image.implementation-compression_options">compression_options</a>, <a href="#image.implementation-experimental_tarball_format">experimental_tarball_format</a>, <a href="#image.implementation-debs">debs</a>, <a href="#image.implementation-tars">tars</a>, <a href="#image.implementation-architecture">architecture</a>,
                      <a href="#image.implementation-operating_system">operating_system</a>, <a href="#image.implementation-os_version">os_version</a>, <a href="#image.implementation-output_executable">output_executable</a>, <a href="#image.implementation-output_tarball">output_tarball</a>, <a href="#image.implementation-output_config">output_config</a>,
-                     <a href="#image.implementation-output_config_digest">output_config_digest</a>, <a href="#image.implementation-output_digest">output_digest</a>, <a href="#image.implementation-output_layer">output_layer</a>, <a href="#image.implementation-workdir">workdir</a>, <a href="#image.implementation-null_cmd">null_cmd</a>,
+                     <a href="#image.implementation-output_config_digest">output_config_digest</a>, <a href="#image.implementation-output_digest">output_digest</a>, <a href="#image.implementation-output_layer">output_layer</a>, <a href="#image.implementation-workdir">workdir</a>, <a href="#image.implementation-user">user</a>, <a href="#image.implementation-null_cmd">null_cmd</a>,
                      <a href="#image.implementation-null_entrypoint">null_entrypoint</a>)
 </pre>
 
@@ -465,6 +465,7 @@ You can write a customized container_image rule by writing something like:
 | <a id="image.implementation-output_digest"></a>output_digest |  File, overrides ctx.outputs.digest   |  <code>None</code> |
 | <a id="image.implementation-output_layer"></a>output_layer |  File, overrides ctx.outputs.layer   |  <code>None</code> |
 | <a id="image.implementation-workdir"></a>workdir |  str, overrides ctx.attr.workdir   |  <code>None</code> |
+| <a id="image.implementation-user"></a>user |  str, overrides ctx.attr.user   |  <code>None</code> |
 | <a id="image.implementation-null_cmd"></a>null_cmd |  bool, overrides ctx.attr.null_cmd   |  <code>None</code> |
 | <a id="image.implementation-null_entrypoint"></a>null_entrypoint |  bool, overrides ctx.attr.null_entrypoint   |  <code>None</code> |
 
