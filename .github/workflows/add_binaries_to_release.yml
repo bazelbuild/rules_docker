@@ -1,0 +1,64 @@
+name: Upload self-contained binaries
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: write # for actions/upload-release-asset to upload release asset
+    runs-on: ubuntu-18.04
+    if:  startsWith(github.event.release.tag_name, 'docker-tools-')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["linux", "darwin"]
+        cpu: ["amd64", "arm64", "s390x"]
+        application: ["puller", "loader"]
+        executable_mime: ["application/x-executable", "application/x-mach-binary"]
+        exclude:
+          - os: darwin
+            cpu: arm64
+          - os: darwin
+            cpu: s390x
+          - os: darwin
+            executable_mime: "application/x-executable"
+          - os: linux
+            executable_mime: "application/x-mach-binary"
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          curl -L -o /tmp/bazelisk https://github.com/bazelbuild/bazelisk/releases/download/v1.11.0/bazelisk-linux-amd64
+          chmod +x /tmp/bazelisk
+          /tmp/bazelisk || exit 1
+
+      - name: Build binary
+        run: |
+          /tmp/bazelisk build --platforms=@io_bazel_rules_go//go/toolchain:${{ matrix.os }}_${{ matrix.cpu }} container/go/cmd/${{ matrix.application }}:${{ matrix.application }}
+          shasum -a 256 bazel-bin/container/go/cmd/${{ matrix.application }}/${{ matrix.application }}_/${{ matrix.application }} | awk '{print $1}' > /tmp/output.sha256
+
+      - name: Upload binary as release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: bazel-bin/container/go/cmd/${{ matrix.application }}/${{ matrix.application }}_/${{ matrix.application }}
+          asset_name: ${{ matrix.os }}-${{ matrix.cpu }}_${{ matrix.application }}
+          asset_content_type: ${{ matrix.executable_mime }}
+
+      - name: Upload binary sha as release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: /tmp/output.sha256
+          asset_name: ${{ matrix.os }}-${{ matrix.cpu }}_${{ matrix.application }}.sha256
+          asset_content_type: "text/plain"
