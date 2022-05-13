@@ -248,14 +248,13 @@ def _impl(repository_ctx):
             ),
         }
 
+    # Only allow environment variables that influence the pusher through.
     env = {
         k: v
         for k, v in repository_ctx.os.environ.items()
         if k.lower() in (
             "home",
             "path",  # TODO(user): confirm if this is necessary as it can bust cache.
-
-            # Only allow environment variables that influence the pusher through.
             "ssh_auth_sock",
             "ssl_cert_file",
             "ssl_cert_dir",
@@ -265,7 +264,10 @@ def _impl(repository_ctx):
         )
     }
 
-    result = env_execute(repository_ctx, args, environment = env, **kwargs)
+    if repository_ctx.attr.use_precompiled_binaries:
+        result = repository_ctx.execute(args, **kwargs)
+    else:
+        result = env_execute(repository_ctx, args, environment = env, **kwargs)
     if result.return_code:
         fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args])))
 

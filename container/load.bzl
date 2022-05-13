@@ -37,6 +37,13 @@ container_import(
     layers = glob(["*.tar.gz"]),
 )""")
 
+    loader_args = [
+        "-directory",
+        repository_ctx.path("image"),
+        "-tarball",
+        repository_ctx.path(repository_ctx.attr.file),
+    ]
+
     if repository_ctx.attr.use_precompiled_binaries:
         loader = repository_ctx.attr._loader_linux_amd64
         if repository_ctx.os.name.lower().startswith("mac os"):
@@ -48,16 +55,10 @@ container_import(
             elif arch == "s390x":
                 loader = repository_ctx.attr._loader_linux_s390x
         loader_path = repository_ctx.path(loader)
+        result = repository_ctx.execute([loader_path] + loader_args)
     else:
         loader_path = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/loader{}".format(executable_extension(repository_ctx)))))
-
-    result = env_execute(repository_ctx, [
-        loader_path,
-        "-directory",
-        repository_ctx.path("image"),
-        "-tarball",
-        repository_ctx.path(repository_ctx.attr.file),
-    ])
+        result = env_execute(repository_ctx, [loader_path] + loader_args)
 
     if result.return_code:
         fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
