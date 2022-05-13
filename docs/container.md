@@ -160,25 +160,9 @@ The created target can be referenced as `@label_name//image`.
 ## container_pull
 
 <pre>
-container_pull(
-    <a href="#container_pull-name">name</a>, <a href="#container_pull-architecture">architecture</a>,
-    <a href="#container_pull-cpu_variant">cpu_variant</a>,
-    <a href="#container_pull-cred_helpers">cred_helpers</a>, <a href="#container_pull-digest">digest</a>,
-    <a href="#container_pull-docker_client_config">docker_client_config</a>,
-    <a href="#container_pull-import_tags">import_tags</a>,
-    <a href="#container_pull-os">os</a>,
-    <a href="#container_pull-os_features">os_features</a>,
-    <a href="#container_pull-os_version">os_version</a>,
-    <a href="#container_pull-platform_features">platform_features</a>,
-    <a href="#container_pull-puller_darwin">puller_darwin</a>,
-    <a href="#container_pull-puller_linux_amd64">puller_linux_amd64</a>,
-    <a href="#container_pull-puller_linux_arm64">puller_linux_arm64</a>,
-    <a href="#container_pull-puller_linux_s390x">puller_linux_s390x</a>,
-    <a href="#container_pull-registry">registry</a>,
-    <a href="#container_pull-repo_mapping">repo_mapping</a>,
-    <a href="#container_pull-repository">repository</a>,
-    <a href="#container_pull-tag">tag</a>,
-    <a href="#container_pull-timeout">timeout</a>)
+container_pull(<a href="#container_pull-name">name</a>, <a href="#container_pull-architecture">architecture</a>, <a href="#container_pull-cpu_variant">cpu_variant</a>, <a href="#container_pull-cred_helpers">cred_helpers</a>, <a href="#container_pull-digest">digest</a>, <a href="#container_pull-docker_client_config">docker_client_config</a>,
+               <a href="#container_pull-import_tags">import_tags</a>, <a href="#container_pull-os">os</a>, <a href="#container_pull-os_features">os_features</a>, <a href="#container_pull-os_version">os_version</a>, <a href="#container_pull-platform_features">platform_features</a>, <a href="#container_pull-registry">registry</a>, <a href="#container_pull-repo_mapping">repo_mapping</a>,
+               <a href="#container_pull-repository">repository</a>, <a href="#container_pull-tag">tag</a>, <a href="#container_pull-timeout">timeout</a>)
 </pre>
 
 A repository rule that pulls down a Docker base image in a manner suitable for use with the `base` attribute of `container_image`.
