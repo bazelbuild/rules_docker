@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-Helper functions written by rules_go, shamelessly copied here so stardoc can be happy. Right now these macros are
-defined in @io_bazel_rules_go//go/private:common.bzl but this is marked private so stardoc cannot import it.
+execution.bzl contains helper functions used to build the pusher and puller.  
+Originally copied from @io_bazel_rules_go//go/private:common.bzl.
 """
 
 def env_execute(ctx, arguments, environment = {}, **kwargs):
@@ -24,6 +24,14 @@ def env_execute(ctx, arguments, environment = {}, **kwargs):
     Variables that aren't explicitly mentioned in "environment"
     are removed from the environment. This should be preferred to "ctx.execute"
     in most situations.
+
+    Args:
+        ctx: The repository context.
+        arguments: A list of arguments to pass to the command.
+        environment: A dictionary of environment variables to set.
+        **kwargs: Additional keyword arguments to pass to "ctx.execute".
+    Returns:
+        The return value of "ctx.execute".
     """
     if ctx.os.name.startswith("windows"):
         return ctx.execute(arguments, environment = environment, **kwargs)

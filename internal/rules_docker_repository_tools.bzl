@@ -39,7 +39,6 @@ def _rules_docker_repository_tools_impl(ctx):
 
     env.update({
         "GOPATH": str(ctx.path(".")),
-        # TODO(gravypod): make this more hermetic
         "GO111MODULE": "off",
         # workaround: avoid the Go SDK paths from leaking into the binary
         "GOROOT_FINAL": "GOROOT",
@@ -92,14 +91,5 @@ rules_docker_repository_tools = repository_rule(
     environ = [
         "GOCACHE",
         "GOPATH",
-        "GO_REPOSITORY_USE_HOST_CACHE",  # TODO(gravypod): Find out why this is here in rules_go
     ],
 )
-"""go_repository_tools is a synthetic repository used by go_repository.
-
-
-go_repository depends on two Go binaries: fetch_repo and gazelle. We can't
-build these with Bazel inside a repository rule, and we don't want to manage
-prebuilt binaries, so we build them in here with go build, using whichever
-SDK rules_go is using.
-"""
