@@ -26,6 +26,10 @@ filegroup(
     name = "puller",
     srcs = ["bin/puller{extension}"],
 )
+filegroup(
+    name = "loader",
+    srcs = ["bin/loader{extension}"],
+)
 
 exports_files(["ROOT"])
 """
@@ -67,6 +71,7 @@ def _rules_docker_repository_tools_impl(ctx):
         "-asmflags",
         "all=-trimpath=" + env["GOPATH"],
         "github.com/bazelbuild/rules_docker/container/go/cmd/puller",
+        "github.com/bazelbuild/rules_docker/container/go/cmd/loader",
     ]
     result = env_execute(ctx, args, environment = env)
     if result.return_code:
