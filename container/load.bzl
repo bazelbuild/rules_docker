@@ -37,9 +37,22 @@ container_import(
     layers = glob(["*.tar.gz"]),
 )""")
 
-    loader = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/loader{}".format(executable_extension(repository_ctx)))))
+    if repository_ctx.attr.use_precompiled_binaries:
+        loader = repository_ctx.attr._loader_linux_amd64
+        if repository_ctx.os.name.lower().startswith("mac os"):
+            loader = repository_ctx.attr._loader_darwin
+        elif repository_ctx.os.name.lower().startswith("linux"):
+            arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            if arch == "arm64" or arch == "aarch64":
+                loader = repository_ctx.attr._loader_linux_arm64
+            elif arch == "s390x":
+                loader = repository_ctx.attr._loader_linux_s390x
+        loader_path = repository_ctx.path(loader)
+    else:
+        loader_path = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/loader{}".format(executable_extension(repository_ctx)))))
+
     result = env_execute(repository_ctx, [
-        loader,
+        loader_path,
         "-directory",
         repository_ctx.path("image"),
         "-tarball",
@@ -57,6 +70,32 @@ container_load = repository_rule(
             as obtained through `docker save IMAGE`.""",
             allow_single_file = True,
             mandatory = True,
+        ),
+        "_loader_darwin": attr.label(
+            executable = True,
+            default = Label("@loader_darwin//file:downloaded"),
+            cfg = "exec",
+        ),
+        "_loader_linux_amd64": attr.label(
+            executable = True,
+            default = Label("@loader_linux_amd64//file:downloaded"),
+            cfg = "exec",
+        ),
+        "_loader_linux_arm64": attr.label(
+            executable = True,
+            default = Label("@loader_linux_arm64//file:downloaded"),
+            cfg = "exec",
+        ),
+        "_loader_linux_s390x": attr.label(
+            executable = True,
+            default = Label("@loader_linux_s390x//file:downloaded"),
+            cfg = "exec",
+        ),
+        "use_precompiled_binaries": attr.bool(
+            doc = """Whether to use precompiled binaries.
+            If true, the loader will be fetched from a prebuilt binary (legacy).
+            If false, loader will be built from source.""",
+            default = True,
         ),
     },
     implementation = _impl,

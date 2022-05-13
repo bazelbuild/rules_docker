@@ -91,6 +91,30 @@ _container_pull_attrs = {
     "platform_features": attr.string_list(
         doc = "Specifies platform features when pulling a multi-platform manifest list.",
     ),
+    "puller_darwin": attr.label(
+        executable = True,
+        default = Label("@go_puller_darwin//file:downloaded"),
+        cfg = "host",
+        doc = "Exposed to provide a way to test other pullers on macOS",
+    ),
+    "puller_linux_amd64": attr.label(
+        executable = True,
+        default = Label("@go_puller_linux_amd64//file:downloaded"),
+        cfg = "host",
+        doc = "Exposed to provide a way to test other pullers on Linux",
+    ),
+    "puller_linux_arm64": attr.label(
+        executable = True,
+        default = Label("@go_puller_linux_arm64//file:downloaded"),
+        cfg = "host",
+        doc = "Exposed to provide a way to test other pullers on Linux",
+    ),
+    "puller_linux_s390x": attr.label(
+        executable = True,
+        default = Label("@go_puller_linux_s390x//file:downloaded"),
+        cfg = "host",
+        doc = "Exposed to provide a way to test other pullers on Linux",
+    ),
     "registry": attr.string(
         mandatory = True,
         doc = "The registry from which we are pulling.",
@@ -114,6 +138,12 @@ _container_pull_attrs = {
 
         This attribute will be overridden by the PULLER_TIMEOUT environment variable, if it is set.""",
     ),
+    "use_precompiled_binaries": attr.bool(
+        doc = """Whether to use precompiled binaries.
+        If true, the loader will be fetched from a prebuilt binary (legacy).
+        If false, loader will be built from source.""",
+        default = True,
+    ),
 }
 
 def _impl(repository_ctx):
@@ -127,9 +157,22 @@ def _impl(repository_ctx):
 
     import_rule_tags = "[\"{}\"]".format("\", \"".join(repository_ctx.attr.import_tags))
 
-    puller = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/puller{}".format(executable_extension(repository_ctx)))))
+    if repository_ctx.attr.use_precompiled_binaries:
+        puller = repository_ctx.attr.puller_linux_amd64
+        if repository_ctx.os.name.lower().startswith("mac os"):
+            puller = repository_ctx.attr.puller_darwin
+        elif repository_ctx.os.name.lower().startswith("linux"):
+            arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            if arch == "arm64" or arch == "aarch64":
+                puller = repository_ctx.attr.puller_linux_arm64
+            elif arch == "s390x":
+                puller = repository_ctx.attr.puller_linux_s390x
+        puller_path = repository_ctx.path(puller)
+    else:
+        puller_path = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/puller{}".format(executable_extension(repository_ctx)))))
+
     args = [
-        puller,
+        puller_path,
         "-directory",
         repository_ctx.path("image"),
         "-os",
