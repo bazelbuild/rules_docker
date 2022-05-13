@@ -13,6 +13,9 @@
 *.dylib
 *.dll
 
+# Vendored modules
+vendor/**/go.mod
+
 # Python 2 bytecode files
 *.pyc
 
