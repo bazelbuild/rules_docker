@@ -78,7 +78,7 @@ bzl_library(
 bzl_library(
     name = "container.docs",
     srcs = ["container.docs.bzl"],
-    deps = [":container"],
+    deps = ["container"],
 )
 
 bzl_library(
