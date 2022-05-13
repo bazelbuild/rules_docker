@@ -77,6 +77,7 @@ def _impl(ctx):
     digester_args += digester_img_args
     tarball = image.get("legacy")
     if tarball:
+        # buildifier: disable=print
         print("Pushing an image based on a tarball can be very " +
               "expensive. If the image set on %s is the output of a " % ctx.label +
               "docker_build, consider dropping the '.tar' extension. " +

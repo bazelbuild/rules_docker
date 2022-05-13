@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""rules_docker_repository_tools.bzl builds the puller tool from source 
+(using vendored deps) and exposes it as @rules_docker_repository_tools//:bin/puller
+"""
+
 load("//internal:execution.bzl", "env_execute", "executable_extension")
 load("@bazel_gazelle//internal:go_repository_cache.bzl", "read_cache_env")
 
