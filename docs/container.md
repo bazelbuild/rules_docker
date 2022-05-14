@@ -250,6 +250,61 @@ container_push(<a href="#container_push-name">name</a>, <a href="#container_push
 | <a id="container_push-windows_paths"></a>windows_paths |  -   | Boolean | required |  |
 
 
+<a id="#container_push_index"></a>
+
+## container_push_index
+
+<pre>
+container_push_index(<a href="#container_push_index-name">name</a>, <a href="#container_push_index-extension">extension</a>, <a href="#container_push_index-extract_config">extract_config</a>, <a href="#container_push_index-format">format</a>, <a href="#container_push_index-images">images</a>, <a href="#container_push_index-incremental_load_template">incremental_load_template</a>,
+                     <a href="#container_push_index-insecure_repository">insecure_repository</a>, <a href="#container_push_index-registry">registry</a>, <a href="#container_push_index-repository">repository</a>, <a href="#container_push_index-repository_file">repository_file</a>,
+                     <a href="#container_push_index-skip_unchanged_digest">skip_unchanged_digest</a>, <a href="#container_push_index-stamp">stamp</a>, <a href="#container_push_index-tag">tag</a>, <a href="#container_push_index-tag_file">tag_file</a>, <a href="#container_push_index-tag_tpl">tag_tpl</a>, <a href="#container_push_index-windows_paths">windows_paths</a>)
+</pre>
+
+Push a docker image for multiple platforms.
+
+This rule will push all given image manifests, and then the manifest list,
+aka the _fat manifest_, with the definition of all image platforms.
+
+An image platforms must follow the format: `[<os>/][<arch>][/<variant>]`.
+
+Example of the `images` attribute value:
+
+```json
+{
+    ":my_image_amd64": "linux/amd64",
+    ":my_image_arm64": "linux/arm64/v8",
+    ":my_image_ppc64le": "linux/ppc64le",
+}
+```
+
+- if `<os>` is missing, `linux` will be used.
+- if `<arch>` is missing, `amd64` will be used.
+- `<variant>` cannot be specified without `<os>` and `<arch>`.
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="container_push_index-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="container_push_index-extension"></a>extension |  The file extension for the push script.   | String | optional | "" |
+| <a id="container_push_index-extract_config"></a>extract_config |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container/go/cmd/extract_config:extract_config |
+| <a id="container_push_index-format"></a>format |  The form to push: Docker or OCI, default to 'Docker'.   | String | required |  |
+| <a id="container_push_index-images"></a>images |  The list of all images to push.<br><br>            The value of each entries is the platform of the container image.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | required |  |
+| <a id="container_push_index-incremental_load_template"></a>incremental_load_template |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container:incremental_load_template |
+| <a id="container_push_index-insecure_repository"></a>insecure_repository |  Whether the repository is insecure or not (http vs https)   | Boolean | optional | False |
+| <a id="container_push_index-registry"></a>registry |  The registry to which we are pushing.   | String | required |  |
+| <a id="container_push_index-repository"></a>repository |  The name of the image.   | String | required |  |
+| <a id="container_push_index-repository_file"></a>repository_file |  The label of the file with repository value. Overrides 'repository'.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="container_push_index-skip_unchanged_digest"></a>skip_unchanged_digest |  Check if the container registry already contain the image's digest. If yes, skip the push for that image. Default to False. Note that there is no transactional guarantee between checking for digest existence and pushing the digest. This means that you should try to avoid running the same container_push targets in parallel.   | Boolean | optional | False |
+| <a id="container_push_index-stamp"></a>stamp |  Whether to encode build information into the output. Possible values:<br><br>    - <code>@io_bazel_rules_docker//stamp:always</code>:         Always stamp the build information into the output, even in [--nostamp][stamp] builds.         This setting should be avoided, since it potentially causes cache misses remote caching for         any downstream actions that depend on it.<br><br>    - <code>@io_bazel_rules_docker//stamp:never</code>:         Always replace build information by constant values. This gives good build result caching.<br><br>    - <code>@io_bazel_rules_docker//stamp:use_stamp_flag</code>:         Embedding of build information is controlled by the [--[no]stamp][stamp] flag.         Stamped binaries are not rebuilt unless their dependencies change.<br><br>    [stamp]: https://docs.bazel.build/versions/main/user-manual.html#flag--stamp   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | @io_bazel_rules_docker//stamp:use_stamp_flag |
+| <a id="container_push_index-tag"></a>tag |  The tag of the image.   | String | optional | "latest" |
+| <a id="container_push_index-tag_file"></a>tag_file |  The label of the file with tag value. Overrides 'tag'.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="container_push_index-tag_tpl"></a>tag_tpl |  The script template to use.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="container_push_index-windows_paths"></a>windows_paths |  -   | Boolean | required |  |
+
+
 <a id="#container_image"></a>
 
 ## container_image

@@ -15,13 +15,13 @@ Generated API documentation is in the docs folder, or you can browse it online a
 * [container_load](/docs/container.md#container_load)
 * [container_pull](/docs/container.md#container_pull) ([example](#container_pull))
 * [container_push](/docs/container.md#container_push) ([example](#container_push))
+* [container_push_index](/docs/container.md#container_push_index) ([example](#container_push_index))
 
 These rules used to be `docker_build`, `docker_push`, etc. and the aliases for
-these (mostly) legacy names still exist largely for backwards-compatibility.  We
-also have **early-stage** `oci_image`, `oci_push`, etc. aliases for folks that
-enjoy the consistency of a consistent rule prefix.  The only place the
-format-specific names currently do any more than alias things is in `foo_push`,
-where they also specify the appropriate format as which to publish the image.
+these (mostly) legacy names still exist largely for backwards-compatibility.
+The only place the format-specific names currently do any more than alias things
+is in `foo_push`, where they also specify the appropriate format as which
+to publish the image.
 
 ### Overview
 
@@ -283,9 +283,9 @@ to use `container_push` with custom docker authentication credentials.
 ## Varying image names
 
 A common request from folks using
-`container_push`, `container_bundle`, or `container_image` is to
-be able to vary the tag that is pushed or embedded.  There are two options
-at present for doing this.
+`container_push`, `container_push_index`, `container_bundle`,
+or `container_image` is to be able to vary the tag that is pushed
+or embedded.  There are two options at present for doing this.
 
 ### Stamping
 
@@ -328,7 +328,6 @@ A common example is to provide the current git SHA, with
 `--workspace_status_command="echo STABLE_GIT_SHA $(git rev-parse HEAD)"`
 
 That flag is typically passed in the `.bazelrc` file, see for example [`.bazelrc` in kubernetes](https://github.com/kubernetes/kubernetes/blob/81ce94ae1d8f5d04058eeb214e9af498afe78ff2/build/root/.bazelrc#L6).
-
 
 ### Make variables
 
@@ -1138,13 +1137,14 @@ container_push(
 )
 ```
 
-We also support the `docker_push` (from `docker/docker.bzl`) and `oci_push`
-(from `oci/oci.bzl`) aliases, which bake in the `format = "..."` attribute.
+We also support the `docker_push` (from `docker/docker.bzl`) aliases,
+which bake in the `format = "Docker"` attribute.
 
 See [here](#container_push-custom-client-configuration) for an example of how
 to use container_push with custom docker authentication credentials.
 
 ### container_push (Custom client configuration)
+
 If you wish to use container_push using custom docker authentication credentials,
 in `WORKSPACE`:
 
@@ -1182,6 +1182,25 @@ container_push(
    registry = "gcr.io",
    repository = "my-project/my-image",
    tag = "dev",
+)
+```
+
+### container_push_index
+
+This target pushes on `bazel run :push_foo_all`:
+
+``` python
+container_push_index(
+   name = "push_foo_all",
+   images = {
+      ":foo_amd64": "linux/amd64",
+      ":foo_arm64": "linux/arm64/v8",
+      ":foo_ppc64le": "linux/ppc64le",
+   },
+   format = "OCI",
+   registry = "gcr.io",
+   repository = "my-project/my-image",
+   tag = "{STABLE_VERSION}",
 )
 ```
 
@@ -1341,6 +1360,11 @@ shared layers and letting them diverge could result in sub-optimal push and pull
 ## container_push
 
 **MOVED**: See [docs/container.md](/docs/container.md#container_push)
+
+<a name="container_push_index"></a>
+## container_push_index
+
+**MOVED**: See [docs/container.md](/docs/container.md#container_push_index)
 
 <a name="container_layer"></a>
 ## container_layer
