@@ -16,6 +16,7 @@
 load(
     "//container:container.bzl",
     "container_push",
+    "container_push_index",
     _docker_build = "container_image",
     _docker_bundle = "container_bundle",
     _docker_flatten = "container_flatten",
@@ -43,3 +44,12 @@ def docker_push(*args, **kwargs):
         )
     kwargs["format"] = "Docker"
     container_push(*args, **kwargs)
+
+def docker_push_index(*args, **kwargs):
+    if "format" in kwargs:
+        fail(
+            "Cannot override 'format' attribute on docker_push_index",
+            attr = "format",
+        )
+    kwargs["format"] = "Docker"
+    container_push_index(*args, **kwargs)

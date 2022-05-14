@@ -20,7 +20,11 @@ load("//container:import.bzl", _container_import = "container_import")
 load("//container:layer.bzl", _container_layer = "container_layer")
 load("//container:load.bzl", _container_load = "container_load")
 load("//container:pull.bzl", _container_pull = "container_pull")
-load("//container:push.bzl", _container_push = "container_push")
+load(
+    "//container:push.bzl",
+    _container_push = "container_push",
+    _container_push_index = "container_push_index",
+)
 
 # Explicitly re-export the functions
 container_bundle = _container_bundle
@@ -31,6 +35,7 @@ container_layer = _container_layer
 container_import = _container_import
 container_pull = _container_pull
 container_push = _container_push
+container_push_index = _container_push_index
 container_load = _container_load
 
 container = struct(

@@ -22,6 +22,7 @@ go_library(
     srcs = [
         "config.go",
         "image.go",
+        "image_index.go",
         "reader.go",
         "write.go",
     ],
@@ -38,7 +39,9 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "compat_test.go",
         "config_test.go",
+        "image_index_test.go",
         "write_test.go",
     ],
     embed = [":go_default_library"],

@@ -48,6 +48,34 @@ def _digester_run_action(ctx, image, output_file):
         mnemonic = "ContainerPushDigest",
     )
 
+def _digester_index_run_action(ctx, images, output_file):
+    args = [
+        "--dst",
+        output_file.path,
+        "--format",
+        ctx.attr.format,
+    ]
+    inputs = []
+
+    for image_platform, image in images.items():
+        platform_args = ["--os", image_platform.os, "--arch", image_platform.arch]
+        if image_platform.variant != "":
+            platform_args += ["--variant", image_platform.variant]
+
+        img_args, img_inputs = _gen_img_args(ctx, image)
+
+        args += ["--"] + platform_args + img_args
+        inputs += img_inputs
+
+    ctx.actions.run(
+        inputs = inputs,
+        outputs = [output_file],
+        executable = ctx.executable._digester_index,
+        arguments = args,
+        tools = ctx.attr._digester_index[DefaultInfo].default_runfiles.files,
+        mnemonic = "ContainerPushIndexDigest",
+    )
+
 def _pusher_write_scripts_common(ctx, ii):
     args = []
     inputs = []
@@ -126,6 +154,36 @@ def _pusher_write_script(ctx, image, ii, template_file, output_file):
 
     return runfiles, md
 
+def _pusher_index_write_script(ctx, images, ii, template_file, output_file):
+    args, inputs, md = _pusher_write_scripts_common(ctx, ii)
+
+    for image_platform, image in images.items():
+        platform_args = ["--os", image_platform.os, "--arch", image_platform.arch]
+        if image_platform.variant != "":
+            platform_args += ["--variant", image_platform.variant]
+
+        img_args, img_inputs = _gen_img_args(ctx, image, _get_runfile_path)
+
+        args += ["--"] + platform_args + img_args
+        inputs += img_inputs
+
+    ctx.actions.expand_template(
+        template = template_file,
+        output = output_file,
+        substitutions = {
+            "%{args}": " ".join(args),
+            "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher_index),
+        },
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(
+        files = [ctx.executable._pusher_index] + inputs,
+    )
+    runfiles = runfiles.merge(ctx.attr._pusher_index[DefaultInfo].default_runfiles)
+
+    return runfiles, md
+
 def _get_image_from_target(ctx, target):
     image = _get_layers(ctx, ctx.label.name, target)
     if image.get("legacy"):
@@ -165,6 +223,70 @@ def _container_push_impl(ctx):
     )
 
     _digester_run_action(ctx, image, ctx.outputs.digest)
+
+    return [
+        DefaultInfo(
+            executable = exe,
+            runfiles = runfiles,
+        ),
+        OutputGroupInfo(
+            exe = [exe],
+        ),
+        PushInfo(
+            registry = md.registry,
+            repository = md.repository,
+            digest = ctx.outputs.digest,
+        ),
+    ]
+
+def _parse_image_platform(raw_platform):
+    variant = ""
+    if raw_platform == "":
+        os = "linux"
+        arch = "amd64"
+    else:
+        p = raw_platform.split("/")
+        if len(p) == 1:
+            os = "linux"
+            arch = p[0]
+        elif len(p) == 2:
+            os = p[0]
+            arch = p[1]
+        elif len(p) == 3:
+            os = p[0]
+            arch = p[1]
+            variant = p[2]
+        else:
+            fail("platform " + raw_platform + " is invalid")
+
+    return struct(os = os, arch = arch, variant = variant)
+
+def _container_push_index_impl(ctx):
+    images = {
+        _parse_image_platform(image_platform): _get_image_from_target(ctx, image_target)
+        for image_target, image_platform in ctx.attr.images.items()
+    }
+
+    exe = ctx.actions.declare_file(ctx.label.name + ctx.attr.extension)
+    runfiles, md = _pusher_index_write_script(
+        ctx,
+        images,
+        template_file = ctx.file.tag_tpl,
+        output_file = exe,
+        ii = struct(
+            registry = ctx.attr.registry,
+            repository = ctx.attr.repository,
+            repository_file = ctx.file.repository_file,
+            tag = ctx.attr.tag,
+            tag_file = ctx.file.tag_file,
+            stamp = ctx.attr.stamp[StampSettingInfo].value,
+            format = ctx.attr.format,
+            skip_unchanged_digest = ctx.attr.skip_unchanged_digest,
+            insecure_repository = ctx.attr.insecure_repository,
+        ),
+    )
+
+    _digester_index_run_action(ctx, images, ctx.outputs.digest)
 
     return [
         DefaultInfo(
@@ -262,6 +384,59 @@ container_push_ = rule(
     },
 )
 
+_DOC_CONTAINER_PUSH_INDEX = """Push a docker image for multiple platforms.
+
+This rule will push all given image manifests, and then the manifest list,
+aka the _fat manifest_, with the definition of all image platforms.
+
+An image platforms must follow the format: `[<os>/][<arch>][/<variant>]`.
+
+Example of the `images` attribute value:
+
+```json
+{
+    ":my_image_amd64": "linux/amd64",
+    ":my_image_arm64": "linux/arm64/v8",
+    ":my_image_ppc64le": "linux/ppc64le",
+}
+```
+
+- if `<os>` is missing, `linux` will be used.
+- if `<arch>` is missing, `amd64` will be used.
+- `<variant>` cannot be specified without `<os>` and `<arch>`.
+"""
+
+container_push_index_ = rule(
+    doc = _DOC_CONTAINER_PUSH_INDEX,
+    attrs = dicts.add(_container_push_common_attrs, {
+        "images": attr.label_keyed_string_dict(
+            doc = """The list of all images to push.
+
+            The value of each entries is the platform of the container image.
+            """,
+            allow_files = [".tar"],
+            mandatory = True,
+        ),
+        "_digester_index": attr.label(
+            default = "//container/go/cmd/digester_index",
+            cfg = "exec",
+            executable = True,
+        ),
+        "_pusher_index": attr.label(
+            default = "//container/go/cmd/pusher_index",
+            cfg = "exec",
+            executable = True,
+            allow_files = True,
+        ),
+    }),
+    executable = True,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
+    implementation = _container_push_index_impl,
+    outputs = {
+        "digest": "%{name}.digest",
+    },
+)
+
 def _run_container_push_rule(f, **kwargs):
     kwargs.update({
         "extension": kwargs.pop("extension", select({
@@ -290,3 +465,6 @@ def container_push(name, format, image, registry, repository, **kwargs):
         repository = repository,
         **kwargs
     )
+
+def container_push_index(**kwargs):
+    _run_container_push_rule(container_push_index_, **kwargs)

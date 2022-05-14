@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "array_string_flags.go",
         "docker_config.go",
+        "image_args.go",
         "remote.go",
     ],
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/utils",

@@ -19,6 +19,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "image.go",
+        "image_index.go",
         "reader.go",
         "write.go",
     ],
