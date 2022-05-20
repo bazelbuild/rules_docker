@@ -886,6 +886,7 @@ java_image(
 war_image(
     name = "war_image",
     srcs = ["Servlet.java"],
+    env = {"WAR_IMAGE_TEST_KEY": "war_image_test_value"},
     layers = [
         ":java_image_library",
         "@javax_servlet_api//jar:jar",

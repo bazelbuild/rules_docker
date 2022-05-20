@@ -89,15 +89,16 @@ STATIC_DEFAULT_BASE = select({
     "//conditions:default": "@go_image_static//image",
 })
 
-def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
     """Constructs a container image wrapping a go_binary target.
 
   Args:
     name: Name of the go_image target.
     base: Base image to use to build the go_image.
     deps: Dependencies of the go image target.
-    binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into their own layers.
+    env: Environment variables for the go_image.
+    binary: An alternative binary target to use instead of generating one.
     **kwargs: See go_binary.
   """
     if layers:
@@ -123,6 +124,7 @@ def go_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     app_layer(
         name = name,
         base = base,
+        env = env,
         binary = binary,
         visibility = visibility,
         tags = tags,

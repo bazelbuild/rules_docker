@@ -32,16 +32,17 @@ def repositories():
     """
     _repositories()
 
-def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+def d_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
     """Constructs a container image wrapping a d_binary target.
 
   Args:
     name: Name of the d_image target.
     base: Base image to use for the d_image.
     deps: Dependencies of the d_image target.
-    binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    env: Environment variables for the d_image.
+    binary: An alternative binary target to use instead of generating one.
     **kwargs: See d_binary.
   """
     if layers:
@@ -63,6 +64,7 @@ def d_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
     app_layer(
         name = name,
         base = base,
+        env = env,
         binary = binary,
         visibility = visibility,
         tags = tags,

@@ -11,3 +11,6 @@ metadataTest:
     'arg1',
     'tests/container/scala/BUILD',
   ]
+  env:
+    - key: SCALA_IMAGE_TEST_KEY
+      value: scala_image_test_value

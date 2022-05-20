@@ -2,12 +2,14 @@ schemaVersion: 2.0.0
 
 metadataTest:
   cmd: ["arg0", "arg1"]
+  entrypoint: ['/app/tests/container/nodejs/nodejs_image.binary']
   env:
-    - key: PORT
-      value: "8080"
     - key: DEBIAN_FRONTEND
       value: "noninteractive"
+    - key: NODEJS_IMAGE_TEST_KEY
+      value: nodejs_image_test_value
     - key: PATH
       value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-  entrypoint: ['/app/tests/container/nodejs/nodejs_image.binary']
+    - key: PORT
+      value: "8080"
   workdir: "/app/tests/container/nodejs/nodejs_image.binary.runfiles/io_bazel_rules_docker"

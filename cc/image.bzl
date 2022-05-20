@@ -63,16 +63,17 @@ DEFAULT_BASE = select({
     "//conditions:default": "@cc_image_base//image",
 })
 
-def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs):
+def cc_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
     """Constructs a container image wrapping a cc_binary target.
 
   Args:
     name: Name of the cc_image target.
     base: Base image to use for the cc_image.
     deps: Dependencies of the cc_image.
-    binary: An alternative binary target to use instead of generating one.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    env: Environment variables for the cc_image.
+    binary: An alternative binary target to use instead of generating one.
     **kwargs: See cc_binary.
   """
     if layers:
@@ -94,6 +95,7 @@ def cc_image(name, base = None, deps = [], layers = [], binary = None, **kwargs)
     app_layer(
         name = name,
         base = base,
+        env = env,
         binary = binary,
         visibility = visibility,
         tags = tags,

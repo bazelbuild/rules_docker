@@ -1,12 +1,15 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  entrypoint: ['/app/tests/container/go/go_image.binary']
   cmd: [
     'arg0',
     'arg1',
     'tests/container/go/BUILD',
   ]
+  entrypoint: ['/app/tests/container/go/go_image.binary']
+  env:
+    - key: GO_IMAGE_TEST_KEY
+      value: go_image_test_value
 
 # File info taken from https://github.com/GoogleContainerTools/distroless/tree/master/base
 

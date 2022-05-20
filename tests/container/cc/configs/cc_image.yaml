@@ -7,6 +7,9 @@ metadataTest:
     'arg1',
     'tests/container/cc/BUILD',
   ]
+  env:
+    - key: CC_IMAGE_TEST_KEY
+      value: cc_image_test_value
 
 fileExistenceTests:
 - name: 'cc_image.binary'

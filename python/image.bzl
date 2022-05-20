@@ -78,17 +78,18 @@ def py_layer(name, deps, filter = "", **kwargs):
     native.py_library(name = binary_name, deps = deps, **kwargs)
     filter_layer(name = name, dep = binary_name, filter = filter)
 
-def py_image(name, base = None, deps = [], layers = [], **kwargs):
+def py_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
-    Args:
-        name: Name of the py_image target.
-        base: Base image to use in the py_image.
-        deps: Dependencies of the py_image target.
-        layers: Augments "deps" with dependencies that should be put into
-            their own layers.
-        **kwargs: See py_binary.
-    """
+  Args:
+    name: Name of the py_image target.
+    base: Base image to use in the py_image.
+    deps: Dependencies of the py_image target.
+    layers: Augments "deps" with dependencies that should be put into
+        their own layers.
+    env: Environment variables for the py_image.
+    **kwargs: See py_binary.
+  """
     binary_name = name + ".binary"
 
     if "main" not in kwargs:
@@ -117,6 +118,7 @@ def py_image(name, base = None, deps = [], layers = [], **kwargs):
         name = name,
         base = base,
         entrypoint = ["/usr/bin/python"],
+        env = env,
         binary = binary_name,
         visibility = visibility,
         tags = tags,

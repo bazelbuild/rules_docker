@@ -11,3 +11,6 @@ metadataTest:
     'arg1',
     'tests/container/kotlin/BUILD',
   ]
+  env:
+    - key: KT_JVM_IMAGE_TEST_KEY
+      value: kt_jvm_image_test_value

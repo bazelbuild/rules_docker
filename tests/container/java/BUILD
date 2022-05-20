@@ -44,6 +44,7 @@ java_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"JAVA_IMAGE_TEST_KEY": "java_image_test_value"},
     jvm_flags = [
         "-Dbuild.location=$(location :BUILD)",
     ],
