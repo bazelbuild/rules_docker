@@ -169,9 +169,6 @@ jar_dep_layer = rule(
 def _jar_app_layer_impl(ctx):
     """Appends the app layer with all remaining runfiles."""
 
-    for k in ctx.attr.env:
-        print("jar_app_layer", k, ctx.attr.env[k])
-
     # layers don't include runfiles
     available = depset(transitive = [java_files(jar) for jar in ctx.attr.jar_layers])
 
