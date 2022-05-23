@@ -208,6 +208,12 @@ like:
 Unable to load package for //:WORKSPACE: BUILD file not found in any of the following directories.
 ```
 
+* rules_docker uses transitions to build your containers using toolchains the correct
+architecture and operating system. If you run into issues with toolchain resolutions,
+you can disable this behaviour, by adding this to your .bazelrc:
+```
+build --@io_bazel_rules_docker//transitions:enable=false
+```
 ## Using with Docker locally.
 
 Suppose you have a `container_image` target `//my/image:helloworld`:
@@ -635,7 +641,7 @@ nodejs_image(
     name = "nodejs_image",
     entry_point = "@your_workspace//path/to:file.js",
     # npm deps will be put into their own layer
-    data = [":file.js", "@npm//some-npm-dep"],    
+    data = [":file.js", "@npm//some-npm-dep"],
     ...
 )
 ```
@@ -1150,7 +1156,7 @@ load("@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
 
 docker_toolchain_configure(
   name = "docker_config",
-  # Replace this with a Bazel label to the config.json file. Note absolute or relative 
+  # Replace this with a Bazel label to the config.json file. Note absolute or relative
   # paths are not supported. Docker allows you to specify custom authentication credentials
   # in the client configuration JSON file.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files

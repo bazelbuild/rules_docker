@@ -1,0 +1,9 @@
+schemaVersion: 2.0.0
+
+fileContentTests:
+  - name: "validate architecture"
+    path: "/Files/got_arch.txt"
+    expectedContents: ["arm64"]
+  - name: "validate os"
+    path: "/Files/got_os.txt"
+    expectedContents: ["windows"]
