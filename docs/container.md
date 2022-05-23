@@ -390,7 +390,7 @@ See [How to use the Docker Toolchain](/toolchains/docker/readme.md#how-to-use-th
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="container_image-kwargs"></a>kwargs |  Attributes are described by <code>container_image_</code> above.   |  none |
+| <a id="container_image-kwargs"></a>kwargs |  Attributes are described by <code>image.implementation</code> below.   |  none |
 
 
 <a id="#image.implementation"></a>
