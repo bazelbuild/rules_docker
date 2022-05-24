@@ -94,6 +94,19 @@ def strip_tar(input, output):
     with open(mf_path, 'w') as f:
         json.dump(manifest, f, sort_keys=True)
 
+    # Rewrite the legacy repositories file with the new layer name.
+    repositories_path = os.path.join(tempdir, 'repositories')
+    first_manifest_entry = next(iter(manifest), None)
+    if first_manifest_entry is not None:
+        repo_tags = first_manifest_entry['RepoTags'][0]
+        repo, tag = repo_tags.split(":")
+        last_layer = first_manifest_entry['Layers'][-1]
+        repositories = {repo: {tag: last_layer}}
+
+        # Rewrite repositories with the new layer name.
+        with open(repositories_path, 'w') as f:
+            json.dump(repositories, f, sort_keys=True)
+
     # Collect the files before adding, so we can sort them.
     files_to_add = []
     for root, _, files in os.walk(tempdir):
