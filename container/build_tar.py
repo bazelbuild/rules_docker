@@ -490,9 +490,9 @@ if __name__ == '__main__':
   parser.add_argument('--xz_path', type=str,
     help='Specify the path to xz as a fallback when the Python '
     'lzma module is unavailable.')
-  
+
   parser.add_argument('--force_posixpath', type=bool, default=False,
-    help='Force the use of posixpath when normalizing file paths. This is useful' 
+    help='Force the use of posixpath when normalizing file paths. This is useful'
     'when building in a non-posix environment.')
 
   main(parser.parse_args())
