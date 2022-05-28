@@ -314,9 +314,6 @@ func (r *Reader) ReadImage() (v1.Image, error) {
 	if err := r.loadMetadata(); err != nil {
 		return nil, errors.Wrap(err, "unable to load image metadata")
 	}
-	if err := r.loadForeignLayers(); err != nil {
-		return nil, errors.Wrap(err, "unable to load foreign layers specified in the base manifest")
-	}
 	if err := r.loadImages(r.Parts.Images); err != nil {
 		return nil, errors.Wrap(err, "unable to load layers from the images in the given image parts")
 	}
@@ -325,6 +322,9 @@ func (r *Reader) ReadImage() (v1.Image, error) {
 	}
 	if err := r.loadLayers(); err != nil {
 		return nil, errors.Wrap(err, "unable to load layers from the given parts")
+	}
+	if err := r.loadForeignLayers(); err != nil {
+		return nil, errors.Wrap(err, "unable to load foreign layers specified in the base manifest")
 	}
 	layers := []v1.Layer{}
 	for _, diffID := range r.config.RootFS.DiffIDs {

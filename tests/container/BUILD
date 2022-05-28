@@ -197,6 +197,13 @@ container_image(
     operating_system = "windows",
 )
 
+container_image(
+    name = "basic_windows_image_from_tar",
+    base = ":import_windows_base_image.tar",
+    cmd = ["echo bar"],
+    operating_system = "windows",
+)
+
 container_test(
     name = "basic_windows_image_test",
     configs = ["//tests/container/configs:windows_image.yaml"],
@@ -960,6 +967,7 @@ TEST_DATA = [
     "//testdata:stamped_bundle_test",
     "//testdata:stamp_info_file.txt",
     "//tests/container:basic_windows_image.tar",
+    "//tests/container:basic_windows_image_from_tar.tar",
 ]
 
 py_test(
