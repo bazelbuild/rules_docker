@@ -90,6 +90,9 @@ def _impl(ctx):
         tag = tag,
     ))
 
+    if ctx.attr.retry_count > 0:
+        pusher_args.append("-retry-count={}".format(ctx.attr.retry_count))
+
     if ctx.attr.skip_unchanged_digest:
         pusher_args.append("-skip-unchanged-digest")
     digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
@@ -167,6 +170,9 @@ container_push_ = rule(
         "repository_file": attr.label(
             allow_single_file = True,
             doc = "The label of the file with repository value. Overrides 'repository'.",
+        ),
+        "retry_count": attr.int(
+            doc = "Number of times to retry pushing the image.",
         ),
         "skip_unchanged_digest": attr.bool(
             default = False,

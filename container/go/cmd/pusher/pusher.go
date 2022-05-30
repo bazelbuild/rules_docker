@@ -44,6 +44,7 @@ var (
 	format              = flag.String("format", "", "The format of the uploaded image (Docker or OCI).")
 	clientConfigDir     = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	skipUnchangedDigest = flag.Bool("skip-unchanged-digest", false, "If set to true, will only push images where the digest has changed.")
+	retryCount          = flag.Int("retry-count", 0, "Amount of times the push will be retried.")
 	layers              utils.ArrayStringFlags
 	stampInfoFile       utils.ArrayStringFlags
 )
@@ -126,8 +127,17 @@ func main() {
 		log.Printf("Failed to digest image: %v", err)
 	}
 
-	if err := push(stamped, img); err != nil {
-		log.Fatalf("Error pushing image to %s: %v", stamped, err)
+	for retry := 0; retry < *retryCount+1; retry++ {
+		err := push(stamped, img)
+		if err == nil {
+			break
+		}
+
+		if *retryCount > 0 && retry < *retryCount {
+			log.Printf("Failed to push image on attempt %d: %v", retry+1, err)
+		} else {
+			log.Fatalf("Error pushing image to %s: %v", stamped, err)
+		}
 	}
 
 	digestStr := ""

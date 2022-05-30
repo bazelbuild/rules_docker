@@ -107,6 +107,9 @@ container_push = rule(
             ],
             doc = "The form to push: Docker or OCI.",
         ),
+		"retry_count": attr.int(
+			doc = "Number of times to retry pushing an image",
+		),
         "sequential": attr.bool(
             default = False,
             doc = "If true, push images sequentially.",
