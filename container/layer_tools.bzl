@@ -59,7 +59,7 @@ def _file_path(ctx, val):
     """
     return val.path
 
-def generate_args_for_image(ctx, image, to_path = _file_path):
+def generate_args_for_image(ctx, image, to_path = _file_path, **kwargs):
     """Generates arguments & inputs for the given image.
 
     Args:
@@ -67,6 +67,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         image: The image parts dictionary as returned by 'get_from_target'.
         to_path: A function to transform the string paths as they
                         are added as arguments.
+        **kwargs: Arguments to give to the `to_path` function.
 
     Returns:
         The arguments to call the pusher, digester & flatenner with to load
@@ -77,7 +78,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
     uncompressed_layers = image.get("unzipped_layer", [])
     digest_files = image.get("blobsum", [])
     diff_id_files = image.get("diff_id", [])
-    args = ["--config={}".format(to_path(ctx, image["config"]))]
+    args = ["--config={}".format(to_path(ctx, image["config"], **kwargs))]
     inputs = [image["config"]]
     inputs += compressed_layers
     inputs += uncompressed_layers
@@ -89,18 +90,18 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         diff_id_file = diff_id_files[i]
         args.append(
             "--layer={},{},{},{}".format(
-                to_path(ctx, compressed_layer),
-                to_path(ctx, uncompressed_layer),
-                to_path(ctx, digest_file),
-                to_path(ctx, diff_id_file),
+                to_path(ctx, compressed_layer, **kwargs),
+                to_path(ctx, uncompressed_layer, **kwargs),
+                to_path(ctx, digest_file, **kwargs),
+                to_path(ctx, diff_id_file, **kwargs),
             ),
         )
     if image.get("legacy"):
         inputs.append(image["legacy"])
-        args.append("--tarball={}".format(to_path(ctx, image["legacy"])))
+        args.append("--tarball={}".format(to_path(ctx, image["legacy"], **kwargs)))
     if image["manifest"]:
         inputs.append(image["manifest"])
-        args.append("--manifest={}".format(to_path(ctx, image["manifest"])))
+        args.append("--manifest={}".format(to_path(ctx, image["manifest"], **kwargs)))
     return args, inputs
 
 def get_from_target(ctx, name, attr_target):
