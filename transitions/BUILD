@@ -32,3 +32,8 @@ config_setting(
     name = "disabled",
     flag_values = {"@io_bazel_rules_docker//transitions:enable": "false"},
 )
+
+bool_flag(
+    name = "support_bazel_pre5.0",
+    build_setting_default = True,
+)

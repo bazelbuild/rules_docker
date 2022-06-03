@@ -768,6 +768,9 @@ _outputs["build_script"] = "%{name}.executable"
 
 def _image_transition_impl(settings, attr):
     if not settings["@io_bazel_rules_docker//transitions:enable"]:
+        if not settings["@io_bazel_rules_docker//transitions:support_bazel_pre5.0"]:
+            return {}
+
         # Once bazel < 5.0 is not supported we can return an empty dict here
         return {
             "//command_line_option:platforms": settings["//command_line_option:platforms"],
@@ -790,6 +793,7 @@ _image_transition = transition(
     implementation = _image_transition_impl,
     inputs = [
         "@io_bazel_rules_docker//transitions:enable",
+        "@io_bazel_rules_docker//transitions:support_bazel_pre5.0",
         "//command_line_option:platforms",
     ],
     outputs = [
