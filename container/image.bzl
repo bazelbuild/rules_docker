@@ -39,7 +39,8 @@ load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _gen_img_args = "generate_args_for_image",
-    _get_layers = "get_from_target",
+    _get_layers_from_archive_file = "get_from_archive_file",
+    _get_layers_from_target = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
@@ -55,20 +56,6 @@ load(
     "//skylib:path.bzl",
     _join_path = "join",
 )
-
-def _get_base_config(ctx, name, base):
-    if ctx.files.base or base:
-        # The base is the first layer in container_parts if provided.
-        layer = _get_layers(ctx, name, ctx.attr.base, base)
-        return layer.get("config")
-    return None
-
-def _get_base_manifest(ctx, name, base):
-    if ctx.files.base or base:
-        # The base is the first layer in container_parts if provided.
-        layer = _get_layers(ctx, name, ctx.attr.base, base)
-        return layer.get("manifest")
-    return None
 
 def _add_create_image_config_args(
         ctx,
@@ -361,6 +348,7 @@ def _impl(
         null_entrypoint: bool, overrides ctx.attr.null_entrypoint
     """
     name = name or ctx.label.name
+    base = base or ctx.attr.base
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
     architecture = architecture or ctx.attr.architecture
@@ -426,7 +414,10 @@ def _impl(
     # Get the layers and shas from our base.
     # These are ordered as they'd appear in the v2.2 config,
     # so they grow at the end.
-    parent_parts = _get_layers(ctx, name, ctx.attr.base, base)
+    if hasattr(base, "basename"):
+        parent_parts = _get_layers_from_archive_file(ctx, name, base)
+    else:
+        parent_parts = _get_layers_from_target(ctx, name, base)
     zipped_layers = parent_parts.get("zipped_layer", []) + [layer.zipped_layer for layer in layers]
     shas = parent_parts.get("blobsum", []) + [layer.blob_sum for layer in layers]
     unzipped_layers = parent_parts.get("unzipped_layer", []) + [layer.unzipped_layer for layer in layers]
@@ -439,11 +430,11 @@ def _impl(
     transitive_files = depset(new_files + new_emptyfiles + new_symlinks, transitive = [parent_transitive_files])
 
     # Get the config for the base layer
-    config_file = _get_base_config(ctx, name, base)
+    config_file = parent_parts.get("config")
     config_digest = None
 
     # Get the manifest for the base layer
-    manifest_file = _get_base_manifest(ctx, name, base)
+    manifest_file = parent_parts.get("manifest")
     manifest_digest = None
 
     # Generate the new config layer by layer, using the attributes specified and the diff_id
