@@ -84,6 +84,7 @@ def _add_create_image_config_args(
         creation_time,
         env,
         workdir,
+        user,
         layer_names,
         base_config,
         base_manifest,
@@ -125,8 +126,8 @@ def _add_create_image_config_args(
             ctx.expand_make_variables("env", value, {}),
         ]))
 
-    if ctx.attr.user:
-        args.add("-user", ctx.attr.user)
+    if user:
+        args.add("-user", user)
     if workdir:
         args.add("-workdir", workdir)
 
@@ -182,6 +183,7 @@ def _image_config(
         os_version = None,
         layer_name = None,
         workdir = None,
+        user = None,
         null_entrypoint = False,
         null_cmd = False):
     """Create the configuration for a new container image."""
@@ -219,6 +221,7 @@ def _image_config(
         creation_time,
         env,
         workdir,
+        user,
         layer_names,
         base_config,
         base_manifest,
@@ -296,6 +299,7 @@ def _impl(
         output_digest = None,
         output_layer = None,
         workdir = None,
+        user = None,
         null_cmd = None,
         null_entrypoint = None):
     """Implementation for the container_image rule.
@@ -352,6 +356,7 @@ def _impl(
         output_digest: File, overrides ctx.outputs.digest
         output_layer: File, overrides ctx.outputs.layer
         workdir: str, overrides ctx.attr.workdir
+        user: str, overrides ctx.attr.user
         null_cmd: bool, overrides ctx.attr.null_cmd
         null_entrypoint: bool, overrides ctx.attr.null_entrypoint
     """
@@ -458,6 +463,7 @@ def _impl(
             os_version = os_version,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
+            user = user or ctx.attr.user,
             null_entrypoint = null_entrypoint,
             null_cmd = null_cmd,
         )
