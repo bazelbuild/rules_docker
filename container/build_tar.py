@@ -51,7 +51,7 @@ class TarFile(object):
 
   def __init__(self, output, directory, compression, root_directory,
                default_mtime, enable_mtime_preservation, xz_path,
-               force_posixpath):
+               zstd_path, force_posixpath):
     self.directory = directory
     self.output = output
     self.compression = compression
@@ -59,6 +59,7 @@ class TarFile(object):
     self.default_mtime = default_mtime
     self.enable_mtime_preservation = enable_mtime_preservation
     self.xz_path = xz_path
+    self.zstd_path = zstd_path
     self.force_posixpath = force_posixpath
 
   def __enter__(self):
@@ -213,6 +214,9 @@ class TarFile(object):
     elif suffix.endswith('.xz'):
       data = self._xz_decompress(data)
       suffix = suffix[:-3]
+    elif suffix.endswith('.zst'):
+      data = self._zstdcat_decompress(self.zstd_path, data)
+      suffix = suffix[:-3]
 
     (_, tmpfile) = tempfile.mkstemp(suffix=suffix)
     try:
@@ -280,6 +284,9 @@ class TarFile(object):
         if parts[-1].lower() == 'xz':
           current.data = self._xz_decompress(current.data)
           ext = '.'.join(parts[1:-1])
+        elif parts[-1].lower() == 'zst':
+          current.data = self._zstdcat_decompress(self.zstd_path, current.data)
+          ext = '.'.join(parts[1:-1])
         else:
             ext = '.'.join(parts[1:])
         if name == 'data':
@@ -324,6 +331,18 @@ class TarFile(object):
         decompress = functools.partial(self._xzcat_decompress, self.xz_path)
     return decompress(data)
 
+  @staticmethod
+  def _zstdcat_decompress(zstd_path, data):
+    """Decompresses the zstd-encrypted bytes in data by piping to zstd."""
+    if not zstd_path:
+      raise RuntimeError('Cannot handle .zstd compression: zstd not found.')
+
+    zstd_proc = subprocess.Popen(
+      [zstd_path, '-d', '-c'],
+      stdin=subprocess.PIPE,
+      stdout=subprocess.PIPE)
+    return zstd_proc.communicate(data)[0]
+
 
 def main(FLAGS):
   # Parse modes arguments
@@ -367,7 +386,7 @@ def main(FLAGS):
   with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression,
                FLAGS.root_directory, FLAGS.mtime,
                FLAGS.enable_mtime_preservation, FLAGS.xz_path,
-               FLAGS.force_posixpath) as output:
+               FLAGS.zstd_path, FLAGS.force_posixpath) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
@@ -490,6 +509,9 @@ if __name__ == '__main__':
   parser.add_argument('--xz_path', type=str,
     help='Specify the path to xz as a fallback when the Python '
     'lzma module is unavailable.')
+
+  parser.add_argument('--zstd_path', type=str, default='/usr/bin/zstd',
+    help='Specify the path to zstd.')
 
   parser.add_argument('--force_posixpath', type=bool, default=False,
     help='Force the use of posixpath when normalizing file paths. This is useful'
