@@ -36,6 +36,10 @@ DockerToolchainInfo = provider(
                    "If not set found via which.",
         "xz_target": "Optional Bazel target for the xz tool. " +
                      "Should only be set if xz_path is unset.",
+        "zstd_path": "Optional path to the zstd binary." +
+                   "If not set found via which.",
+        "zstd_target": "Optional Bazel target for the zstd tool. " +
+                     "Should only be set if zstd_path is unset.",
     },
 )
 
@@ -51,6 +55,8 @@ def _docker_toolchain_impl(ctx):
             tool_target = ctx.attr.tool_target,
             xz_path = ctx.attr.xz_path,
             xz_target = ctx.attr.xz_target,
+            zstd_path = ctx.attr.zstd_path,
+            zstd_target = ctx.attr.zstd_target,
         ),
     )
     return [toolchain_info]
@@ -113,6 +119,17 @@ docker_toolchain = rule(
             cfg = "host",
             executable = True,
         ),
+        "zstd_path": attr.string(
+            doc = "Optional path to the zstd binary. This is used by " +
+                  "build_tar.py.",
+        ),
+        "zstd_target": attr.label(
+            allow_files = True,
+            doc = "Bazel target for the zstd tool. " +
+                  "Should only be set if zstd_path is unset.",
+            cfg = "host",
+            executable = True,
+        ),
     },
 )
 
@@ -139,6 +156,14 @@ def _toolchain_configure_impl(repository_ctx):
         xz_attr = "xz_path = \"%s\"," % repository_ctx.attr.xz_path
     elif repository_ctx.which("xz"):
         xz_attr = "xz_path = \"%s\"," % repository_ctx.which("xz")
+
+    zstd_attr = ""
+    if repository_ctx.attr.zstd_target:
+        zstd_attr = "zstd_target = \"%s\"," % repository_ctx.attr.zstd_target
+    elif repository_ctx.attr.zstd_path:
+        zstd_attr = "zstd_path = \"%s\"," % repository_ctx.attr.zstd_path
+    elif repository_ctx.which("zstd"):
+        zstd_attr = "zstd_path = \"%s\"," % repository_ctx.which("zstd")
 
     gzip_attr = ""
     if repository_ctx.attr.gzip_target:
@@ -180,6 +205,7 @@ def _toolchain_configure_impl(repository_ctx):
             "%{TOOL_ATTR}": "%s" % tool_attr,
             "%{GZIP_ATTR}": "%s" % gzip_attr,
             "%{XZ_ATTR}": "%s" % xz_attr,
+            "%{ZSTD_ATTR}": "%s" % zstd_attr,
         },
         False,
     )
@@ -252,6 +278,20 @@ toolchain_configure = repository_rule(
             mandatory = False,
             doc = "The bazel target for the xz tool. " +
                   "Can only be set if xz_path is not set.",
+        ),
+        "zstd_path": attr.string(
+            mandatory = False,
+            doc = "The full path to the zstd binary. If not specified, it will " +
+                  "be searched for in the path. If not available, running commands " +
+                  "that use zstd will fail.",
+        ),
+        "zstd_target": attr.label(
+            executable = True,
+            cfg = "host",
+            allow_files = True,
+            mandatory = False,
+            doc = "The bazel target for the zstd tool. " +
+                  "Can only be set if zstd_path is not set.",
         ),
     },
     environ = [

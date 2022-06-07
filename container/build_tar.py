@@ -510,7 +510,7 @@ if __name__ == '__main__':
     help='Specify the path to xz as a fallback when the Python '
     'lzma module is unavailable.')
 
-  parser.add_argument('--zstd_path', type=str, default='/usr/bin/zstd',
+  parser.add_argument('--zstd_path', type=str,
     help='Specify the path to zstd.')
 
   parser.add_argument('--force_posixpath', type=bool, default=False,

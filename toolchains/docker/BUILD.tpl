@@ -26,4 +26,5 @@ docker_toolchain(
     %{TOOL_ATTR}
     docker_flags = ["%{DOCKER_FLAGS}"],
     %{XZ_ATTR}
+    %{ZSTD_ATTR}
 )
