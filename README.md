@@ -1,4 +1,3 @@
-
 # Bazel Container Image Rules
 
 | Bazel CI |
@@ -1378,4 +1377,3 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Prow](https://github.com/kubernetes/test-infra/tree/master/prow)
   * [Tink](https://www.tink.com)
   * [Wix](https://www.wix.com)
-
