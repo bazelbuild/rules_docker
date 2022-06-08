@@ -134,7 +134,7 @@ func main() {
 		}
 
 		if *retryCount > 0 && retry < *retryCount {
-			log.Printf("Failed to push image on attempt %d: %v", retry+1, err)
+			log.Printf("Error pushing image to %s (attempt %d): %v", stamped, retry+1, err)
 		} else {
 			log.Fatalf("Error pushing image to %s: %v", stamped, err)
 		}
