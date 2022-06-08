@@ -1,0 +1,47 @@
+# This GitHub workflow is triggered when a new tag is pushed.
+# A release is then created from this tag.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get pushed tag
+        id: get_tag
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+
+      - name: Download repository archive at pushed tag
+        run: "curl -L https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/archive/refs/tags/${{ steps.get_tag.outputs.TAG }}.tar.gz -o rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz"
+
+      - name: Get SHA256 of archive
+        id: get_sha
+        run: echo "::set-output name=sha::$(sha256sum rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz | cut -f 1 -d ' ')"
+
+      - name: Get version
+        id: get_version
+        run: | 
+          VERSION=${{ steps.get_tag.outputs.TAG }}
+          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            Copy the following into your WORKSPACE file to use rules_docker at release ${{ steps.get_tag.outputs.TAG }}
+            ```
+            http_archive(
+                name = "io_bazel_rules_docker",
+                sha256 = "${{ steps.get_sha.outputs.sha }}",
+                strip_prefix = "rules_docker-${{ env.VERSION }}",
+                urls = ["https://github.com/bazelbuild/rules_docker/releases/download/${{ steps.get_tag.outputs.TAG }}/rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz"],
+            )
+            ```
+          generate_release_notes: true
+          files: rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz
