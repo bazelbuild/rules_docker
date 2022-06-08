@@ -44,7 +44,7 @@ var (
 	format              = flag.String("format", "", "The format of the uploaded image (Docker or OCI).")
 	clientConfigDir     = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	skipUnchangedDigest = flag.Bool("skip-unchanged-digest", false, "If set to true, will only push images where the digest has changed.")
-	retryCount          = flag.Int("retry-count", 0, "Amount of times the push will be retried.")
+	retryCount          = flag.Int("retry-count", 0, "Amount of times the push will be retried. This cannot be a negative number.")
 	layers              utils.ArrayStringFlags
 	stampInfoFile       utils.ArrayStringFlags
 )
@@ -84,6 +84,9 @@ func main() {
 	}
 	if *imgTarball == "" && *imgConfig == "" {
 		log.Fatalln("Neither --tarball nor --config was specified.")
+	}
+	if *retryCount < 0 {
+		log.Fatalln("-retry-count cannot be a negative number.")
 	}
 
 	// If the user provided a client config directory, ensure it's a valid
