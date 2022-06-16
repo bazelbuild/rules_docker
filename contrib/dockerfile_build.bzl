@@ -68,6 +68,7 @@ def _impl(repository_ctx):
     command.extend(build_args)
     command.extend([
         "--no-cache",
+        "--progress=plain",
         "-f",
         str(dockerfile_path),
         "-t",
@@ -78,7 +79,11 @@ def _impl(repository_ctx):
     if repository_ctx.attr.target:
         command.extend(["--target", repository_ctx.attr.target])
 
-    build_result = repository_ctx.execute(command)
+    build_environ = {}
+    if repository_ctx.attr.use_buildkit:
+         build_environ["DOCKER_BUILDKIT"] = "1"
+         
+    build_result = repository_ctx.execute(command, environment=build_environ, quiet=repository_ctx.attr.quiet)
     if build_result.return_code:
         fail("docker build command failed: {} ({})".format(
             build_result.stderr,
@@ -126,6 +131,13 @@ dockerfile_image = repository_rule(
         "target": attr.string(
             doc = "Specify which intermediate stage to finish at, passed to `--target`.",
         ),
+        "use_buildkit": attr.bool(
+            doc = "Enable the use of docker buildkit for this build.",
+        )
+        "quiet": attr.bool(
+            default = True,
+            doc = "If false, print stdout/stderr for the image build.",
+        )
     },
     implementation = _impl,
 )
