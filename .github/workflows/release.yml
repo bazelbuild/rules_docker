@@ -17,18 +17,13 @@ jobs:
         id: get_tag
         run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
 
-      - name: Download repository archive at pushed tag
-        run: "curl -L https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/archive/refs/tags/${{ steps.get_tag.outputs.TAG }}.tar.gz -o rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz"
+      - uses: actions/checkout@v3
+
+      - run: git archive --output=rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz ${{ steps.get_tag.outputs.TAG }}
 
       - name: Get SHA256 of archive
         id: get_sha
         run: echo "::set-output name=sha::$(sha256sum rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz | cut -f 1 -d ' ')"
-
-      - name: Get version
-        id: get_version
-        run: | 
-          VERSION=${{ steps.get_tag.outputs.TAG }}
-          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -39,7 +34,6 @@ jobs:
             http_archive(
                 name = "io_bazel_rules_docker",
                 sha256 = "${{ steps.get_sha.outputs.sha }}",
-                strip_prefix = "rules_docker-${{ env.VERSION }}",
                 urls = ["https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/releases/download/${{ steps.get_tag.outputs.TAG }}/rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz"],
             )
             ```
