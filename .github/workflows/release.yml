@@ -39,6 +39,7 @@ jobs:
             http_archive(
                 name = "io_bazel_rules_docker",
                 sha256 = "${{ steps.get_sha.outputs.sha }}",
+                strip_prefix = "rules_docker-${{ env.VERSION }}",
                 urls = ["https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/releases/download/${{ steps.get_tag.outputs.TAG }}/rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz"],
             )
             ```
