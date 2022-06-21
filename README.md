@@ -1,4 +1,3 @@
-
 # Bazel Container Image Rules
 
 | Bazel CI |
