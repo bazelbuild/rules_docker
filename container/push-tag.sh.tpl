@@ -27,5 +27,6 @@ function guess_runfiles() {
 }
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
+PATH="%{path_prefix}:$PATH"
 
 %{container_pusher} %{args} "$@"

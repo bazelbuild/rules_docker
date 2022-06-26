@@ -19,6 +19,7 @@ DockerToolchainInfo = provider(
     doc = "Docker toolchain rule parameters",
     fields = {
         "build_tar_target": "Optional Bazel target for the build_tar tool",
+        "cred_helpers": "Optional list of credential helpers labels",
         "client_config": "A custom directory for the docker client " +
                          "config.json. If this is not specified, " +
                          "the value of the DOCKER_CONFIG environment variable " +
@@ -44,6 +45,7 @@ def _docker_toolchain_impl(ctx):
         info = DockerToolchainInfo(
             build_tar_target = ctx.attr.build_tar_target,
             docker_flags = ctx.attr.docker_flags,
+            cred_helpers = ctx.attr.cred_helpers,
             client_config = ctx.attr.client_config,
             gzip_path = ctx.attr.gzip_path,
             gzip_target = ctx.attr.gzip_target,
@@ -77,6 +79,14 @@ docker_toolchain = rule(
                   "DOCKER_CONFIG environment variable will be used. If " +
                   "DOCKER_CONFIG is not defined, the home directory will be " +
                   "used.",
+        ),
+        "cred_helpers": attr.label_list(
+            mandatory = False,
+            doc = """Labels to a list of credential helpers binaries that are configured in `client_config`.
+
+            More about credential helpers: https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
+            """,
+            default = [],
         ),
         "docker_flags": attr.string_list(
             doc = "Additional flags to the docker command",
@@ -170,6 +180,10 @@ def _toolchain_configure_impl(repository_ctx):
         # toolchain.
         client_config_dir = ""
 
+    cred_helpers_attr = ""
+    if repository_ctx.attr.cred_helpers:
+        cred_helpers_attr = "cred_helpers = [\"%s\"]," % "\", \"".join([str(h) for h in repository_ctx.attr.cred_helpers])
+
     repository_ctx.template(
         "BUILD",
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
@@ -177,6 +191,7 @@ def _toolchain_configure_impl(repository_ctx):
             "%{BUILD_TAR_ATTR}": "%s" % build_tar_attr,
             "%{DOCKER_CONFIG}": "%s" % client_config_dir,
             "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
+            "%{CRED_HELPERS_ATTR}": "%s" % cred_helpers_attr,
             "%{TOOL_ATTR}": "%s" % tool_attr,
             "%{GZIP_ATTR}": "%s" % gzip_attr,
             "%{XZ_ATTR}": "%s" % xz_attr,
@@ -203,7 +218,7 @@ toolchain_configure = repository_rule(
                   "docker tool (typically, the home directory) will be " +
                   "used.",
         ),
-        "cred_helpers": attr.string_list(
+        "cred_helpers": attr.label_list(
             mandatory = False,
             doc = """Labels to a list of credential helpers binaries that are configured in `client_config`.
 

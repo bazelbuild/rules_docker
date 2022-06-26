@@ -111,6 +111,13 @@ def _impl(ctx):
     pusher_runfiles = [ctx.executable._pusher] + pusher_input
     runfiles = ctx.runfiles(files = pusher_runfiles)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
+    
+    path_prefix = ""
+    if toolchain_info.cred_helpers:
+        cred_helper_files = [h[DefaultInfo].files_to_run.executable for h in toolchain_info.cred_helpers]
+        helper_runfiles = ctx.runfiles(files = cred_helper_files) 
+        path_prefix = ":".join(["$(dirname %s)" % _get_runfile_path(ctx, h) for h in helper_runfiles.files.to_list()])
+        runfiles = runfiles.merge_all([helper_runfiles] + [h[DefaultInfo].default_runfiles for h in toolchain_info.cred_helpers])
 
     exe = ctx.actions.declare_file(ctx.label.name + ctx.attr.extension)
     ctx.actions.expand_template(
@@ -119,6 +126,7 @@ def _impl(ctx):
         substitutions = {
             "%{args}": " ".join(pusher_args),
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
+            "%{path_prefix}": path_prefix,
         },
         is_executable = True,
     )
