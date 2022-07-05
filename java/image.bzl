@@ -27,6 +27,7 @@ load(
 )
 load(
     "//lang:image.bzl",
+    "filter_layer",
     "layer_file_path",
     lang_image = "image",
 )
@@ -104,6 +105,11 @@ DEFAULT_JETTY_BASE = select({
     "@io_bazel_rules_docker//:optimized": "@jetty_image_base//image",
     "//conditions:default": "@jetty_image_base//image",
 })
+
+def java_layer(name, deps = [], runtime_deps = [], filter = "", **kwargs):
+    binary_name = name + ".layer-binary"
+    native.java_library(name = binary_name, runtime_deps = deps + runtime_deps, **kwargs)
+    filter_layer(name = name, dep = binary_name, filter = filter)
 
 def java_files(f):
     """Filter out the list of java source files from the given list of runfiles.
