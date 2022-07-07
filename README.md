@@ -245,16 +245,22 @@ performs the following steps:
 You can suppress this behavior by passing the single flag: `bazel run :foo -- --norun`
 
 Alternatively, you can build a `docker load` compatible bundle with:
-`bazel build my/image:helloworld.tar`.  This will produce the file:
-`bazel-bin/my/image/helloworld.tar`, which you can load into
-your local Docker client by running:
-`docker load -i bazel-bin/my/image/helloworld.tar`.  Building
-this target can be expensive for large images.
+`bazel build my/image:helloworld.tar`.  This will produce a tar file
+in your `bazel-out` directory that can be loaded into your local Docker
+client. Building this target can be expensive for large images. You will
+first need to query the ouput file location.
+
+```bash
+TARBALL_LOCATION=$(bazel cquery my/image:helloworld.tar \
+    --output starlark \
+    --starlark:expr="target.files.to_list()[0].path")
+docker load -i $TARBALL_LOCATION
+```
 
 These work with both `container_image`, `container_bundle`, and the
-`lang_image` rules.  For everything except
-`container_bundle`, the image name will be `bazel/my/image:helloworld`.
-For `container_bundle`, it will apply the tags you have specified.
+`lang_image` rules.  For everything except `container_bundle`, the image
+name will be `bazel/my/image:helloworld`. The `container_bundle` rule will
+apply the tags you have specified.
 
 ## Authentication
 
