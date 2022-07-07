@@ -251,7 +251,7 @@ client. Building this target can be expensive for large images. You will
 first need to query the ouput file location.
 
 ```bash
-TARBALL_LOCATION=$(bazel cquery my/image:helloworld \
+TARBALL_LOCATION=$(bazel cquery my/image:helloworld.tar \
     --output starlark \
     --starlark:expr="target.files.to_list()[0].path")
 docker load -i $TARBALL_LOCATION
