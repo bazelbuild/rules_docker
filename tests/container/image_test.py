@@ -495,9 +495,9 @@ class ImageTest(unittest.TestCase):
     def test_with_passwd(self):
         with TestImage('with_passwd') as img:
             self.assertDigest(
-                img, '81420a14782ff8a0de928199d7e3e5bbf8684f02a977326b96d863329c97f055')
+                img, '802c8849a4a6b51024d5314a177ef2791f641ae601ee161a728734b4b16e30b2')
             self.assertEqual(1, len(img.fs_layers()))
-            self.assertTopLayerContains(img, ['.', './etc', './etc/passwd'])
+            self.assertTopLayerContains(img, ['./etc', './etc/passwd'])
 
             buf = BytesIO(img.blob(img.fs_layers()[0]))
             with tarfile.open(fileobj=buf, mode='r') as layer:
