@@ -532,13 +532,13 @@ class ImageTest(unittest.TestCase):
     def test_with_group(self):
         with TestImage('with_group') as img:
             self.assertDigest(
-                img, '3abaf45eda502f6826f3745627c707cd0ac12536915fa8ed45883fe21aaac075')
+                img, '65c41a3d20558d04a8d6fd4a94b19a70c3ad711f150fed641735128e20df698a')
             self.assertEqual(1, len(img.fs_layers()))
-            self.assertTopLayerContains(img, ['.', './etc', './etc/group'])
+            self.assertTopLayerContains(img, ['etc', 'etc/group'])
 
             buf = BytesIO(img.blob(img.fs_layers()[0]))
             with tarfile.open(fileobj=buf, mode='r') as layer:
-                content = layer.extractfile('./etc/group').read()
+                content = layer.extractfile('etc/group').read()
                 self.assertEqual(
                     b'root:x:0:\nfoobar:x:2345:foo,bar,baz\n', content)
 
