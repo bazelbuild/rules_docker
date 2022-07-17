@@ -126,7 +126,10 @@ def _default_symlinks(dep):
     else:
         return dep[DefaultInfo].default_runfiles.symlinks
 
-def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
+def _default_ctx_symlinks(reference_dir, binary):
+    return {}
+
+def _app_layer_impl(ctx, runfiles = None, emptyfiles = None, symlinks = None):
     """Appends a layer for a single dependency's runfiles.
 
     Args:
@@ -135,6 +138,8 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
                   image layer.
         emptyfiles: (Optional) depset of empty files to include in this
                     language image layer.
+        symlinks: (Optional) map of symlinks to include in this language
+                  image layer.
 
     Returns:
         A container image provider for the application layer.
@@ -142,6 +147,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
 
     runfiles = runfiles or _default_runfiles
     emptyfiles = emptyfiles or _default_emptyfiles
+    symlinks = symlinks or _default_ctx_symlinks
     empty_dirs = []
     workdir = None
 
@@ -180,24 +186,26 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         if emptyfilepath(ctx, f) not in available and _layer_emptyfile_path(ctx, f) not in available
     ]
 
-    symlinks = {}
+    symlinks_ = {}
 
     # If the caller provided the binary that will eventually form the
     # app layer, we can already create symlinks to the runfiles path.
     if ctx.attr.binary:
+        symlinks_.update(symlinks(_reference_dir(ctx), ctx.attr.binary))
+
         # Include any symlinks from the runfiles of the target for which we are synthesizing the layer.
-        symlinks.update({
+        symlinks_.update({
             (_reference_dir(ctx) + "/" + s.path): layer_file_path(ctx, s.target_file)
             for s in _default_symlinks(dep).to_list()
             if hasattr(s, "path")  # "path" and "target_file" are exposed to starlark since bazel 0.21.0.
         })
 
-        symlinks.update({
+        symlinks_.update({
             _final_file_path(ctx, f): layer_file_path(ctx, f)
             for f in runfiles_list
             if _final_file_path(ctx, f) not in file_map and _final_file_path(ctx, f) not in available
         })
-        symlinks.update({
+        symlinks_.update({
             _final_emptyfile_path(ctx, f): _layer_emptyfile_path(ctx, f)
             for f in emptyfiles_list
             if _final_emptyfile_path(ctx, f) not in empty_files and _final_emptyfile_path(ctx, f) not in available
@@ -207,7 +215,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     if top_layer:
         entrypoint = ctx.attr.entrypoint + [_binary_name(ctx)]
         workdir = ctx.attr.workdir or "/".join([_runfiles_dir(ctx), ctx.workspace_name])
-        symlinks.update({
+        symlinks_.update({
             # Create a symlink from our entrypoint to where it will actually be put
             # under runfiles.
             _binary_name(ctx): _final_file_path(ctx, ctx.executable.binary),
@@ -226,7 +234,7 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
         file_map = file_map,
         empty_files = empty_files,
         empty_dirs = empty_dirs,
-        symlinks = symlinks,
+        symlinks = symlinks_,
         workdir = workdir,
         # Use entrypoint so we can easily add arguments when the resulting
         # image is `docker run ...`.

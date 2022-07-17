@@ -99,8 +99,27 @@ def _npm_deps_runfiles(dep):
             depsets.append(pkg[NpmPackageInfo].sources)
     return depset(transitive = depsets)
 
+def _npm_deps_symlinks(reference_dir, binary):
+    # Make a node_modules folder with symlinks of a mix of local and remote
+    # dependencies, performing the job of the rules_nodejs linker.
+    node_modules = "/".join([reference_dir, "node_modules"])
+
+    # Get the action that writes the module mappings and parse it.
+    filewrite_actions = [a for a in binary.actions if a.mnemonic == "FileWrite"]
+    symlinks = {}
+    if len(filewrite_actions) == 1 and filewrite_actions[0].outputs.to_list()[0].basename.endswith(".module_mappings.json"):
+        root_module_sets = json.decode(filewrite_actions[0].content)["module_sets"][""]
+
+        # Replace the bazel-out/k8-.../bin prefix with the binary directory.
+        symlinks.update({
+            node_modules + "/" + module_name: "/".join([reference_dir] + root_module_sets[module_name].split("/")[3:])
+            for module_name in root_module_sets
+        })
+
+    return symlinks
+
 def _npm_deps_layer_impl(ctx):
-    return lang_image.implementation(ctx, runfiles = _npm_deps_runfiles, emptyfiles = _emptyfiles)
+    return lang_image.implementation(ctx, runfiles = _npm_deps_runfiles, emptyfiles = _emptyfiles, symlinks = _npm_deps_symlinks)
 
 _npm_deps_layer = rule(
     attrs = lang_image.attrs,
