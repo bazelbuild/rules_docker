@@ -713,7 +713,7 @@ rules, you can override the default `base="..."` attribute.  Consider this
 modified sample from the `distroless` repository:
 
 ```python
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 # Create a passwd file with a root and nonroot user and uid.
 passwd_entry(
