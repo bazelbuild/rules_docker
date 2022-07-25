@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////
-//This binary implements the ability to load a docker image, calculate its image manifest sha256 hash and output a digest file.
+// This binary implements the ability to load a docker image, calculate its image manifest sha256 hash and output a digest file.
 package main
 
 import (

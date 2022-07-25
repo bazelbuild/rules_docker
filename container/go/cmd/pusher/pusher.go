@@ -4,25 +4,22 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////
 // This binary pushes an image to a Docker Registry.
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
-	"path"
 	"strings"
 
 	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
@@ -49,28 +46,6 @@ var (
 	insecureRepository  = flag.Bool("insecure-repository", false, "If set to true, the repository is assumed to be insecure (http vs https)")
 )
 
-type dockerHeaders struct {
-	HTTPHeaders map[string]string `json:"HttpHeaders,omitempty"`
-}
-
-// checkClientConfig ensures the given string represents a valid docker client
-// config by ensuring:
-// 1. It's a valid filesystem path.
-// 2. It's a directory.
-func checkClientConfig(configDir string) error {
-	if configDir == "" {
-		return nil
-	}
-	s, err := os.Stat(configDir)
-	if err != nil {
-		return errors.Wrapf(err, "unable to stat %q", configDir)
-	}
-	if !s.IsDir() {
-		return errors.Errorf("%q is not a directory", configDir)
-	}
-	return nil
-}
-
 func main() {
 	flag.Var(&layers, "layer", "One or more layers with the following comma separated values (Compressed layer tarball, Uncompressed layer tarball, digest file, diff ID file). e.g., --layer layer.tar.gz,layer.tar,<file with digest>,<file with diffID>.")
 	flag.Var(&stampInfoFile, "stamp-info-file", "The list of paths to the stamp info files used to substitute supported attribute when a python format placeholder is provivided in dst, e.g., {BUILD_USER}.")
@@ -86,14 +61,8 @@ func main() {
 		log.Fatalln("Neither --tarball nor --config was specified.")
 	}
 
-	// If the user provided a client config directory, ensure it's a valid
-	// directory and instruct the keychain resolver to use it to look for the
-	// docker client config.
-	if err := checkClientConfig(*clientConfigDir); err != nil {
-		log.Fatalf("Failed to validate the Docker client config dir %q specified via --client-config-dir: %v", *clientConfigDir, err)
-	}
-	if *clientConfigDir != "" {
-		os.Setenv("DOCKER_CONFIG", *clientConfigDir)
+	if err := utils.InitializeDockerConfig(*clientConfigDir); err != nil {
+		log.Fatalf("%v", err)
 	}
 
 	imgParts, err := compat.ImagePartsFromArgs(*imgConfig, *baseManifest, *imgTarball, layers)
@@ -187,59 +156,14 @@ func push(dst string, img v1.Image, opts ...name.Option) error {
 		}
 	}
 
-	options := []remote.Option{remote.WithAuthFromKeychain(authn.DefaultKeychain)}
-
-	configPath := path.Join(os.Getenv("DOCKER_CONFIG"), "config.json")
-	if _, err := os.Stat(configPath); err == nil {
-		file, err := os.Open(configPath)
-		if err != nil {
-			return errors.Wrapf(err, "unable to open docker config")
-		}
-
-		var dockerConfig dockerHeaders
-		err = json.NewDecoder(file).Decode(&dockerConfig)
-		if err != nil {
-			return errors.Wrapf(err, "error parsing docker config")
-		}
-
-		httpTransportOption := remote.WithTransport(&headerTransport{
-			inner:       newTransport(),
-			httpHeaders: dockerConfig.HTTPHeaders,
-		})
-
-		options = append(options, httpTransportOption)
+	remoteOptions, err := utils.ComputeRemoteWriteOptions(context.Background(), "")
+	if err != nil {
+		return errors.Wrap(err, "unable to compute remote options")
 	}
 
-	if err := remote.Write(ref, img, options...); err != nil {
+	if err := remote.Write(ref, img, remoteOptions...); err != nil {
 		return errors.Wrapf(err, "unable to push image to %s", dst)
 	}
 
 	return nil
-}
-
-// headerTransport sets headers on outgoing requests.
-type headerTransport struct {
-	httpHeaders map[string]string
-	inner       http.RoundTripper
-}
-
-// RoundTrip implements http.RoundTripper.
-func (ht *headerTransport) RoundTrip(in *http.Request) (*http.Response, error) {
-	for k, v := range ht.httpHeaders {
-		// ignore "User-Agent" as it gets overwritten
-		if http.CanonicalHeaderKey(k) == "User-Agent" {
-			continue
-		}
-		in.Header.Set(k, v)
-	}
-	return ht.inner.RoundTrip(in)
-}
-
-func newTransport() http.RoundTripper {
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	// We really only expect to be talking to a couple of hosts during a push.
-	// Increasing MaxIdleConnsPerHost should reduce closed connection errors.
-	tr.MaxIdleConnsPerHost = tr.MaxIdleConns / 2
-
-	return tr
 }
