@@ -61,6 +61,18 @@ function EXPECT_NOT_CONTAINS() {
   ! (CONTAINS "${complete}" "${substring}") || fail "$message"
 }
 
+function EXPECT_MANIFEST_PLATFORMS() {
+  local image="${1}"
+  local expected="${2}"
+
+  local platforms="$(docker manifest inspect --insecure "$image" | \
+    jq -r '.manifests[] | .platform | [.os, .architecture, .variant] | del(..|nulls) | join("/")' | \
+    tr '\n' ',' | \
+    sed -r 's/,$//')"
+
+  EXPECT_CONTAINS "$platforms" "$expected"
+}
+
 function clear_docker() {
   # Get the IDs of images, filtering only the ones with "bazel/*" as registry
   # and filtering the local registry image "registry:2" which is

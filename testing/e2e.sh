@@ -34,7 +34,9 @@ function clear_docker_full() {
   # used in a few of the tests. This avoids having to pull the registry image
   # multiple times in the end to end tests.
   images=$(docker images -a --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v "registry:2" | cut -d' ' -f1)
-  docker rmi -f $images || builtin true
+  if [ -n "$images" ]; then
+      docker rmi -f $images || builtin true
+  fi
   stop_containers
 }
 
@@ -431,6 +433,107 @@ function test_new_container_pull_image_with_11_layers() {
   docker stop -t 0 $cid
 }
 
+function test_container_push_index_build()
+{
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  bazel build tests/container:push_index_test
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_index_test)" '--format=Docker --dst=localhost:5000/docker/test:test'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_index_test)" '-- --os linux --arch amd64'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_index_test)" '-- --os linux --arch arm --variant v6'
+  EXPECT_CONTAINS "$(cat bazel-bin/tests/container/push_index_test)" '-- --os linux --arch ppc64le'
+
+  docker stop -t 0 $cid
+}
+
+function test_container_push_index()
+{
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run tests/container:push_index_test 2>&1)" "Successfully pushed Docker image index"
+  EXPECT_CONTAINS "$(curl -s localhost:5000/v2/docker/test/tags/list | jq --sort-keys -c '(.. | arrays) |= sort')" '{"name":"docker/test","tags":["test"]}'
+  EXPECT_MANIFEST_PLATFORMS "localhost:5000/docker/test:test" 'linux/amd64,linux/arm/v6,linux/ppc64le'
+
+  docker stop -t 0 $cid
+}
+
+function test_container_push_index_with_auth()
+{
+  clear_docker_full
+  launch_private_registry_with_auth
+
+  # Run the container_push test in the Bazel workspace that configured
+  # the docker toolchain rule to use authentication.
+  cd "${ROOT}/testing/custom_toolchain_auth"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_index_test 2>&1)" "Successfully pushed Docker image index to localhost:5000/docker/test:test"
+  bazel clean
+
+  # Run the container_push test in the Bazel workspace that uses the default
+  # configured docker toolchain. The default configuration doesn't setup
+  # authentication and this should fail.
+  cd "${ROOT}/testing/default_toolchain"
+  bazel_opts=" --override_repository=io_bazel_rules_docker=${ROOT}"
+
+  EXPECT_CONTAINS "$(bazel run $bazel_opts @io_bazel_rules_docker//tests/container:push_index_test  2>&1)" "unable to push image to localhost:5000/docker/test:test"
+  bazel clean
+}
+
+function test_container_push_index_tag_file()
+{
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run tests/container:push_index_tag_file_test 2>&1)" "Successfully pushed Docker image index"
+  EXPECT_CONTAINS "$(curl -s localhost:5000/v2/docker/test/tags/list | jq --sort-keys -c '(.. | arrays) |= sort')" '{"name":"docker/test","tags":["test"]}'
+  EXPECT_MANIFEST_PLATFORMS "localhost:5000/docker/test:test" 'linux/amd64,linux/arm/v6,linux/ppc64le'
+
+  docker stop -t 0 $cid
+}
+
+function test_container_push_index_repository_file()
+{
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run tests/container:push_index_repository_file_test 2>&1)" "Successfully pushed Docker image index"
+  EXPECT_CONTAINS "$(curl -s localhost:5000/v2/docker/test/tags/list | jq --sort-keys -c '(.. | arrays) |= sort')" '{"name":"docker/test","tags":["test"]}'
+  EXPECT_MANIFEST_PLATFORMS "localhost:5000/docker/test:test" 'linux/amd64,linux/arm/v6,linux/ppc64le'
+
+  docker stop -t 0 $cid
+}
+
+function test_container_push_index_with_stamp()
+{
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run tests/container:push_index_stamped_test 2>&1)" "Successfully pushed Docker image index"
+  EXPECT_CONTAINS "$(curl -s localhost:5000/v2/docker/test/tags/list | jq --sort-keys -c '(.. | arrays) |= sort')" '{"name":"docker/test","tags":["test"]}'
+  EXPECT_MANIFEST_PLATFORMS "localhost:5000/docker/test:test" 'linux/amd64,linux/arm/v6,linux/ppc64le'
+
+  docker stop -t 0 $cid
+}
+
+function test_container_push_index_oci()
+{
+  cd "${ROOT}"
+  clear_docker_full
+  cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
+
+  EXPECT_CONTAINS "$(bazel run tests/container:push_index_oci_test 2>&1)" "Successfully pushed Docker image index"
+
+  docker stop -t 0 $cid
+}
+
 function run_all_tests() {
     # Tests failing on GCB due to isssues with local registry
     test_container_push
@@ -449,6 +552,15 @@ function run_all_tests() {
     test_new_container_push_legacy_with_auth
     test_new_container_push_skip_unchanged_digest_unchanged
     test_new_container_push_skip_unchanged_digest_changed
+
+    test_container_push_index_build
+    test_container_push_index
+    test_container_push_index_with_auth
+    test_container_push_index_tag_file
+    test_container_push_index_repository_file
+    test_container_push_index_with_stamp
+    test_container_push_index_oci
+
     test_container_pull_with_auth
     test_container_pull_cache
     test_new_container_pull_image_with_11_layers

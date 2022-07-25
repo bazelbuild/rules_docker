@@ -24,6 +24,7 @@ load(
     "container_image",
     "container_import",
     "container_push",
+    "container_push_index",
 )
 load("//contrib:push-all.bzl", docker_push_all = "docker_push")
 load("//contrib:test.bzl", "container_test")
@@ -347,6 +348,14 @@ genrule(
     srcs = [],
     outs = ["test.tag"],
     cmd = """echo test > $@""",
+    output_to_bindir = 1,
+)
+
+genrule(
+    name = "push_repository_file",
+    srcs = [],
+    outs = ["test.repository"],
+    cmd = """echo docker/test > $@""",
     output_to_bindir = 1,
 )
 
@@ -1085,4 +1094,75 @@ transition_test(
     name = "transitions_off_test",
     actual = ":_transitions_off_test_base",
     transitions_enabled = False,
+)
+
+container_push_index(
+    name = "push_index_test",
+    format = "Docker",
+    images = {
+        "@alpine_linux_amd64//image": "",
+        "@alpine_linux_armv6//image": "linux/arm/v6",
+        "@alpine_linux_ppc64le//image": "ppc64le",
+    },
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push_index(
+    name = "push_index_tag_file_test",
+    format = "Docker",
+    images = {
+        "@alpine_linux_amd64//image": "",
+        "@alpine_linux_armv6//image": "linux/arm/v6",
+        "@alpine_linux_ppc64le//image": "ppc64le",
+    },
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag_file = ":push_tag_file",
+    tags = ["manual"],
+)
+
+container_push_index(
+    name = "push_index_repository_file_test",
+    format = "Docker",
+    images = {
+        "@alpine_linux_amd64//image": "",
+        "@alpine_linux_armv6//image": "linux/arm/v6",
+        "@alpine_linux_ppc64le//image": "ppc64le",
+    },
+    registry = "localhost:5000",
+    repository = "<ignored>",
+    repository_file = ":push_repository_file",
+    tag = "test",
+    tags = ["manual"],
+)
+
+container_push_index(
+    name = "push_index_stamped_test",
+    format = "Docker",
+    images = {
+        "@alpine_linux_amd64//image": "",
+        "@alpine_linux_armv6//image": "linux/arm/v6",
+        "@alpine_linux_ppc64le//image": "ppc64le",
+    },
+    registry = "localhost:5000",
+    repository = "docker/test/{BUILD_USER}",
+    tag = "{BUILD_USER}",
+    tags = ["manual"],
+)
+
+container_push_index(
+    name = "push_index_oci_test",
+    format = "OCI",
+    images = {
+        "@alpine_linux_amd64//image": "",
+        "@alpine_linux_armv6//image": "linux/arm/v6",
+        "@alpine_linux_ppc64le//image": "ppc64le",
+    },
+    registry = "localhost:5000",
+    repository = "docker/test",
+    tag = "test",
+    tags = ["manual"],
 )
