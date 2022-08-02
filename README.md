@@ -529,7 +529,7 @@ py_image(
 ```
 
 You can also implement more complex fine layering strategies by using the
-`py_layer` rule and its `filter` attribute.  For example:
+`py_layer` or `java_layer` rules and their `filter` attribute.  For example:
 
 ```python
 # Suppose that we are synthesizing an image that depends on a complex set

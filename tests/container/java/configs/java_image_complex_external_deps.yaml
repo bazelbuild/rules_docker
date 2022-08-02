@@ -1,0 +1,9 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: [
+        '/usr/bin/java',
+        '-cp',
+        '/app/io_bazel_rules_docker/../com_google_guava_guava/guava-18.0.jar:/app/io_bazel_rules_docker/tests/container/java/libjava_image_library.jar:/app/io_bazel_rules_docker/tests/container/java/java_image_complex_external_deps.binary.jar:/app/io_bazel_rules_docker/tests/container/java/java_image_complex_external_deps.binary',
+        'examples.images.Binary'
+  ]
