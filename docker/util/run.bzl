@@ -98,6 +98,7 @@ def _extract_impl(
         tools = [image, ctx.executable._extract_image_id],
         executable = script,
         use_default_shell_env = True,
+        mnemonic = "RunAndExtract",
     )
 
     return []
@@ -235,6 +236,7 @@ def _commit_impl(
         executable = script,
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         use_default_shell_env = True,
+        mnemonic = "RunAndCommit",
     )
 
     return []
