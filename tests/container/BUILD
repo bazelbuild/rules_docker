@@ -955,6 +955,7 @@ TEST_DATA = [
     "//testdata%s.tar" % t
     for t in TEST_TARGETS
 ] + [
+    "//testdata:goldens",
     "//testdata:push_compression_gzip_fast",
     "//testdata:push_compression_gzip_normal",
     "//testdata:stamped_bundle_test",

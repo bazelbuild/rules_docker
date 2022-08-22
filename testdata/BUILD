@@ -1102,3 +1102,8 @@ bzl_library(
     srcs = ["utils.bzl"],
     visibility = ["//visibility:private"],
 )
+
+filegroup(
+    name = "goldens",
+    srcs = glob(["goldens/**"]),
+)
