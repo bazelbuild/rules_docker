@@ -25,7 +25,10 @@ load(
 
 # The release of the github.com/google/containerregistry to consume.
 CONTAINERREGISTRY_RELEASE = "v0.0.38"
-RULES_DOCKER_GO_BINARY_RELEASE = "aad94363e63d31d574cf701df484b3e8b868a96a"
+
+# TODO(zoid): update this when it's mergey merge time
+# https://github.com/zoidbergwill/rules_docker/releases/download/v0.12.1-dev2/loader-darwin-0.12.1-dev2-x86_64
+RULES_DOCKER_GO_BINARY_RELEASE = "0.12.1-dev2"
 
 def repositories():
     """Download dependencies of container rules."""
@@ -37,7 +40,7 @@ def repositories():
             name = "go_puller_linux_amd64",
             executable = True,
             sha256 = "08b8963cce9234f57055bafc7cadd1624cdce3c5990048cea1df453d7d288bc6",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-amd64")],
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-" + RULES_DOCKER_GO_BINARY_RELEASE + "-amd64")],
         )
 
     if "go_puller_linux_arm64" not in excludes:
@@ -45,7 +48,7 @@ def repositories():
             name = "go_puller_linux_arm64",
             executable = True,
             sha256 = "912ee7c469b3e4bf15ba5d1f0ee500e7ec6724518862703fa8b09e4d58ce3ee6",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-arm64")],
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-" + RULES_DOCKER_GO_BINARY_RELEASE + "-arm64")],
         )
 
     if "go_puller_linux_s390x" not in excludes:
@@ -53,7 +56,7 @@ def repositories():
             name = "go_puller_linux_s390x",
             executable = True,
             sha256 = "a5527b7b3b4a266e4680a4ad8939429665d4173f26b35d5d317385134369e438",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-s390x")],
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-linux-" + RULES_DOCKER_GO_BINARY_RELEASE + "-s390x")],
         )
 
     if "go_puller_darwin" not in excludes:
@@ -61,39 +64,41 @@ def repositories():
             name = "go_puller_darwin",
             executable = True,
             sha256 = "4855c4f5927f8fb0f885510ab3e2a166d5fa7cde765fbe9aec97dc6b2761bb22",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-darwin-amd64")],
+            # TODO(zoid): amd64 is probably better
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/puller-darwin-" + RULES_DOCKER_GO_BINARY_RELEASE + "-x86_64")],
         )
 
     if "loader_linux_amd64" not in excludes:
         http_file(
             name = "loader_linux_amd64",
             executable = True,
-            sha256 = "5e5ada66beff07f9188bdc1f99c3fa37c407fc0048cd78b9c2047e9c5516f20b",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-amd64")],
+            sha256 = "e56f77e6d317133bb2383de9044d774a2c09125db6e4df28a6c6653cc864e2dd",
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-" + RULES_DOCKER_GO_BINARY_RELEASE + "-amd64")],
         )
 
     if "loader_linux_arm64" not in excludes:
         http_file(
             name = "loader_linux_arm64",
             executable = True,
-            sha256 = "a80966d17b25dbc9313e9fc1cae74ded5916fa64dba0d33438c8adad338b44d3",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-arm64")],
+            sha256 = "e56f77e6d317133bb2383de9044d774a2c09125db6e4df28a6c6653cc864e2dd",
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-" + RULES_DOCKER_GO_BINARY_RELEASE + "-arm64")],
         )
 
     if "loader_linux_s390x" not in excludes:
         http_file(
             name = "loader_linux_s390x",
             executable = True,
-            sha256 = "0c0ebc3e0a502542547a38b51f4686a049897eeb4cbc0e2f07fc25276c57866f",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-s390x")],
+            sha256 = "e56f77e6d317133bb2383de9044d774a2c09125db6e4df28a6c6653cc864e2dd",
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-linux-" + RULES_DOCKER_GO_BINARY_RELEASE + "-s390x")],
         )
 
     if "loader_darwin" not in excludes:
         http_file(
             name = "loader_darwin",
             executable = True,
-            sha256 = "8c9986b2b506febbff737090d9ec485cec1376c52789747573521a85194341c1",
-            urls = [("https://storage.googleapis.com/rules_docker/" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-darwin-amd64")],
+            sha256 = "2090cf30262b2432da61e80c3256c7ec327b6953ae2da2d0bb812ddf8a841f66",
+            # TODO(zoid): amd64 is probably better
+            urls = [("https://github.com/zoidbergwill/rules_docker/releases/download/v" + RULES_DOCKER_GO_BINARY_RELEASE + "/loader-darwin-" + RULES_DOCKER_GO_BINARY_RELEASE + "-x86_64")],
         )
 
     if "containerregistry" not in excludes:

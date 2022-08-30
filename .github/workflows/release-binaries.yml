@@ -1,0 +1,74 @@
+name: create release binaries
+
+on:
+  release:
+    types:
+      - published
+  push:
+    branches:
+    - zoid/releaser-tool
+    - master
+
+jobs:
+  linux:
+    name: create linux binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - linux_amd64
+          - linux_arm64
+          - linux_s390x
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: get release version
+        id: release_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
+      - name: get arch asset name
+        id: arch
+        run: |
+          ARCH=${{ matrix.platform }}
+          echo ::set-output name=ARCH::${ARCH/linux_/}
+      - name: build
+        run: |
+          set -eu
+          wget https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-linux-amd64
+          chmod +x bazelisk-linux-amd64
+          ./bazelisk-linux-amd64 build --platforms=@io_bazel_rules_go//go/toolchain:${{ matrix.platform }} //container/go/cmd/puller:puller //container/go/cmd/loader:loader
+          ./bazelisk-linux-amd64 run --run_under "cp -f " //container/go/cmd/puller:puller $(pwd)/puller-linux-${{ steps.release_version.outputs.VERSION }}-${{ steps.arch.outputs.ARCH }}
+          ./bazelisk-linux-amd64 run --run_under "cp -f " //container/go/cmd/loader:loader $(pwd)/loader-linux-${{ steps.release_version.outputs.VERSION }}-${{ steps.arch.outputs.ARCH }}
+      - name: upload
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            puller-linux-${{ steps.release_version.outputs.VERSION }}-${{ steps.arch.outputs.ARCH }}
+            loader-linux-${{ steps.release_version.outputs.VERSION }}-${{ steps.arch.outputs.ARCH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  mac:
+    name: create mac binary
+    runs-on: macos-10.15
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: get release version
+        id: release_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
+      - name: build
+        run: |
+          set -eu
+          wget https://github.com/bazelbuild/bazelisk/releases/download/v1.7.5/bazelisk-darwin-amd64
+          chmod +x bazelisk-darwin-amd64
+          ./bazelisk-darwin-amd64 build --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //container/go/cmd/puller:puller //container/go/cmd/loader:loader
+          ./bazelisk-darwin-amd64 run --run_under "cp -f " //container/go/cmd/puller:puller $(pwd)/puller-darwin-${{ steps.release_version.outputs.VERSION }}-x86_64
+          ./bazelisk-darwin-amd64 run --run_under "cp -f " //container/go/cmd/loader:loader $(pwd)/loader-darwin-${{ steps.release_version.outputs.VERSION }}-x86_64
+      - name: upload
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            puller-darwin-${{ steps.release_version.outputs.VERSION }}-x86_64
+            loader-darwin-${{ steps.release_version.outputs.VERSION }}-x86_64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
