@@ -89,7 +89,7 @@ STATIC_DEFAULT_BASE = select({
     "//conditions:default": "@go_image_static//image",
 })
 
-def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
+def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None, architecture = "x86_64", **kwargs):
     """Constructs a container image wrapping a go_binary target.
 
   Args:
@@ -99,6 +99,7 @@ def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None,
     layers: Augments "deps" with dependencies that should be put into their own layers.
     env: Environment variables for the go_image.
     binary: An alternative binary target to use instead of generating one.
+    architecture: The target architecture, defaults to `x86_64`.
     **kwargs: See go_binary.
   """
     if layers:
@@ -115,8 +116,8 @@ def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None,
 
     tags = kwargs.get("tags", None)
     for index, dep in enumerate(layers):
-        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep, tags = tags)
-        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary, tags = tags)
+        base = app_layer(name = "%s.%d" % (name, index), base = base, dep = dep, tags = tags, architecture = architecture)
+        base = app_layer(name = "%s.%d-symlinks" % (name, index), base = base, dep = dep, binary = binary, tags = tags, architecture = architecture)
 
     visibility = kwargs.get("visibility", None)
     restricted_to = kwargs.get("restricted_to", None)
@@ -133,4 +134,5 @@ def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None,
         testonly = kwargs.get("testonly"),
         restricted_to = restricted_to,
         compatible_with = compatible_with,
+        architecture = architecture,
     )
