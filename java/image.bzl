@@ -275,6 +275,7 @@ def java_image(
         env = {},
         jvm_flags = [],
         classpath_as_file = None,
+        architecture = "x86_64",
         **kwargs):
     """Builds a container image overlaying the java_binary.
 
@@ -295,6 +296,7 @@ def java_image(
                 construction of the container entrypoint. Omitting main_class
                 allows the user to specify additional arguments to the JVM at
                 runtime.
+    architecture: The architecture of the target, defaults to `x86_64`.
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
@@ -320,7 +322,7 @@ def java_image(
     base = base or DEFAULT_JAVA_BASE
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        jar_dep_layer(name = this_name, base = base, dep = dep, tags = tags)
+        jar_dep_layer(name = this_name, base = base, dep = dep, tags = tags, architecture = architecture)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
@@ -340,6 +342,7 @@ def java_image(
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
         classpath_as_file = classpath_as_file,
+        architecture = architecture,
     )
 
 def _war_dep_layer_impl(ctx):
