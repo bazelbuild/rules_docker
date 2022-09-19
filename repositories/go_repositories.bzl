@@ -37,10 +37,16 @@ def go_deps(go_repository_default_config = "@//:WORKSPACE", go_version = "1.19.1
         go_repository_default_config (str, optional): A file used to determine the root of the workspace.
         go_version (str, default): The version of the GoLang compiler to use.
     """
-    go_rules_dependencies()
-    go_register_toolchains(version = go_version)
-    gazelle_dependencies(go_repository_default_config = go_repository_default_config)
     excludes = native.existing_rules().keys()
+    
+    go_rules_dependencies()
+
+    # Don't double register toolchains
+    if "go_sdk" not in excludes:
+        go_register_toolchains(version = go_version)
+
+    gazelle_dependencies(go_repository_default_config = go_repository_default_config)
+    
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
