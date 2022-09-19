@@ -11,6 +11,7 @@ tasks:
       - //...
     test_flags:
       - --config=buildkite
+      - --toolchain_resolution_debug=.*
   default_workspace_macos:
     platform: macos
     test_targets:
@@ -169,6 +170,7 @@ tasks:
     test_flags:
       - --keep_going
       - --config=buildkite
+      - --toolchain_resolution_debug=.*
   testing_examples:
     platform: ubuntu2004
     working_directory: testing/examples
