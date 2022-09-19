@@ -41,7 +41,7 @@ docker_toolchain(
 
 toolchain(
     name = "default_linux_toolchain",
-    target_compatible_with = [
+    exec_compatible_with = [
         "@platforms//os:linux",
     ],
     toolchain = "@docker_config//:toolchain",
@@ -50,7 +50,7 @@ toolchain(
 
 toolchain(
     name = "default_windows_toolchain",
-    target_compatible_with = [
+    exec_compatible_with = [
         "@platforms//os:windows",
     ],
     toolchain = "@docker_config//:toolchain",
@@ -59,7 +59,7 @@ toolchain(
 
 toolchain(
     name = "default_osx_toolchain",
-    target_compatible_with = [
+    exec_compatible_with = [
         "@platforms//os:osx",
     ],
     toolchain = "@docker_config//:toolchain",
