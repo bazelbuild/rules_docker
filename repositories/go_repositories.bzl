@@ -25,7 +25,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 # TODO: `go_repository_default_config` is only useful for working around
 # https://github.com/bazelbuild/rules_docker/issues/1902 and could likely be
 # removed after https://github.com/bazelbuild/rules_docker/issues/1787
-def go_deps(go_repository_default_config = "@//:WORKSPACE"):
+def go_deps(go_repository_default_config = "@//:WORKSPACE", go_version = "1.19.1"):
     """Pull in external Go packages needed by Go binaries in this repo.
 
     Pull in all dependencies needed to build the Go binaries in this
@@ -35,9 +35,10 @@ def go_deps(go_repository_default_config = "@//:WORKSPACE"):
 
     Args:
         go_repository_default_config (str, optional): A file used to determine the root of the workspace.
+        go_version (str, default): The version of the GoLang compiler to use.
     """
     go_rules_dependencies()
-    go_register_toolchains()
+    go_register_toolchains(version = go_version)
     gazelle_dependencies(go_repository_default_config = go_repository_default_config)
     excludes = native.existing_rules().keys()
     if "com_github_google_go_containerregistry" not in excludes:
