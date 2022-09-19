@@ -170,6 +170,7 @@ tasks:
       - --keep_going
       - --config=buildkite
   testing_examples:
+    name: Examples
     platform: ubuntu2004
     working_directory: testing/examples
     shell_commands:
@@ -183,6 +184,7 @@ tasks:
     test_flags:
       - --test_output=errors
   testing_java_image:
+    name: Java Image
     platform: ubuntu2004
     working_directory: testing/java_image
     shell_commands:
@@ -190,6 +192,7 @@ tasks:
     build_targets:
       - //...
   testing_download_pkgs_at_root:
+    name: Download pkgs at root
     platform: ubuntu2004
     working_directory: testing/download_pkgs_at_root
     shell_commands:
@@ -199,6 +202,7 @@ tasks:
     test_flags:
       - --test_output=errors
   testing_custom_toolchain_flags:
+    name: Custom toolchain flags
     platform: ubuntu2004
     working_directory: testing/custom_toolchain_flags
     shell_commands:
