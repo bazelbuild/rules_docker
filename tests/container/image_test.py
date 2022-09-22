@@ -623,6 +623,14 @@ class ImageTest(unittest.TestCase):
             self.assertIn("https://go.microsoft.com/fwlink/?linkid=873595",
                           img.manifest())
 
+    def test_windows_image_manifest_with_foreign_layers_from_tar(self):
+        imgPath = TestRunfilePath(
+            "tests", "container", "basic_windows_image_from_tar.tar")
+        with v2_2_image.FromTarball(imgPath) as img:
+            # Ensure the image manifest in the tarball includes the foreign layer.
+            self.assertIn("https://go.microsoft.com/fwlink/?linkid=873595",
+                          img.manifest())
+
     def test_py_image_with_symlinks_in_data(self):
         with TestImage('py_image_with_symlinks_in_data') as img:
             # Check the application layer, which is on top.
