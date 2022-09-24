@@ -35,3 +35,9 @@ bzl_library(
     srcs = ["image.bzl"],
     visibility = ["//visibility:private"],
 )
+
+# needed for stardoc
+bzl_library(
+    name = "java",
+    srcs = glob(["*.bzl"]),
+)

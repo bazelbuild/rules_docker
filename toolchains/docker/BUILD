@@ -42,7 +42,7 @@ docker_toolchain(
 toolchain(
     name = "default_linux_toolchain",
     target_compatible_with = [
-        "@bazel_tools//platforms:linux",
+        "@platforms//os:linux",
     ],
     toolchain = "@docker_config//:toolchain",
     toolchain_type = ":toolchain_type",
@@ -51,7 +51,7 @@ toolchain(
 toolchain(
     name = "default_windows_toolchain",
     target_compatible_with = [
-        "@bazel_tools//platforms:windows",
+        "@platforms//os:windows",
     ],
     toolchain = "@docker_config//:toolchain",
     toolchain_type = ":toolchain_type",
@@ -60,7 +60,7 @@ toolchain(
 toolchain(
     name = "default_osx_toolchain",
     target_compatible_with = [
-        "@bazel_tools//platforms:osx",
+        "@platforms//os:osx",
     ],
     toolchain = "@docker_config//:toolchain",
     toolchain_type = ":toolchain_type",

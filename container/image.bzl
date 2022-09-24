@@ -15,33 +15,12 @@
 
 In addition to the base container_image rule, we expose its constituents
 (attr, outputs, implementation) directly so that others may expose a
-more specialized build leveraging the same implementation.  The
-expectation in such cases is that users will write something like:
-
-  load(
-    "@io_bazel_rules_docker//container:container.bzl",
-    _container="container",
-  )
-
-  def _impl(ctx):
-    ...
-    return _container.image.implementation(ctx, ... kwarg overrides ...)
-
-  _foo_image = rule(
-      attrs = _container.image.attrs + {
-         # My attributes, or overrides of _container.image.attrs defaults.
-         ...
-      },
-      executable = True,
-      outputs = _container.image.outputs,
-      implementation = _impl,
-  )
-
+more specialized build leveraging the same implementation.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//skylib:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
@@ -49,6 +28,8 @@ load(
     "@io_bazel_rules_docker//container:providers.bzl",
     "ImageInfo",
     "LayerInfo",
+    "STAMP_ATTR",
+    "StampSettingInfo",
 )
 load(
     "//container:layer.bzl",
@@ -58,7 +39,8 @@ load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _gen_img_args = "generate_args_for_image",
-    _get_layers = "get_from_target",
+    _get_layers_from_archive_file = "get_from_archive_file",
+    _get_layers_from_target = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
@@ -75,20 +57,6 @@ load(
     _join_path = "join",
 )
 
-def _get_base_config(ctx, name, base):
-    if ctx.files.base or base:
-        # The base is the first layer in container_parts if provided.
-        layer = _get_layers(ctx, name, ctx.attr.base, base)
-        return layer.get("config")
-    return None
-
-def _get_base_manifest(ctx, name, base):
-    if ctx.files.base or base:
-        # The base is the first layer in container_parts if provided.
-        layer = _get_layers(ctx, name, ctx.attr.base, base)
-        return layer.get("manifest")
-    return None
-
 def _add_create_image_config_args(
         ctx,
         args,
@@ -103,6 +71,7 @@ def _add_create_image_config_args(
         creation_time,
         env,
         workdir,
+        user,
         layer_names,
         base_config,
         base_manifest,
@@ -126,14 +95,7 @@ def _add_create_image_config_args(
     args.add_all(ctx.attr.ports, before_each = "-ports")
     args.add_all(ctx.attr.volumes, before_each = "-volumes")
 
-    stamp = None
-
-    # If base image is having enabled stamping then it is propagated
-    # to child images.
-    if ctx.attr.stamp == True:
-        stamp = ctx.attr.stamp
-    elif ctx.attr.base and ImageInfo in ctx.attr.base:
-        stamp = ctx.attr.base[ImageInfo].stamp
+    stamp = ctx.attr.stamp[StampSettingInfo].value
 
     if creation_time:
         args.add("-creationTime", creation_time)
@@ -151,8 +113,8 @@ def _add_create_image_config_args(
             ctx.expand_make_variables("env", value, {}),
         ]))
 
-    if ctx.attr.user:
-        args.add("-user", ctx.attr.user)
+    if user:
+        args.add("-user", user)
     if workdir:
         args.add("-workdir", workdir)
 
@@ -164,11 +126,11 @@ def _add_create_image_config_args(
 
     if base_config:
         args.add("-baseConfig", base_config)
-        inputs += [base_config]
+        inputs.append(base_config)
 
     if base_manifest:
         args.add("-baseManifest", base_manifest)
-        inputs += [base_manifest]
+        inputs.append(base_manifest)
 
     if architecture:
         args.add("-architecture", architecture)
@@ -208,6 +170,7 @@ def _image_config(
         os_version = None,
         layer_name = None,
         workdir = None,
+        user = None,
         null_entrypoint = False,
         null_cmd = False):
     """Create the configuration for a new container image."""
@@ -245,6 +208,7 @@ def _image_config(
         creation_time,
         env,
         workdir,
+        user,
         layer_names,
         base_config,
         base_manifest,
@@ -322,44 +286,69 @@ def _impl(
         output_digest = None,
         output_layer = None,
         workdir = None,
+        user = None,
         null_cmd = None,
         null_entrypoint = None):
     """Implementation for the container_image rule.
 
-  Args:
-    ctx: The bazel rule context
-    name: str, overrides ctx.label.name or ctx.attr.name
-    base: File, overrides ctx.attr.base and ctx.files.base[0]
-    files: File list, overrides ctx.files.files
-    file_map: Dict[str, File], defaults to {}
-    empty_files: str list, overrides ctx.attr.empty_files
-    empty_dirs: Dict[str, str], overrides ctx.attr.empty_dirs
-    directory: str, overrides ctx.attr.directory
-    entrypoint: str List, overrides ctx.attr.entrypoint
-    cmd: str List, overrides ctx.attr.cmd
-    creation_time: str, overrides ctx.attr.creation_time
-    symlinks: str Dict, overrides ctx.attr.symlinks
-    env: str Dict, overrides ctx.attr.env
-    layers: label List, overrides ctx.attr.layers
-    compression: str, overrides ctx.attr.compression
-    compression_options: str list, overrides ctx.attr.compression_options
-    experimental_tarball_format: str, overrides ctx.attr.experimental_tarball_format
-    debs: File list, overrides ctx.files.debs
-    tars: File list, overrides ctx.files.tars
-    architecture: str, overrides ctx.attr.architecture
-    operating_system: Operating system to target (e.g. linux, windows)
-    os_version: Operating system version to target
-    output_executable: File to use as output for script to load docker image
-    output_tarball: File, overrides ctx.outputs.out
-    output_config: File, overrides ctx.outputs.config
-    output_config_digest: File, overrides ctx.outputs.config_digest
-    output_digest: File, overrides ctx.outputs.digest
-    output_layer: File, overrides ctx.outputs.layer
-    workdir: str, overrides ctx.attr.workdir
-    null_cmd: bool, overrides ctx.attr.null_cmd
-    null_entrypoint: bool, overrides ctx.attr.null_entrypoint
-  """
+    You can write a customized container_image rule by writing something like:
+
+        load(
+            "@io_bazel_rules_docker//container:container.bzl",
+            _container="container",
+        )
+
+        def _impl(ctx):
+            ...
+            return _container.image.implementation(ctx, ... kwarg overrides ...)
+
+        _foo_image = rule(
+            attrs = _container.image.attrs + {
+                # My attributes, or overrides of _container.image.attrs defaults.
+                ...
+            },
+            executable = True,
+            outputs = _container.image.outputs,
+            implementation = _impl,
+            cfg = _container.image.cfg,
+        )
+
+    Args:
+        ctx: The bazel rule context
+        name: str, overrides ctx.label.name or ctx.attr.name
+        base: File, overrides ctx.attr.base and ctx.files.base[0]
+        files: File list, overrides ctx.files.files
+        file_map: Dict[str, File], defaults to {}
+        empty_files: str list, overrides ctx.attr.empty_files
+        empty_dirs: Dict[str, str], overrides ctx.attr.empty_dirs
+        directory: str, overrides ctx.attr.directory
+        entrypoint: str List, overrides ctx.attr.entrypoint
+        cmd: str List, overrides ctx.attr.cmd
+        creation_time: str, overrides ctx.attr.creation_time
+        symlinks: str Dict, overrides ctx.attr.symlinks
+        env: str Dict, overrides ctx.attr.env
+        layers: label List, overrides ctx.attr.layers
+        compression: str, overrides ctx.attr.compression
+        compression_options: str list, overrides ctx.attr.compression_options
+        experimental_tarball_format: str, overrides ctx.attr.experimental_tarball_format
+        debs: File list, overrides ctx.files.debs
+        tars: File list, overrides ctx.files.tars
+        architecture: str, overrides ctx.attr.architecture
+        operating_system: Operating system to target (e.g. linux, windows)
+        os_version: Operating system version to target
+        output_executable: File to use as output for script to load docker image
+        output_tarball: File, overrides ctx.outputs.out
+        output_config: File, overrides ctx.outputs.config
+        output_config_digest: File, overrides ctx.outputs.config_digest
+        output_digest: File, overrides ctx.outputs.digest
+        output_layer: File, overrides ctx.outputs.layer
+        workdir: str, overrides ctx.attr.workdir
+        user: str, overrides ctx.attr.user
+        null_cmd: bool, overrides ctx.attr.null_cmd
+        null_entrypoint: bool, overrides ctx.attr.null_entrypoint
+    """
     name = name or ctx.label.name
+    base = base or ctx.attr.base
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
     architecture = architecture or ctx.attr.architecture
@@ -425,7 +414,10 @@ def _impl(
     # Get the layers and shas from our base.
     # These are ordered as they'd appear in the v2.2 config,
     # so they grow at the end.
-    parent_parts = _get_layers(ctx, name, ctx.attr.base, base)
+    if hasattr(base, "basename"):
+        parent_parts = _get_layers_from_archive_file(ctx, name, base)
+    else:
+        parent_parts = _get_layers_from_target(ctx, name, base)
     zipped_layers = parent_parts.get("zipped_layer", []) + [layer.zipped_layer for layer in layers]
     shas = parent_parts.get("blobsum", []) + [layer.blob_sum for layer in layers]
     unzipped_layers = parent_parts.get("unzipped_layer", []) + [layer.unzipped_layer for layer in layers]
@@ -438,11 +430,11 @@ def _impl(
     transitive_files = depset(new_files + new_emptyfiles + new_symlinks, transitive = [parent_transitive_files])
 
     # Get the config for the base layer
-    config_file = _get_base_config(ctx, name, base)
+    config_file = parent_parts.get("config")
     config_digest = None
 
     # Get the manifest for the base layer
-    manifest_file = _get_base_manifest(ctx, name, base)
+    manifest_file = parent_parts.get("manifest")
     manifest_digest = None
 
     # Generate the new config layer by layer, using the attributes specified and the diff_id
@@ -462,6 +454,7 @@ def _impl(
             os_version = os_version,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
+            user = user or ctx.attr.user,
             null_entrypoint = null_entrypoint,
             null_cmd = null_cmd,
         )
@@ -540,31 +533,11 @@ def _impl(
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 
-    # Stamp attribute needs to be propagated between definitions to enhance actions
-    # with ability to determine properly whether root image has activated stamping.
-    #
-    # This covers the following example case:
-    # container_image(
-    #     name = “base_image”,
-    #     base = “@base//image”,
-    #     stamp = True,
-    # )
-    #
-    # lang_image(
-    #     base = “:base_image”,
-    # )
-    stamp = None
-    if ctx.attr.stamp:
-        stamp = ctx.attr.stamp
-    elif ctx.attr.base and ImageInfo in ctx.attr.base:
-        stamp = ctx.attr.base[ImageInfo].stamp
-
     return [
         ImageInfo(
             container_parts = container_parts,
             legacy_run_behavior = ctx.attr.legacy_run_behavior,
             docker_run_flags = docker_run_flags,
-            stamp = stamp,
         ),
         DefaultInfo(
             executable = build_executable,
@@ -578,20 +551,75 @@ def _impl(
     ]
 
 _attrs = dicts.add(_layer.attrs, {
-    "architecture": attr.string(default = "amd64"),
-    "base": attr.label(allow_files = container_filetype),
-    "cmd": attr.string_list(),
-    "compression": attr.string(default = "gzip"),
-    "compression_options": attr.string_list(),
+    "architecture": attr.string(
+        doc = "The desired CPU architecture to be used as label in the container image.",
+        default = "amd64",
+    ),
+    "base": attr.label(
+        allow_files = container_filetype,
+        doc = "The base layers on top of which to overlay this layer, equivalent to FROM.",
+    ),
+    "cmd": attr.string_list(
+        doc = """List of commands to execute in the image.
+
+        See https://docs.docker.com/engine/reference/builder/#cmd
+
+        The behavior between using `""` and `[]` may differ.
+        Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
+        for more details.
+
+        Set `cmd` to `None`, `[]` or `""` will set the `Cmd` of the image to be
+        `null`.
+
+        This field supports stamp variables.""",
+    ),
+    "compression": attr.string(
+        default = "gzip",
+        doc = """Compression method for image layer. Currently only gzip is supported.
+
+        This affects the compressed layer, which is by the `container_push` rule.
+        It doesn't affect the layers specified by the `layers` attribute.""",
+    ),
+    "compression_options": attr.string_list(
+        doc = """Command-line options for the compression tool. Possible values depend on `compression` method.
+
+        This affects the compressed layer, which is used by the `container_push` rule.
+        It doesn't affect the layers specified by the `layers` attribute.""",
+    ),
     "create_image_config": attr.label(
         default = Label("//container/go/cmd/create_image_config:create_image_config"),
         cfg = "host",
         executable = True,
         allow_files = True,
     ),
-    "creation_time": attr.string(),
-    "docker_run_flags": attr.string(),
-    "entrypoint": attr.string_list(),
+    "creation_time": attr.string(
+        doc = """The image's creation timestamp.
+
+        Acceptable formats: Integer or floating point seconds since Unix Epoch, RFC 3339 date/time.
+
+        This field supports stamp variables.
+
+        If not set, defaults to {BUILD_TIMESTAMP} when stamp = True, otherwise 0""",
+    ),
+    "docker_run_flags": attr.string(
+        doc = """Optional flags to use with `docker run` command.
+
+        Only used when `legacy_run_behavior` is set to `False`.""",
+    ),
+    "entrypoint": attr.string_list(
+        doc = """List of entrypoints to add in the image.
+
+        See https://docs.docker.com/engine/reference/builder/#entrypoint
+
+        Set `entrypoint` to `None`, `[]` or `""` will set the `Entrypoint` of the image
+        to be `null`.
+
+        The behavior between using `""` and `[]` may differ.
+        Please see [#1448](https://github.com/bazelbuild/rules_docker/issues/1448)
+        for more details.
+
+        This field supports stamp variables.""",
+    ),
     "experimental_tarball_format": attr.string(
         values = [
             "legacy",
@@ -610,11 +638,52 @@ _attrs = dicts.add(_layer.attrs, {
     "label_files": attr.label_list(
         allow_files = True,
     ),
-    "labels": attr.string_dict(),
-    "launcher": attr.label(allow_single_file = True),
-    "launcher_args": attr.string_list(default = []),
-    "layers": attr.label_list(providers = [LayerInfo]),
-    "legacy_repository_naming": attr.bool(default = False),
+    "labels": attr.string_dict(
+        doc = """Dictionary from custom metadata names to their values.
+
+        See https://docs.docker.com/engine/reference/builder/#label
+
+        You can also put a file name prefixed by '@' as a value.
+        Then the value is replaced with the contents of the file.
+
+        Example:
+
+            labels = {
+                "com.example.foo": "bar",
+                "com.example.baz": "@metadata.json",
+                ...
+            },
+
+        The values of this field support stamp variables.""",
+    ),
+    "launcher": attr.label(
+        allow_single_file = True,
+        doc = """If present, prefix the image's ENTRYPOINT with this file.
+
+        Note that the launcher should be a container-compatible (OS & Arch)
+        single executable file without any runtime dependencies (as none
+        of its runfiles will be included in the image).""",
+    ),
+    "launcher_args": attr.string_list(
+        default = [],
+        doc = """Optional arguments for the `launcher` attribute.
+
+        Only valid when `launcher` is specified.""",
+    ),
+    "layers": attr.label_list(
+        doc = """List of `container_layer` targets.
+
+        The data from each `container_layer` will be part of container image,
+        and the environment variable will be available in the image as well.""",
+        providers = [LayerInfo],
+    ),
+    "legacy_repository_naming": attr.bool(
+        default = False,
+        doc = """Whether to use the legacy strategy for setting the repository name
+          embedded in the resulting tarball.
+
+          e.g. `bazel/{target.replace('/', '_')}` vs. `bazel/{target}`""",
+    ),
     "legacy_run_behavior": attr.bool(
         # TODO(mattmoor): Default this to False.
         default = True,
@@ -629,13 +698,55 @@ _attrs = dicts.add(_layer.attrs, {
     # We need these flags to distinguish them.
     "null_cmd": attr.bool(default = False),
     "null_entrypoint": attr.bool(default = False),
-    "os_version": attr.string(),
-    "ports": attr.string_list(),  # Skylark doesn't support int_list...
-    "repository": attr.string(default = "bazel"),
-    "stamp": attr.bool(default = False),
-    "user": attr.string(),
-    "volumes": attr.string_list(),
-    "workdir": attr.string(),
+    "os_version": attr.string(
+        doc = "The desired OS version to be used in the container image config.",
+    ),
+    # Starlark doesn't support int_list...
+    "ports": attr.string_list(
+        doc = """List of ports to expose.
+
+        See https://docs.docker.com/engine/reference/builder/#expose""",
+    ),
+    "repository": attr.string(
+        default = "bazel",
+        doc = """The repository for the default tag for the image.
+
+        Images generated by `container_image` are tagged by default to
+        `bazel/package_name:target` for a `container_image` target at
+        `//package/name:target`.
+
+        Setting this attribute to `gcr.io/dummy` would set the default tag to
+        `gcr.io/dummy/package_name:target`.""",
+    ),
+    "stamp": STAMP_ATTR,
+    "user": attr.string(
+        doc = """The user that the image should run as.
+
+        See https://docs.docker.com/engine/reference/builder/#user
+
+        Because building the image never happens inside a Docker container,
+        this user does not affect the other actions (e.g., adding files).
+
+        This field supports stamp variables.""",
+    ),
+    "volumes": attr.string_list(
+        doc = """List of volumes to mount.
+
+        See https://docs.docker.com/engine/reference/builder/#volumes""",
+    ),
+    "workdir": attr.string(
+        doc = """Initial working directory when running the Docker image.
+
+        See https://docs.docker.com/engine/reference/builder/#workdir
+
+        Because building the image never happens inside a Docker container,
+        this working directory does not affect the other actions (e.g., adding files).
+
+        This field supports stamp variables.""",
+    ),
+    "_allowlist_function_transition": attr.label(
+        default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+    ),
     "_digester": attr.label(
         default = "//container/go/cmd/digester",
         cfg = "host",
@@ -655,18 +766,54 @@ _outputs["config_digest"] = "%{name}.json.sha256"
 
 _outputs["build_script"] = "%{name}.executable"
 
+def _image_transition_impl(settings, attr):
+    if not settings["@io_bazel_rules_docker//transitions:enable"]:
+        # Once bazel < 5.0 is not supported we can return an empty dict here
+        return {
+            "//command_line_option:platforms": settings["//command_line_option:platforms"],
+            "@io_bazel_rules_docker//platforms:image_transition_cpu": "//plaftorms:image_transition_cpu_unset",
+            "@io_bazel_rules_docker//platforms:image_transition_os": "//plaftorms:image_transition_os_unset",
+        }
+
+    return {
+        "//command_line_option:platforms": "@io_bazel_rules_docker//platforms:image_transition",
+        "@io_bazel_rules_docker//platforms:image_transition_cpu": "@platforms//cpu:" + {
+            # Architecture aliases.
+            "386": "x86_32",
+            "amd64": "x86_64",
+            "ppc64le": "ppc",
+        }.get(attr.architecture, attr.architecture),
+        "@io_bazel_rules_docker//platforms:image_transition_os": "@platforms//os:" + attr.operating_system,
+    }
+
+_image_transition = transition(
+    implementation = _image_transition_impl,
+    inputs = [
+        "@io_bazel_rules_docker//transitions:enable",
+        "//command_line_option:platforms",
+    ],
+    outputs = [
+        "//command_line_option:platforms",
+        "@io_bazel_rules_docker//platforms:image_transition_cpu",
+        "@io_bazel_rules_docker//platforms:image_transition_os",
+    ],
+)
+
 image = struct(
     attrs = _attrs,
     outputs = _outputs,
     implementation = _impl,
+    cfg = _image_transition,
 )
 
 container_image_ = rule(
-    attrs = _attrs,
+    attrs = image.attrs,
+    doc = "Called by the `container_image` macro with **kwargs, see below",
     executable = True,
-    outputs = _outputs,
+    outputs = image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
-    implementation = _impl,
+    implementation = image.implementation,
+    cfg = image.cfg,
 )
 
 # This validates the two forms of value accepted by
@@ -709,117 +856,137 @@ def _validate_command(name, argument, operating_system):
     else:
         return None
 
-# Produces a new container image tarball compatible with 'docker load', which
-# is a single additional layer atop 'base'.  The goal is to have relatively
-# complete support for building container image, from the Dockerfile spec.
-#
-# For more information see the 'Config' section of the image specification:
-# https://github.com/opencontainers/image-spec/blob/v0.2.0/serialization.md
-#
-# Only 'name' is required. All other fields have sane defaults.
-#
-#   container_image(
-#      name="...",
-#      visibility="...",
-#
-#      # The base layers on top of which to overlay this layer,
-#      # equivalent to FROM.
-#      base="//another/build:rule",
-#
-#      # The base directory of the files, defaulted to
-#      # the package of the input.
-#      # All files structure relatively to that path will be preserved.
-#      # A leading '/' mean the workspace root and this path is relative
-#      # to the current package by default.
-#      data_path="...",
-#
-#      # The directory in which to expand the specified files,
-#      # defaulting to '/'.
-#      # Only makes sense accompanying one of files/tars/debs.
-#      directory="...",
-#
-#      # The set of archives to expand, or packages to install
-#      # within the chroot of this layer
-#      files=[...],
-#      tars=[...],
-#      debs=[...],
-#
-#      # The set of symlinks to create within a given layer.
-#      symlinks = {
-#          "/path/to/link": "/path/to/target",
-#          ...
-#      },
-#
-#      # Other layers built from container_layer rule
-#      layers = [":c-lang-layer", ":java-lang-layer", ...]
-#
-#      # https://docs.docker.com/engine/reference/builder/#entrypoint
-#      entrypoint="...", or
-#      entrypoint=[...],            -- exec form
-#      Set entrypoint to None, [] or "" will set the Entrypoint of the image to
-#      be null.
-#
-#      # https://docs.docker.com/engine/reference/builder/#cmd
-#      cmd="...", or
-#      cmd=[...],                   -- exec form
-#      Set cmd to None, [] or "" will set the Cmd of the image to be null.
-#
-#      # https://docs.docker.com/engine/reference/builder/#expose
-#      ports=[...],
-#
-#      # https://docs.docker.com/engine/reference/builder/#user
-#      # NOTE: the normal directive affects subsequent RUN, CMD,
-#      # and ENTRYPOINT
-#      user="...",
-#
-#      # https://docs.docker.com/engine/reference/builder/#volume
-#      volumes=[...],
-#
-#      # https://docs.docker.com/engine/reference/builder/#workdir
-#      # NOTE: the normal directive affects subsequent RUN, CMD,
-#      # ENTRYPOINT, ADD, and COPY, but this attribute only affects
-#      # the entry point.
-#      workdir="...",
-#
-#      # https://docs.docker.com/engine/reference/builder/#env
-#      env = {
-#         "var1": "val1",
-#         "var2": "val2",
-#         ...
-#         "varN": "valN",
-#      },
-#
-#      # Compression method and command-line options.
-#      compression = "gzip",
-#      compression_options = ["--fast"],
-#      experimental_tarball_format = "compressed",
-#   )
-
 def container_image(**kwargs):
     """Package a docker image.
 
-  This rule generates a sequence of genrules the last of which is named 'name',
-  so the dependency graph works out properly.  The output of this rule is a
-  tarball compatible with 'docker save/load' with the structure:
-    {layer-name}:
-      layer.tar
-      VERSION
-      json
-    {image-config-sha256}.json
-    ...
-    manifest.json
-    repositories
-    top     # an implementation detail of our rules, not consumed by Docker.
-  This rule appends a single new layer to the tarball of this form provided
-  via the 'base' parameter.
+    Produces a new container image tarball compatible with 'docker load', which
+    is a single additional layer atop 'base'.  The goal is to have relatively
+    complete support for building container image, from the Dockerfile spec.
 
-  The images produced by this rule are always named 'bazel/tmp:latest' when
-  loaded (an internal detail).  The expectation is that the images produced
-  by these rules will be uploaded using the 'docker_push' rule below.
+    For more information see the 'Config' section of the image specification:
+    https://github.com/opencontainers/image-spec/blob/v0.2.0/serialization.md
 
-  Args:
-    **kwargs: See above.
-  """
+    Only 'name' is required. All other fields have sane defaults.
+
+        container_image(
+            name="...",
+            visibility="...",
+
+            # The base layers on top of which to overlay this layer,
+            # equivalent to FROM.
+            base="//another/build:rule",
+
+            # The base directory of the files, defaulted to
+            # the package of the input.
+            # All files structure relatively to that path will be preserved.
+            # A leading '/' mean the workspace root and this path is relative
+            # to the current package by default.
+            data_path="...",
+
+            # The directory in which to expand the specified files,
+            # defaulting to '/'.
+            # Only makes sense accompanying one of files/tars/debs.
+            directory="...",
+
+            # The set of archives to expand, or packages to install
+            # within the chroot of this layer
+            files=[...],
+            tars=[...],
+            debs=[...],
+
+            # The set of symlinks to create within a given layer.
+            symlinks = {
+                "/path/to/link": "/path/to/target",
+                ...
+            },
+
+            # Other layers built from container_layer rule
+            layers = [":c-lang-layer", ":java-lang-layer", ...]
+
+            # https://docs.docker.com/engine/reference/builder/#entrypoint
+            entrypoint="...", or
+            entrypoint=[...],            -- exec form
+            Set entrypoint to None, [] or "" will set the Entrypoint of the image to
+            be null.
+
+            # https://docs.docker.com/engine/reference/builder/#cmd
+            cmd="...", or
+            cmd=[...],                   -- exec form
+            Set cmd to None, [] or "" will set the Cmd of the image to be null.
+
+            # https://docs.docker.com/engine/reference/builder/#expose
+            ports=[...],
+
+            # https://docs.docker.com/engine/reference/builder/#user
+            # NOTE: the normal directive affects subsequent RUN, CMD,
+            # and ENTRYPOINT
+            user="...",
+
+            # https://docs.docker.com/engine/reference/builder/#volume
+            volumes=[...],
+
+            # https://docs.docker.com/engine/reference/builder/#workdir
+            # NOTE: the normal directive affects subsequent RUN, CMD,
+            # ENTRYPOINT, ADD, and COPY, but this attribute only affects
+            # the entry point.
+            workdir="...",
+
+            # https://docs.docker.com/engine/reference/builder/#env
+            env = {
+                "var1": "val1",
+                "var2": "val2",
+                ...
+                "varN": "valN",
+            },
+
+            # Compression method and command-line options.
+            compression = "gzip",
+            compression_options = ["--fast"],
+            experimental_tarball_format = "compressed",
+        )
+
+    This rule generates a sequence of genrules the last of which is named 'name',
+    so the dependency graph works out properly.  The output of this rule is a
+    tarball compatible with 'docker save/load' with the structure:
+
+        {layer-name}:
+        layer.tar
+        VERSION
+        json
+        {image-config-sha256}.json
+        ...
+        manifest.json
+        repositories
+        top     # an implementation detail of our rules, not consumed by Docker.
+
+    This rule appends a single new layer to the tarball of this form provided
+    via the 'base' parameter.
+
+    The images produced by this rule are always named `bazel/tmp:latest` when
+    loaded (an internal detail).  The expectation is that the images produced
+    by these rules will be uploaded using the `docker_push` rule below.
+
+    The implicit output targets are:
+
+    - `[name].tar`: A full Docker image containing all the layers, identical to
+        what `docker save` would return. This is only generated on demand.
+    - `[name].digest`: An image digest that can be used to refer to that image. Unlike tags,
+        digest references are immutable i.e. always refer to the same content.
+    - `[name]-layer.tar`: A Docker image containing only the layer corresponding to
+        that target. It is used for incremental loading of the layer.
+
+        **Note:** this target is not suitable for direct consumption.
+        It is used for incremental loading and non-docker rules should
+        depend on the Docker image (`[name].tar`) instead.
+    - `[name]`: The incremental image loader. It will load only changed
+            layers inside the Docker registry.
+
+    This rule references the `@io_bazel_rules_docker//toolchains/docker:toolchain_type`.
+    See [How to use the Docker Toolchain](/toolchains/docker/readme.md#how-to-use-the-docker-toolchain) for details.
+
+    Args:
+        **kwargs: Attributes are described by `container_image_` above.
+    """
     operating_system = None
 
     if ("operating_system" in kwargs):

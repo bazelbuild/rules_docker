@@ -20,7 +20,7 @@ the host machine.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//skylib:hash.bzl",
     _hash_tools = "tools",
 )
 load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
@@ -28,6 +28,10 @@ load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
     "//skylib:zip.bzl",
     _zip_tools = "tools",
+)
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
 )
 
 def _extract_impl(
@@ -67,6 +71,7 @@ def _extract_impl(
     extract_file = extract_file or ctx.attr.extract_file
     output_file = output_file or ctx.outputs.out
     script = script_file or ctx.outputs.script
+    extra_deps = extra_deps or ctx.files.extra_deps
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
@@ -78,7 +83,7 @@ def _extract_impl(
             "%{commands}": _process_commands(commands),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{extract_file}": extract_file,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
@@ -95,7 +100,7 @@ def _extract_impl(
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _extract_attrs = {
     "commands": attr.string_list(
@@ -110,6 +115,11 @@ _extract_attrs = {
     "extract_file": attr.string(
         doc = "Path to file to extract from container.",
         mandatory = True,
+    ),
+    "extra_deps": attr.label_list(
+        doc = "Extra dependency to be passed as inputs",
+        mandatory = False,
+        allow_files = True,
     ),
     "image": attr.label(
         executable = True,
@@ -190,7 +200,7 @@ def _commit_impl(
         output = image_utils,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
         },
         is_executable = True,
     )
@@ -203,7 +213,7 @@ def _commit_impl(
             "%{commands}": _process_commands(commands),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_tar}": image.path,
             "%{output_image}": "bazel/%s:%s" % (
@@ -227,7 +237,7 @@ def _commit_impl(
         use_default_shell_env = True,
     )
 
-    return struct()
+    return []
 
 _commit_attrs = {
     "commands": attr.string_list(
@@ -266,6 +276,8 @@ _commit_attrs = {
         allow_files = True,
     ),
 }
+
+# @unsorted-dict-items
 _commit_outputs = {
     "out": "%{name}_commit.tar",
     "build": "%{name}.build",
@@ -336,7 +348,7 @@ def _commit_layer_impl(
         output = image_utils,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
         },
         is_executable = True,
     )
@@ -362,7 +374,7 @@ def _commit_layer_impl(
             "%{commands}": _process_commands(commands),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_run_flags}": " ".join(docker_run_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{env_file_path}": env_file.path,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
             "%{image_last_layer_extractor_path}": ctx.executable._last_layer_extractor_tool.path,
@@ -384,6 +396,7 @@ def _commit_layer_impl(
         outputs = [output_layer_tar, output_diff_id],
         inputs = runfiles,
         executable = script,
+        mnemonic = "RunAndCommitLayer",
         tools = [ctx.executable._extract_image_id, ctx.executable._last_layer_extractor_tool],
         use_default_shell_env = True,
     )

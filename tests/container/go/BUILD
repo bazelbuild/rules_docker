@@ -26,6 +26,7 @@ go_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"GO_IMAGE_TEST_KEY": "go_image_test_value"},
     importpath = "github.com/bazelbuild/rules_docker/docker/tests/container/go",
     pure = "off",  # we should be using gcr.io/distroless/base as a base image
     tags = [

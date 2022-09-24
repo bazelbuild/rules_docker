@@ -23,6 +23,7 @@ exports_files(["run_checker.sh.tpl"])
 bzl_library(
     name = "configs_test",
     srcs = ["configs_test.bzl"],
+    deps = ["//skylib:docker"],
 )
 
 bzl_library(

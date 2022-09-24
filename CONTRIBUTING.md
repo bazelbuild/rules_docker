@@ -3,6 +3,19 @@
 We'd love to accept your patches and contributions to this project. There are
 just a few small guidelines you need to follow.
 
+## Formatting
+
+Starlark files should be formatted by buildifier.
+We suggest using a pre-commit hook to automate this.
+First [install pre-commit](https://pre-commit.com/#installation),
+then run
+
+```shell
+pre-commit install
+```
+
+Otherwise the Buildkite CI will yell at you about formatting/linting violations.
+
 ## Contributor License Agreement
 
 Contributions to this project must be accompanied by a Contributor License

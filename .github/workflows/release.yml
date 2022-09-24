@@ -1,0 +1,41 @@
+# This GitHub workflow is triggered when a new tag is pushed.
+# A release is then created from this tag.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get pushed tag
+        id: get_tag
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+
+      - uses: actions/checkout@v3
+
+      - run: git archive --output=rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz ${{ steps.get_tag.outputs.TAG }}
+
+      - name: Get SHA256 of archive
+        id: get_sha
+        run: echo "::set-output name=sha::$(sha256sum rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz | cut -f 1 -d ' ')"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            Copy the following into your WORKSPACE file to use rules_docker at release ${{ steps.get_tag.outputs.TAG }}
+            ```
+            http_archive(
+                name = "io_bazel_rules_docker",
+                sha256 = "${{ steps.get_sha.outputs.sha }}",
+                urls = ["https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/releases/download/${{ steps.get_tag.outputs.TAG }}/rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz"],
+            )
+            ```
+          generate_release_notes: true
+          files: rules_docker-${{ steps.get_tag.outputs.TAG }}.tar.gz

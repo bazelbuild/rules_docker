@@ -1,0 +1,13 @@
+# See CONTRIBUTING.md for instructions.
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/keith/pre-commit-buildifier
+    rev: 4.0.1.1
+    hooks:
+      - id: buildifier
+        args: &args
+          # Keep this argument in sync with .bazelci/presubmit.yml
+          - --warnings=-function-docstring-args,-print,-provider-params,-unnamed-macro
+      - id: buildifier-lint
+        args: *args

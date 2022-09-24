@@ -115,7 +115,13 @@ function find_diffbase() {
     NEW_DIFF_IDS+=("${diff_id}")
   done
 
-  TOTAL_DIFF_IDS=($(cat "${name}" | python -mjson.tool | \
+
+  PYTHON="python"
+  if command -v python3 &>/dev/null; then
+      PYTHON="python3"
+  fi
+
+  TOTAL_DIFF_IDS=($(cat "${name}" | $PYTHON -mjson.tool | \
       grep -E '^ +"sha256:' | cut -d'"' -f 2 | cut -d':' -f 2))
 
   LEGACY_COUNT=$((${#TOTAL_DIFF_IDS[@]} - ${#NEW_DIFF_IDS[@]}))
@@ -242,11 +248,52 @@ function read_variables() {
 # An optional "docker run" statement for invoking a loaded container.
 # This is not executed if the single argument --norun is passed or
 # no run_statements are generated (in which case, 'run' is 'False').
-if [[ "a$*" != "a--norun" && "%{run}" == "True" ]]; then
+if [[ "%{run}" == "True" ]]; then
+  docker_args=()
+  container_args=()
+
+  # Search remaining params looking for docker and container args.
+  #
+  # It is assumed that they will follow the pattern:
+  # [dockerargs...] -- [container args...]
+  #
+  # "--norun" is treated as a "virtual" additional parameter to
+  # "docker run", since it cannot conflict with any "docker run"
+  # arguments.  If "--norun" needs to be passed to the container,
+  # it can be safely placed after "--".
+  while test $# -gt 0
+  do
+      case "$1" in
+          --norun) # norun as a "docker run" option means exit
+              exit
+              ;;
+          --) # divider between docker and container args
+              shift
+              container_args=("$@")
+              break
+              ;;
+          *)  # potential "docker run" option
+              docker_args+=("$1")
+              shift
+              ;;
+      esac
+  done
+
   # Once we've loaded the images for all layers, we no longer need the temporary files on disk.
   # We can clean up before we exec docker, since the exit handler will no longer run.
   cleanup
 
+  # Bash treats empty arrays as unset variables for the purposes of `set -u`, so we only
+  # conditionally add these arrays to our args.
+  args=(%{run_statement})
+  if [[ ${#docker_args[@]} -gt 0 ]]; then
+    args+=("${docker_args[@]}")
+  fi
+  args+=("%{run_tag}")
+  if [[ ${#container_args[@]} -gt 0 ]]; then
+    args+=("${container_args[@]}")
+  fi
+
   # This generated and injected by docker_*.
-  exec %{run_statements}
+  eval exec "${args[@]}"
 fi

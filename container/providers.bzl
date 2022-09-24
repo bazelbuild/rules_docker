@@ -27,7 +27,6 @@ ImageInfo = provider(fields = [
     "container_parts",
     "legacy_run_behavior",
     "docker_run_flags",
-    "stamp",
 ])
 
 # A provider containing information exposed by container_import rules
@@ -53,9 +52,6 @@ LayerInfo = provider(fields = [
 PushInfo = provider(fields = [
     "registry",
     "repository",
-    "tag",
-    "stamp",
-    "stamp_inputs",
     "digest",
 ])
 
@@ -72,4 +68,31 @@ FilterAspectInfo = provider(
     fields = {
         "depset": "a depset of struct(target=<target>, target_deps=<depset>)",
     },
+)
+
+#Modelled after _GoContextData in rules_go/go/private/context.bzl
+StampSettingInfo = provider(
+    fields = {
+        "value": "Whether stamping is enabled",
+    },
+)
+
+STAMP_ATTR = attr.label(
+    default = "@io_bazel_rules_docker//stamp:use_stamp_flag",
+    providers = [StampSettingInfo],
+    doc = """Whether to encode build information into the output. Possible values:
+
+    - `@io_bazel_rules_docker//stamp:always`:
+        Always stamp the build information into the output, even in [--nostamp][stamp] builds.
+        This setting should be avoided, since it potentially causes cache misses remote caching for
+        any downstream actions that depend on it.
+
+    - `@io_bazel_rules_docker//stamp:never`:
+        Always replace build information by constant values. This gives good build result caching.
+
+    - `@io_bazel_rules_docker//stamp:use_stamp_flag`:
+        Embedding of build information is controlled by the [--[no]stamp][stamp] flag.
+        Stamped binaries are not rebuilt unless their dependencies change.
+
+    [stamp]: https://docs.bazel.build/versions/main/user-manual.html#flag--stamp""",
 )

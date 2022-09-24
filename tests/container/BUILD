@@ -17,6 +17,7 @@ load(
     "@bazel_tools//tools/build_rules:test_rules.bzl",
     "file_test",
 )
+load("@rules_python//python:defs.bzl", "py_test")
 load("//container:bundle.bzl", "container_bundle")
 load(
     "//container:container.bzl",
@@ -29,6 +30,7 @@ load("//contrib:test.bzl", "container_test")
 load(":apple.bzl", "create_banana_directory")
 load(":empty_layers.bzl", "empty_layers")
 load(":pull_info_validation_test.bzl", "pull_info_validation_test")
+load(":transitions.bzl", "templated_file", "transition_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -195,6 +197,13 @@ container_image(
     operating_system = "windows",
 )
 
+container_image(
+    name = "basic_windows_image_from_tar",
+    base = ":import_windows_base_image.tar",
+    cmd = ["echo bar"],
+    operating_system = "windows",
+)
+
 container_test(
     name = "basic_windows_image_test",
     configs = ["//tests/container/configs:windows_image.yaml"],
@@ -238,7 +247,7 @@ container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
-    content = "sha256:4ec78686f1edd4f30cca6222f17ace5a2b9f8db9708727c3a140c954af0a534d",
+    content = "sha256:7d1a06dae0021fb7a0bb789d414ec3799a397141d7299dce5ba287627737eaea",
     file = ":deb_image_with_dpkgs.digest",
 )
 
@@ -410,6 +419,10 @@ docker_push_all(
 py_test(
     name = "build_tar_test",
     srcs = ["build_tar_test.py"],
+    data = [
+        "//tests/container/testdata:expected.tar",
+        "//tests/container/testdata:source",
+    ],
     python_version = "PY3",
     deps = ["//container:build_tar_lib"],
 )
@@ -610,13 +623,13 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:2f3bf2d061a1bab130cdd98f10b73dfceb08bfbf94a610c62f20c787073e5178",
+    content = "sha256:63a40621b30af05f51fb2b38c2b5c56f9cc82cc605d556e09cacdbbdc5adec63",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:249804db68a05bb88cc353d4aff090b084d8b8312665638d2f8d7bdaeaa423b3",
+    content = "sha256:8876a15fad80a30d9ec8660a09c0b795513febc64084047e394a5b534a596ecd",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
@@ -873,4 +886,202 @@ bzl_library(
     name = "pull_info_validation_test_bzl",
     srcs = ["pull_info_validation_test.bzl"],
     visibility = ["//visibility:private"],
+)
+
+TEST_TARGETS = [
+    ":base_with_entrypoint",
+    ":base_with_volume",
+    ":derivative_with_cmd",
+    ":derivative_with_shadowed_cmd",
+    ":derivative_with_volume",
+    ":directory_with_tar_base",
+    ":files_base",
+    ":files_with_files_base",
+    ":files_in_layer_with_files_base",
+    ":files_with_tar_base",
+    ":tar_base",
+    ":tar_with_mtimes_preserved",
+    ":tar_with_files_base",
+    ":tar_with_tar_base",
+    ":tars_in_layer_with_tar_base",
+    ":docker_tarball_base",
+    ":layers_with_docker_tarball_base",
+    # TODO(mattmoor): Re-enable once archive is visible
+    # "generated_tarball",
+    ":with_unix_epoch_creation_time",
+    ":with_millisecond_unix_epoch_creation_time",
+    ":with_rfc_3339_creation_time",
+    ":with_stamped_creation_time",
+    ":with_default_stamped_creation_time",
+    ":with_base_stamped_image",
+    ":with_env",
+    ":layers_with_env",
+    ":with_double_env",
+    ":with_label",
+    ":with_double_label",
+    ":with_stamp_label",
+    ":with_user",
+    ":workdir_with_tar_base",
+    ":link_with_files_base",
+    ":build_with_tag",
+    ":with_passwd",
+    ":with_passwd_tar",
+    ":with_group",
+    ":with_empty_files",
+    ":with_empty_dirs",
+    ":gen_image",
+    ":data_path_image",
+    ":no_data_path_image",
+    ":absolute_data_path_image",
+    ":root_data_path_image",
+    ":dummy_repository",
+    # TODO(mattmoor): Re-enable once archive is visible
+    # "extras_with_deb",
+    ":bundle_test",
+    ":stamped_bundle_test",
+    ":pause_based",
+    ":dashdash_entrypoint",
+    ":base_based_warning",
+    ":cc_based_warning",
+    "/pause_piecemeal:image",
+    "/pause_piecemeal_gz:image",
+    # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
+    # "d_image",
+    ":java_image",
+    ":py_image",
+    ":py_image_with_symlinks_in_data",
+    ":py_image_complex",
+    ":war_image",
+    ":flat",
+    ":flatten_with_tarball_base",
+    ":nodejs_image",
+    ":compressed_experiment",
+]
+
+TEST_DATA = [
+    "//testdata%s.tar" % t
+    for t in TEST_TARGETS
+] + [
+    "//testdata:push_compression_gzip_fast",
+    "//testdata:push_compression_gzip_normal",
+    "//testdata:stamped_bundle_test",
+    "//testdata:stamp_info_file.txt",
+    "//tests/container:basic_windows_image.tar",
+    "//tests/container:basic_windows_image_from_tar.tar",
+]
+
+py_test(
+    name = "image_test",
+    size = "medium",
+    srcs = ["image_test.py"],
+    data = TEST_DATA,
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = ["@containerregistry"],
+)
+
+container_image(
+    name = "test_install_pkgs",
+    base = "//tests/docker/package_managers:test_install_pkgs.tar",
+)
+
+container_image(
+    name = "test_install_git_for_reproducibility_1",
+    base = "//tests/docker/package_managers:install_git_for_reproducibility_1.tar",
+)
+
+# Test a container bundle with several images and install_pkgs.
+# This should not tax join_layers unnecessarily.
+# Run bazel build @io_bazel_rules_docker//tests/container:container_bundle_with_install_pkgs.tar to test.
+# Prior to adding a caching step to compat/reader.go, join_layers.go
+# would take substantially longer for this target.
+container_bundle(
+    name = "container_bundle_with_install_pkgs",
+    experimental_tarball_format = "compressed",
+    images = {
+        "install_pkgs_1:latest": ":test_install_pkgs",
+        "install_pkgs_2:latest": ":test_install_git_for_reproducibility_1",
+        "localhost:5000/image0:latest": "//testdata:base_with_entrypoint",
+        "localhost:5000/image1:latest": "//testdata:link_with_files_base",
+        "localhost:5000/image2:latest": "//testdata:with_double_env",
+        "localhost:5000/image3:latest": "//testdata:with_label",
+        "localhost:5000/image4:latest": "//testdata:with_double_label",
+    },
+)
+
+genrule(
+    name = "got_os",
+    outs = ["got_os.txt"],
+    cmd = select({
+        "@platforms//os:windows": "echo windows > \"$@\"",
+        "@platforms//os:linux": "echo linux > \"$@\"",
+        "@platforms//os:macos": "echo macos > \"$@\"",
+    }),
+)
+
+genrule(
+    name = "got_arch",
+    outs = ["got_arch.txt"],
+    cmd = select({
+        "@platforms//cpu:arm64": "echo arm64 > \"$@\"",
+        "@platforms//cpu:aarch64": "echo arm64 > \"$@\"",
+        "@platforms//cpu:x86_64": "echo x86_64 > \"$@\"",
+        "@platforms//cpu:arm": "echo arm > \"$@\"",
+    }),
+)
+
+container_image(
+    name = "transitioned_image",
+    architecture = "arm64",
+    files = [
+        ":got_arch",
+        ":got_os",
+    ],
+    operating_system = "windows",
+)
+
+templated_file(
+    name = "transitions_off",
+    out = "transitions_off.yaml",
+    substitutions =
+        select({
+            "@platforms//os:linux": ["%WANT_OS%=linux"],
+            "@platforms//os:macos": ["%WANT_OS%=macos"],
+        }) + select({
+            "@platforms//cpu:arm64": ["%WANT_ARCH%=arm64"],
+            "@platforms//cpu:aarch64": ["%WANT_ARCH%=arm64"],
+            "@platforms//cpu:x86_64": ["%WANT_ARCH%=x86_64"],
+        }),
+    template = "//tests/container/configs:transitions_off.yaml.tpl",
+)
+
+container_test(
+    name = "_transitions_on_test_base",
+    configs = ["//tests/container/configs:transitions_on.yaml"],
+    driver = "tar",
+    image = ":transitioned_image",
+    # marked manual, because it will only pass if transitions are enabled
+    # enabled or disabled
+    tags = ["manual"],
+)
+
+transition_test(
+    name = "transitions_on_test",
+    actual = ":_transitions_on_test_base",
+    transitions_enabled = True,
+)
+
+container_test(
+    name = "_transitions_off_test_base",
+    configs = ["transitions_off"],
+    driver = "tar",
+    image = ":transitioned_image",
+    # marked manual, because it will only pass if transitions are disabled
+    tags = ["manual"],
+)
+
+transition_test(
+    name = "transitions_off_test",
+    actual = ":_transitions_off_test_base",
+    transitions_enabled = False,
 )

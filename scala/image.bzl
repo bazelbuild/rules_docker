@@ -32,7 +32,9 @@ def scala_image(
         deps = [],
         runtime_deps = [],
         layers = [],
+        env = {},
         jvm_flags = [],
+        classpath_as_file = None,
         **kwargs):
     """Builds a container image overlaying the scala_binary.
 
@@ -43,9 +45,10 @@ def scala_image(
                 image.
     deps: Dependencies of the scala image target.
     runtime_deps: Runtime dependencies of the scala image.
-    jvm_flags: Flags to pass to the JVM when running the scala image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    env: Environment variables for the scala_image.
+    jvm_flags: Flags to pass to the JVM when running the scala image.
     **kwargs: See scala_binary.
   """
     binary_name = name + ".binary"
@@ -80,11 +83,13 @@ def scala_image(
         deps = deps,
         runtime_deps = runtime_deps,
         jar_layers = layers,
+        env = env,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        classpath_as_file = classpath_as_file,
     )
 
 def repositories():

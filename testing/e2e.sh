@@ -77,6 +77,7 @@ function test_war_image() {
   ID=$(docker run -d -p 8080:8080 bazel/testdata:war_image)
   sleep 5
   EXPECT_CONTAINS "$(curl localhost:8080)" "Hello World"
+  EXPECT_CONTAINS "$(curl localhost:8080)" "WAR_IMAGE_TEST_KEY=war_image_test_value"
   docker rm -f "${ID}"
 }
 
@@ -148,7 +149,7 @@ function test_new_container_push_skip_unchanged_digest_changed() {
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_1 2>&1)" "Successfully pushed Docker image"
   EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_test_skip_unchanged_digest_changed_tag_2 2>&1)" "Successfully pushed Docker image"
-  EXPECT_CONTAINS "$(curl localhost:5000/v2/docker/test/tags/list)" '{"name":"docker/test","tags":["changed_tag1","changed_tag2"]}'
+  EXPECT_CONTAINS "$(curl -s localhost:5000/v2/docker/test/tags/list | jq --sort-keys -c '(.. | arrays) |= sort')" '{"name":"docker/test","tags":["changed_tag1","changed_tag2"]}'
 }
 
 function test_new_container_push_compat() {
@@ -261,12 +262,12 @@ function test_new_container_push_with_stamp() {
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
 
   # Push a legacy image with stamp substitution
-  bazel run tests/container:new_push_stamped_test_legacy
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_legacy 2>&1)" "Successfully pushed Docker image"
+  bazel run --stamp tests/container:new_push_stamped_test_legacy
+  EXPECT_CONTAINS "$(bazel run --stamp @io_bazel_rules_docker//tests/container:new_push_stamped_test_legacy 2>&1)" "Successfully pushed Docker image"
 
   # Push a oci image with stamp substitution
-  bazel run tests/container:new_push_stamped_test_oci
-  EXPECT_CONTAINS "$(bazel run @io_bazel_rules_docker//tests/container:new_push_stamped_test_oci 2>&1)" "Successfully pushed OCI image"
+  bazel run --stamp tests/container:new_push_stamped_test_oci
+  EXPECT_CONTAINS "$(bazel run --stamp @io_bazel_rules_docker//tests/container:new_push_stamped_test_oci 2>&1)" "Successfully pushed OCI image"
   docker stop -t 0 $cid
 }
 
@@ -371,7 +372,7 @@ function test_container_push_with_stamp() {
   cd "${ROOT}"
   clear_docker_full
   cid=$(docker run --rm -d -p 5000:5000 --name registry registry:2)
-  bazel run tests/container:push_stamped_test
+  bazel run --stamp tests/container:push_stamped_test
   docker stop -t 0 $cid
 }
 
@@ -430,41 +431,52 @@ function test_new_container_pull_image_with_11_layers() {
   docker stop -t 0 $cid
 }
 
-# Tests failing on GCB due to isssues with local registry
-test_container_push
-test_container_push_all
-test_container_push_tag_file
-test_container_push_with_auth
-test_container_push_with_stamp
-test_new_container_push_compat
-test_new_container_push_oci
-test_new_container_push_tar
-test_new_container_push_with_stamp
-test_new_container_push_oci_tag_file
-test_new_container_push_oci_with_auth
-test_new_container_push_legacy
-test_new_container_push_legacy_tag_file
-test_new_container_push_legacy_with_auth
-test_new_container_push_skip_unchanged_digest_unchanged
-test_new_container_push_skip_unchanged_digest_changed
-test_container_pull_with_auth
-test_container_pull_cache
-test_new_container_pull_image_with_11_layers
+function run_all_tests() {
+    # Tests failing on GCB due to isssues with local registry
+    test_container_push
+    test_container_push_all
+    test_container_push_tag_file
+    test_container_push_with_auth
+    test_container_push_with_stamp
+    test_new_container_push_compat
+    test_new_container_push_oci
+    test_new_container_push_tar
+    test_new_container_push_with_stamp
+    test_new_container_push_oci_tag_file
+    test_new_container_push_oci_with_auth
+    test_new_container_push_legacy
+    test_new_container_push_legacy_tag_file
+    test_new_container_push_legacy_with_auth
+    test_new_container_push_skip_unchanged_digest_unchanged
+    test_new_container_push_skip_unchanged_digest_changed
+    test_container_pull_with_auth
+    test_container_pull_cache
+    test_new_container_pull_image_with_11_layers
 
-# Tests failing on GCB due to permissions issue related to building tars
-test_py_image_complex -c opt
-test_py_image_complex -c dbg
-test_py3_image_with_custom_run_flags -c opt
-test_py3_image_with_custom_run_flags -c dbg
-test_java_image -c opt
-test_java_image -c dbg
-test_war_image
-test_war_image_with_custom_run_flags
+    # Tests failing on GCB due to permissions issue related to building tars
+    test_py_image_complex -c opt
+    test_py_image_complex -c dbg
+    test_py3_image_with_custom_run_flags -c opt
+    test_py3_image_with_custom_run_flags -c dbg
+    test_java_image -c opt
+    test_java_image -c dbg
+    test_war_image
+    test_war_image_with_custom_run_flags
 
-# Test failing on GCB due to clang not finding ld.gold
-test_rust_image -c opt
-test_rust_image -c dbg
+    # Test failing on GCB due to clang not finding ld.gold
+    test_rust_image -c opt
+    test_rust_image -c dbg
 
-# Test failing on GCB due to not finding cc
-test_d_image -c opt
-test_d_image -c dbg
+    # Test failing on GCB due to not finding cc
+    test_d_image -c opt
+    test_d_image -c dbg
+}
+
+f="$@"
+if [[ $(type -t "$f") == function ]]; then
+    # run a single test if provided
+    "$f"
+else
+    # run all tests otherwise
+    run_all_tests
+fi

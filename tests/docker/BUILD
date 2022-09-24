@@ -15,3 +15,13 @@
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+# This file fetched from
+# wget "http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"
+# because it was being served with unstable contents, causing our CI
+# to fail 50% of the time.
+filegroup(
+    name = "launchpad_openjdk_gpg",
+    srcs = ["launchpad_openjdk_gpg.pub"],
+    visibility = ["//tests/docker:__subpackages__"],
+)

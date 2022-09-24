@@ -50,97 +50,6 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-TEST_TARGETS = [
-    ":base_with_entrypoint",
-    ":base_with_volume",
-    ":derivative_with_cmd",
-    ":derivative_with_shadowed_cmd",
-    ":derivative_with_volume",
-    ":directory_with_tar_base",
-    ":files_base",
-    ":files_with_files_base",
-    ":files_in_layer_with_files_base",
-    ":files_with_tar_base",
-    ":tar_base",
-    ":tar_with_mtimes_preserved",
-    ":tar_with_files_base",
-    ":tar_with_tar_base",
-    ":tars_in_layer_with_tar_base",
-    ":docker_tarball_base",
-    ":layers_with_docker_tarball_base",
-    # TODO(mattmoor): Re-enable once archive is visible
-    # "generated_tarball",
-    ":with_unix_epoch_creation_time",
-    ":with_millisecond_unix_epoch_creation_time",
-    ":with_rfc_3339_creation_time",
-    ":with_stamped_creation_time",
-    ":with_default_stamped_creation_time",
-    ":with_base_stamped_image",
-    ":with_env",
-    ":layers_with_env",
-    ":with_double_env",
-    ":with_label",
-    ":with_double_label",
-    ":with_stamp_label",
-    ":with_user",
-    ":workdir_with_tar_base",
-    ":link_with_files_base",
-    ":build_with_tag",
-    ":with_passwd",
-    ":with_passwd_tar",
-    ":with_group",
-    ":with_empty_files",
-    ":with_empty_dirs",
-    ":gen_image",
-    ":data_path_image",
-    ":no_data_path_image",
-    ":absolute_data_path_image",
-    ":root_data_path_image",
-    ":dummy_repository",
-    # TODO(mattmoor): Re-enable once archive is visible
-    # "extras_with_deb",
-    ":bundle_test",
-    ":stamped_bundle_test",
-    ":pause_based",
-    ":dashdash_entrypoint",
-    ":base_based_warning",
-    ":cc_based_warning",
-    "/pause_piecemeal:image",
-    "/pause_piecemeal_gz:image",
-    # Re-enable once https://github.com/bazelbuild/rules_d/issues/14 is fixed.
-    # "d_image",
-    ":java_image",
-    ":py_image",
-    ":py_image_with_symlinks_in_data",
-    ":py_image_complex",
-    ":war_image",
-    ":flat",
-    ":flatten_with_tarball_base",
-    ":nodejs_image",
-    ":compressed_experiment",
-]
-
-TEST_DATA = [
-    "//testdata%s.tar" % t
-    for t in TEST_TARGETS
-] + [
-    "//testdata:push_compression_gzip_fast",
-    "//testdata:push_compression_gzip_normal",
-    "//testdata:stamped_bundle_test",
-    "//testdata:stamp_info_file.txt",
-    "//tests/container:basic_windows_image.tar",
-]
-
-py_test(
-    name = "image_test",
-    size = "medium",
-    srcs = ["image_test.py"],
-    data = TEST_DATA,
-    python_version = "PY3",
-    srcs_version = "PY3",
-    deps = ["@containerregistry"],
-)
-
 bzl_library(
     name = "bundle",
     srcs = ["bundle.bzl"],
@@ -167,6 +76,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "container.docs",
+    srcs = ["container.docs.bzl"],
+    deps = ["container"],
+)
+
+bzl_library(
     name = "flatten",
     srcs = ["flatten.bzl"],
     deps = [
@@ -180,12 +95,14 @@ bzl_library(
     name = "image",
     srcs = ["image.bzl"],
     deps = [
+        ":layer",
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
+        "//skylib:hash",
         "//skylib:label",
         "//skylib:path",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
+        "@bazel_skylib//lib:dicts",
     ],
 )
 
@@ -196,9 +113,9 @@ bzl_library(
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
+        "//skylib:hash",
         "//skylib:path",
         "//skylib:zip",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
@@ -209,16 +126,19 @@ bzl_library(
         ":layer_tools",
         ":providers",
         "//skylib:filetype",
+        "//skylib:hash",
         "//skylib:path",
         "//skylib:zip",
-        "@bazel_tools//tools/build_defs/hash:hash.bzl",
     ],
 )
 
 bzl_library(
     name = "layer_tools",
     srcs = ["layer_tools.bzl"],
-    deps = ["//skylib:path"],
+    deps = [
+        "//skylib:docker",
+        "//skylib:path",
+    ],
 )
 
 bzl_library(

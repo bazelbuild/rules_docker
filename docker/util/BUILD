@@ -40,6 +40,7 @@ exports_files([
 bzl_library(
     name = "util",
     srcs = ["run.bzl"],
+    deps = ["//skylib:docker"],
 )
 
 # Re-package config_stripper as a library to be used in unit tests.

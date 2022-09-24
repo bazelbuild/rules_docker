@@ -36,7 +36,7 @@ def _docker(repository_ctx):
       repository_ctx: The repository context
 
     Returns:
-      Tha path to the docker tool
+      The path to the docker tool
     """
 
     if repository_ctx.attr.docker_path:
@@ -74,6 +74,9 @@ def _impl(repository_ctx):
         img_name,
         str(dockerfile_path.dirname),
     ])
+
+    if repository_ctx.attr.target:
+        command.extend(["--target", repository_ctx.attr.target])
 
     build_result = repository_ctx.execute(command)
     if build_result.return_code:
@@ -119,6 +122,9 @@ dockerfile_image = repository_rule(
         ),
         "vars": attr.string_list(
             doc = "List of environment vars to include in the build.",
+        ),
+        "target": attr.string(
+            doc = "Specify which intermediate stage to finish at, passed to `--target`.",
         ),
     },
     implementation = _impl,

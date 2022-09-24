@@ -17,7 +17,7 @@
 The signature of kt_jvm_image is compatible with kt_jvm_binary.
 """
 
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_binary", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
 load(
     "//java:image.bzl",
     "DEFAULT_JAVA_BASE",
@@ -33,22 +33,25 @@ def kt_jvm_image(
         srcs = [],
         deps = [],
         layers = [],
+        env = {},
         jvm_flags = [],
+        classpath_as_file = None,
         **kwargs):
     """Builds a container image overlaying the kt_jvm_binary.
 
-    Args:
-        name: Name of the kt_jvm_image target.
-        base: Base image to use for the kt_jvm_image.
-        main_class: The main entrypoint class in the kotlin image.
-        srcs: List of kotlin source files that will be used to build the binary
-            to be included in the kt_jvm_image.
-        deps: The dependencies of the kt_jvm_image target.
-        jvm_flags: The flags to pass to the JVM when running the kotlin image.
-        layers: Augments "deps" with dependencies that should be put into
-            their own layers.
-        **kwargs: See kt_jvm_binary.
-    """
+  Args:
+    name: Name of the kt_jvm_image target.
+    base: Base image to use for the kt_jvm_image.
+    main_class: The main entrypoint class in the kotlin image.
+    srcs: List of kotlin source files that will be used to build the binary
+        to be included in the kt_jvm_image.
+    deps: The dependencies of the kt_jvm_image target.
+    layers: Augments "deps" with dependencies that should be put into
+        their own layers.
+    env: Environment variables for the kt_jvm_image.
+    jvm_flags: The flags to pass to the JVM when running the kotlin image.
+    **kwargs: See kt_jvm_binary.
+  """
     binary_name = name + ".binary"
 
     # This is an inlined copy of kt_jvm_binary so that we properly collect
@@ -71,17 +74,18 @@ def kt_jvm_image(
 
     index = 0
     base = base or DEFAULT_JAVA_BASE
+    tags = kwargs.get("tags", None)
     for dep in layers:
         this_name = "%s.%d" % (name, index)
-        jar_dep_layer(name = this_name, base = base, dep = dep)
+        jar_dep_layer(name = this_name, base = base, dep = dep, tags = tags)
         base = this_name
         index += 1
 
     visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     jar_app_layer(
         name = name,
         base = base,
+        env = env,
         binary = binary_name,
         main_class = main_class,
         jvm_flags = jvm_flags,
@@ -92,6 +96,7 @@ def kt_jvm_image(
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        classpath_as_file = classpath_as_file,
     )
 
 def repositories():

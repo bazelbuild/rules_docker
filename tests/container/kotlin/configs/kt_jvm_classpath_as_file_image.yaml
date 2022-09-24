@@ -1,0 +1,13 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  entrypoint: [
+    '/usr/bin/java',
+    '-cp',
+    '@/app/io_bazel_rules_docker/tests/container/kotlin/kt_jvm_classpath_as_file_image.classpath',
+    '-Dbuild.location=tests/container/kotlin/BUILD',
+    'examples.images.Binary',
+    'arg0',
+    'arg1',
+    'tests/container/kotlin/BUILD',
+  ]

@@ -86,6 +86,7 @@ _dep_layer = rule(
     outputs = lang_image.outputs,
     toolchains = lang_image.toolchains,
     implementation = _dep_layer_impl,
+    cfg = lang_image.cfg,
 )
 
 def _npm_deps_runfiles(dep):
@@ -107,6 +108,7 @@ _npm_deps_layer = rule(
     outputs = lang_image.outputs,
     toolchains = lang_image.toolchains,
     implementation = _npm_deps_layer_impl,
+    cfg = lang_image.cfg,
 )
 
 def nodejs_image(
@@ -114,7 +116,12 @@ def nodejs_image(
         base = None,
         data = [],
         layers = [],
+        env = {},
         binary = None,
+        launcher = None,
+        launcher_args = None,
+        node_repository_name = "nodejs",
+        include_node_repo_args = True,
         **kwargs):
     """Constructs a container image wrapping a nodejs_binary target.
 
@@ -124,7 +131,10 @@ def nodejs_image(
     data: Runtime dependencies of the nodejs_image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    env: Environment variables for the nodejs_image.
     binary: An alternative binary target to use instead of generating one.
+    launcher: The container_image launcher to set.
+    launcher_args: The args for the container_image launcher.
     **kwargs: See nodejs_binary.
   """
 
@@ -138,10 +148,12 @@ def nodejs_image(
 
     nodejs_layers = [
         # Put the Node binary into its own layers.
-        "@nodejs//:node",
-        "@nodejs//:node_files",
-        "@nodejs//:bin/node_repo_args.sh",
+        "@%s//:node" % node_repository_name,
+        "@%s//:node_files" % node_repository_name,
     ]
+
+    if include_node_repo_args:
+        nodejs_layers.append("@%s//:bin/node_repo_args.sh" % node_repository_name)
 
     all_layers = nodejs_layers + layers
 
@@ -162,10 +174,13 @@ def nodejs_image(
     app_layer(
         name = name,
         base = npm_deps_layer_name,
+        env = env,
         binary = binary,
         visibility = visibility,
         tags = tags,
         args = kwargs.get("args"),
         data = data,
         testonly = kwargs.get("testonly"),
+        launcher = launcher,
+        launcher_args = launcher_args,
     )

@@ -1,7 +1,7 @@
 ARG ALPINE_version
 ARG SOME_VAR=default_value
 
-FROM alpine:${ALPINE_version}
+FROM alpine:${ALPINE_version} AS base
 ENTRYPOINT ["echo"]
 CMD ["Hello World!"]
 
@@ -19,3 +19,11 @@ EXPOSE 9876/udp
 VOLUME /myVol1 /usr/myVol2
 
 RUN apk add gcc python2
+
+FROM base AS test 
+
+RUN echo "Hello from test stage" > /target_test.txt
+
+FROM base
+
+RUN echo "A file that should not exist" > /target_test_base.txt

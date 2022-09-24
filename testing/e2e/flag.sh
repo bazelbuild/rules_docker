@@ -1,4 +1,6 @@
-# Copyright 2017 The Bazel Authors. All rights reserved.
+#!/usr/bin/env bash
+set -ex
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules for manipulation OCI images."""
+source ./testing/e2e/util.sh
 
-load(
-    "//container:container.bzl",
-    "container_push",
-)
+# Tests that the flags are passed correctly.
 
-def oci_push(*args, **kwargs):
-    if "format" in kwargs:
-        fail(
-            "Cannot override 'format' attribute on oci_push",
-            attr = "format",
-        )
-    kwargs["format"] = "OCI"
-    container_push(*args, **kwargs)
+# Must be invoked from the root of the repo.
+ROOT=$PWD
+
+function test_flag() {
+  cd "${ROOT}"
+  clear_docker
+  EXPECT_CONTAINS "$(bazel run testdata:flag_image -- -arg='Hello World!')" "Hello World!"
+}
+
+# Call function above
+test_flag

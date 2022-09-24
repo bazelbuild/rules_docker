@@ -21,17 +21,20 @@ load("//docker/security:security_check.bzl", "security_check")
 security_check(
     name = "security_check",
     image = "gcr.io/gcp-runtimes/ubuntu_16_0_4:latest",
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 file_test(
     name = "security_check_test",
     file = ":security_check.yaml",
     regexp = "tags:",
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 security_check(
     name = "security_check_expect_cve",
     image = "gcr.io/asci-toolchain/rbe-ubuntu16_04@sha256:1e95064e2b9b4807ddb39a9d56ebb275b126faa592d4c0b8f68dd0f16f751df1",
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 # If this test fails it might be the case that the vulnerability info for an
@@ -41,4 +44,5 @@ file_test(
     name = "security_check_expect_cve_test",
     file = ":security_check_expect_cve.yaml",
     regexp = "cveHigh",
+    tags = ["manual"],  # buildkite-incompatible
 )

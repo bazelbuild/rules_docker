@@ -1,9 +1,12 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  entrypoint: ['/app/tests/container/rust/rust_image_binary']
   cmd: [
     'arg0',
     'arg1',
     'tests/container/rust/BUILD',
   ]
+  entrypoint: ['/app/tests/container/rust/rust_image_binary']
+  env:
+    - key: RUST_IMAGE_TEST_KEY
+      value: rust_image_test_value

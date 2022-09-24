@@ -1,0 +1,59 @@
+# See https://github.com/marketplace/actions/close-stale-issues
+
+name: Mark stale issues and pull requests
+
+on:
+  schedule:
+  # run at 01:45 UTC daily
+  - cron: "45 1 * * *"
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/stale@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+        # NB: We start with very long duration while trimming existing ones,
+        # and hope to reduce them if the project is well-maintained.
+
+        # The number of days old an issue can be before marking it stale.
+        days-before-stale: 180
+        # Number of days of inactivity before a stale issue is closed
+        days-before-close: 30
+
+        # If an issue/PR is assigned, trust the assignee to stay involved
+        # Can revisit if these get stale
+        exempt-all-assignees: true
+        # Issues with these labels will never be considered stale
+        exempt-issue-labels: "need: discussion,cleanup"
+
+        # Label to use when marking an issue as stale
+        stale-issue-label: 'Can Close?'
+        stale-pr-label: 'Can Close?'
+
+        stale-issue-message: >
+          This issue has been automatically marked as stale because it has not had
+          any activity for 180 days.
+          It will be closed if no further activity occurs in 30 days.
+
+          Collaborators can add an assignee to keep this open indefinitely.
+          Thanks for your contributions to rules_docker!
+
+        stale-pr-message: >
+          This Pull Request has been automatically marked as stale because it has not had
+          any activity for 180 days.
+          It will be closed if no further activity occurs in 30 days.
+
+          Collaborators can add an assignee to keep this open indefinitely.
+          Thanks for your contributions to rules_docker!
+
+        close-issue-message: >
+          This issue was automatically closed because it went 30 days without a reply
+          since it was labeled "Can Close?"
+
+        close-pr-message: >
+          This PR was automatically closed because it went 30 days without a reply
+          since it was labeled "Can Close?"

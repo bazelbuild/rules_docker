@@ -27,6 +27,7 @@ load(
 )
 load(
     "//lang:image.bzl",
+    "filter_layer",
     "layer_file_path",
     lang_image = "image",
 )
@@ -105,6 +106,11 @@ DEFAULT_JETTY_BASE = select({
     "//conditions:default": "@jetty_image_base//image",
 })
 
+def java_layer(name, deps = [], runtime_deps = [], filter = "", **kwargs):
+    binary_name = name + ".layer-binary"
+    native.java_library(name = binary_name, runtime_deps = deps + runtime_deps, **kwargs)
+    filter_layer(name = name, dep = binary_name, filter = filter)
+
 def java_files(f):
     """Filter out the list of java source files from the given list of runfiles.
 
@@ -163,6 +169,7 @@ jar_dep_layer = rule(
     outputs = lang_image.outputs,
     toolchains = lang_image.toolchains,
     implementation = _jar_dep_layer_impl,
+    cfg = lang_image.cfg,
 )
 
 def _jar_app_layer_impl(ctx):
@@ -201,7 +208,7 @@ def _jar_app_layer_impl(ctx):
         "/usr/bin/java",
         "-cp",
         # Support optionally passing the classpath as a file.
-        "@" + classpath_path if ctx.attr._classpath_as_file else classpath,
+        "@" + classpath_path if ctx.attr.classpath_as_file else classpath,
     ] + jvm_flags + ([ctx.attr.main_class] + args if ctx.attr.main_class != "" else [])
 
     file_map = {
@@ -213,9 +220,9 @@ def _jar_app_layer_impl(ctx):
         ctx,
         # We use all absolute paths.
         directory = "/",
-        env = {
+        env = dicts.add({
             "JAVA_RUNFILES": "/app",
-        },
+        }, ctx.attr.env),
         file_map = file_map,
         entrypoint = entrypoint,
     )
@@ -230,6 +237,8 @@ jar_app_layer = rule(
         # https://github.com/bazelbuild/bazel/issues/2176
         "data_path": attr.string(default = "."),
 
+        # The rest of the dependencies.
+        "deps": attr.label_list(),
         # Override the defaults.
         "directory": attr.string(default = "/app"),
         # The full list of dependencies that have their own layers
@@ -239,13 +248,11 @@ jar_app_layer = rule(
         "legacy_run_behavior": attr.bool(default = False),
         # The main class to invoke on startup.
         "main_class": attr.string(mandatory = False),
-        "workdir": attr.string(default = ""),
         "runtime_deps": attr.label_list(),
-        # The rest of the dependencies.
-        "deps": attr.label_list(),
+        "workdir": attr.string(default = ""),
 
         # Whether the classpath should be passed as a file.
-        "_classpath_as_file": attr.bool(default = False),
+        "classpath_as_file": attr.bool(default = False),
         "_jdk": attr.label(
             default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
             providers = [java_common.JavaRuntimeInfo],
@@ -255,6 +262,7 @@ jar_app_layer = rule(
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _jar_app_layer_impl,
+    cfg = _container.image.cfg,
 )
 
 def java_image(
@@ -264,7 +272,9 @@ def java_image(
         deps = [],
         runtime_deps = [],
         layers = [],
+        env = {},
         jvm_flags = [],
+        classpath_as_file = None,
         **kwargs):
     """Builds a container image overlaying the java_binary.
 
@@ -273,9 +283,10 @@ def java_image(
     base: Base image to use for the java image.
     deps: Dependencies of the java image rule.
     runtime_deps: Runtime dependencies of the java image.
-    jvm_flags: Flags to pass to the JVM when running the java image.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    env: Environment variables for the java_image.
+    jvm_flags: Flags to pass to the JVM when running the java image.
     main_class: This parameter is optional. If provided it will be used in the
                 compilation of any additional sources, and as part of the
                 construction of the container entrypoint. If not provided, the
@@ -324,9 +335,11 @@ def java_image(
         jar_layers = layers,
         visibility = visibility,
         tags = tags,
+        env = env,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        classpath_as_file = classpath_as_file,
     )
 
 def _war_dep_layer_impl(ctx):
@@ -360,6 +373,7 @@ _war_dep_layer = rule(
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _war_dep_layer_impl,
+    cfg = _container.image.cfg,
 )
 
 def _war_app_layer_impl(ctx):
@@ -398,9 +412,10 @@ _war_app_layer = rule(
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _war_app_layer_impl,
+    cfg = _container.image.cfg,
 )
 
-def war_image(name, base = None, deps = [], layers = [], **kwargs):
+def war_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
     """Builds a container image overlaying the java_library as an exploded WAR.
 
   TODO(mattmoor): For `bazel run` of this to be useful, we need to be able
@@ -413,6 +428,7 @@ def war_image(name, base = None, deps = [], layers = [], **kwargs):
     deps: Dependencies of the way image target.
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
+    env: Environment variables for the war_image.
     **kwargs: See java_library.
   """
     library_name = name + ".library"
@@ -420,18 +436,19 @@ def war_image(name, base = None, deps = [], layers = [], **kwargs):
     native.java_library(name = library_name, deps = deps + layers, **kwargs)
 
     base = base or DEFAULT_JETTY_BASE
+    tags = kwargs.get("tags", None)
     for index, dep in enumerate(layers):
         this_name = "%s.%d" % (name, index)
-        _war_dep_layer(name = this_name, base = base, dep = dep)
+        _war_dep_layer(name = this_name, base = base, dep = dep, tags = tags)
         base = this_name
 
     visibility = kwargs.get("visibility", None)
-    tags = kwargs.get("tags", None)
     _war_app_layer(
         name = name,
         base = base,
         library = library_name,
         jar_layers = layers,
+        env = env,
         visibility = visibility,
         tags = tags,
     )

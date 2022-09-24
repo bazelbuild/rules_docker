@@ -56,13 +56,13 @@ toolchain(
     name = "rbe_container_cc_toolchain",
     exec_compatible_with = [
         "@io_bazel_rules_docker//platforms:run_in_container",
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
         "@bazel_tools//tools/cpp:clang",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
     ],
     toolchain = "@buildkite_config//cc:cc-compiler-k8",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",

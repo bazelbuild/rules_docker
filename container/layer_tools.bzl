@@ -22,6 +22,10 @@ load(
     "//skylib:path.bzl",
     _get_runfile_path = "runfile",
 )
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
 
 def _extract_layers(ctx, name, artifact):
     config_file = ctx.actions.declare_file(name + "." + artifact.basename + ".config")
@@ -55,7 +59,7 @@ def _file_path(ctx, val):
     """
     return val.path
 
-def generate_args_for_image(ctx, image, to_path = _file_path):
+def generate_args_for_image(ctx, image, to_path = _file_path, **kwargs):
     """Generates arguments & inputs for the given image.
 
     Args:
@@ -63,6 +67,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         image: The image parts dictionary as returned by 'get_from_target'.
         to_path: A function to transform the string paths as they
                         are added as arguments.
+        **kwargs: Arguments to give to the `to_path` function.
 
     Returns:
         The arguments to call the pusher, digester & flatenner with to load
@@ -73,7 +78,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
     uncompressed_layers = image.get("unzipped_layer", [])
     digest_files = image.get("blobsum", [])
     diff_id_files = image.get("diff_id", [])
-    args = ["--config={}".format(to_path(ctx, image["config"]))]
+    args = ["--config={}".format(to_path(ctx, image["config"], **kwargs))]
     inputs = [image["config"]]
     inputs += compressed_layers
     inputs += uncompressed_layers
@@ -85,43 +90,53 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         diff_id_file = diff_id_files[i]
         args.append(
             "--layer={},{},{},{}".format(
-                to_path(ctx, compressed_layer),
-                to_path(ctx, uncompressed_layer),
-                to_path(ctx, digest_file),
-                to_path(ctx, diff_id_file),
+                to_path(ctx, compressed_layer, **kwargs),
+                to_path(ctx, uncompressed_layer, **kwargs),
+                to_path(ctx, digest_file, **kwargs),
+                to_path(ctx, diff_id_file, **kwargs),
             ),
         )
     if image.get("legacy"):
         inputs.append(image["legacy"])
-        args.append("--tarball={}".format(to_path(ctx, image["legacy"])))
+        args.append("--tarball={}".format(to_path(ctx, image["legacy"], **kwargs)))
     if image["manifest"]:
         inputs.append(image["manifest"])
-        args.append("--manifest={}".format(to_path(ctx, image["manifest"])))
+        args.append("--manifest={}".format(to_path(ctx, image["manifest"], **kwargs)))
     return args, inputs
 
-def get_from_target(ctx, name, attr_target, file_target = None):
+def get_from_target(ctx, name, attr_target):
     """Gets all layers from the given target.
 
     Args:
        ctx: The context
        name: The name of the target
        attr_target: The attribute to get layers from
-       file_target: If not None, layers are extracted from this target
 
     Returns:
        The extracted layers
     """
-    if file_target:
-        return _extract_layers(ctx, name, file_target)
-    elif attr_target and ImageInfo in attr_target:
+    if not attr_target:
+        return {}
+    elif ImageInfo in attr_target:
         return attr_target[ImageInfo].container_parts
-    elif attr_target and ImportInfo in attr_target:
+    elif ImportInfo in attr_target:
         return attr_target[ImportInfo].container_parts
     else:
-        if not hasattr(attr_target, "files"):
-            return {}
-        target = attr_target.files.to_list()[0]
-        return _extract_layers(ctx, name, target)
+        archive_file = attr_target.files.to_list()[0]
+        return get_from_archive_file(ctx, name, archive_file)
+
+def get_from_archive_file(ctx, name, archive_file):
+    """Gets all layers from the given archive file.
+
+    Args:
+       ctx: The context
+       name: The name of the target
+       archive_file: The archive file to get layers from
+
+    Returns:
+       The extracted layers
+    """
+    return _extract_layers(ctx, name, archive_file)
 
 def _add_join_layers_args(args, inputs, images):
     """Add args & inputs needed to call the Go join_layers for the given images
@@ -129,11 +144,11 @@ def _add_join_layers_args(args, inputs, images):
     for tag in images:
         image = images[tag]
         args.add(image["config"], format = "--tag=" + tag + "=%s")
-        inputs += [image["config"]]
+        inputs.append(image["config"])
 
         if image.get("manifest"):
             args.add(image["manifest"], format = "--basemanifest=" + tag + "=%s")
-            inputs += [image["manifest"]]
+            inputs.append(image["manifest"])
 
         for i in range(0, len(image["diff_id"])):
             # There's no way to do this with attrs w/o resolving paths here afaik
@@ -152,7 +167,7 @@ def _add_join_layers_args(args, inputs, images):
 
         if image.get("legacy"):
             args.add("--tarball", image["legacy"])
-            inputs += [image["legacy"]]
+            inputs.append(image["legacy"])
 
 def assemble(
         ctx,
@@ -210,18 +225,25 @@ def incremental_load(
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
-    # Default to interactively launching the container,
-    # and cleaning up when it exits.
+    if run:
+        if len(images) != 1:
+            fail("Bazel run currently only supports the execution of a single " +
+                 "container. Only loading multiple containers is supported")
 
-    run_flags = run_flags or "-i --rm"
-
-    if len(images) > 1 and run:
-        fail("Bazel run does not currently support execution of " +
-             "multiple containers (only loading).")
+        # Default to interactively launching the container, and cleaning up when
+        # it exits. These template variables are unused if "run" is not set, so
+        # it is harmless to always define them as a function of the first image.
+        run_flags = run_flags or "-i --rm"
+        run_statement = "\"${DOCKER}\" ${DOCKER_FLAGS} run %s" % run_flags
+        run_tag = images.keys()[0]
+        if stamp:
+            run_tag = run_tag.replace("{", "${")
+    else:
+        run_statement = ""
+        run_tag = ""
 
     load_statements = []
     tag_statements = []
-    run_statements = []
 
     # TODO(mattmoor): Consider adding cleanup_statements.
     for tag in images:
@@ -229,15 +251,15 @@ def incremental_load(
 
         # First load the legacy base image, if it exists.
         if image.get("legacy"):
-            load_statements += [
+            load_statements.append(
                 "load_legacy '%s'" % _get_runfile_path(ctx, image["legacy"]),
-            ]
+            )
 
         pairs = zip(image["diff_id"], image["unzipped_layer"])
 
         # Import the config and the subset of layers not present
         # in the daemon.
-        load_statements += [
+        load_statements.append(
             "import_config '%s' %s" % (
                 _get_runfile_path(ctx, image["config"]),
                 " ".join([
@@ -248,11 +270,11 @@ def incremental_load(
                     for (diff_id, unzipped_layer) in pairs
                 ]),
             ),
-        ]
+        )
 
         # Now tag the imported config with the specified tag.
         tag_reference = tag if not stamp else tag.replace("{", "${")
-        tag_statements += [
+        tag_statements.append(
             "tag_layer \"%s\" '%s'" % (
                 # Turn stamp variable references into bash variables.
                 # It is notable that the only legal use of '{' in a
@@ -260,20 +282,16 @@ def incremental_load(
                 tag_reference,
                 _get_runfile_path(ctx, image["config_digest"]),
             ),
-        ]
-        if run:
-            # Args are embedded into the image, so omitted here.
-            run_statements += [
-                "\"${DOCKER}\" ${DOCKER_FLAGS} run %s %s" % (run_flags, tag_reference),
-            ]
+        )
 
     ctx.actions.expand_template(
         template = ctx.file.incremental_load_template,
         substitutions = {
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_tool_path}": toolchain_info.tool_path,
+            "%{docker_tool_path}": docker_path(toolchain_info),
             "%{load_statements}": "\n".join(load_statements),
-            "%{run_statements}": "\n".join(run_statements),
+            "%{run_statement}": run_statement,
+            "%{run_tag}": run_tag,
             "%{run}": str(run),
             # If this rule involves stamp variables than load them as bash
             # variables, and turn references to them into bash variable

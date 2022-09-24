@@ -32,6 +32,7 @@ cc_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"CC_IMAGE_TEST_KEY": "cc_image_test_value"},
     # This creates an empty layer, due to linking.
     layers = [":cc_image_library"],
 )

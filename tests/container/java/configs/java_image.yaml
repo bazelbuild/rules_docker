@@ -1,9 +1,6 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  env:
-    - key: JAVA_RUNFILES
-      value: "/app"
   entrypoint: [
         '/usr/bin/java',
         '-cp',
@@ -13,3 +10,8 @@ metadataTest:
         'arg0',
         'arg1',
         'tests/container/java/BUILD']
+  env:
+    - key: JAVA_RUNFILES
+      value: "/app"
+    - key: JAVA_IMAGE_TEST_KEY
+      value: java_image_test_value

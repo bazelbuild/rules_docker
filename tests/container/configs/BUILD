@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-exports_files(glob(["*.yaml"]))
+exports_files(glob(["*.yaml"]) + glob(["*.yaml.tpl"]))

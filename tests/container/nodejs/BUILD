@@ -31,6 +31,41 @@ nodejs_image(
         "@npm//jsesc",
     ],
     entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
+    env = {"NODEJS_IMAGE_TEST_KEY": "nodejs_image_test_value"},
+)
+
+nodejs_image(
+    name = "nodejs_image_with_launcher",
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
+    launcher = "launcher.sh",
+)
+
+nodejs_image(
+    name = "nodejs_image_with_launcher_args",
+    args = [
+        "arg0",
+        "arg1",
+    ],
+    data = [
+        "//testdata:nodejs_image.js",
+        "//testdata:nodejs_image_lib",
+        "@npm//jsesc",
+    ],
+    entry_point = "@io_bazel_rules_docker//testdata:nodejs_image.js",
+    launcher = "launcher.sh",
+    launcher_args = [
+        "foo",
+        "bar",
+    ],
 )
 
 # Docker Cmd value should be `[""]`.
@@ -112,6 +147,18 @@ container_test(
     name = "nodejs_image_test",
     configs = ["//tests/container/nodejs/configs:nodejs_image.yaml"],
     image = ":nodejs_image",
+)
+
+container_test(
+    name = "nodejs_image_with_launcher_test",
+    configs = ["//tests/container/nodejs/configs:nodejs_image_with_launcher.yaml"],
+    image = ":nodejs_image_with_launcher",
+)
+
+container_test(
+    name = "nodejs_image_with_launcher_args_test",
+    configs = ["//tests/container/nodejs/configs:nodejs_image_with_launcher_args.yaml"],
+    image = ":nodejs_image_with_launcher_args",
 )
 
 container_test(

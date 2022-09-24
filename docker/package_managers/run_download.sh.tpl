@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 
 function guess_runfiles() {
     if [ -d ${BASH_SOURCE[0]}.runfiles ]; then
@@ -25,12 +25,12 @@ fi
 
 # Load the image and remember its name
 image_id=$(%{image_id_extractor_path} %{image_tar})
-$DOCKER $DOCKER_FLAGS load -i %{image_tar}
+"$DOCKER" $DOCKER_FLAGS load -i %{image_tar}
 
 # Run the builder image.
-cid=$($DOCKER $DOCKER_FLAGS run -w="/" -d --privileged $image_id sh -c $'%{download_commands}')
-$DOCKER $DOCKER_FLAGS attach $cid
-$DOCKER $DOCKER_FLAGS cp $cid:%{installables}_packages.tar %{output}
-$DOCKER $DOCKER_FLAGS cp $cid:%{installables}_metadata.csv %{output_metadata}
+cid=$("$DOCKER" $DOCKER_FLAGS run -w="/" -d --privileged $image_id sh -c $'%{download_commands}')
+"$DOCKER" $DOCKER_FLAGS attach $cid
+"$DOCKER" $DOCKER_FLAGS cp $cid:%{installables}_packages.tar %{output}
+"$DOCKER" $DOCKER_FLAGS cp $cid:%{installables}_metadata.csv %{output_metadata}
 # Cleanup
-$DOCKER $DOCKER_FLAGS rm $cid
+"$DOCKER" $DOCKER_FLAGS rm $cid

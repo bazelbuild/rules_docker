@@ -11,17 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An implementation of container_pull based on google/containerregistry using google/go-containerregistry.
+"container_pull rule"
+_DOC = """A repository rule that pulls down a Docker base image in a manner suitable for use with the `base` attribute of `container_image`.
 
-This wraps the rulesdocker.go.cmd.puller.puller executable in a
+This is based on google/containerregistry using google/go-containerregistry.
+It wraps the rulesdocker.go.cmd.puller.puller executable in a
 Bazel rule for downloading base images without a Docker client to
 construct new images.
+
+NOTE: `container_pull` now supports authentication using custom docker client configuration.
+See [here](https://github.com/bazelbuild/rules_docker#container_pull-custom-client-configuration) for details.
+
+NOTE: Set `PULLER_TIMEOUT` env variable to change the default 600s timeout for all container_pull targets.
+
+NOTE: Set `DOCKER_REPO_CACHE` env variable to make the container puller cache downloaded layers at the directory specified as a value to this env variable.
+The caching feature hasn't been thoroughly tested and may be thread unsafe.
+If you notice flakiness after enabling it, see the warning below on how to workaround it.
+
+NOTE: `container_pull` is suspected to have thread safety issues.
+To ensure multiple `container_pull`(s) don't execute concurrently,
+please use the bazel startup flag `--loading_phase_threads=1` in your bazel invocation
+(typically by adding `startup --loading_phase_threads=1` as a line in your `.bazelrc`)
 """
 
 _container_pull_attrs = {
     "architecture": attr.string(
         default = "amd64",
-        doc = "(optional) Which CPU architecture to pull if this image " +
+        doc = "Which CPU architecture to pull if this image " +
               "refers to a multi-platform manifest list, default 'amd64'.",
     ),
     "cpu_variant": attr.string(
@@ -29,59 +45,72 @@ _container_pull_attrs = {
               "multi-platform manifest list.",
     ),
     "digest": attr.string(
-        doc = "(optional) The digest of the image to pull.",
+        doc = "The digest of the image to pull.",
     ),
-    "docker_client_config": attr.string(
-        doc = "A custom directory for the docker client config.json. " +
-              "If DOCKER_CONFIG is not specified, the value of the " +
-              "DOCKER_CONFIG environment variable will be used. DOCKER_CONFIG" +
-              " is not defined, the home directory will be used.",
+    "docker_client_config": attr.label(
+        doc = """Specifies  a Bazel label of the config.json file.
+
+            Don't use this directly.
+            Instead, specify the docker configuration directory using a custom docker toolchain configuration.
+            Look for the `client_config` attribute in `docker_toolchain_configure`
+            [here](https://github.com/bazelbuild/rules_docker#setup) for details.
+            See [here](https://github.com/bazelbuild/rules_docker#container_pull-custom-client-configuration)
+            for an example on how to use container_pull after configuring the docker toolchain
+
+            When left unspecified (ie not set explicitly or set by the docker toolchain),
+            docker will use the directory specified via the `DOCKER_CONFIG` environment variable.
+
+            If `DOCKER_CONFIG` isn't set, docker falls back to `$HOME/.docker`.
+            """,
+        mandatory = False,
+    ),
+    "cred_helpers": attr.label_list(
+        doc = """Labels to a list of credential helper binaries that are configured in `docker_client_config`.
+
+        More about credential helpers: https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
+        """,
         mandatory = False,
     ),
     "import_tags": attr.string_list(
         default = [],
-        doc = "(optional) tags to be propagated to generated rules.",
+        doc = "Tags to be propagated to generated rules.",
     ),
     "os": attr.string(
         default = "linux",
-        doc = "(optional) Which os to pull if this image refers to a " +
-              "multi-platform manifest list, default 'linux'.",
+        doc = "Which os to pull if this image refers to a multi-platform manifest list.",
     ),
     "os_features": attr.string_list(
-        doc = "(optional) Specifies os features when pulling a multi-platform " +
-              "manifest list.",
+        doc = "Specifies os features when pulling a multi-platform manifest list.",
     ),
     "os_version": attr.string(
-        doc = "(optional) Which os version to pull if this image refers to a " +
-              "multi-platform manifest list.",
+        doc = "Which os version to pull if this image refers to a multi-platform manifest list.",
     ),
     "platform_features": attr.string_list(
-        doc = "(optional) Specifies platform features when pulling a " +
-              "multi-platform manifest list.",
+        doc = "Specifies platform features when pulling a multi-platform manifest list.",
     ),
     "puller_darwin": attr.label(
         executable = True,
         default = Label("@go_puller_darwin//file:downloaded"),
         cfg = "host",
-        doc = "(optional) Exposed to provide a way to test other pullers on macOS",
+        doc = "Exposed to provide a way to test other pullers on macOS",
     ),
     "puller_linux_amd64": attr.label(
         executable = True,
         default = Label("@go_puller_linux_amd64//file:downloaded"),
         cfg = "host",
-        doc = "(optional) Exposed to provide a way to test other pullers on Linux",
+        doc = "Exposed to provide a way to test other pullers on Linux",
     ),
     "puller_linux_arm64": attr.label(
         executable = True,
         default = Label("@go_puller_linux_arm64//file:downloaded"),
         cfg = "host",
-        doc = "(optional) Exposed to provide a way to test other pullers on Linux",
+        doc = "Exposed to provide a way to test other pullers on Linux",
     ),
     "puller_linux_s390x": attr.label(
         executable = True,
         default = Label("@go_puller_linux_s390x//file:downloaded"),
         cfg = "host",
-        doc = "(optional) Exposed to provide a way to test other pullers on Linux",
+        doc = "Exposed to provide a way to test other pullers on Linux",
     ),
     "registry": attr.string(
         mandatory = True,
@@ -93,8 +122,18 @@ _container_pull_attrs = {
     ),
     "tag": attr.string(
         default = "latest",
-        doc = "(optional) The tag of the image, default to 'latest' " +
-              "if this and 'digest' remain unspecified.",
+        doc = """The `tag` of the Docker image to pull from the specified `repository`.
+        
+        If neither this nor `digest` is specified, this attribute defaults to `latest`.
+        If both are specified, then `tag` is ignored.
+
+        Note: For reproducible builds, use of `digest` is recommended.
+        """,
+    ),
+    "timeout": attr.int(
+        doc = """Timeout in seconds to fetch the image from the registry.
+
+        This attribute will be overridden by the PULLER_TIMEOUT environment variable, if it is set.""",
     ),
 }
 
@@ -138,8 +177,9 @@ def _impl(repository_ctx):
     ]
 
     # Use the custom docker client config directory if specified.
-    if repository_ctx.attr.docker_client_config != "":
-        args += ["-client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
+    docker_client_config = repository_ctx.attr.docker_client_config
+    if docker_client_config:
+        args += ["-client-config-dir", repository_ctx.path(docker_client_config).dirname]
 
     cache_dir = repository_ctx.os.environ.get("DOCKER_REPO_CACHE")
     if cache_dir:
@@ -183,6 +223,17 @@ def _impl(repository_ctx):
             kwargs["timeout"] = int(timeout_in_secs)
         else:
             fail("'%s' is invalid value for PULLER_TIMEOUT. Must be an integer." % (timeout_in_secs))
+    elif repository_ctx.attr.timeout > 0:
+        args.extend(["-timeout", str(repository_ctx.attr.timeout)])
+        kwargs["timeout"] = repository_ctx.attr.timeout
+
+    if repository_ctx.attr.cred_helpers:
+        kwargs["environment"] = {
+            "PATH": "{}:{}".format(
+                ":".join([str(repository_ctx.path(helper).dirname) for helper in repository_ctx.attr.cred_helpers]),
+                repository_ctx.os.environ.get("PATH"),
+            ),
+        }
 
     result = repository_ctx.execute(args, **kwargs)
     if result.return_code:
@@ -241,6 +292,7 @@ pull = struct(
 
 # This rule pulls a container image into our intermediate format (OCI Image Layout).
 container_pull = repository_rule(
+    doc = _DOC,
     attrs = _container_pull_attrs,
     implementation = _impl,
     environ = [

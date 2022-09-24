@@ -15,7 +15,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "@bazel_tools//tools/build_defs/hash:hash.bzl",
+    "//skylib:hash.bzl",
     _hash_tools = "tools",
     _sha256 = "sha256",
 )
@@ -41,6 +41,8 @@ load(
     _gzip = "gzip",
     _zip_tools = "tools",
 )
+
+_DOC = "A rule that assembles data into a tarball which can be use as in layers attr in container_image rule."
 
 _DEFAULT_MTIME = -1
 
@@ -100,7 +102,10 @@ def build_layer(
     """
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     layer = output_layer
-    build_layer_exec = ctx.executable.build_layer
+    if toolchain_info.build_tar_target:
+        build_layer_exec = toolchain_info.build_tar_target.files_to_run.executable
+    else:
+        build_layer_exec = ctx.executable.build_layer
     args = ctx.actions.args()
     args.add(layer, format = "--output=%s")
     args.add(directory, format = "--directory=%s")
@@ -114,8 +119,17 @@ def build_layer(
         args.add("--mtime=portable")
     if ctx.attr.enable_mtime_preservation:
         args.add("--enable_mtime_preservation=true")
-    if toolchain_info.xz_path != "":
-        args.add(toolchain_info.xz_path, format = "--xz_path=%s")
+
+    xz_path = toolchain_info.xz_path
+    xz_tools = []
+    xz_input_manifests = []
+    if toolchain_info.xz_target:
+        xz_path = toolchain_info.xz_target.files_to_run.executable.path
+        xz_tools, _, xz_input_manifests = ctx.resolve_command(tools = [toolchain_info.xz_target])
+    elif toolchain_info.xz_path == "":
+        print("WARNING: xz could not be found. Make sure it is in the path or set it " +
+              "explicitly in the docker_toolchain_configure")
+    args.add(xz_path, format = "--xz_path=%s")
 
     # Windows layer.tar require two separate root directories instead of just 1
     # 'Files' is the equivalent of '.' in Linux images.
@@ -149,7 +163,8 @@ def build_layer(
     ctx.actions.run(
         executable = build_layer_exec,
         arguments = [args],
-        tools = files + file_map.values() + tars + debs + [manifest_file],
+        input_manifests = xz_input_manifests,
+        tools = files + file_map.values() + tars + debs + [manifest_file] + xz_tools,
         outputs = [layer],
         use_default_shell_env = True,
         mnemonic = "ImageLayer",
@@ -275,24 +290,86 @@ _layer_attrs = dicts.add({
     ),
     "compression": attr.string(default = "gzip"),
     "compression_options": attr.string_list(),
-    "data_path": attr.string(),
-    "debs": attr.label_list(allow_files = deb_filetype),
-    "directory": attr.string(default = "/"),
+    "data_path": attr.string(
+        doc = """Root path of the files.
+
+        The directory structure from the files is preserved inside the
+        Docker image, but a prefix path determined by `data_path`
+        is removed from the directory structure. This path can
+        be absolute from the workspace root if starting with a `/` or
+        relative to the rule's directory. A relative path may starts with "./"
+        (or be ".") but cannot use go up with "..". By default, the
+        `data_path` attribute is unused, and all files should have no prefix.
+        """,
+    ),
+    "debs": attr.label_list(
+        allow_files = deb_filetype,
+        doc = """Debian packages to extract.
+
+        Deprecated: A list of debian packages that will be extracted in the Docker image.
+        Note that this doesn't actually install the packages. Installation needs apt
+        or apt-get which need to be executed within a running container which
+        `container_image` can't do.""",
+    ),
+    "directory": attr.string(
+        default = "/",
+        doc = """Target directory.
+
+        The directory in which to expand the specified files, defaulting to '/'.
+        Only makes sense accompanying one of files/tars/debs.""",
+    ),
     "empty_dirs": attr.string_list(),
     # Implicit/Undocumented dependencies.
     "empty_files": attr.string_list(),
     "enable_mtime_preservation": attr.bool(default = False),
-    "env": attr.string_dict(),
-    "files": attr.label_list(allow_files = True),
-    "mode": attr.string(default = "0o555"),  # 0o555 == a+rx
+    "env": attr.string_dict(
+        doc = """Dictionary from environment variable names to their values when running the Docker image.
+
+        See https://docs.docker.com/engine/reference/builder/#env
+
+        For example,
+
+            env = {
+                "FOO": "bar",
+                ...
+            },
+
+        The values of this field support make variables (e.g., `$(FOO)`)
+        and stamp variables; keys support make variables as well.""",
+    ),
+    "files": attr.label_list(
+        allow_files = True,
+        doc = """File to add to the layer.
+
+        A list of files that should be included in the Docker image.""",
+    ),
+    "mode": attr.string(
+        default = "0o555",  # 0o555 == a+rx
+        doc = "Set the mode of files added by the `files` attribute.",
+    ),
     "mtime": attr.int(default = _DEFAULT_MTIME),
     "operating_system": attr.string(
         default = "linux",
         mandatory = False,
     ),
     "portable_mtime": attr.bool(default = False),
-    "symlinks": attr.string_dict(),
-    "tars": attr.label_list(allow_files = tar_filetype),
+    "symlinks": attr.string_dict(
+        doc = """Symlinks to create in the Docker image.
+
+        For example,
+
+            symlinks = {
+                "/path/to/link": "/path/to/target",
+                ...
+            },
+        """,
+    ),
+    "tars": attr.label_list(
+        allow_files = tar_filetype,
+        doc = """Tar file to extract in the layer.
+
+        A list of tar files whose content should be in the Docker image.""",
+    ),
 }, _hash_tools, _layer_tools, _zip_tools)
 
 _layer_outputs = {
@@ -307,10 +384,11 @@ layer = struct(
 )
 
 container_layer_ = rule(
-    attrs = _layer_attrs,
+    doc = _DOC,
+    attrs = layer.attrs,
     executable = False,
-    outputs = _layer_outputs,
-    implementation = _impl,
+    outputs = layer.outputs,
+    implementation = layer.implementation,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
 )
 

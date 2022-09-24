@@ -272,6 +272,7 @@ image = struct(
     outputs = _container.image.outputs,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _app_layer_impl,
+    cfg = _container.image.cfg,
 )
 
 _app_layer = rule(
@@ -280,6 +281,7 @@ _app_layer = rule(
     outputs = image.outputs,
     toolchains = image.toolchains,
     implementation = image.implementation,
+    cfg = image.cfg,
 )
 
 # Convenience function that instantiates the _app_layer rule and returns
@@ -294,8 +296,14 @@ def _filter_aspect_impl(target, ctx):
         # then take the filtered depset instead of descending further.
         return [FilterAspectInfo(depset = target[FilterLayerInfo].filtered_depset)]
 
-    # Collect transitive deps from all children (propagating along "deps" attr).
-    target_deps = depset(transitive = [dep[FilterAspectInfo].depset for dep in getattr(ctx.rule.attr, "deps", [])])
+    # Collect transitive deps from all children (propagating along "deps" and
+    # "runtime_deps" (for the JVM) attrs).
+    target_deps = depset(
+        transitive =
+            [dep[FilterAspectInfo].depset for dep in getattr(ctx.rule.attr, "deps", [])] +
+            [dep[FilterAspectInfo].depset for dep in getattr(ctx.rule.attr, "runtime_deps", [])],
+    )
+
     myself = struct(target = target, target_deps = target_deps)
     return [
         FilterAspectInfo(
@@ -305,7 +313,7 @@ def _filter_aspect_impl(target, ctx):
 
 # Aspect for collecting dependency info.
 _filter_aspect = aspect(
-    attr_aspects = ["deps"],
+    attr_aspects = ["deps", "runtime_deps"],
     implementation = _filter_aspect_impl,
 )
 
@@ -314,18 +322,28 @@ def _filter_layer_rule_impl(ctx):
 
     runfiles = ctx.runfiles()
     filtered_depsets = []
+    java_infos = []
+
     for dep in transitive_deps.to_list():
         if str(dep.target.label).startswith(ctx.attr.filter) and str(dep.target.label) != str(ctx.attr.dep.label):
             runfiles = runfiles.merge(dep.target[DefaultInfo].default_runfiles)
+
+            if JavaInfo in dep.target:
+                java_infos.append(dep.target[JavaInfo])
+
             filtered_depsets.append(dep.target_deps)
 
-    # Forward legacy builtin provider and PyInfo provider
+    # Forward legacy builtin provider and PyInfo/JavaInfo provider
+    maybe_pyinfo = [ctx.attr.dep[PyInfo]] if PyInfo in ctx.attr.dep else []
+    maybe_javainfo = \
+        [java_common.merge(java_infos)] if java_infos else []
+
     return [
         FilterLayerInfo(
             runfiles = runfiles,
             filtered_depset = depset(transitive = filtered_depsets),
         ),
-    ] + ([ctx.attr.dep[PyInfo]] if PyInfo in ctx.attr.dep else [])
+    ] + maybe_pyinfo + maybe_javainfo
 
 # A rule that allows selecting a subset of transitive dependencies, and using
 # them as a layer in an image.

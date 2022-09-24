@@ -19,6 +19,11 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bzl_library(
+    name = "docker",
+    srcs = ["docker.bzl"],
+)
+
+bzl_library(
     name = "filetype",
     srcs = ["filetype.bzl"],
 )
@@ -36,4 +41,9 @@ bzl_library(
 bzl_library(
     name = "zip",
     srcs = ["zip.bzl"],
+)
+
+bzl_library(
+    name = "hash",
+    srcs = ["hash.bzl"],
 )

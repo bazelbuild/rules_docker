@@ -86,7 +86,7 @@ func main() {
 	debug := *repository + ":debug"
 	debugDigest, err := crane.Digest(debug, options...)
 	if err != nil {
-		if !strings.HasPrefix(err.Error(), "MANIFEST_UNKNOWN") {
+		if !strings.Contains(err.Error(), "MANIFEST_UNKNOWN: Failed to fetch") {
 			log.Fatalf("Computing digest for %s: %v", debug, err)
 		}
 		debugDigest = latestDigest

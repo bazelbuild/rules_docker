@@ -26,6 +26,7 @@ py3_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"PY3_IMAGE_TEST_KEY": "py3_image_test_value"},
     layers = [
         "//tests/container/python:py_image_library",
     ],

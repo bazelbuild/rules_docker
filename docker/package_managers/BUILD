@@ -34,5 +34,6 @@ bzl_library(
     deps = [
         "//container",
         "//docker/util",
+        "//skylib:docker",
     ],
 )

@@ -1,12 +1,15 @@
 schemaVersion: 2.0.0
 
 metadataTest:
-  entrypoint: [
-    '/usr/bin/python',
-    '/app/tests/container/python3/py3_image.binary',
-  ]
   cmd: [
     'arg0',
     'arg1',
     'tests/container/python3/BUILD',
   ]
+  entrypoint: [
+    '/usr/bin/python',
+    '/app/tests/container/python3/py3_image.binary',
+  ]
+  env:
+    - key: "PY3_IMAGE_TEST_KEY"
+      value: "py3_image_test_value"

@@ -71,6 +71,7 @@ compare_ids_fail_test(
         "@distroless_fixed_id_2//image",
     ],
     reg_exps = [".*Executed .* fail.*"],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 compare_ids_fail_test(
@@ -78,12 +79,14 @@ compare_ids_fail_test(
     id = "wrong_id",
     images = ["@distroless_fixed_id//image"],
     reg_exps = [".*Executed .* fail.*"],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 compare_ids_fail_test(
     name = "test_compare_ids_test_one_tar_no_id_fails",
     images = ["@distroless_fixed_id//image"],
     reg_exps = [".*One tar provided\\. Need either second tar or an id to compare it to\\..*"],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 compare_ids_fail_test(
@@ -91,6 +94,7 @@ compare_ids_fail_test(
     id = "some_id",
     images = [],
     reg_exps = [".*No images provided for test.*"],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 genrule(
@@ -104,6 +108,7 @@ compare_ids_fail_test(
     id = "some_id",
     images = ["invalid.tar"],
     reg_exps = [".*Unable to extract manifest\\.json, make sure .* is a valid docker image.*"],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 compare_ids_fail_test(
@@ -113,6 +118,7 @@ compare_ids_fail_test(
         "duplicate2",
         "@distroless_fixed_id_2//image",
     ],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 compare_ids_fail_test(
@@ -125,6 +131,7 @@ compare_ids_fail_test(
         ".*Unable to extract manifest\\.json, make sure .* is a valid docker image.*",
         ".*FAILED.*",
     ],
+    tags = ["manual"],  # buildkite-incompatible
 )
 
 container_bundle(
@@ -158,6 +165,7 @@ genrule(
 container_repro_test(
     name = "set_cmd_repro_test",
     image = "//tests/container:set_cmd",
+    tags = ["manual"],  # buildkite-incompatible
     workspace_file = "//:WORKSPACE",
 )
 
@@ -174,18 +182,23 @@ container_repro_test(
         "node",
     ],
     image = "//testdata:derivative_with_volume",
+    # FIXME(alex.eagle): failing on master due to PyYaml upgrade
+    # https://buildkite.com/bazel/rules-docker-docker/builds/5615
+    tags = ["manual"],
     workspace_file = "//:WORKSPACE",
 )
 
 container_repro_test(
     name = "rbe-test-xenial_repro_test",
     image = "//tests/docker/toolchain_container:rbe-test-xenial-with-pkgs",
+    tags = ["manual"],  # buildkite-incompatible
     workspace_file = "//:WORKSPACE",
 )
 
 container_repro_test(
     name = "random_file_img_non_repro_test",
     image = ":img_with_random_file",
+    tags = ["manual"],  # buildkite-incompatible
     want_reproducibility = False,
     workspace_file = "//:WORKSPACE",
 )

@@ -14,7 +14,7 @@
 """Rule for bundling Container images into a tarball."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo")
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo", "STAMP_ATTR", "StampSettingInfo")
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
@@ -27,6 +27,16 @@ load(
     _string_to_label = "string_to_label",
 )
 
+_DOC = """A rule that aliases and saves N images into a single `docker save` tarball.
+
+This can be consumed in 2 different ways:
+
+  - The output tarball could be used for `docker load` to load all images to docker daemon.
+
+  - The emitted BundleInfo provider could be consumed by contrib/push-all.bzl rules to
+    create an executable target which tag and push multiple images to a container registry.
+"""
+
 def _container_bundle_impl(ctx):
     """Implementation for the container_bundle rule."""
 
@@ -38,28 +48,21 @@ def _container_bundle_impl(ctx):
 
     images = {}
     runfiles = []
-    if ctx.attr.stamp:
-        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
-    stamp = False
+    stamp = ctx.attr.stamp[StampSettingInfo].value
     for unresolved_tag in ctx.attr.images:
         # Allow users to put make variables into the tag name.
         tag = ctx.expand_make_variables("images", unresolved_tag, {})
-
-        # If any tag contains python format syntax (which is how users
-        # configure stamping), we enable stamping.
-        if "{" in tag:
-            stamp = True
 
         target = ctx.attr.images[unresolved_tag]
 
         layer = _get_layers(ctx, ctx.label.name, image_target_dict[target])
         images[tag] = layer
-        runfiles += [layer.get("config")]
-        runfiles += [layer.get("config_digest")]
+        runfiles.append(layer.get("config"))
+        runfiles.append(layer.get("config_digest"))
         runfiles += layer.get("unzipped_layer", [])
         runfiles += layer.get("diff_id", [])
         if layer.get("legacy"):
-            runfiles += [layer.get("legacy")]
+            runfiles.append(layer.get("legacy"))
 
     _incr_load(
         ctx,
@@ -71,10 +74,7 @@ def _container_bundle_impl(ctx):
         ctx,
         images,
         ctx.outputs.tar_output,
-        # Experiment: currently only support experimental_tarball_format in
-        # container_image for testing optimization.
-        # TODO(#1695): Update this.
-        "legacy",
+        ctx.attr.experimental_tarball_format,
         stamp = stamp,
     )
 
@@ -96,16 +96,27 @@ def _container_bundle_impl(ctx):
     ]
 
 container_bundle_ = rule(
+    doc = _DOC,
     attrs = dicts.add({
         "image_target_strings": attr.string_list(),
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
         "images": attr.string_dict(),
-        "stamp": attr.bool(
-            default = False,
-            mandatory = False,
-        ),
+        "stamp": STAMP_ATTR,
         "tar_output": attr.output(),
+        "experimental_tarball_format": attr.string(
+            values = [
+                "legacy",
+                "compressed",
+            ],
+            default = "legacy",
+            doc = ("The tarball format to use when producing an image .tar file. " +
+                   "Defaults to \"legacy\", which contains uncompressed layers. " +
+                   "If set to \"compressed\", the resulting tarball will contain " +
+                   "compressed layers, but is only loadable by newer versions of " +
+                   "docker. This is an experimental attribute, which is subject " +
+                   "to change or removal: do not depend on its exact behavior."),
+        ),
     }, _layer_tools),
     executable = True,
     toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],

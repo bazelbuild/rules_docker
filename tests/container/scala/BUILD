@@ -33,6 +33,7 @@ scala_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"SCALA_IMAGE_TEST_KEY": "scala_image_test_value"},
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":scala_image_library"],
     main_class = "examples.images.Binary",
@@ -42,4 +43,25 @@ container_test(
     name = "scala_image_test",
     configs = ["//tests/container/scala/configs:scala_image.yaml"],
     image = ":scala_image",
+)
+
+scala_image(
+    name = "scala_classpath_as_file_image",
+    srcs = ["//testdata:Binary.scala"],
+    args = [
+        "arg0",
+        "arg1",
+        "$(location :BUILD)",
+    ],
+    classpath_as_file = True,
+    data = [":BUILD"],
+    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
+    layers = [":scala_image_library"],
+    main_class = "examples.images.Binary",
+)
+
+container_test(
+    name = "scala_classpath_as_file_image_test",
+    configs = ["//tests/container/scala/configs:scala_classpath_as_file_image.yaml"],
+    image = ":scala_classpath_as_file_image",
 )

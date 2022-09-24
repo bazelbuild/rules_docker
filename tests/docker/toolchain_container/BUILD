@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//contrib:test.bzl", "container_test")
 load(
     "//docker/toolchain_container:toolchain_container.bzl",
@@ -96,6 +96,7 @@ container_test(
         ":tests.yaml",
     ],
     image = ":rbe-test-xenial-with-pkgs",
+    tags = ["manual"],  # buildkite-incompatible
     verbose = True,
 )
 
@@ -103,8 +104,8 @@ container_test(
 # toolchain_container with language_tool_layer with tars
 pkg_tar(
     name = "test_tar",
-    files = [
-        "@launchpad_openjdk_gpg//file",
+    srcs = [
+        "//tests/docker:launchpad_openjdk_gpg",
     ],
 )
 

@@ -33,6 +33,22 @@ groovy_image(
         "$(location :BUILD)",
     ],
     data = [":BUILD"],
+    env = {"GROOVY_IMAGE_TEST_KEY": "groovy_image_test_value"},
+    jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
+    layers = [":groovy_image_library"],
+    main_class = "examples.images.Binary",
+)
+
+groovy_image(
+    name = "groovy_classpath_as_file_image",
+    srcs = ["//testdata:Binary.groovy"],
+    args = [
+        "arg0",
+        "arg1",
+        "$(location :BUILD)",
+    ],
+    classpath_as_file = True,
+    data = [":BUILD"],
     jvm_flags = ["-Dbuild.location=$(location :BUILD)"],
     layers = [":groovy_image_library"],
     main_class = "examples.images.Binary",
@@ -42,4 +58,10 @@ container_test(
     name = "groovy_image_test",
     configs = ["//tests/container/groovy/configs:groovy_image.yaml"],
     image = ":groovy_image",
+)
+
+container_test(
+    name = "groovy_classpath_as_file_image_test",
+    configs = ["//tests/container/groovy/configs:groovy_classpath_as_file_image.yaml"],
+    image = ":groovy_classpath_as_file_image",
 )

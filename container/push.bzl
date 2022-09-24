@@ -17,7 +17,7 @@ Bazel rule for publishing images.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo")
+load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo", "STAMP_ATTR", "StampSettingInfo")
 load(
     "//container:layer_tools.bzl",
     _gen_img_args = "generate_args_for_image",
@@ -61,11 +61,7 @@ def _impl(ctx):
         tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
         pusher_input.append(ctx.file.tag_file)
 
-    # If any stampable attr contains python format syntax (which is how users
-    # configure stamping), we enable stamping.
-    if ctx.attr.stamp:
-        print("Attr 'stamp' is deprecated; it is now automatically inferred. Please remove it from %s" % ctx.label)
-    stamp = "{" in tag or "{" in registry or "{" in repository
+    stamp = ctx.attr.stamp[StampSettingInfo].value
     stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
     for f in stamp_inputs:
         pusher_args += ["-stamp-info-file", "%s" % _get_runfile_path(ctx, f)]
@@ -82,8 +78,8 @@ def _impl(ctx):
     tarball = image.get("legacy")
     if tarball:
         print("Pushing an image based on a tarball can be very " +
-              "expensive.  If the image is the output of a " +
-              "container_build, consider dropping the '.tar' extension. " +
+              "expensive. If the image set on %s is the output of a " % ctx.label +
+              "docker_build, consider dropping the '.tar' extension. " +
               "If the image is checked in, consider using " +
               "container_import instead.")
 
@@ -95,9 +91,9 @@ def _impl(ctx):
     ))
 
     if ctx.attr.skip_unchanged_digest:
-        pusher_args += ["-skip-unchanged-digest"]
+        pusher_args.append("-skip-unchanged-digest")
     if ctx.attr.insecure_repository:
-        pusher_args += ["-insecure-repository"]
+        pusher_args.append("-insecure-repository")
     digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
@@ -140,17 +136,14 @@ def _impl(ctx):
         PushInfo(
             registry = registry,
             repository = repository,
-            tag = tag,
-            stamp = stamp,
-            stamp_inputs = stamp_inputs,
             digest = ctx.outputs.digest,
         ),
     ]
 
-_container_push = rule(
+container_push_ = rule(
     attrs = dicts.add({
         "extension": attr.string(
-            doc = "(optional) The file extension for the push script.",
+            doc = "The file extension for the push script.",
         ),
         "format": attr.string(
             mandatory = True,
@@ -179,23 +172,23 @@ _container_push = rule(
         ),
         "repository_file": attr.label(
             allow_single_file = True,
-            doc = "(optional) The label of the file with repository value. Overrides 'repository'.",
+            doc = "The label of the file with repository value. Overrides 'repository'.",
         ),
         "skip_unchanged_digest": attr.bool(
             default = False,
-            doc = "Only push images if the digest has changed, default to False",
+            doc = "Check if the container registry already contain the image's digest. If yes, skip the push for that image. " +
+                  "Default to False. " +
+                  "Note that there is no transactional guarantee between checking for digest existence and pushing the digest. " +
+                  "This means that you should try to avoid running the same container_push targets in parallel.",
         ),
-        "stamp": attr.bool(
-            default = False,
-            mandatory = False,
-        ),
+        "stamp": STAMP_ATTR,
         "tag": attr.string(
             default = "latest",
-            doc = "(optional) The tag of the image, default to 'latest'.",
+            doc = "The tag of the image.",
         ),
         "tag_file": attr.label(
             allow_single_file = True,
-            doc = "(optional) The label of the file with tag value. Overrides 'tag'.",
+            doc = "The label of the file with tag value. Overrides 'tag'.",
         ),
         "tag_tpl": attr.label(
             mandatory = True,
@@ -227,7 +220,7 @@ _container_push = rule(
 
 # Pushes a container image to a registry.
 def container_push(name, format, image, registry, repository, **kwargs):
-    _container_push(
+    container_push_(
         name = name,
         format = format,
         image = image,

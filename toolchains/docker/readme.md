@@ -58,7 +58,7 @@ def _impl(ctx):
     # Get the DockerToolchainInfo provider
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
     # Path to the docker tool
-    docker_path = toolchain_info.tool_path
+    docker_path = docker_path(toolchain_info)
     ...
 ```
 See [toolchain.bzl](toolchain.bzl) for the definition of the DockerToolchainInfo provider
