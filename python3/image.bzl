@@ -73,7 +73,7 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py3_image_base//image",
 })
 
-def py3_image(name, base = None, deps = [], layers = [], env = {}, architecture = "x86_64", **kwargs):
+def py3_image(name, base = None, deps = [], layers = [], env = {}, architecture = None, **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
@@ -83,7 +83,7 @@ def py3_image(name, base = None, deps = [], layers = [], env = {}, architecture 
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     env: Environment variables for the py_image.
-    architecture: The target architecture, defaults to `x86_64`.
+    architecture: The target architecture.
     **kwargs: See py_binary.
   """
     binary_name = name + ".binary"

@@ -275,7 +275,7 @@ def java_image(
         env = {},
         jvm_flags = [],
         classpath_as_file = None,
-        architecture = "x86_64",
+        architecture = None,
         **kwargs):
     """Builds a container image overlaying the java_binary.
 
@@ -296,7 +296,7 @@ def java_image(
                 construction of the container entrypoint. Omitting main_class
                 allows the user to specify additional arguments to the JVM at
                 runtime.
-    architecture: The architecture of the target, defaults to `x86_64`.
+    architecture: The architecture of the target.
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
