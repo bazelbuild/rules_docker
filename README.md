@@ -219,6 +219,8 @@ build --@io_bazel_rules_docker//transitions:enable=false
 Suppose you have a `container_image` target `//my/image:helloworld`:
 
 ```python
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+
 container_image(
     name = "helloworld",
     ...
@@ -296,6 +298,8 @@ A python format placeholder (e.g. `{BUILD_USER}`)
 is replaced by the value of the corresponding workspace-status variable.
 
 ```python
+load("//container:container.bzl", "container_push")
+
 # A common pattern when users want to avoid trampling
 # on each other's images during development.
 container_push(
@@ -335,6 +339,8 @@ That flag is typically passed in the `.bazelrc` file, see for example [`.bazelrc
 The second option is to employ `Makefile`-style variables:
 
 ```python
+load("//container:container.bzl", "container_bundle")
+
 container_bundle(
   name = "bundle",
 
@@ -384,6 +390,8 @@ Hello, busybox.
 ### container_image
 
 ```python
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+
 container_image(
     name = "app",
     # References container_pull from WORKSPACE (above)
@@ -512,6 +520,8 @@ dependencies that don't change into their own layers by overriding the
 `layers=[]` attribute.  Consider this sample from the `rules_k8s` repository:
 
 ```python
+load("@io_bazel_rules_docker//python:image.bzl", "py_image")
+
 py_image(
     name = "server",
     srcs = ["server.py"],
@@ -532,6 +542,8 @@ You can also implement more complex fine layering strategies by using the
 `py_layer` or `java_layer` rules and their `filter` attribute.  For example:
 
 ```python
+load("@io_bazel_rules_docker//python:image.bzl", "py_layer", "py_image")
+
 # Suppose that we are synthesizing an image that depends on a complex set
 # of libraries that we want to break into layers.
 LIBS = [
@@ -1091,6 +1103,8 @@ and see <a href=#go_image-custom-base>go_image (custom base)</a> example.
 ### container_bundle
 
 ```python
+load("//container:container.bzl", "container_bundle")
+
 container_bundle(
     name = "bundle",
     images = {
@@ -1107,6 +1121,11 @@ container_bundle(
 In `WORKSPACE`:
 
 ```python
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
 container_pull(
     name = "base",
     registry = "gcr.io",
@@ -1128,6 +1147,8 @@ to use container_pull with custom docker authentication credentials.
 This target pushes on `bazel run :push_foo`:
 
 ``` python
+load("//container:container.bzl", "container_push")
+
 container_push(
    name = "push_foo",
    image = ":foo",
@@ -1149,7 +1170,10 @@ If you wish to use container_push using custom docker authentication credentials
 in `WORKSPACE`:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # Download the rules_docker repository
+# See https://github.com/bazelbuild/rules_docker/releases for available releases
 http_archive(
     name = "io_bazel_rules_docker",
     ...
@@ -1190,6 +1214,11 @@ container_push(
 In `WORKSPACE`:
 
 ```python
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
 container_pull(
     name = "official_ubuntu",
     registry = "index.docker.io",
@@ -1205,6 +1234,11 @@ This can then be referenced in `BUILD` files as `@official_ubuntu//image`.
 In `WORKSPACE`:
 
 ```python
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
 container_pull(
     name = "etcd",
     registry = "quay.io",
@@ -1220,6 +1254,11 @@ This can then be referenced in `BUILD` files as `@etcd//image`.
 In `WORKSPACE`:
 
 ```python
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
 container_pull(
     name = "artifactory",
     registry = "docker.bintray.io",
@@ -1234,6 +1273,11 @@ This can then be referenced in `BUILD` files as `@artifactory//image`.
 In `WORKSPACE`:
 
 ```python
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
 container_pull(
     name = "gitlab",
     registry = "registry.gitlab.com",
