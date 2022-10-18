@@ -4,14 +4,14 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////
 // This binary pushes an image to a Docker Registry.
 package main
 
@@ -127,12 +127,12 @@ func main() {
 		log.Printf("Failed to digest image: %v", err)
 	}
 
-	var options = []name.Option{};
+	var opts []name.Option
 	if *insecureRepository {
-		options = append(options, name.Insecure);
+		options = append(options, name.Insecure)
 	}
 
-  if err := push(stamped, img, options...); err != nil {
+	if err := push(stamped, img, options...); err != nil {
 		log.Fatalf("Error pushing image to %s: %v", stamped, err)
 	}
 
@@ -243,4 +243,3 @@ func newTransport() http.RoundTripper {
 
 	return tr
 }
-
