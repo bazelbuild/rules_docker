@@ -14,7 +14,7 @@
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_image", "container_layer")
 load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
-load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_commit")
+load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_commit_layer", "container_run_and_commit")
 
 # Includes the gcloud installation archive
 container_layer(
@@ -32,12 +32,16 @@ container_image(
     cmd = "",
     entrypoint = "",
     layers = [":gcloud-layer"],
+    env = {"PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/google-cloud-sdk/bin"},
 )
+
+
 
 # Bootstrap the container image by installing some additional
 # packages and running some post install steps
 container_run_and_commit(
     name = "gcloud_install",
+    image = ":gcloud_installer",
     commands = [
         # Finalize the gcloud installation
         "/google-cloud-sdk/install.sh -q",
@@ -50,7 +54,6 @@ container_run_and_commit(
         "python3 get-pip.py",
         "python3 -m pip install --upgrade setuptools wheel",
     ],
-    image = ":gcloud_installer.tar",
 )
 
 # Wrapper targets for the tarred images are required in order to be able to run
@@ -58,8 +61,7 @@ container_run_and_commit(
 
 container_image(
     name = "bazel_gcloud_bazel_wrapper",
-    base = ":gcloud_install_commit.tar",
-    env = {"PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/google-cloud-sdk/bin"},
+    base = ":gcloud_install",
 )
 
 container_image(

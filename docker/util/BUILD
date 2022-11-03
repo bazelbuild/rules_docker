@@ -30,12 +30,11 @@ py_binary(
     python_version = "PY3",
 )
 
-exports_files([
-    "commit.sh.tpl",
-    "extract.sh.tpl",
-    "image_util.sh.tpl",
-    "commit_layer.sh.tpl",
-])
+py_binary(
+    name = "run",
+    srcs = ["run.py"],
+    python_version = "PY3",
+)
 
 bzl_library(
     name = "util",
