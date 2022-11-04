@@ -39,6 +39,7 @@ class TarFile(object):
   PKG_NAME_RE = re.compile(r'Package:\s*(?P<pkg_name>\w+).*')
   DPKG_STATUS_DIR = '/var/lib/dpkg/status.d'
   PKG_METADATA_FILE = 'control'
+  PKG_MD5SUMS_FILE = 'md5sums'
 
   @staticmethod
   def parse_pkg_name(metadata, filename):
@@ -222,20 +223,36 @@ class TarFile(object):
       os.remove(tmpfile)
 
   def add_pkg_metadata(self, metadata_tar, deb):
+    """
+    Extract the package ``control`` metadata file from a Debian `metadata_tar`
+    tarball file to the status.d directory. Also extract the ``md5sums`` files
+    list file if present.
+    """
     try:
       with tarfile.open(metadata_tar) as tar:
+        tar_members = tar.getmembers()
         # Metadata is expected to be in a file.
-        control_file_member = list(filter(lambda f: os.path.basename(f.name) == TarFile.PKG_METADATA_FILE, tar.getmembers()))
+        control_file_member = list(filter(lambda f: os.path.basename(f.name) == TarFile.PKG_METADATA_FILE, tar_members))
         if not control_file_member:
-           raise self.DebError(deb + ' does not Metadata File!')
+           raise self.DebError(deb + ' does not contain a control Metadata File!')
         control_file = tar.extractfile(control_file_member[0])
-        metadata = b''.join(control_file.readlines())
-        destination_file = os.path.join(TarFile.DPKG_STATUS_DIR,
-                                        TarFile.parse_pkg_name(metadata.decode("utf-8"), deb))
+        metadata = control_file.read()
+        pkg_name = TarFile.parse_pkg_name(metadata.decode('utf-8'), deb)
+        destination_file = os.path.join(TarFile.DPKG_STATUS_DIR, pkg_name)
         with self.write_temp_file(data=metadata) as metadata_file:
           self.add_file(metadata_file, destination_file)
+
+        # Extract the md5sums file listing of package files if present
+        md5sums_file_member = list(filter(lambda f: os.path.basename(f.name) == TarFile.PKG_MD5SUMS_FILE, tar_members))
+        if md5sums_file_member:
+            md5sums_file = tar.extractfile(md5sums_file_member[0])
+            md5sums = md5sums_file.read()
+            destination_file = os.path.join(TarFile.DPKG_STATUS_DIR, '{0}.md5sums'.format(pkg_name))
+            with self.write_temp_file(data=md5sums) as files_list:
+              self.add_file(files_list, destination_file)
+
     except (KeyError, TypeError) as e:
-      raise self.DebError(deb + ' contains invalid Metadata! Exeception {0}'.format(e))
+      raise self.DebError(deb + ' contains invalid Metadata! Exception {0}'.format(e))
     except Exception as e:
       raise self.DebError('Unknown Exception {0}. Please report an issue at'
                           ' github.com/bazelbuild/rules_docker.'.format(e))
@@ -473,9 +490,9 @@ if __name__ == '__main__':
   parser.add_argument('--xz_path', type=str,
     help='Specify the path to xz as a fallback when the Python '
     'lzma module is unavailable.')
-  
+
   parser.add_argument('--force_posixpath', type=bool, default=False,
-    help='Force the use of posixpath when normalizing file paths. This is useful' 
+    help='Force the use of posixpath when normalizing file paths. This is useful'
     'when building in a non-posix environment.')
 
   main(parser.parse_args())

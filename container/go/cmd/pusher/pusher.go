@@ -197,7 +197,7 @@ func push(dst string, img v1.Image) error {
 		}
 
 		httpTransportOption := remote.WithTransport(&headerTransport{
-			inner:       http.DefaultTransport,
+			inner:       newTransport(),
 			httpHeaders: dockerConfig.HTTPHeaders,
 		})
 
@@ -228,3 +228,13 @@ func (ht *headerTransport) RoundTrip(in *http.Request) (*http.Response, error) {
 	}
 	return ht.inner.RoundTrip(in)
 }
+
+func newTransport() http.RoundTripper {
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	// We really only expect to be talking to a couple of hosts during a push.
+	// Increasing MaxIdleConnsPerHost should reduce closed connection errors.
+	tr.MaxIdleConnsPerHost = tr.MaxIdleConns / 2
+
+	return tr
+}
+

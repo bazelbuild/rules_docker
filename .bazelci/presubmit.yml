@@ -5,8 +5,8 @@ buildifier:
   warnings: "-function-docstring-args,-print,-provider-params,-unnamed-macro"
 bazel: 4.0.0
 tasks:
-  default_workspace_ubuntu1804:
-    platform: ubuntu1804
+  default_workspace_ubuntu2104:
+    platform: ubuntu2104
     test_targets:
       - //...
     test_flags:
@@ -170,7 +170,7 @@ tasks:
       - --keep_going
       - --config=buildkite
   testing_examples:
-    platform: ubuntu1804
+    platform: ubuntu2104
     working_directory: testing/examples
     shell_commands:
       - cp ../../.bazelrc .
@@ -183,14 +183,14 @@ tasks:
     test_flags:
       - --test_output=errors
   testing_java_image:
-    platform: ubuntu1804
+    platform: ubuntu2104
     working_directory: testing/java_image
     shell_commands:
       - cp ../../.bazelrc .
     build_targets:
       - //...
   testing_download_pkgs_at_root:
-    platform: ubuntu1804
+    platform: ubuntu2104
     working_directory: testing/download_pkgs_at_root
     shell_commands:
       - cp ../../.bazelrc .
@@ -199,7 +199,7 @@ tasks:
     test_flags:
       - --test_output=errors
   testing_custom_toolchain_flags:
-    platform: ubuntu1804
+    platform: ubuntu2104
     working_directory: testing/custom_toolchain_flags
     shell_commands:
       - cp ../../.bazelrc .

@@ -84,11 +84,43 @@ Version: 1.2.4
 
         self.assertIn('./var/lib/dpkg/status.d/test', contained_names)
 
-
   def testPackageNameParserInvalidMetadata(self):
     metadata = "Package Name: Invalid"
     self.assertEqual('test-invalid-pkg',
                      TarFile.parse_pkg_name(metadata, "some/path/test-invalid-pkg.deb"))
+
+  def testPkgMetadataMd5sumsFileName(self):
+    metadata = """Package: test
+Description: Dummy
+Version: 1.2.4
+"""
+    md5sums ="""4006d28dbf6dfbe2c0fe695839e64cb3  usr/lib/python3/dist-packages/docutils/languages/cs.py
+"""
+    with tempfile.TemporaryDirectory() as tmp:
+      # write control file into a metadata tar
+      control_file_name = path.join(tmp, "control")
+      with open(control_file_name, "w") as control_file:
+        control_file.write(metadata)
+      # write md5sums file into a metadata tar
+      md5sums_file_name = path.join(tmp, "md5sums")
+      with open(md5sums_file_name, "w") as md5sums_file:
+        md5sums_file.write(md5sums)
+      metadata_tar_file_name = path.join(tmp, "metadata.tar")
+
+      with tarfile.open(metadata_tar_file_name, "w") as metadata_tar_file:
+        metadata_tar_file.add(control_file_name, arcname="control")
+        metadata_tar_file.add(md5sums_file_name, arcname="md5sums")
+
+      output_file_name = path.join(tmp, "output.tar")
+      with TarFile(output_file_name, directory="/", compression=None, root_directory="./", default_mtime=None,
+                   enable_mtime_preservation=False, xz_path="", force_posixpath=False) as output_file:
+        output_file.add_pkg_metadata(metadata_tar_file_name, "ignored.deb")
+
+      with tarfile.open(output_file_name) as output_file:
+        contained_names = output_file.getnames()
+
+        self.assertIn('./var/lib/dpkg/status.d/test', contained_names)
+        self.assertIn('./var/lib/dpkg/status.d/test.md5sums', contained_names)
 
 
 if __name__ == '__main__':

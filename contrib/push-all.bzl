@@ -39,8 +39,6 @@ def _impl(ctx):
     if stamp:
         stamp_inputs = [ctx.info_file, ctx.version_file]
 
-    stamp_arg = " ".join(["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs])
-
     scripts = []
     runfiles = []
     for index, tag in enumerate(images.keys()):
@@ -52,6 +50,13 @@ def _impl(ctx):
             pusher_args.append("--skip-unchanged-digest")
         pusher_args.append("--dst={}".format(tag))
         pusher_args.append("--format={}".format(ctx.attr.format))
+
+        # If the docker toolchain is configured to use a custom client config
+        # directory, use that instead
+        toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+        if toolchain_info.client_config != "":
+            pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
+
         out = ctx.actions.declare_file("%s.%d.push" % (ctx.label.name, index))
         ctx.actions.expand_template(
             template = ctx.file._tag_tpl,
@@ -131,6 +136,7 @@ container_push = rule(
         ),
     },
     executable = True,
+    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = _impl,
 )
 

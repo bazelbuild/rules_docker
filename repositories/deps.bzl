@@ -20,6 +20,7 @@ repository.
 """
 
 load(":go_repositories.bzl", "go_deps")
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
 # TODO: `go_repository_default_config` is only useful for working around
 # https://github.com/bazelbuild/rules_docker/issues/1902 and could likely be
@@ -36,3 +37,4 @@ def deps(go_repository_default_config = "@//:WORKSPACE"):
         go_repository_default_config (str, optional): A file used to determine the root of the workspace.
     """
     go_deps(go_repository_default_config = go_repository_default_config)
+    rules_pkg_dependencies()
