@@ -102,6 +102,7 @@ func writeImageLayer(l v1.Layer, idx int, outDir string) error {
 	if err != nil {
 		return errors.Wrapf(err, "unable to create %s to write layer %d", outLayerFile, idx)
 	}
+	defer o.Close()
 	if _, err := io.Copy(o, contents); err != nil {
 		return errors.Wrapf(err, "unable to write the contents of layer %d to %s", idx, outLayerFile)
 	}
