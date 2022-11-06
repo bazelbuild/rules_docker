@@ -14,16 +14,6 @@ tasks:
   default_workspace_macos:
     platform: macos
     test_targets:
-      # We don't know why this test started failing. Disable this until
-      # I have some time to look into it:
-      - -//tests/container:alpine_custom_attr_digest_test
-      - -//tests/container:image_test
-      - -//tests/container:test_digest_output1
-      - -//tests/container:test_digest_output1_impl
-      - -//tests/container:test_digest_output2
-      - -//tests/container:test_digest_output2_impl
-      - -//tests/container:test_push_digest_output
-      - -//tests/container:test_push_digest_output_impl
       # Use "bazel query 'kind(".*_test", ...)'" to refresh this list.
       #
       # NOTE: per Philipp Wollermann, docker is not installed on the macos
