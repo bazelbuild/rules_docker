@@ -256,7 +256,7 @@ if [[ "%{run}" == "True" ]]; then
   # However, we have already baked those commands into the image, because users
   # expect that 'args' in the case of an image target will be included in the
   # image.  This templated script de-duplicates the args specified in the BUILD
-  # file by passing itself the number of args already included in the image.
+  # file by skipping the number of args already included in the image command.
   shift "%{run_num_args}"
 
   docker_args=()
