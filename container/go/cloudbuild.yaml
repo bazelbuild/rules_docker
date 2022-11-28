@@ -166,7 +166,7 @@ steps:
       - "//container/go/cmd/puller:puller"
       - "//container/go/cmd/loader:loader"
     id: "build-darwin-arm64"
-    waitFor: ["push-loader-darwin-amd64"]
+    waitFor: ["push-puller-darwin-amd64", "push-loader-darwin-amd64"]
 
 # Step: push the puller release binary for Darwin ARM64
   - name: "gcr.io/cloud-builders/gsutil"
