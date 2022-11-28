@@ -49,10 +49,21 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to read input file: %v", err)
 	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Fatalf("Unable to close %q: %v", *src, err)
+		}
+	}()
+
 	t, err := os.Create(*dst)
 	if err != nil {
 		log.Fatalf("Unable to create output file: %v", err)
 	}
+	defer func() {
+		if err := t.Close(); err != nil {
+			log.Fatalf("Unable to close %q: %v", *dst, err)
+		}
+	}()
 
 	if *decompress {
 		zr, err := gzip.NewReader(f)
