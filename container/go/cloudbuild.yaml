@@ -157,3 +157,35 @@ steps:
       - "gs://rules_docker/$COMMIT_SHA/loader-darwin-amd64"
     id: "push-loader-darwin-amd64"
     waitFor: ["build-darwin-amd64"]
+
+# Step: build the puller and loader release binaries for Darwin ARM64
+  - name: "l.gcr.io/google/bazel"
+    args:
+      - "build"
+      - "--platforms=@io_bazel_rules_go//go/toolchain:darwin_arm64"
+      - "//container/go/cmd/puller:puller"
+      - "//container/go/cmd/loader:loader"
+    id: "build-darwin-arm64"
+    waitFor: ["push-loader-darwin-amd64"]
+
+# Step: push the puller release binary for Darwin ARM64
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/puller/puller_/puller"
+      - "gs://rules_docker/$COMMIT_SHA/puller-darwin-arm64"
+    id: "push-puller-darwin-arm64"
+    waitFor: ["build-darwin-arm64"]
+
+# Step: push the loader release binary for Darwin ARM64
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      - "cp"
+      - "-a"
+      - "public-read"
+      - "bazel-bin/container/go/cmd/loader/loader_/loader"
+      - "gs://rules_docker/$COMMIT_SHA/loader-darwin-arm64"
+    id: "push-loader-darwin-arm64"
+    waitFor: ["build-darwin-arm64"]
