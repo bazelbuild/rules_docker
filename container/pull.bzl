@@ -88,9 +88,15 @@ _container_pull_attrs = {
     "platform_features": attr.string_list(
         doc = "Specifies platform features when pulling a multi-platform manifest list.",
     ),
-    "puller_darwin": attr.label(
+    "puller_darwin_amd64": attr.label(
         executable = True,
-        default = Label("@go_puller_darwin//file:downloaded"),
+        default = Label("@go_puller_darwin_amd64//file:downloaded"),
+        cfg = "host",
+        doc = "Exposed to provide a way to test other pullers on macOS",
+    ),
+    "puller_darwin_arm64": attr.label(
+        executable = True,
+        default = Label("@go_puller_darwin_arm64//file:downloaded"),
         cfg = "host",
         doc = "Exposed to provide a way to test other pullers on macOS",
     ),
@@ -150,7 +156,10 @@ def _impl(repository_ctx):
 
     puller = repository_ctx.attr.puller_linux_amd64
     if repository_ctx.os.name.lower().startswith("mac os"):
-        puller = repository_ctx.attr.puller_darwin
+       if repository_ctx.os.arch == "aarch64":
+           puller = repository_ctx.attr.puller_darwin_arm64
+       else:
+           puller = repository_ctx.attr.puller_darwin_amd64
     elif repository_ctx.os.name.lower().startswith("linux"):
         arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
         if arch == "arm64" or arch == "aarch64":
