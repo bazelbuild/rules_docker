@@ -309,7 +309,7 @@ def incremental_load(
 tools = {
     "extract_config": attr.label(
         default = Label("//container/go/cmd/extract_config:extract_config"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -319,7 +319,7 @@ tools = {
     ),
     "_join_layers": attr.label(
         default = Label("//container/go/cmd/join_layers"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
     ),
 }

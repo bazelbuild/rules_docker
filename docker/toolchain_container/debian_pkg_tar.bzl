@@ -50,7 +50,7 @@ aggregate_debian_pkgs_attrs = {
     "language_layers": attr.label_list(),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),

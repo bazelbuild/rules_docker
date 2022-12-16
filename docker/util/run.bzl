@@ -130,7 +130,7 @@ _extract_attrs = {
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -257,7 +257,7 @@ _commit_attrs = {
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -271,7 +271,7 @@ _commit_attrs = {
     ),
     "_to_json_tool": attr.label(
         default = Label("//docker/util:to_json"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -440,7 +440,7 @@ _commit_layer_attrs = dicts.add({
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -450,7 +450,7 @@ _commit_layer_attrs = dicts.add({
     ),
     "_last_layer_extractor_tool": attr.label(
         default = Label("//contrib:extract_last_layer"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),

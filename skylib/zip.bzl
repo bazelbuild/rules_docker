@@ -120,7 +120,7 @@ def gunzip(ctx, artifact):
 tools = {
     "_zipper": attr.label(
         default = Label("//container/go/cmd/zipper"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
     ),
 }

@@ -138,7 +138,7 @@ passwd_tar = rule(
     attrs = {
         "build_tar": attr.label(
             default = Label("//container:build_tar"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),

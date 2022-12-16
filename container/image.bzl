@@ -588,7 +588,7 @@ _attrs = dicts.add(_layer.attrs, {
     ),
     "create_image_config": attr.label(
         default = Label("//container/go/cmd/create_image_config:create_image_config"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -749,7 +749,7 @@ _attrs = dicts.add(_layer.attrs, {
     ),
     "_digester": attr.label(
         default = "//container/go/cmd/digester",
-        cfg = "host",
+        cfg = "exec",
         executable = True,
     ),
 }, _hash_tools, _layer_tools)

@@ -200,12 +200,12 @@ container_push_ = rule(
         ),
         "_digester": attr.label(
             default = "//container/go/cmd/digester",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "_pusher": attr.label(
             default = "//container/go/cmd/pusher",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),

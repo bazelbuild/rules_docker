@@ -177,7 +177,7 @@ _attrs = {
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
