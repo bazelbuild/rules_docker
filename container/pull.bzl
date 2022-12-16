@@ -91,25 +91,25 @@ _container_pull_attrs = {
     "puller_darwin": attr.label(
         executable = True,
         default = Label("@go_puller_darwin//file:downloaded"),
-        cfg = "host",
+        cfg = "exec",
         doc = "Exposed to provide a way to test other pullers on macOS",
     ),
     "puller_linux_amd64": attr.label(
         executable = True,
         default = Label("@go_puller_linux_amd64//file:downloaded"),
-        cfg = "host",
+        cfg = "exec",
         doc = "Exposed to provide a way to test other pullers on Linux",
     ),
     "puller_linux_arm64": attr.label(
         executable = True,
         default = Label("@go_puller_linux_arm64//file:downloaded"),
-        cfg = "host",
+        cfg = "exec",
         doc = "Exposed to provide a way to test other pullers on Linux",
     ),
     "puller_linux_s390x": attr.label(
         executable = True,
         default = Label("@go_puller_linux_s390x//file:downloaded"),
-        cfg = "host",
+        cfg = "exec",
         doc = "Exposed to provide a way to test other pullers on Linux",
     ),
     "registry": attr.string(

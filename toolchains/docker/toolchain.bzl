@@ -63,7 +63,7 @@ docker_toolchain = rule(
         "build_tar_target": attr.label(
             allow_files = True,
             doc = "Bazel target for the build_tar tool.",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         # client_config cannot be a Bazel label because this attribute will be used in
@@ -89,7 +89,7 @@ docker_toolchain = rule(
             allow_files = True,
             doc = "Bazel target for the gzip tool. " +
                   "Should only be set if gzip_path is unset.",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "tool_path": attr.string(
@@ -99,7 +99,7 @@ docker_toolchain = rule(
             allow_files = True,
             doc = "Bazel target for the docker tool. " +
                   "Should only be set if tool_path is unset.",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "xz_path": attr.string(
@@ -110,7 +110,7 @@ docker_toolchain = rule(
             allow_files = True,
             doc = "Bazel target for the xz tool. " +
                   "Should only be set if xz_path is unset.",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
     },
@@ -189,7 +189,7 @@ toolchain_configure = repository_rule(
     attrs = {
         "build_tar_target": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             allow_files = True,
             mandatory = False,
             doc = "The bazel target for the build_tar tool.",
@@ -233,7 +233,7 @@ toolchain_configure = repository_rule(
         ),
         "gzip_target": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             allow_files = True,
             mandatory = False,
             doc = "The bazel target for the gzip tool. " +
@@ -247,7 +247,7 @@ toolchain_configure = repository_rule(
         ),
         "xz_target": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             allow_files = True,
             mandatory = False,
             doc = "The bazel target for the xz tool. " +

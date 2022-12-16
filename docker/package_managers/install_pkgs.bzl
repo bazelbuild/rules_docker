@@ -173,11 +173,11 @@ _attrs = {
     "_config_stripper": attr.label(
         default = "//docker/util:config_stripper",
         executable = True,
-        cfg = "host",
+        cfg = "exec",
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -195,7 +195,7 @@ _attrs = {
     ),
     "_to_json_tool": attr.label(
         default = Label("//docker/util:to_json"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),

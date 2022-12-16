@@ -44,7 +44,7 @@ packages_metadata = rule(
         ),
         "_converter": attr.label(
             default = "@io_bazel_rules_docker//contrib/go/cmd/packages_metadata",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
     },

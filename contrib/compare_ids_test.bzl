@@ -84,7 +84,7 @@ compare_ids_test = rule(
             allow_files = True,
             default = ":compare_ids_test",
             executable = True,
-            cfg = "host",
+            cfg = "exec",
         ),
     },
     test = True,
