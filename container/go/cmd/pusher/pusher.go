@@ -122,6 +122,16 @@ func main() {
 		log.Printf("Destination %s was resolved to %s after stamping.", *dst, stamped)
 	}
 
+	needSkip, err := checkNeedSkip(stamped, img)
+	if err != nil {
+		log.Printf("Error checking if digest already exists %v.", err)
+	}
+
+	if needSkip {
+		log.Print("Skipping push of unchanged digest")
+		return
+	}
+
 	digest, err := img.Digest()
 	if err != nil {
 		log.Printf("Failed to digest image: %v", err)
@@ -165,6 +175,18 @@ func digestExists(dst string, img v1.Image) (bool, error) {
 	return remoteImg != nil, nil
 }
 
+func checkNeedSkip(dst string, img v1.Image) (bool, error) {
+	if !*skipUnchangedDigest {
+		return false, nil
+	}
+
+	exists, err := digestExists(dst, img)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
 // push pushes the given image to the given destination.
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout, legacy layout or Docker tarball format.
@@ -174,17 +196,6 @@ func push(dst string, img v1.Image, opts ...name.Option) error {
 	ref, err := name.ParseReference(dst, opts...)
 	if err != nil {
 		return errors.Wrapf(err, "error parsing %q as an image reference", dst)
-	}
-
-	if *skipUnchangedDigest {
-		exists, err := digestExists(dst, img)
-		if err != nil {
-			log.Printf("Error checking if digest already exists %v. Still pushing", err)
-		}
-		if exists {
-			log.Print("Skipping push of unchanged digest")
-			return nil
-		}
 	}
 
 	options := []remote.Option{remote.WithAuthFromKeychain(authn.DefaultKeychain)}
