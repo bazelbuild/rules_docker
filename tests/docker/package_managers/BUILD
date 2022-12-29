@@ -101,6 +101,28 @@ rule_test(
     rule = "test_install_pkgs",
 )
 
+# Install without specifying output_image_name.
+[
+    install_pkgs(
+        name = "test_install_pkgs{}".format(n),
+        image_tar = "@ubuntu1604//:ubuntu1604_vanilla.tar",
+        installables_tar = ":test_download_pkgs.tar",
+    )
+    for n in range(2)
+]
+
+[
+    rule_test(
+        name = "test_install_pkgs{}_rule".format(n),
+        generates = [
+            "test_install_pkgs{}.build".format(n),
+            "test_install_pkgs{}.tar".format(n),
+        ],
+        rule = "test_install_pkgs{}".format(n),
+    )
+    for n in range(2)
+]
+
 add_apt_key(
     name = "gpg_image",
     image = "@debian9//:builder.tar",

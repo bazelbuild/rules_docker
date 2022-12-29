@@ -66,13 +66,17 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
       image_tar: File, overrides ctx.file.image_tar
       installables_tar: File, overrides ctx.file.installables_tar
       installation_cleanup_commands: str, overrides ctx.attr.installation_cleanup_commands
-      output_image_name: str, overrides ctx.attr.output_image_name
+      output_image_name: str, overrides the image name
       output_tar: File, overrides ctx.outputs.out
     """
+
+    # Construct the name of the image if not given based on the full label path with :output tag.
+    default_output_image_name = (ctx.label.package + "_" + ctx.label.name).replace(":", "_").replace("@", "_").replace("/", "_") + ":output"
+
     image_tar = image_tar or ctx.file.image_tar
     installables_tar = installables_tar or ctx.file.installables_tar
     installation_cleanup_commands = installation_cleanup_commands or ctx.attr.installation_cleanup_commands
-    output_image_name = output_image_name or ctx.attr.output_image_name
+    output_image_name = output_image_name or ctx.attr.output_image_name or default_output_image_name
     output_tar = output_tar or ctx.outputs.out
 
     installables_tar_path = installables_tar.path
@@ -167,8 +171,9 @@ _attrs = {
         default = "",
     ),
     "output_image_name": attr.string(
-        doc = ("Name of container_image produced with the packages installed."),
-        mandatory = True,
+        doc = ("Name of container_image produced with the packages installed. " +
+               "If not specified, resolves to the current target target label. " +
+               "*Must be unique* across the entire build tree."),
     ),
     "_config_stripper": attr.label(
         default = "//docker/util:config_stripper",
