@@ -453,9 +453,9 @@ within a container.
     <tr id="install_pkgs-output_image_name">
       <td><code>output_image_name</code></td>
       <td>
-        String; required
+        String; optional
         <p>
-          Name of container_image produced with the packages installed.
+          Name of container_image produced with the packages installed. By default the label of the target will be used. *Must be unique* across the entire build tree.
         </p>
       </td>
     </tr>
