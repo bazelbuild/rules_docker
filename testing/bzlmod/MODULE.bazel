@@ -1,0 +1,22 @@
+module(
+    name = "example_bzlmod",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "io_bazel_rules_docker", version = "0.0.0")
+local_path_override(
+    module_name = "io_bazel_rules_docker",
+    path = "../..",
+)
+
+container = use_extension("@io_bazel_rules_docker//:extensions.bzl", "container")
+container.pull(
+    name = "alpine_linux_amd64",
+    digest = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
+    registry = "index.docker.io",
+    repository = "library/alpine",
+    # tag field is ignored since digest is set
+    tag = "3.8",
+)
+use_repo(container, "alpine_linux_amd64")
