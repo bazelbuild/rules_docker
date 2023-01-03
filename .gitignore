@@ -15,6 +15,7 @@
 
 # Fortran module files
 *.mod
+!go.mod
 *.smod
 
 # Python 2 bytecode files
