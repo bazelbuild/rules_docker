@@ -34,6 +34,19 @@ load(
 
 container_run_and_extract(
     name = "test_container_extract",
+    base = "@debian_base//image",
+    cmd = [
+        "bash",
+        "-c",
+        "touch /foo.txt && echo 'test' > /foo.txt",
+    ],
+    docker_run_flags = "-u root",
+    extract_file = "/foo.txt",
+    legacy_load_behavior = False,
+)
+
+container_run_and_extract(
+    name = "test_container_extract_legacy",
     commands = [
         "touch /foo.txt",
         "echo 'test' > /foo.txt",
@@ -69,6 +82,17 @@ file_test(
 
 container_run_and_commit(
     name = "test_container_commit",
+    base = "@debian_base//image",
+    cmd = [
+        "touch",
+        "/foo.txt",
+    ],
+    docker_run_flags = "-u root",
+    legacy_load_behavior = False,
+)
+
+container_run_and_commit(
+    name = "test_container_commit_legacy",
     commands = ["touch /foo.txt"],
     docker_run_flags = [
         "-u",
@@ -111,6 +135,7 @@ rule_test(
     name = "test_container_commit_layer_rule",
     generates = [
         "test_container_commit_layer-layer.tar",
+        "test_container_commit_layer.build",
     ],
     rule = "test_container_commit_layer",
 )
