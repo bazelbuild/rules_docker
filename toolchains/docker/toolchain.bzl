@@ -184,76 +184,78 @@ def _toolchain_configure_impl(repository_ctx):
         False,
     )
 
+configure_attrs = {
+    "build_tar_target": attr.label(
+        executable = True,
+        cfg = "exec",
+        allow_files = True,
+        mandatory = False,
+        doc = "The bazel target for the build_tar tool.",
+    ),
+    "client_config": attr.label(
+        mandatory = False,
+        doc = "A Bazel label for the docker client config.json. " +
+              "If this is not specified, the value " +
+              "of the DOCKER_CONFIG environment variable will be used. " +
+              "If DOCKER_CONFIG is not defined, the default set for the " +
+              "docker tool (typically, the home directory) will be " +
+              "used.",
+    ),
+    "cred_helpers": attr.string_list(
+        mandatory = False,
+        doc = """Labels to a list of credential helpers binaries that are configured in `client_config`.
+
+        More about credential helpers: https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
+        """,
+        default = [],
+    ),
+    "docker_flags": attr.string_list(
+        mandatory = False,
+        doc = "List of additional flag arguments to the docker command.",
+    ),
+    "docker_path": attr.string(
+        mandatory = False,
+        doc = "The full path to the docker binary. If not specified, it will " +
+              "be searched for in the path. If not available, running commands " +
+              "that require docker (e.g., incremental load) will fail.",
+    ),
+    "docker_target": attr.string(
+        mandatory = False,
+        doc = "The bazel target for the docker tool. " +
+              "Can only be set if docker_path is not set.",
+    ),
+    "gzip_path": attr.string(
+        mandatory = False,
+        doc = "The full path to the gzip binary. If not specified, a tool will " +
+              "be compiled and used.",
+    ),
+    "gzip_target": attr.label(
+        executable = True,
+        cfg = "exec",
+        allow_files = True,
+        mandatory = False,
+        doc = "The bazel target for the gzip tool. " +
+              "Can only be set if gzip_path is not set.",
+    ),
+    "xz_path": attr.string(
+        mandatory = False,
+        doc = "The full path to the xz binary. If not specified, it will " +
+              "be searched for in the path. If not available, running commands " +
+              "that use xz will fail.",
+    ),
+    "xz_target": attr.label(
+        executable = True,
+        cfg = "exec",
+        allow_files = True,
+        mandatory = False,
+        doc = "The bazel target for the xz tool. " +
+              "Can only be set if xz_path is not set.",
+    ),
+}
+
 # Repository rule to generate a docker_toolchain target
 toolchain_configure = repository_rule(
-    attrs = {
-        "build_tar_target": attr.label(
-            executable = True,
-            cfg = "exec",
-            allow_files = True,
-            mandatory = False,
-            doc = "The bazel target for the build_tar tool.",
-        ),
-        "client_config": attr.label(
-            mandatory = False,
-            doc = "A Bazel label for the docker client config.json. " +
-                  "If this is not specified, the value " +
-                  "of the DOCKER_CONFIG environment variable will be used. " +
-                  "If DOCKER_CONFIG is not defined, the default set for the " +
-                  "docker tool (typically, the home directory) will be " +
-                  "used.",
-        ),
-        "cred_helpers": attr.string_list(
-            mandatory = False,
-            doc = """Labels to a list of credential helpers binaries that are configured in `client_config`.
-
-            More about credential helpers: https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
-            """,
-            default = [],
-        ),
-        "docker_flags": attr.string_list(
-            mandatory = False,
-            doc = "List of additional flag arguments to the docker command.",
-        ),
-        "docker_path": attr.string(
-            mandatory = False,
-            doc = "The full path to the docker binary. If not specified, it will " +
-                  "be searched for in the path. If not available, running commands " +
-                  "that require docker (e.g., incremental load) will fail.",
-        ),
-        "docker_target": attr.string(
-            mandatory = False,
-            doc = "The bazel target for the docker tool. " +
-                  "Can only be set if docker_path is not set.",
-        ),
-        "gzip_path": attr.string(
-            mandatory = False,
-            doc = "The full path to the gzip binary. If not specified, a tool will " +
-                  "be compiled and used.",
-        ),
-        "gzip_target": attr.label(
-            executable = True,
-            cfg = "exec",
-            allow_files = True,
-            mandatory = False,
-            doc = "The bazel target for the gzip tool. " +
-                  "Can only be set if gzip_path is not set.",
-        ),
-        "xz_path": attr.string(
-            mandatory = False,
-            doc = "The full path to the xz binary. If not specified, it will " +
-                  "be searched for in the path. If not available, running commands " +
-                  "that use xz will fail.",
-        ),
-        "xz_target": attr.label(
-            executable = True,
-            cfg = "exec",
-            allow_files = True,
-            mandatory = False,
-            doc = "The bazel target for the xz tool. " +
-                  "Can only be set if xz_path is not set.",
-        ),
-    },
+    attrs = configure_attrs,
     environ = [
         "PATH",
     ],
