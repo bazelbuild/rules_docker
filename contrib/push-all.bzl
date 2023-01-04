@@ -126,7 +126,7 @@ container_push = rule(
         ),
         "_pusher": attr.label(
             default = Label("//container/go/cmd/pusher"),
-            cfg = "exec",
+            cfg = "target",
             executable = True,
             allow_files = True,
         ),
