@@ -301,6 +301,13 @@ class ImageTest(unittest.TestCase):
             self.assertEqual(1, len(img.fs_layers()))
             self.assertTopLayerContains(img, ['.', './foo'])
 
+    def test_tag_name(self):
+        # users may override the tag that comes after ':'
+        name = 'bazel/%s:this-tag-instead' % TEST_DATA_TARGET_BASE
+        with TestBundleImage('tag_name', name) as img:
+            self.assertEqual(1, len(img.fs_layers()))
+            self.assertTopLayerContains(img, ['.', './foo'])
+
     def test_with_double_env(self):
         with TestImage('with_double_env') as img:
             self.assertEqual(3, len(img.fs_layers()))
