@@ -288,7 +288,8 @@ def _impl(
         workdir = None,
         user = None,
         null_cmd = None,
-        null_entrypoint = None):
+        null_entrypoint = None,
+        tag_name = None):
     """Implementation for the container_image rule.
 
     You can write a customized container_image rule by writing something like:
@@ -346,6 +347,7 @@ def _impl(
         user: str, overrides ctx.attr.user
         null_cmd: bool, overrides ctx.attr.null_cmd
         null_entrypoint: bool, overrides ctx.attr.null_entrypoint
+        tag_name: str, overrides ctx.attr.tag_name
     """
     name = name or ctx.label.name
     base = base or ctx.attr.base
@@ -367,6 +369,7 @@ def _impl(
     build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
+    tag_name = tag_name or ctx.attr.tag_name
 
     # If this target specifies docker_run_flags, they are always used.
     # Fall back to the base image's run flags if present, otherwise use the default value.
@@ -459,8 +462,10 @@ def _impl(
             null_cmd = null_cmd,
         )
 
-    # Construct a temporary name based on the build target.
-    tag_name = "{}:{}".format(_repository_name(ctx), name)
+    # Construct a temporary name based on the build target. This is the name
+    # of the docker container.
+    final_tag = tag_name if tag_name else name
+    container_name = "{}:{}".format(_repository_name(ctx), final_tag)
 
     # These are the constituent parts of the Container image, which each
     # rule in the chain must preserve.
@@ -497,7 +502,7 @@ def _impl(
     # We support incrementally loading or assembling this single image
     # with a temporary name given by its build rule.
     images = {
-        tag_name: container_parts,
+        container_name: container_parts,
     }
 
     _incr_load(
@@ -743,6 +748,9 @@ _attrs = dicts.add(_layer.attrs, {
         this working directory does not affect the other actions (e.g., adding files).
 
         This field supports stamp variables.""",
+    ),
+    "tag_name": attr.string(
+        doc = """Override final tag name. If unspecified, is set to name.""",
     ),
     "_allowlist_function_transition": attr.label(
         default = "@bazel_tools//tools/allowlists/function_transition_allowlist",

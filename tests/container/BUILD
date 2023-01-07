@@ -935,6 +935,7 @@ TEST_TARGETS = [
     ":absolute_data_path_image",
     ":root_data_path_image",
     ":dummy_repository",
+    ":tag_name",
     # TODO(mattmoor): Re-enable once archive is visible
     # "extras_with_deb",
     ":bundle_test",

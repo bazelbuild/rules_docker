@@ -98,6 +98,12 @@ container_image(
 )
 
 container_image(
+    name = "tag_name",
+    files = ["foo"],
+    tag_name = "this-tag-instead",
+)
+
+container_image(
     name = "no_data_path_image",
     files = ["//testdata/test:test-data"],
     mode = "0o644",
