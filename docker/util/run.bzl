@@ -168,7 +168,8 @@ def _commit_impl(
         image = None,
         commands = None,
         docker_run_flags = None,
-        output_image_tar = None):
+        output_image_tar = None,
+        extra_deps = None):
     """Implementation for the container_run_and_commit rule.
 
     This rule runs a set of commands in a given image, waits for the commands
@@ -182,6 +183,10 @@ def _commit_impl(
         docker_run_flags: String list, overrides ctx.attr.docker_run_flags
         output_image_tar: The output image obtained as a result of running
                           the commands on the input image
+        extra_deps: Label list, if not None these are passed as inputs
+                    to the action running the container. This can be used if
+                    e.g., you need to mount a directory that is produced
+                    by another action.
     """
 
     name = name or ctx.attr.name
@@ -190,6 +195,7 @@ def _commit_impl(
     docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
     script = ctx.actions.declare_file(name + ".build")
     output_image_tar = output_image_tar or ctx.outputs.out
+    extra_deps = extra_deps or ctx.files.extra_deps or []
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
@@ -231,7 +237,7 @@ def _commit_impl(
 
     ctx.actions.run(
         outputs = [output_image_tar],
-        inputs = runfiles,
+        inputs = runfiles + extra_deps,
         executable = script,
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         use_default_shell_env = True,
@@ -254,6 +260,11 @@ _commit_attrs = {
         mandatory = True,
         allow_single_file = True,
         cfg = "target",
+    ),
+    "extra_deps": attr.label_list(
+        doc = "Extra dependency to be passed as inputs",
+        mandatory = False,
+        allow_files = True,
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
@@ -310,7 +321,8 @@ def _commit_layer_impl(
         env = None,
         compression = None,
         compression_options = None,
-        output_layer_tar = None):
+        output_layer_tar = None,
+        extra_deps = None):
     """Implementation for the container_run_and_commit_layer rule.
 
     This rule runs a set of commands in a given image, waits for the commands
@@ -327,6 +339,10 @@ def _commit_layer_impl(
         compression_options: str list, overrides ctx.attr.compression_options
         output_layer_tar: The output layer obtained as a result of running
                           the commands on the input image
+        extra_deps: Label list, if not None these are passed as inputs
+                    to the action running the container. This can be used if
+                    e.g., you need to mount a directory that is produced
+                    by another action.
     """
 
     name = name or ctx.attr.name
@@ -338,6 +354,7 @@ def _commit_layer_impl(
     compression = compression or ctx.attr.compression
     compression_options = compression_options or ctx.attr.compression_options
     output_layer_tar = output_layer_tar or ctx.outputs.layer
+    extra_deps = extra_deps or ctx.files.extra_deps or []
 
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
@@ -394,7 +411,7 @@ def _commit_layer_impl(
 
     ctx.actions.run(
         outputs = [output_layer_tar, output_diff_id],
-        inputs = runfiles,
+        inputs = runfiles + extra_deps,
         executable = script,
         mnemonic = "RunAndCommitLayer",
         tools = [ctx.executable._extract_image_id, ctx.executable._last_layer_extractor_tool],
@@ -437,6 +454,11 @@ _commit_layer_attrs = dicts.add({
         mandatory = True,
         allow_single_file = True,
         cfg = "target",
+    ),
+    "extra_deps": attr.label_list(
+        doc = "Extra dependency to be passed as inputs",
+        mandatory = False,
+        allow_files = True,
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
