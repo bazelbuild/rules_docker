@@ -298,7 +298,7 @@ A python format placeholder (e.g. `{BUILD_USER}`)
 is replaced by the value of the corresponding workspace-status variable.
 
 ```python
-load("//container:container.bzl", "container_push")
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
 
 # A common pattern when users want to avoid trampling
 # on each other's images during development.
@@ -339,7 +339,7 @@ That flag is typically passed in the `.bazelrc` file, see for example [`.bazelrc
 The second option is to employ `Makefile`-style variables:
 
 ```python
-load("//container:container.bzl", "container_bundle")
+load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
 
 container_bundle(
   name = "bundle",
@@ -1103,7 +1103,7 @@ and see <a href=#go_image-custom-base>go_image (custom base)</a> example.
 ### container_bundle
 
 ```python
-load("//container:container.bzl", "container_bundle")
+load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
 
 container_bundle(
     name = "bundle",
@@ -1147,7 +1147,7 @@ to use container_pull with custom docker authentication credentials.
 This target pushes on `bazel run :push_foo`:
 
 ``` python
-load("//container:container.bzl", "container_push")
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
 
 container_push(
    name = "push_foo",
