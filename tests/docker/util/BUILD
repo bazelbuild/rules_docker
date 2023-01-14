@@ -37,10 +37,15 @@ container_run_and_extract(
     commands = [
         "touch /foo.txt",
         "echo 'test' > /foo.txt",
+        "test -f /foo",
     ],
     docker_run_flags = [
         "-u",
         "root",
+        "-v ${PWD}/$(location //testdata:foo):/foo",
+    ],
+    extra_deps = [
+        "//testdata:foo",
     ],
     extract_file = "/foo.txt",
     image = "@debian_base//image",
@@ -69,10 +74,17 @@ file_test(
 
 container_run_and_commit(
     name = "test_container_commit",
-    commands = ["touch /foo.txt"],
+    commands = [
+        "touch /foo.txt",
+        "test -f /foo",
+    ],
     docker_run_flags = [
         "-u",
         "root",
+        "-v ${PWD}/$(location //testdata:foo):/foo",
+    ],
+    extra_deps = [
+        "//testdata:foo",
     ],
     image = "@debian_base//image",
 )
@@ -99,10 +111,17 @@ container_test(
 
 container_run_and_commit_layer(
     name = "test_container_commit_layer",
-    commands = ["touch /foo.txt"],
+    commands = [
+        "touch /foo.txt",
+        "test -f /foo",
+    ],
     docker_run_flags = [
         "-u",
         "root",
+        "-v ${PWD}/$(location //testdata:foo):/foo",
+    ],
+    extra_deps = [
+        "//testdata:foo",
     ],
     image = "@debian_base//image",
 )

@@ -34,6 +34,23 @@ load(
     "docker_path",
 )
 
+def _get_docker_run_flags(ctx, docker_run_flags = None):
+    """Helper method to expand docker_run_flags for mounting
+
+    When passing -v to docker_run_flags and some of those are $(location
+    <foo>) then the user will expect that we expand them properly
+
+    The challenge here is that ctx.expand_location expects Labels and
+    ctx.actions.run.inputs expects Files so it's not fully compatible
+    with the struct approach we use to expose the rule
+    """
+    docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
+
+    if ctx.attr.extra_deps:
+        docker_run_flags = [ctx.expand_location(arg, targets = ctx.attr.extra_deps) for arg in docker_run_flags]
+
+    return docker_run_flags
+
 def _extract_impl(
         ctx,
         name = "",
@@ -67,7 +84,7 @@ def _extract_impl(
     name = name or ctx.label.name
     image = image or ctx.file.image
     commands = commands or ctx.attr.commands
-    docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
+    docker_run_flags = _get_docker_run_flags(ctx, docker_run_flags)
     extract_file = extract_file or ctx.attr.extract_file
     output_file = output_file or ctx.outputs.out
     script = script_file or ctx.outputs.script
@@ -192,7 +209,7 @@ def _commit_impl(
     name = name or ctx.attr.name
     image = image or ctx.file.image
     commands = commands or ctx.attr.commands
-    docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
+    docker_run_flags = _get_docker_run_flags(ctx, docker_run_flags)
     script = ctx.actions.declare_file(name + ".build")
     output_image_tar = output_image_tar or ctx.outputs.out
     extra_deps = extra_deps or ctx.files.extra_deps or []
@@ -348,7 +365,7 @@ def _commit_layer_impl(
     name = name or ctx.attr.name
     image = image or ctx.file.image
     commands = commands or ctx.attr.commands
-    docker_run_flags = docker_run_flags or ctx.attr.docker_run_flags
+    docker_run_flags = _get_docker_run_flags(ctx, docker_run_flags)
     env = env or ctx.attr.env
     script = ctx.actions.declare_file(name + ".build")
     compression = compression or ctx.attr.compression
