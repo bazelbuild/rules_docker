@@ -35,7 +35,7 @@ def sha256(ctx, artifact, execution_requirements = None):
 tools = {
     "sha256": attr.label(
         default = Label("//container/go/cmd/sha256:sha256"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),

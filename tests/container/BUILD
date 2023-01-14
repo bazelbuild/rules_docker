@@ -247,7 +247,7 @@ container_push(
 # BEGIN_DO_NOT_IMPORT
 file_test(
     name = "test_digest_output1",
-    content = "sha256:7d1a06dae0021fb7a0bb789d414ec3799a397141d7299dce5ba287627737eaea",
+    content = "sha256:4ec78686f1edd4f30cca6222f17ace5a2b9f8db9708727c3a140c954af0a534d",
     file = ":deb_image_with_dpkgs.digest",
 )
 
@@ -623,13 +623,13 @@ file_test(
 
 file_test(
     name = "alpine_custom_attr_digest_test",
-    content = "sha256:63a40621b30af05f51fb2b38c2b5c56f9cc82cc605d556e09cacdbbdc5adec63",
+    content = "sha256:2f3bf2d061a1bab130cdd98f10b73dfceb08bfbf94a610c62f20c787073e5178",
     file = ":new_push_test_legacy_from_container_img.digest",
 )
 
 file_test(
     name = "new_alpine_linux_armv6_image_tar_digest_test",
-    content = "sha256:8876a15fad80a30d9ec8660a09c0b795513febc64084047e394a5b534a596ecd",
+    content = "sha256:249804db68a05bb88cc353d4aff090b084d8b8312665638d2f8d7bdaeaa423b3",
     file = ":new_alpine_linux_armv6_image_tar.digest",
 )
 
@@ -935,6 +935,7 @@ TEST_TARGETS = [
     ":absolute_data_path_image",
     ":root_data_path_image",
     ":dummy_repository",
+    ":tag_name",
     # TODO(mattmoor): Re-enable once archive is visible
     # "extras_with_deb",
     ":bundle_test",

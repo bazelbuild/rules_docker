@@ -46,6 +46,7 @@ var (
 	skipUnchangedDigest = flag.Bool("skip-unchanged-digest", false, "If set to true, will only push images where the digest has changed.")
 	layers              utils.ArrayStringFlags
 	stampInfoFile       utils.ArrayStringFlags
+	insecureRepository  = flag.Bool("insecure-repository", false, "If set to true, the repository is assumed to be insecure (http vs https)")
 )
 
 type dockerHeaders struct {
@@ -126,7 +127,12 @@ func main() {
 		log.Printf("Failed to digest image: %v", err)
 	}
 
-	if err := push(stamped, img); err != nil {
+	var opts []name.Option
+	if *insecureRepository {
+		opts = append(opts, name.Insecure)
+	}
+
+	if err := push(stamped, img, opts...); err != nil {
 		log.Fatalf("Error pushing image to %s: %v", stamped, err)
 	}
 
@@ -163,9 +169,9 @@ func digestExists(dst string, img v1.Image) (bool, error) {
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout, legacy layout or Docker tarball format.
 // Push the given image to destination <dst>.
-func push(dst string, img v1.Image) error {
+func push(dst string, img v1.Image, opts ...name.Option) error {
 	// Push the image to dst.
-	ref, err := name.ParseReference(dst)
+	ref, err := name.ParseReference(dst, opts...)
 	if err != nil {
 		return errors.Wrapf(err, "error parsing %q as an image reference", dst)
 	}
@@ -237,4 +243,3 @@ func newTransport() http.RoundTripper {
 
 	return tr
 }
-

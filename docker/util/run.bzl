@@ -98,6 +98,7 @@ def _extract_impl(
         tools = [image, ctx.executable._extract_image_id],
         executable = script,
         use_default_shell_env = True,
+        mnemonic = "RunAndExtract",
     )
 
     return []
@@ -130,7 +131,7 @@ _extract_attrs = {
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -235,6 +236,7 @@ def _commit_impl(
         executable = script,
         tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
         use_default_shell_env = True,
+        mnemonic = "RunAndCommit",
     )
 
     return []
@@ -257,7 +259,7 @@ _commit_attrs = {
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -271,7 +273,7 @@ _commit_attrs = {
     ),
     "_to_json_tool": attr.label(
         default = Label("//docker/util:to_json"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -440,7 +442,7 @@ _commit_layer_attrs = dicts.add({
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -450,7 +452,7 @@ _commit_layer_attrs = dicts.add({
     ),
     "_last_layer_extractor_tool": attr.label(
         default = Label("//contrib:extract_last_layer"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),

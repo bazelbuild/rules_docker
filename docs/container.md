@@ -220,9 +220,9 @@ please use the bazel startup flag `--loading_phase_threads=1` in your bazel invo
 ## container_push
 
 <pre>
-container_push(<a href="#container_push-name">name</a>, <a href="#container_push-extension">extension</a>, <a href="#container_push-extract_config">extract_config</a>, <a href="#container_push-format">format</a>, <a href="#container_push-image">image</a>, <a href="#container_push-incremental_load_template">incremental_load_template</a>, <a href="#container_push-registry">registry</a>,
-               <a href="#container_push-repository">repository</a>, <a href="#container_push-repository_file">repository_file</a>, <a href="#container_push-skip_unchanged_digest">skip_unchanged_digest</a>, <a href="#container_push-stamp">stamp</a>, <a href="#container_push-tag">tag</a>, <a href="#container_push-tag_file">tag_file</a>, <a href="#container_push-tag_tpl">tag_tpl</a>,
-               <a href="#container_push-windows_paths">windows_paths</a>)
+container_push(<a href="#container_push-name">name</a>, <a href="#container_push-extension">extension</a>, <a href="#container_push-extract_config">extract_config</a>, <a href="#container_push-format">format</a>, <a href="#container_push-image">image</a>, <a href="#container_push-incremental_load_template">incremental_load_template</a>,
+               <a href="#container_push-insecure_repository">insecure_repository</a>, <a href="#container_push-registry">registry</a>, <a href="#container_push-repository">repository</a>, <a href="#container_push-repository_file">repository_file</a>, <a href="#container_push-skip_unchanged_digest">skip_unchanged_digest</a>,
+               <a href="#container_push-stamp">stamp</a>, <a href="#container_push-tag">tag</a>, <a href="#container_push-tag_file">tag_file</a>, <a href="#container_push-tag_tpl">tag_tpl</a>, <a href="#container_push-windows_paths">windows_paths</a>)
 </pre>
 
 
@@ -238,6 +238,7 @@ container_push(<a href="#container_push-name">name</a>, <a href="#container_push
 | <a id="container_push-format"></a>format |  The form to push: Docker or OCI, default to 'Docker'.   | String | required |  |
 | <a id="container_push-image"></a>image |  The label of the image to push.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="container_push-incremental_load_template"></a>incremental_load_template |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //container:incremental_load_template |
+| <a id="container_push-insecure_repository"></a>insecure_repository |  Whether the repository is insecure or not (http vs https)   | Boolean | optional | False |
 | <a id="container_push-registry"></a>registry |  The registry to which we are pushing.   | String | required |  |
 | <a id="container_push-repository"></a>repository |  The name of the image.   | String | required |  |
 | <a id="container_push-repository_file"></a>repository_file |  The label of the file with repository value. Overrides 'repository'.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
@@ -403,7 +404,7 @@ image.implementation(<a href="#image.implementation-ctx">ctx</a>, <a href="#imag
                      <a href="#image.implementation-compression_options">compression_options</a>, <a href="#image.implementation-experimental_tarball_format">experimental_tarball_format</a>, <a href="#image.implementation-debs">debs</a>, <a href="#image.implementation-tars">tars</a>, <a href="#image.implementation-architecture">architecture</a>,
                      <a href="#image.implementation-operating_system">operating_system</a>, <a href="#image.implementation-os_version">os_version</a>, <a href="#image.implementation-output_executable">output_executable</a>, <a href="#image.implementation-output_tarball">output_tarball</a>, <a href="#image.implementation-output_config">output_config</a>,
                      <a href="#image.implementation-output_config_digest">output_config_digest</a>, <a href="#image.implementation-output_digest">output_digest</a>, <a href="#image.implementation-output_layer">output_layer</a>, <a href="#image.implementation-workdir">workdir</a>, <a href="#image.implementation-user">user</a>, <a href="#image.implementation-null_cmd">null_cmd</a>,
-                     <a href="#image.implementation-null_entrypoint">null_entrypoint</a>)
+                     <a href="#image.implementation-null_entrypoint">null_entrypoint</a>, <a href="#image.implementation-tag_name">tag_name</a>)
 </pre>
 
 Implementation for the container_image rule.
@@ -468,5 +469,6 @@ You can write a customized container_image rule by writing something like:
 | <a id="image.implementation-user"></a>user |  str, overrides ctx.attr.user   |  <code>None</code> |
 | <a id="image.implementation-null_cmd"></a>null_cmd |  bool, overrides ctx.attr.null_cmd   |  <code>None</code> |
 | <a id="image.implementation-null_entrypoint"></a>null_entrypoint |  bool, overrides ctx.attr.null_entrypoint   |  <code>None</code> |
+| <a id="image.implementation-tag_name"></a>tag_name |  str, overrides ctx.attr.tag_name   |  <code>None</code> |
 
 
