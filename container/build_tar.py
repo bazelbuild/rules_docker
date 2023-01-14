@@ -28,7 +28,7 @@ import re
 import tarfile
 import tempfile
 
-from container import archive
+import archive
 
 class TarFile(object):
   """A class to generates a Docker layer."""
