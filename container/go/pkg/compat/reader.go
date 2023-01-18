@@ -149,7 +149,9 @@ func (r *Reader) loadMetadata() error {
 	r.config = c
 	if r.Parts.BaseManifest == "" {
 		// Base manifest is optional. It's only needed for images whose base
-		// manifests have foreign layers.
+		// manifests have foreign layers. The baseManifest must be cleared
+		// to allow reader reuse
+		r.baseManifest = nil
 		return nil
 	}
 	mf, err := os.Open(r.Parts.BaseManifest)
