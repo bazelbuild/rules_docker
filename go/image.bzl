@@ -89,7 +89,7 @@ STATIC_DEFAULT_BASE = select({
     "//conditions:default": "@go_image_static//image",
 })
 
-def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
+def go_image(name, base = None, tag_name = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
     """Constructs a container image wrapping a go_binary target.
 
   Args:
@@ -123,6 +123,7 @@ def go_image(name, base = None, deps = [], layers = [], env = {}, binary = None,
     compatible_with = kwargs.get("compatible_with", None)
     app_layer(
         name = name,
+        tag_name = tag_name,
         base = base,
         env = env,
         binary = binary,
