@@ -34,7 +34,7 @@ reset_parent_cmd() {
     config=$(< "${parent_config}")
     cmd='["/bin/sh", "-c"]'
     regex='\"Cmd\" ?: ?(\[[^]]*\])'
-    if [[ config =~ regex ]]; then
+    if [[ $config =~ $regex ]]; then
         cmd=${BASH_REMATCH[1]}
     fi
     $DOCKER $DOCKER_FLAGS commit -c "CMD $cmd" "${container_id}" "${output_image_name}"
