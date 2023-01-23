@@ -172,7 +172,7 @@ def _toolchain_configure_impl(repository_ctx):
 
     repository_ctx.template(
         "BUILD",
-        Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
+        repository_ctx.attr._build_tmpl,
         {
             "%{BUILD_TAR_ATTR}": "%s" % build_tar_attr,
             "%{DOCKER_CONFIG}": "%s" % client_config_dir,
@@ -250,6 +250,9 @@ configure_attrs = {
         mandatory = False,
         doc = "The bazel target for the xz tool. " +
               "Can only be set if xz_path is not set.",
+    ),
+    "_build_tmpl": attr.label(
+        default = "//toolchains/docker:BUILD.tpl",
     ),
 }
 
