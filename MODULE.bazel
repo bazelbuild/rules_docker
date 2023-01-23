@@ -21,18 +21,17 @@ use_repo(
     "in_gopkg_yaml_v2",
 )
 
+docker_toolchain = use_extension("//:extensions.bzl", "docker_toolchain")
+docker_toolchain.configure(name = "default_docker_config")
+use_repo(docker_toolchain, "default_docker_config")
+
 register_toolchains(
     # Register the default docker toolchain that expects the 'docker'
     # executable to be in the PATH
-    "//toolchains/docker:default_linux_toolchain",
-    "//toolchains/docker:default_windows_toolchain",
-    "//toolchains/docker:default_osx_toolchain",
+    "@default_docker_config//:default_linux_toolchain",
+    "@default_docker_config//:default_windows_toolchain",
+    "@default_docker_config//:default_osx_toolchain",
 )
-
-# FIXME @aignas 2023-01-03: I am not sure yet how the user could customize this.
-docker_toolchain = use_extension("//:extensions.bzl", "docker_toolchain")
-docker_toolchain.configure(name = "docker_config")
-use_repo(docker_toolchain, "docker_config")
 
 download_puller = use_extension("//:extensions.bzl", "download_puller")
 use_repo(

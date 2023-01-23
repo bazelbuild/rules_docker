@@ -147,15 +147,15 @@ def repositories():
             ],
         )
 
-    native.register_toolchains(
-        # Register the default docker toolchain that expects the 'docker'
-        # executable to be in the PATH
-        "@io_bazel_rules_docker//toolchains/docker:default_linux_toolchain",
-        "@io_bazel_rules_docker//toolchains/docker:default_windows_toolchain",
-        "@io_bazel_rules_docker//toolchains/docker:default_osx_toolchain",
-    )
-
     if "docker_config" not in excludes:
         # Automatically configure the docker toolchain rule to use the default
         # docker binary from the system path
         _docker_toolchain_configure(name = "docker_config")
+
+    native.register_toolchains(
+        # Register the toolchain that expects the 'docker'
+        # executable to be in the PATH
+        "@docker_config//:default_linux_toolchain",
+        "@docker_config//:default_windows_toolchain",
+        "@docker_config//:default_osx_toolchain",
+    )
