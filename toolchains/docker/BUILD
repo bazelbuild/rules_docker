@@ -39,29 +39,20 @@ docker_toolchain(
     xz_path = "xz",
 )
 
-toolchain(
+alias(
     name = "default_linux_toolchain",
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
-    toolchain = "@docker_config//:toolchain",
-    toolchain_type = ":toolchain_type",
+    actual = "@docker_config//:default_linux_toolchain",
+    visibility = ["//visibility:public"],
 )
 
-toolchain(
+alias(
     name = "default_windows_toolchain",
-    target_compatible_with = [
-        "@platforms//os:windows",
-    ],
-    toolchain = "@docker_config//:toolchain",
-    toolchain_type = ":toolchain_type",
+    actual = "@docker_config//:default_windows_toolchain",
+    visibility = ["//visibility:public"],
 )
 
-toolchain(
+alias(
     name = "default_osx_toolchain",
-    target_compatible_with = [
-        "@platforms//os:osx",
-    ],
-    toolchain = "@docker_config//:toolchain",
-    toolchain_type = ":toolchain_type",
+    actual = "@docker_config//:default_osx_toolchain",
+    visibility = ["//visibility:public"],
 )
