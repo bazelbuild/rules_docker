@@ -4,13 +4,13 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "io_bazel_rules_docker", version = "0.0.0")
+bazel_dep(name = "rules_docker", version = "0.0.0")
 local_path_override(
-    module_name = "io_bazel_rules_docker",
+    module_name = "rules_docker",
     path = "../..",
 )
 
-container = use_extension("@io_bazel_rules_docker//:extensions.bzl", "container")
+container = use_extension("@rules_docker//:extensions.bzl", "container")
 container.pull(
     name = "alpine_linux_amd64",
     digest = "sha256:954b378c375d852eb3c63ab88978f640b4348b01c1b3456a024a81536dafbbf4",
