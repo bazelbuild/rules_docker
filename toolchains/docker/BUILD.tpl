@@ -27,3 +27,30 @@ docker_toolchain(
     docker_flags = ["%{DOCKER_FLAGS}"],
     %{XZ_ATTR}
 )
+
+toolchain(
+    name = "default_linux_toolchain",
+    target_compatible_with = [
+        "@platforms//os:linux",
+    ],
+    toolchain = "//:toolchain",
+    toolchain_type = "@io_bazel_rules_docker//toolchains/docker:toolchain_type",
+)
+
+toolchain(
+    name = "default_windows_toolchain",
+    target_compatible_with = [
+        "@platforms//os:windows",
+    ],
+    toolchain = "//:toolchain",
+    toolchain_type = "@io_bazel_rules_docker//toolchains/docker:toolchain_type",
+)
+
+toolchain(
+    name = "default_osx_toolchain",
+    target_compatible_with = [
+        "@platforms//os:osx",
+    ],
+    toolchain = "//:toolchain",
+    toolchain_type = "@io_bazel_rules_docker//toolchains/docker:toolchain_type",
+)
