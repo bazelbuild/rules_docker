@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
-load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
+load("@rules_docker//container:container.bzl", "container_image")
+load("@rules_docker//contrib:test.bzl", "container_test")
 
 container_image(
     name = "basic_alpine",

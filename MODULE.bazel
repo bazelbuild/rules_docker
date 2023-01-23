@@ -1,7 +1,8 @@
 module(
-    name = "io_bazel_rules_docker",
+    name = "rules_docker",
     version = "0.26.0",
     compatibility_level = 1,
+    repo_name = "io_bazel_rules_docker",
 )
 
 bazel_dep(name = "platforms", version = "0.0.4")
