@@ -275,6 +275,8 @@ def java_image(
         env = {},
         jvm_flags = [],
         classpath_as_file = None,
+        architecture = None,
+        operating_system = None,
         **kwargs):
     """Builds a container image overlaying the java_binary.
 
@@ -295,6 +297,8 @@ def java_image(
                 construction of the container entrypoint. Omitting main_class
                 allows the user to specify additional arguments to the JVM at
                 runtime.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
@@ -340,6 +344,8 @@ def java_image(
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
         classpath_as_file = classpath_as_file,
+        architecture = architecture,
+        operating_system = operating_system,
     )
 
 def _war_dep_layer_impl(ctx):

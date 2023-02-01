@@ -35,6 +35,8 @@ def scala_image(
         env = {},
         jvm_flags = [],
         classpath_as_file = None,
+        architecture = None,
+        operating_system = None,
         **kwargs):
     """Builds a container image overlaying the scala_binary.
 
@@ -49,6 +51,8 @@ def scala_image(
            their own layers.
     env: Environment variables for the scala_image.
     jvm_flags: Flags to pass to the JVM when running the scala image.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See scala_binary.
   """
     binary_name = name + ".binary"
@@ -90,6 +94,8 @@ def scala_image(
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
         classpath_as_file = classpath_as_file,
+        architecture = architecture,
+        operating_system = operating_system,
     )
 
 def repositories():

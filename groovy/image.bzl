@@ -35,6 +35,8 @@ def groovy_image(
         env = {},
         jvm_flags = [],
         classpath_as_file = None,
+        architecture = None,
+        operating_system = None,
         **kwargs):
     """Builds a container image overlaying the groovy_binary.
 
@@ -49,6 +51,8 @@ def groovy_image(
            their own layers.
     env: Environment variables for the groovy_image.
     jvm_flags: The flags to pass to the JVM when running the groovy image.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See groovy_binary.
   """
     binary_name = name + ".binary"
@@ -98,6 +102,8 @@ def groovy_image(
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
         classpath_as_file = classpath_as_file,
+        architecture = architecture,
+        operating_system = operating_system,
     )
 
 def repositories():

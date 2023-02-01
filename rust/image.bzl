@@ -32,7 +32,16 @@ def repositories():
     """
     _repositories()
 
-def rust_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
+def rust_image(
+        name,
+        base = None,
+        deps = [],
+        layers = [],
+        env = {},
+        binary = None,
+        architecture = None,
+        operating_system = None,
+        **kwargs):
     """Constructs a container image wrapping a rust_binary target.
 
   Args:
@@ -42,6 +51,8 @@ def rust_image(name, base = None, deps = [], layers = [], env = {}, binary = Non
     layers: Augments "deps" with dependencies that should be put into their own layers.
     env: Environment variables for the rust_image.
     binary: An alternative binary target to use instead of generating one.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See rust_binary.
   """
     if layers:
@@ -71,4 +82,6 @@ def rust_image(name, base = None, deps = [], layers = [], env = {}, binary = Non
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        architecture = architecture,
+        operating_system = operating_system,
     )

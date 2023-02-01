@@ -89,7 +89,17 @@ STATIC_DEFAULT_BASE = select({
     "//conditions:default": "@go_image_static//image",
 })
 
-def go_image(name, base = None, tag_name = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
+def go_image(
+        name,
+        base = None,
+        tag_name = None,
+        deps = [],
+        layers = [],
+        env = {},
+        binary = None,
+        architecture = None,
+        operating_system = None,
+        **kwargs):
     """Constructs a container image wrapping a go_binary target.
 
   Args:
@@ -99,6 +109,8 @@ def go_image(name, base = None, tag_name = None, deps = [], layers = [], env = {
     layers: Augments "deps" with dependencies that should be put into their own layers.
     env: Environment variables for the go_image.
     binary: An alternative binary target to use instead of generating one.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See go_binary.
   """
     if layers:
@@ -134,4 +146,6 @@ def go_image(name, base = None, tag_name = None, deps = [], layers = [], env = {
         testonly = kwargs.get("testonly"),
         restricted_to = restricted_to,
         compatible_with = compatible_with,
+        architecture = architecture,
+        operating_system = operating_system,
     )

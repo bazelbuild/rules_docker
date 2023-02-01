@@ -73,7 +73,15 @@ DEFAULT_BASE = select({
     "//conditions:default": "@py3_image_base//image",
 })
 
-def py3_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
+def py3_image(
+        name,
+        base = None,
+        deps = [],
+        layers = [],
+        env = {},
+        architecture = None,
+        operating_system = None,
+        **kwargs):
     """Constructs a container image wrapping a py_binary target.
 
   Args:
@@ -83,6 +91,8 @@ def py3_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
     layers: Augments "deps" with dependencies that should be put into
            their own layers.
     env: Environment variables for the py_image.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See py_binary.
   """
     binary_name = name + ".binary"
@@ -126,4 +136,6 @@ def py3_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
         # workspace directory to ensure the symlinks are valid. See
         # https://github.com/bazelbuild/rules_docker/issues/161 for details.
         create_empty_workspace_dir = True,
+        architecture = architecture,
+        operating_system = operating_system,
     )

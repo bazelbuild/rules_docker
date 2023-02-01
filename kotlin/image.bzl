@@ -36,6 +36,8 @@ def kt_jvm_image(
         env = {},
         jvm_flags = [],
         classpath_as_file = None,
+        architecture = None,
+        operating_system = None,
         **kwargs):
     """Builds a container image overlaying the kt_jvm_binary.
 
@@ -50,6 +52,8 @@ def kt_jvm_image(
         their own layers.
     env: Environment variables for the kt_jvm_image.
     jvm_flags: The flags to pass to the JVM when running the kotlin image.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See kt_jvm_binary.
   """
     binary_name = name + ".binary"
@@ -97,6 +101,8 @@ def kt_jvm_image(
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
         classpath_as_file = classpath_as_file,
+        architecture = architecture,
+        operating_system = operating_system,
     )
 
 def repositories():

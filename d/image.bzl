@@ -32,7 +32,16 @@ def repositories():
     """
     _repositories()
 
-def d_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
+def d_image(
+        name,
+        base = None,
+        deps = [],
+        layers = [],
+        env = {},
+        binary = None,
+        architecture = None,
+        operating_system = None,
+        **kwargs):
     """Constructs a container image wrapping a d_binary target.
 
   Args:
@@ -43,6 +52,8 @@ def d_image(name, base = None, deps = [], layers = [], env = {}, binary = None, 
            their own layers.
     env: Environment variables for the d_image.
     binary: An alternative binary target to use instead of generating one.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See d_binary.
   """
     if layers:
@@ -71,4 +82,6 @@ def d_image(name, base = None, deps = [], layers = [], env = {}, binary = None, 
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        architecture = architecture,
+        operating_system = operating_system,
     )

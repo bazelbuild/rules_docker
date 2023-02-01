@@ -63,7 +63,16 @@ DEFAULT_BASE = select({
     "//conditions:default": "@cc_image_base//image",
 })
 
-def cc_image(name, base = None, deps = [], layers = [], env = {}, binary = None, **kwargs):
+def cc_image(
+        name,
+        base = None,
+        deps = [],
+        layers = [],
+        env = {},
+        binary = None,
+        architecture = None,
+        operating_system = None,
+        **kwargs):
     """Constructs a container image wrapping a cc_binary target.
 
   Args:
@@ -74,6 +83,8 @@ def cc_image(name, base = None, deps = [], layers = [], env = {}, binary = None,
            their own layers.
     env: Environment variables for the cc_image.
     binary: An alternative binary target to use instead of generating one.
+    architecture: The desired CPU architecture to be used as label in the container image.
+    operating_system: operating system to target (e.g. linux, windows)
     **kwargs: See cc_binary.
   """
     if layers:
@@ -102,4 +113,6 @@ def cc_image(name, base = None, deps = [], layers = [], env = {}, binary = None,
         args = kwargs.get("args"),
         data = kwargs.get("data"),
         testonly = kwargs.get("testonly"),
+        architecture = architecture,
+        operating_system = operating_system,
     )
