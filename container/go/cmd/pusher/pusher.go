@@ -44,6 +44,7 @@ var (
 	format              = flag.String("format", "", "The format of the uploaded image (Docker or OCI).")
 	clientConfigDir     = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	skipUnchangedDigest = flag.Bool("skip-unchanged-digest", false, "If set to true, will only push images where the digest has changed.")
+	skipExistingTag     = flag.Bool("skip-existing-tag", false, "If set to true, will only push images if tag does not exist in repository.")
 	layers              utils.ArrayStringFlags
 	stampInfoFile       utils.ArrayStringFlags
 	insecureRepository  = flag.Bool("insecure-repository", false, "If set to true, the repository is assumed to be insecure (http vs https)")
@@ -132,8 +133,14 @@ func main() {
 		opts = append(opts, name.Insecure)
 	}
 
-	if err := push(stamped, img, opts...); err != nil {
+	wasPushed, err := push(stamped, img, opts...)
+	if err != nil {
 		log.Fatalf("Error pushing image to %s: %v", stamped, err)
+	}
+
+	if !wasPushed {
+		log.Printf("Successfully skipped pushing %s image to %s", *format, stamped)
+		return
 	}
 
 	digestStr := ""
@@ -165,15 +172,42 @@ func digestExists(dst string, img v1.Image) (bool, error) {
 	return remoteImg != nil, nil
 }
 
+func tagExists(dst string, img v1.Image) (bool, error) {
+	imageTag, err := name.NewTag(dst)
+	if err != nil {
+		return false, errors.Wrapf(err, "couldn't create ref from image tag")
+	}
+	remoteImg, err := remote.Image(imageTag, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err != nil {
+		if strings.Contains(err.Error(), string(transport.ManifestUnknownErrorCode)) {
+			// tag does not exist in repo
+			return false, nil
+		}
+		return false, errors.Wrapf(err, "unexpected error when checking for image tag")
+	}
+	return remoteImg != nil, nil
+}
+
 // push pushes the given image to the given destination.
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout, legacy layout or Docker tarball format.
 // Push the given image to destination <dst>.
-func push(dst string, img v1.Image, opts ...name.Option) error {
+func push(dst string, img v1.Image, opts ...name.Option) (bool, error) {
 	// Push the image to dst.
 	ref, err := name.ParseReference(dst, opts...)
 	if err != nil {
-		return errors.Wrapf(err, "error parsing %q as an image reference", dst)
+		return false, errors.Wrapf(err, "error parsing %q as an image reference", dst)
+	}
+
+	if *skipExistingTag {
+		exists, err := tagExists(dst, img)
+		if err != nil {
+			log.Printf("Error checking if tag already exists %v. Still pushing", err)
+		}
+		if exists {
+			log.Print("Skipping push of existing tag")
+			return false, nil
+		}
 	}
 
 	if *skipUnchangedDigest {
@@ -183,7 +217,7 @@ func push(dst string, img v1.Image, opts ...name.Option) error {
 		}
 		if exists {
 			log.Print("Skipping push of unchanged digest")
-			return nil
+			return false, nil
 		}
 	}
 
@@ -193,13 +227,13 @@ func push(dst string, img v1.Image, opts ...name.Option) error {
 	if _, err := os.Stat(configPath); err == nil {
 		file, err := os.Open(configPath)
 		if err != nil {
-			return errors.Wrapf(err, "unable to open docker config")
+			return false, errors.Wrapf(err, "unable to open docker config")
 		}
 
 		var dockerConfig dockerHeaders
 		err = json.NewDecoder(file).Decode(&dockerConfig)
 		if err != nil {
-			return errors.Wrapf(err, "error parsing docker config")
+			return false, errors.Wrapf(err, "error parsing docker config")
 		}
 
 		httpTransportOption := remote.WithTransport(&headerTransport{
@@ -211,10 +245,10 @@ func push(dst string, img v1.Image, opts ...name.Option) error {
 	}
 
 	if err := remote.Write(ref, img, options...); err != nil {
-		return errors.Wrapf(err, "unable to push image to %s", dst)
+		return false, errors.Wrapf(err, "unable to push image to %s", dst)
 	}
 
-	return nil
+	return true, nil
 }
 
 // headerTransport sets headers on outgoing requests.
