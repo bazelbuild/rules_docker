@@ -219,6 +219,9 @@ container_push_ = rule(
 )
 
 # Pushes a container image to a registry.
+# You can override some arguments by including adding additional arguments.
+# Additional arguments will be sent to the command listed in the _pusher rule above.
+# Most common use is adding --dst=myregistry/mypath:debugtag.
 def container_push(name, format, image, registry, repository, **kwargs):
     container_push_(
         name = name,
