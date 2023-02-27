@@ -64,6 +64,7 @@ def _add_create_image_config_args(
         manifest,
         config,
         labels,
+        label_files,
         entrypoint,
         cmd,
         null_cmd,
@@ -121,8 +122,8 @@ def _add_create_image_config_args(
     inputs += layer_names
     args.add_all(layer_names, before_each = "-layerDigestFile", format_each = "@%s")
 
-    if ctx.attr.label_files:
-        inputs += ctx.files.label_files
+    if label_files:
+        inputs += label_files
 
     if base_config:
         args.add("-baseConfig", base_config)
@@ -172,23 +173,26 @@ def _image_config(
         workdir = None,
         user = None,
         null_entrypoint = False,
-        null_cmd = False):
+        null_cmd = False,
+        labels = None,
+        label_files = None,
+        label_file_strings = None):
     """Create the configuration for a new container image."""
     config = ctx.actions.declare_file(name + "." + layer_name + ".config")
     manifest = ctx.actions.declare_file(name + "." + layer_name + ".manifest")
 
     label_file_dict = _string_to_label(
-        ctx.files.label_files,
-        ctx.attr.label_file_strings,
+        label_files,
+        label_file_strings,
     )
 
-    labels = dict()
+    labels_fixed = dict()
     for label in ctx.attr.labels:
         fname = ctx.attr.labels[label]
         if fname[0] == "@":
-            labels[label] = "@" + label_file_dict[fname[1:]].path
+            labels_fixed[label] = "@" + label_file_dict[fname[1:]].path
         else:
-            labels[label] = fname
+            labels_fixed[label] = fname
 
     args = ctx.actions.args()
     inputs = []
@@ -200,7 +204,8 @@ def _image_config(
         inputs,
         manifest,
         config,
-        labels,
+        labels_fixed,
+        label_files,
         entrypoint,
         cmd,
         null_cmd,
@@ -289,7 +294,10 @@ def _impl(
         user = None,
         null_cmd = None,
         null_entrypoint = None,
-        tag_name = None):
+        tag_name = None,
+        labels = None,
+        label_files = None,
+        label_file_strings = None):
     """Implementation for the container_image rule.
 
     You can write a customized container_image rule by writing something like:
@@ -348,6 +356,9 @@ def _impl(
         null_cmd: bool, overrides ctx.attr.null_cmd
         null_entrypoint: bool, overrides ctx.attr.null_entrypoint
         tag_name: str, overrides ctx.attr.tag_name
+        labels: str Dict, overrides ctx.attr.labels
+        label_files: File list, overrides ctx.attr.label_files
+        label_file_strings: str list, overrides ctx.attr.label_file_strings
     """
     name = name or ctx.label.name
     base = base or ctx.attr.base
@@ -369,7 +380,10 @@ def _impl(
     build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
-    tag_name = tag_name or ctx.attr.tag_name
+    tag_name = tag_name or ctx.attr.tag_namei
+    labels = labels or ctx.attr.labels
+    label_files = label_files or ctx.files.label_files
+    label_file_strings = label_file_strings or ctx.attr.label_file_strings
 
     # If this target specifies docker_run_flags, they are always used.
     # Fall back to the base image's run flags if present, otherwise use the default value.
@@ -460,6 +474,9 @@ def _impl(
             user = user or ctx.attr.user,
             null_entrypoint = null_entrypoint,
             null_cmd = null_cmd,
+            labels = labels,
+            label_files = label_files,
+            label_file_strings = label_file_strings,
         )
 
     # Construct a temporary name based on the build target. This is the name
