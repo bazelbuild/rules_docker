@@ -380,7 +380,7 @@ def _impl(
     build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
-    tag_name = tag_name or ctx.attr.tag_namei
+    tag_name = tag_name or ctx.attr.tag_name
     labels = labels or ctx.attr.labels
     label_files = label_files or ctx.files.label_files
     label_file_strings = label_file_strings or ctx.attr.label_file_strings
