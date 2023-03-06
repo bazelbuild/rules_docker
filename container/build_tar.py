@@ -68,6 +68,7 @@ class TarFile(object):
         self.root_directory,
         self.default_mtime,
         self.enable_mtime_preservation,
+        self.xz_path,
     )
     return self
 

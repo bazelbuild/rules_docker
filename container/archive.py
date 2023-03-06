@@ -107,7 +107,8 @@ class TarFileWriter(object):
                compression='',
                root_directory='./',
                default_mtime=None,
-               preserve_tar_mtimes=True):
+               preserve_tar_mtimes=True,
+               xz_path='xz'):
     """TarFileWriter wraps tarfile.open().
     Args:
       name: the tar file name.
@@ -125,6 +126,7 @@ class TarFileWriter(object):
     self.gz = compression in ['tgz', 'gz']
     # Support xz compression through xz... until we can use Py3
     self.xz = compression in ['xz', 'lzma']
+    self.xz_path = xz_path
     self.name = name
     self.root_directory = root_directory.rstrip('/')
     self.preserve_mtime = preserve_tar_mtimes
@@ -356,10 +358,10 @@ class TarFileWriter(object):
       # large files.
       # TODO(dmarting): once our py3 support gets better, compile this tools
       # with py3 for proper lzma support.
-      if subprocess.call('which xzcat', shell=True, stdout=subprocess.PIPE):
+      if subprocess.call('which {0}'.format(self.xz_path), shell=True, stdout=subprocess.PIPE):
         raise self.Error('Cannot handle .xz and .lzma compression: '
-                         'xzcat not found.')
-      p = subprocess.Popen('cat %s | xzcat' % tar,
+                         'xz not found.')
+      p = subprocess.Popen('{0} --decompress --stdout {1}'.format(self.xz_path, tar),
                            shell=True,
                            stdout=subprocess.PIPE)
       f = io.BytesIO(p.stdout.read())
@@ -439,10 +441,10 @@ class TarFileWriter(object):
       self.fileobj.close()
     if self.xz:
       # Support xz compression through xz... until we can use Py3
-      if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
+      if subprocess.call('which {0}'.format(self.xz_path), shell=True, stdout=subprocess.PIPE):
         raise self.Error('Cannot handle .xz and .lzma compression: '
                          'xz not found.')
       subprocess.call(
-          'mv {0} {0}.d && xz -z {0}.d && mv {0}.d.xz {0}'.format(self.name),
+          'mv {0} {0}.d && {1} -z {0}.d && mv {0}.d.xz {0}'.format(self.name, self.xz_path),
           shell=True,
           stdout=subprocess.PIPE)
