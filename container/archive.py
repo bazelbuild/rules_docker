@@ -108,7 +108,7 @@ class TarFileWriter(object):
                root_directory='./',
                default_mtime=None,
                preserve_tar_mtimes=True,
-               xz_path='xz'):
+               xz_path=None):
     """TarFileWriter wraps tarfile.open().
     Args:
       name: the tar file name.
@@ -358,11 +358,10 @@ class TarFileWriter(object):
       # large files.
       # TODO(dmarting): once our py3 support gets better, compile this tools
       # with py3 for proper lzma support.
-      if subprocess.call('which {0}'.format(self.xz_path), shell=True, stdout=subprocess.PIPE):
+      if not self.xz_path:
         raise self.Error('Cannot handle .xz and .lzma compression: '
                          'xz not found.')
-      p = subprocess.Popen('{0} --decompress --stdout {1}'.format(self.xz_path, tar),
-                           shell=True,
+      p = subprocess.Popen([self.xz_path, '--decompress', '--stdout', tar],
                            stdout=subprocess.PIPE)
       f = io.BytesIO(p.stdout.read())
       p.wait()
@@ -441,7 +440,7 @@ class TarFileWriter(object):
       self.fileobj.close()
     if self.xz:
       # Support xz compression through xz... until we can use Py3
-      if subprocess.call('which {0}'.format(self.xz_path), shell=True, stdout=subprocess.PIPE):
+      if not self.xz_path:
         raise self.Error('Cannot handle .xz and .lzma compression: '
                          'xz not found.')
       subprocess.call(
