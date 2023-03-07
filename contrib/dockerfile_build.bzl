@@ -78,7 +78,7 @@ def _impl(repository_ctx):
     if repository_ctx.attr.target:
         command.extend(["--target", repository_ctx.attr.target])
 
-    build_result = repository_ctx.execute(command)
+    build_result = repository_ctx.execute(command, timeout = repository_ctx.attr.timeout)
     if build_result.return_code:
         fail("docker build command failed: {} ({})".format(
             build_result.stderr,
@@ -125,6 +125,10 @@ dockerfile_image = repository_rule(
         ),
         "target": attr.string(
             doc = "Specify which intermediate stage to finish at, passed to `--target`.",
+        ),
+        "timeout": attr.int(
+            doc = "Timeout for the build action (in seconds, default 600 seconds)",
+            default = 600,
         ),
     },
     implementation = _impl,
