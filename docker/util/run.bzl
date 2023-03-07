@@ -138,6 +138,7 @@ def _extract_impl(
         tools = image_result[1].default_runfiles.files,
         outputs = [output_file],
         use_default_shell_env = True,
+        mnemonic = "RunAndExtract",
     )
 
     return [
@@ -423,6 +424,7 @@ def _commit_impl(
         inputs = [parent_config] if parent_config else [],
         outputs = [output_image_tar],
         use_default_shell_env = True,
+        mnemonic = "RunAndCommit",
     )
 
     return [
@@ -780,7 +782,7 @@ _commit_layer_attrs = dicts.add(_image.attrs, {
     ),
     "_extract_image_id": attr.label(
         default = Label("//contrib:extract_image_id"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -790,7 +792,7 @@ _commit_layer_attrs = dicts.add(_image.attrs, {
     ),
     "_last_layer_extractor_tool": attr.label(
         default = Label("//contrib:extract_last_layer"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
