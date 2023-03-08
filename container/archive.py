@@ -119,13 +119,21 @@ class TarFileWriter(object):
           2000-01-01, which is compatible with non *nix OSes'.
       preserve_tar_mtimes: if true, keep file mtimes from input tar file.
     """
+    self.xz = False
     if compression in ['bzip2', 'bz2']:
       mode = 'w:bz2'
+    elif compression in ['xz', 'lzma']:
+      try:
+        # Internally tarfile tries to import lzma to check it's support
+        import lzma
+        mode = 'w:xz'
+      except ImportError:
+        # Support xz compression through xz...
+        mode = 'w:'
+        self.xz = True
     else:
       mode = 'w:'
     self.gz = compression in ['tgz', 'gz']
-    # Support xz compression through xz... until we can use Py3
-    self.xz = compression in ['xz', 'lzma']
     self.xz_path = xz_path
     self.name = name
     self.root_directory = root_directory.rstrip('/')
@@ -351,21 +359,21 @@ class TarFileWriter(object):
     elif compression not in ['gz', 'bz2', 'xz']:
       compression = ''
     if compression == 'xz':
-      # Python 2 does not support lzma, our py3 support is terrible so let's
-      # just hack around.
-      # Note that we buffer the file in memory and it can have an important
-      # memory footprint but it's probably fine as we don't use them for really
-      # large files.
-      # TODO(dmarting): once our py3 support gets better, compile this tools
-      # with py3 for proper lzma support.
-      if not self.xz_path:
-        raise self.Error('Cannot handle .xz and .lzma compression: '
-                         'xz not found.')
-      p = subprocess.Popen([self.xz_path, '--decompress', '--stdout', tar],
-                           stdout=subprocess.PIPE)
-      f = io.BytesIO(p.stdout.read())
-      p.wait()
-      intar = tarfile.open(fileobj=f, mode='r:')
+      try:
+        # supported natively since python 3.3
+        intar = tarfile.open(name=tar, mode='r:xz')
+      except tarfile.CompressionError:
+        # Note that we buffer the file in memory and it can have an important
+        # memory footprint but it's probably fine as we don't use them for
+        # really large files.
+        if not self.xz_path:
+          raise self.Error('Cannot handle .xz and .lzma compression: '
+                           'xz not found.')
+        p = subprocess.Popen([self.xz_path, '--decompress', '--stdout', tar],
+                            stdout=subprocess.PIPE)
+        f = io.BytesIO(p.stdout.read())
+        p.wait()
+        intar = tarfile.open(fileobj=f, mode='r:')
     else:
       if compression in ['gz', 'bz2']:
         # prevent performance issues due to accidentally-introduced seeks
