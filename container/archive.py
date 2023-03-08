@@ -17,6 +17,7 @@
 import gzip
 import io
 import os
+import shutil
 import subprocess
 import tarfile
 import posixpath
@@ -447,11 +448,11 @@ class TarFileWriter(object):
     if self.fileobj:
       self.fileobj.close()
     if self.xz:
-      # Support xz compression through xz... until we can use Py3
+      # Support xz compression through xz...
       if not self.xz_path:
         raise self.Error('Cannot handle .xz and .lzma compression: '
                          'xz not found.')
-      subprocess.call(
-          'mv {0} {0}.d && {1} -z {0}.d && mv {0}.d.xz {0}'.format(self.name, self.xz_path),
-          shell=True,
-          stdout=subprocess.PIPE)
+      shutil.move(self.name, self.name+'.d')
+      subprocess.call([self.xz_path, '--compress', self.name+'.d'],
+                      stdout=subprocess.PIPE)
+      shutil.move(self.name+'.d.xz', self.name)
