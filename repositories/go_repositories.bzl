@@ -37,16 +37,16 @@ def go_deps(go_repository_default_config = "@//:WORKSPACE"):
         go_repository_default_config (str, optional): A file used to determine the root of the workspace.
     """
     go_rules_dependencies()
-    go_register_toolchains()
+    go_register_toolchains(go_version = "1.16")
     gazelle_dependencies(go_repository_default_config = go_repository_default_config)
     excludes = native.existing_rules().keys()
     if "com_github_google_go_containerregistry" not in excludes:
         go_repository(
             name = "com_github_google_go_containerregistry",
-            urls = ["https://github.com/google/go-containerregistry/archive/v0.5.1.tar.gz"],
-            sha256 = "c3e28d8820056e7cc870dbb5f18b4f7f7cbd4e1b14633a6317cef895fdb35203",
+            urls = ["https://github.com/google/go-containerregistry/archive/v0.9.0.tar.gz"],
+            sha256 = "9cd3de5d5675ca79ff7251491c481f6afa54aa6a68bbbbf92613d66bfb39aa08",
             importpath = "github.com/google/go-containerregistry",
-            strip_prefix = "go-containerregistry-0.5.1",
+            strip_prefix = "go-containerregistry-0.9.0",
             build_directives = [
                 # Silence Go module warnings about unused modules.
                 "gazelle:exclude pkg/authn/k8schain",
