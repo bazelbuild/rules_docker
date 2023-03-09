@@ -1031,7 +1031,6 @@ genrule(
     outs = ["got_arch.txt"],
     cmd = select({
         "@platforms//cpu:arm64": "echo arm64 > \"$@\"",
-        "@platforms//cpu:aarch64": "echo arm64 > \"$@\"",
         "@platforms//cpu:x86_64": "echo x86_64 > \"$@\"",
         "@platforms//cpu:arm": "echo arm > \"$@\"",
     }),
@@ -1056,7 +1055,6 @@ templated_file(
             "@platforms//os:macos": ["%WANT_OS%=macos"],
         }) + select({
             "@platforms//cpu:arm64": ["%WANT_ARCH%=arm64"],
-            "@platforms//cpu:aarch64": ["%WANT_ARCH%=arm64"],
             "@platforms//cpu:x86_64": ["%WANT_ARCH%=x86_64"],
         }),
     template = "//tests/container/configs:transitions_off.yaml.tpl",
