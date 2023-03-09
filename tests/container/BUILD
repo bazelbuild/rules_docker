@@ -648,9 +648,15 @@ file_test(
 
 # Testing for content of downloaded image artifacts.
 file_test(
-    name = "new_distroless_base_oci_test_config",
+    name = "new_distroless_base_oci_test_config_architecture",
     file = "@alpine_linux_armv6_fixed_id//image:config.json",
     regexp = "{\"architecture\":\"arm\",.*",
+)
+
+file_test(
+    name = "new_distroless_base_oci_test_config_variant",
+    file = "@alpine_linux_armv6_fixed_id//image:config.json",
+    regexp = ".*\"variant\":\"v6\".*",
 )
 
 file_test(

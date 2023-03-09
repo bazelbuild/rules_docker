@@ -63,6 +63,8 @@ type OverrideConfigOpts struct {
 	NullCmd bool
 	// Architecture is the architecture of the docker image
 	Architecture string
+	// Variant is the CPU variant of the docker image.
+	Variant string
 	// OperatingSystem is the operating system to creater docker image for.
 	OperatingSystem string
 	// OSVersion is the operating system version to creater docker image for.
@@ -445,6 +447,7 @@ func updateConfig(overrideInfo *OverrideConfigOpts) error {
 	overrideInfo.ConfigFile.Author = overrideInfo.Author
 	overrideInfo.ConfigFile.OS = overrideInfo.OperatingSystem
 	overrideInfo.ConfigFile.Architecture = overrideInfo.Architecture
+	overrideInfo.ConfigFile.Variant = overrideInfo.Variant
 	if overrideInfo.OSVersion != "" {
 		overrideInfo.ConfigFile.OSVersion = overrideInfo.Stamper.Stamp(overrideInfo.OSVersion)
 	}
