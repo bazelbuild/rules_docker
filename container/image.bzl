@@ -187,8 +187,8 @@ def _image_config(
     )
 
     labels_fixed = dict()
-    for label in ctx.attr.labels:
-        fname = ctx.attr.labels[label]
+    for label in labels:
+        fname = labels[label]
         if fname[0] == "@":
             labels_fixed[label] = "@" + label_file_dict[fname[1:]].path
         else:
