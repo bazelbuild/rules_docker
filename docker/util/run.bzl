@@ -76,13 +76,14 @@ def _extract_impl(
     toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
 
     # Generate a shell script to execute the run statement
+    docker_run_flags = ctx.expand_location(" ".join(docker_run_flags), ctx.attr.extra_deps)
     ctx.actions.expand_template(
         template = ctx.file._extract_tpl,
         output = script,
         substitutions = {
             "%{commands}": _process_commands(commands),
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
-            "%{docker_run_flags}": " ".join(docker_run_flags),
+            "%{docker_run_flags}": docker_run_flags,
             "%{docker_tool_path}": docker_path(toolchain_info),
             "%{extract_file}": extract_file,
             "%{image_id_extractor_path}": ctx.executable._extract_image_id.path,
