@@ -4,6 +4,17 @@
 | :------: |
 [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg?branch=master)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
 
+## Status
+
+🚨 rules_docker is in minimal maintenance mode.
+
+- The maintainers have very little time, and are unlikely to review PRs or respond to issues.
+- Releases will be infrequent or may not happen at all.
+- The maintainers are determining if the project has a long-term future, and hope to post a roadmap soon.
+
+You may find more details in
+[the discussion](https://github.com/bazelbuild/rules_docker/discussions/2038).
+
 ## Basic Rules
 
 * [container_image](/docs/container.md#container_image) ([example](#container_image))
