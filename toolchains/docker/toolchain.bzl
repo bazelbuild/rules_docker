@@ -126,7 +126,7 @@ def _toolchain_configure_impl(repository_ctx):
 
     tool_attr = ""
     if repository_ctx.attr.docker_target:
-        tool_attr = "tool_target = \"%s\"," % repository_ctx.attr.tool_target
+        tool_attr = "tool_target = \"%s\"," % repository_ctx.attr.docker_target
     elif repository_ctx.attr.docker_path:
         tool_attr = "tool_path = \"%s\"," % repository_ctx.attr.docker_path
     elif repository_ctx.which("docker"):

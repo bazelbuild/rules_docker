@@ -118,12 +118,14 @@ def _impl(ctx, image_tar = None, packages = None, additional_repos = None, outpu
         },
         is_executable = True,
     )
-
+    tools = [ctx.executable._extract_image_id]
+    if toolchain_info.tool_target:
+        tools.append(toolchain_info.tool_target.files_to_run.executable)
     ctx.actions.run(
         outputs = [output_tar, output_metadata],
         executable = output_script,
         inputs = [image_tar],
-        tools = [ctx.executable._extract_image_id],
+        tools = tools,
         use_default_shell_env = True,
     )
 

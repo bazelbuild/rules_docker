@@ -7,7 +7,7 @@ TO_JSON_TOOL="%{to_json_tool}"
 source %{util_script}
 
 # Resolve the docker tool path
-DOCKER="%{docker_tool_path}"
+DOCKER="$(readlink -nf %{docker_tool_path})"
 DOCKER_FLAGS="%{docker_flags}"
 
 if [[ -z "$DOCKER" ]]; then

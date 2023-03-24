@@ -197,3 +197,12 @@ tasks:
       - //...
     test_flags:
       - --test_output=errors
+  testing_custom_toolchain_target:
+    platform: ubuntu2004
+    working_directory: testing/custom_toolchain_target
+    shell_commands:
+      - cp ../../.bazelrc .
+    test_targets:
+      - //...
+    test_flags:
+      - --test_output=errors

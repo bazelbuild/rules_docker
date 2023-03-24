@@ -550,8 +550,12 @@ def _impl(
         command = "cp %s %s" % (config_digest.path, output_config_digest.path),
     )
 
+    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+    runfiles_files = [config_file, config_digest, output_config_digest]
+    if toolchain_info.tool_target:
+        runfiles_files.append(toolchain_info.tool_target.files_to_run.executable)
     runfiles = ctx.runfiles(
-        files = unzipped_layers + diff_ids + [config_file, config_digest, output_config_digest] +
+        files = unzipped_layers + diff_ids + runfiles_files +
                 ([container_parts["legacy"]] if container_parts["legacy"] else []),
     )
 

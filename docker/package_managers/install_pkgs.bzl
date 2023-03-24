@@ -126,7 +126,9 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
         },
         is_executable = True,
     )
-
+    tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool]
+    if toolchain_info.tool_target:
+        tools.append(toolchain_info.tool_target.files_to_run.executable)
     ctx.actions.run(
         outputs = [unstripped_tar],
         inputs = [
@@ -136,7 +138,7 @@ def _impl(ctx, image_tar = None, installables_tar = None, installation_cleanup_c
             image_util,
         ],
         mnemonic = "ExtractImageId",
-        tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
+        tools = tools,
         executable = script,
         use_default_shell_env = True,
     )

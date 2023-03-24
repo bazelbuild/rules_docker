@@ -57,7 +57,9 @@ test:remote --remote_timeout=3600
 test:remote --keep_going
 
 # Configuration specific to buildkite CI testing the default workspace
-test:buildkite --action_env=PATH 
-test:buildkite --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test 
-test:buildkite --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test 
+test:buildkite --action_env=PATH
 test:buildkite --test_output=errors
+
+# A test verifies that these values can be expanded as make vars
+test --define=ENV_KEY=my_key # for tests/container:set_env_make_vars_test
+test --define=ENV_VALUE=my_value # for tests/container:set_env_make_vars_test

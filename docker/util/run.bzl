@@ -91,11 +91,13 @@ def _extract_impl(
         },
         is_executable = True,
     )
-
+    tools = [image, ctx.executable._extract_image_id]
+    if toolchain_info.tool_target:
+        tools.append(toolchain_info.tool_target.files_to_run.executable)
     ctx.actions.run(
         inputs = extra_deps if extra_deps else [],
         outputs = [output_file],
-        tools = [image, ctx.executable._extract_image_id],
+        tools = tools,
         executable = script,
         use_default_shell_env = True,
         mnemonic = "RunAndExtract",
@@ -229,12 +231,15 @@ def _commit_impl(
     )
 
     runfiles = [image, image_utils]
+    tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool]
+    if toolchain_info.tool_target:
+        tools.append(toolchain_info.tool_target.files_to_run.executable)
 
     ctx.actions.run(
         outputs = [output_image_tar],
         inputs = runfiles,
         executable = script,
-        tools = [ctx.executable._extract_image_id, ctx.executable._to_json_tool],
+        tools = tools,
         use_default_shell_env = True,
         mnemonic = "RunAndCommit",
     )
