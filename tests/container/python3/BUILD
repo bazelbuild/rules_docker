@@ -37,3 +37,22 @@ container_test(
     configs = ["//tests/container/python3/configs:py3_image.yaml"],
     image = ":py3_image",
 )
+
+py3_image(
+    name = "py3_image_custom_entrypoint",
+    entrypoint = ["/usr/bin/python3"],
+    srcs = ["//testdata:py3_image.py"],
+    args = [
+        "arg0"
+    ],
+    data = [":BUILD"],
+    layers = [
+        "//tests/container/python:py_image_library",
+    ],
+)
+
+container_test(
+    name = "py3_image_test_custom_entrypoint",
+    configs = ["//tests/container/python3/configs:py3_image_custom_entrypoint.yaml"],
+    image = ":py3_image_custom_entrypoint",
+)

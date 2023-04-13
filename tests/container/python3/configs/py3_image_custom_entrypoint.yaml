@@ -1,0 +1,10 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  cmd: [
+    'arg0',
+  ]
+  entrypoint: [
+    '/usr/bin/python3',
+    '/app/tests/container/python3/py3_image.binary',
+  ]
