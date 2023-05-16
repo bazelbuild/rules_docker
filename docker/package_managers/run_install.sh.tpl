@@ -40,7 +40,11 @@ mkdir -p $(dirname $tmpdir/%{installables_tar})
 cp -L $(pwd)/%{installables_tar} $tmpdir/%{installables_tar}
 cp -L $(pwd)/%{installer_script} $tmpdir/installer.sh
 
+# Don't exit the parent shell if the sub-shell exits early,
+# as we want to print the logs in that case
+set +e
 (
+set -e
 # Temporarily create a container so we can mount the named volume
 # and copy files.  It's okay if /bin/true doesn't exist inside the
 # image; we are never going to run the image anyways.
@@ -60,7 +64,10 @@ reset_cmd $image_id $cid %{output_image_name}
 "$DOCKER" $DOCKER_FLAGS rm $cid
 "$DOCKER" $DOCKER_FLAGS volume rm $vid
 ) > "$log" 2>&1
+status=$?
 
-if (( $? )); then
+if (( ${status} )); then
     cat "$log"
 fi
+
+exit ${status}
