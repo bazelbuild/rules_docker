@@ -24,6 +24,8 @@ DockerToolchainInfo = provider(
                          "the value of the DOCKER_CONFIG environment variable " +
                          "will be used. If DOCKER_CONFIG is not defined, the " +
                          "home directory will be used.",
+        "cred_helpers": "Custom credential helpers to add into the $PATH of " +
+                        "the push and pull tools",
         "docker_flags": "Additional flags to the docker command",
         "gzip_path": "Optional path to the gzip binary.",
         "gzip_target": "Optional Bazel target for the gzip tool. " +
@@ -45,6 +47,7 @@ def _docker_toolchain_impl(ctx):
             build_tar_target = ctx.attr.build_tar_target,
             docker_flags = ctx.attr.docker_flags,
             client_config = ctx.attr.client_config,
+            cred_helpers = ctx.files.cred_helpers,
             gzip_path = ctx.attr.gzip_path,
             gzip_target = ctx.attr.gzip_target,
             tool_path = ctx.attr.tool_path,
@@ -77,6 +80,11 @@ docker_toolchain = rule(
                   "DOCKER_CONFIG environment variable will be used. If " +
                   "DOCKER_CONFIG is not defined, the home directory will be " +
                   "used.",
+        ),
+        "cred_helpers": attr.label_list(
+            default = [],
+            doc = "List of credentials helper to add to $PATH",
+            allow_files = True,
         ),
         "docker_flags": attr.string_list(
             doc = "Additional flags to the docker command",
@@ -175,6 +183,7 @@ def _toolchain_configure_impl(repository_ctx):
         Label("@io_bazel_rules_docker//toolchains/docker:BUILD.tpl"),
         {
             "%{BUILD_TAR_ATTR}": "%s" % build_tar_attr,
+            "%{CRED_HELPERS_ATTR}": ("cred_helpers = %s," % str(repository_ctx.attr.cred_helpers)) if repository_ctx.attr.cred_helpers else "",
             "%{DOCKER_CONFIG}": "%s" % client_config_dir,
             "%{DOCKER_FLAGS}": "%s" % "\", \"".join(docker_flags),
             "%{TOOL_ATTR}": "%s" % tool_attr,
