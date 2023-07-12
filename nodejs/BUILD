@@ -1,3 +1,5 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,3 +16,22 @@
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+bzl_library(
+    name = "image",
+    srcs = ["image.bzl"],
+    deps = [
+        ":nodejs",
+        "//container",
+        "//lang:image",
+        "//repositories:go_repositories",
+        "@bazel_skylib//lib:dicts",
+        "@build_bazel_rules_nodejs//:index",
+        "@build_bazel_rules_nodejs//:providers",
+    ],
+)
+
+bzl_library(
+    name = "nodejs",
+    srcs = ["nodejs.bzl"],
+)

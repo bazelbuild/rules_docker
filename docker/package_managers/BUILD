@@ -26,14 +26,34 @@ exports_files([
 
 bzl_library(
     name = "package_managers",
-    srcs = [
-        "apt_key.bzl",
-        "download_pkgs.bzl",
-        "install_pkgs.bzl",
-    ],
     deps = [
         "//container",
         "//docker/util",
         "//skylib:docker",
     ],
+)
+
+bzl_library(
+    name = "apt_key",
+    srcs = ["apt_key.bzl"],
+    deps = [
+        "//container",
+        "//docker/util:run",
+    ],
+)
+
+bzl_library(
+    name = "download_pkgs",
+    srcs = ["download_pkgs.bzl"],
+    deps = [
+        "//skylib:docker",
+        "//skylib:path",
+        "@bazel_skylib//lib:types",
+    ],
+)
+
+bzl_library(
+    name = "install_pkgs",
+    srcs = ["install_pkgs.bzl"],
+    deps = ["//skylib:docker"],
 )

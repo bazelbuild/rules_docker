@@ -69,61 +69,50 @@ alias(
 )
 
 bzl_library(
-    name = "push-all_bzl",
-    srcs = ["push-all.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "with-tag_bzl",
-    srcs = ["with-tag.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "repro_test_bzl",
-    srcs = ["repro_test.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "compare_ids_test_bzl",
-    srcs = ["compare_ids_test.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "with-defaults_bzl",
-    srcs = ["with-defaults.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "test_bzl",
-    srcs = ["test.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "rename_image_bzl",
-    srcs = ["rename_image.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "group_bzl",
-    srcs = ["group.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "dockerfile_build_bzl",
-    srcs = ["dockerfile_build.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "passwd_bzl",
+    name = "passwd",
     srcs = ["passwd.bzl"],
-    visibility = ["//visibility:private"],
+    deps = ["//skylib:path"],
+)
+
+bzl_library(
+    name = "push-all",
+    srcs = ["push-all.bzl"],
+    deps = [
+        "//container:layer_tools",
+        "//skylib:path",
+        "@io_bazel_rules_docker//container:providers",
+    ],
+)
+
+bzl_library(
+    name = "rename_image",
+    srcs = ["rename_image.bzl"],
+    deps = ["//container:bundle"],
+)
+
+bzl_library(
+    name = "test",
+    srcs = ["test.bzl"],
+    deps = ["//container:bundle"],
+)
+
+bzl_library(
+    name = "with-tag",
+    srcs = ["with-tag.bzl"],
+    deps = ["//container"],
+)
+
+bzl_library(
+    name = "dockerfile_build",
+    srcs = ["dockerfile_build.bzl"],
+)
+
+bzl_library(
+    name = "group",
+    srcs = ["group.bzl"],
+)
+
+bzl_library(
+    name = "with-defaults",
+    srcs = ["with-defaults.bzl"],
 )

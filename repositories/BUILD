@@ -19,37 +19,40 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bzl_library(
-    name = "go_repositories_bzl",
-    srcs = ["go_repositories.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "repositories_bzl",
-    srcs = ["repositories.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "images_bzl",
-    srcs = ["images.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "deps_bzl",
+    name = "deps",
     srcs = ["deps.bzl"],
-    visibility = ["//visibility:private"],
+    deps = [
+        ":go_repositories",
+        "@rules_pkg//:deps",
+    ],
 )
 
 bzl_library(
-    name = "py_repositories_bzl",
-    srcs = ["py_repositories.bzl"],
-    visibility = ["//visibility:private"],
+    name = "go_repositories",
+    srcs = ["go_repositories.bzl"],
+    deps = [
+        "@bazel_gazelle//:deps",
+        "@io_bazel_rules_go//go:deps",
+    ],
 )
 
-# needed for stardoc
+bzl_library(
+    name = "images",
+    srcs = ["images.bzl"],
+    deps = ["//container"],
+)
+
+bzl_library(
+    name = "py_repositories",
+    srcs = ["py_repositories.bzl"],
+    deps = ["@rules_python//python:pip"],
+)
+
 bzl_library(
     name = "repositories",
-    srcs = glob(["*.bzl"]),
+    srcs = ["repositories.bzl"],
+    deps = [
+        "@bazel_tools//tools/build_defs/repo:http.bzl",
+        "@io_bazel_rules_docker//toolchains/docker:toolchain",
+    ],
 )

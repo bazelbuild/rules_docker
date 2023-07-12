@@ -36,13 +36,17 @@ py_runtime(
 )
 
 bzl_library(
-    name = "python_bzl",
-    srcs = ["python.bzl"],
-    visibility = ["//visibility:private"],
+    name = "image",
+    srcs = ["image.bzl"],
+    deps = [
+        ":python",
+        "//container",
+        "//lang:image",
+        "//repositories:go_repositories",
+    ],
 )
 
 bzl_library(
-    name = "image_bzl",
-    srcs = ["image.bzl"],
-    visibility = ["//visibility:private"],
+    name = "python",
+    srcs = ["python.bzl"],
 )

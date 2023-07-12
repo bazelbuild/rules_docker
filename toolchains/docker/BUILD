@@ -17,12 +17,6 @@ load(":toolchain.bzl", "docker_toolchain")
 
 package(default_visibility = ["//visibility:private"])
 
-bzl_library(
-    name = "docker",
-    srcs = ["toolchain.bzl"],
-    visibility = ["//visibility:public"],
-)
-
 # Docker toolchain type
 toolchain_type(
     name = "toolchain_type",
@@ -64,4 +58,9 @@ toolchain(
     ],
     toolchain = "@docker_config//:toolchain",
     toolchain_type = ":toolchain_type",
+)
+
+bzl_library(
+    name = "toolchain",
+    srcs = ["toolchain.bzl"],
 )

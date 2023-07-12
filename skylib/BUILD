@@ -29,6 +29,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "hash",
+    srcs = ["hash.bzl"],
+)
+
+bzl_library(
     name = "label",
     srcs = ["label.bzl"],
 )
@@ -41,9 +46,4 @@ bzl_library(
 bzl_library(
     name = "zip",
     srcs = ["zip.bzl"],
-)
-
-bzl_library(
-    name = "hash",
-    srcs = ["hash.bzl"],
 )

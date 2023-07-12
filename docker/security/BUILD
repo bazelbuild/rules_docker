@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@subpar//:subpar.bzl", "par_binary")
 
 package(default_visibility = ["//visibility:public"])
@@ -27,11 +26,4 @@ par_binary(
     main = "security_check.py",
     python_version = "PY3",
     visibility = ["//visibility:public"],
-)
-
-bzl_library(
-    name = "security_check_lib",
-    srcs = [
-        "security_check.bzl",
-    ],
 )

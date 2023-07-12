@@ -870,24 +870,6 @@ pull_info_validation_test(
 
 # END_DO_NOT_IMPORT
 
-bzl_library(
-    name = "apple_bzl",
-    srcs = ["apple.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "empty_layers_bzl",
-    srcs = ["empty_layers.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "pull_info_validation_test_bzl",
-    srcs = ["pull_info_validation_test.bzl"],
-    visibility = ["//visibility:private"],
-)
-
 TEST_TARGETS = [
     ":base_with_entrypoint",
     ":base_with_volume",
@@ -1085,4 +1067,20 @@ transition_test(
     name = "transitions_off_test",
     actual = ":_transitions_off_test_base",
     transitions_enabled = False,
+)
+
+bzl_library(
+    name = "empty_layers",
+    srcs = ["empty_layers.bzl"],
+    deps = ["//container"],
+)
+
+bzl_library(
+    name = "apple",
+    srcs = ["apple.bzl"],
+)
+
+bzl_library(
+    name = "transitions",
+    srcs = ["transitions.bzl"],
 )

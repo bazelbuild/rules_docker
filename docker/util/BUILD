@@ -39,7 +39,6 @@ exports_files([
 
 bzl_library(
     name = "util",
-    srcs = ["run.bzl"],
     deps = ["//skylib:docker"],
 )
 
@@ -58,4 +57,17 @@ py_test(
     data = ["//docker/util/testdata:image_with_symlinked_layer.tar"],
     python_version = "PY3",
     deps = [":config_stripper_lib"],
+)
+
+bzl_library(
+    name = "run",
+    srcs = ["run.bzl"],
+    deps = [
+        "//skylib:docker",
+        "//skylib:hash",
+        "//skylib:zip",
+        "@bazel_skylib//lib:dicts",
+        "@io_bazel_rules_docker//container:layer",
+        "@io_bazel_rules_docker//container:providers",
+    ],
 )

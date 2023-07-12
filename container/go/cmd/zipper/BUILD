@@ -25,6 +25,6 @@ go_binary(
 go_library(
     name = "go_default_library",
     srcs = ["zipper.go"],
-    importpath = "github.com/bazelbuild/rules_docker",
+    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/zipper",
     visibility = ["//visibility:private"],
 )

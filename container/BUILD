@@ -148,16 +148,6 @@ bzl_library(
 )
 
 bzl_library(
-    name = "providers",
-    srcs = ["providers.bzl"],
-)
-
-bzl_library(
-    name = "pull",
-    srcs = ["pull.bzl"],
-)
-
-bzl_library(
     name = "push",
     srcs = ["push.bzl"],
     deps = [
@@ -165,4 +155,14 @@ bzl_library(
         ":providers",
         "//skylib:path",
     ],
+)
+
+bzl_library(
+    name = "providers",
+    srcs = ["providers.bzl"],
+)
+
+bzl_library(
+    name = "pull",
+    srcs = ["pull.bzl"],
 )

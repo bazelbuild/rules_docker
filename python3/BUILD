@@ -19,13 +19,18 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bzl_library(
-    name = "image_bzl",
+    name = "image",
     srcs = ["image.bzl"],
-    visibility = ["//visibility:private"],
+    deps = [
+        ":python3",
+        "//container",
+        "//lang:image",
+        "//repositories:go_repositories",
+        "@rules_python//python:defs",
+    ],
 )
 
 bzl_library(
-    name = "python3_bzl",
+    name = "python3",
     srcs = ["python3.bzl"],
-    visibility = ["//visibility:private"],
 )

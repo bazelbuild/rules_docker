@@ -20,13 +20,20 @@ package(default_visibility = ["//visibility:public"])
 
 bzl_library(
     name = "toolchain_container",
-    srcs = [
-        "debian_pkg_tar.bzl",
-        "toolchain_container.bzl",
-    ],
+    srcs = ["toolchain_container.bzl"],
     deps = [
         "//container",
         "//docker/package_managers",
+        "@bazel_skylib//lib:dicts",
+    ],
+)
+
+bzl_library(
+    name = "debian_pkg_tar",
+    srcs = ["debian_pkg_tar.bzl"],
+    deps = [
+        "//docker/package_managers:apt_key",
+        "//docker/package_managers:download_pkgs",
         "@bazel_skylib//lib:dicts",
     ],
 )

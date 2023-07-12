@@ -22,14 +22,15 @@ exports_files(["run_checker.sh.tpl"])
 
 bzl_library(
     name = "configs_test",
-    srcs = ["configs_test.bzl"],
     deps = ["//skylib:docker"],
 )
 
 bzl_library(
+    name = "metadata_merge",
+    srcs = ["metadata_merge.bzl"],
+)
+
+bzl_library(
     name = "packages_metadata",
-    srcs = [
-        "metadata_merge.bzl",
-        "packages_metadata.bzl",
-    ],
+    srcs = ["packages_metadata.bzl"],
 )

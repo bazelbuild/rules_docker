@@ -19,25 +19,25 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bzl_library(
-    name = "jetty_bzl",
-    srcs = ["jetty.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "java_bzl",
-    srcs = ["java.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "image_bzl",
+    name = "image",
     srcs = ["image.bzl"],
-    visibility = ["//visibility:private"],
+    deps = [
+        ":java",
+        ":jetty",
+        "//container",
+        "//lang:image",
+        "//repositories:go_repositories",
+        "@bazel_skylib//lib:dicts",
+        "@bazel_tools//tools/build_defs/repo:jvm.bzl",
+    ],
 )
 
-# needed for stardoc
 bzl_library(
     name = "java",
-    srcs = glob(["*.bzl"]),
+    srcs = ["java.bzl"],
+)
+
+bzl_library(
+    name = "jetty",
+    srcs = ["jetty.bzl"],
 )

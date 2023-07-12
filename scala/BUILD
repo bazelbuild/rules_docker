@@ -19,7 +19,10 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bzl_library(
-    name = "image_bzl",
+    name = "image",
     srcs = ["image.bzl"],
-    visibility = ["//visibility:private"],
+    deps = [
+        "//java:image",
+        "@io_bazel_rules_scala//scala",
+    ],
 )

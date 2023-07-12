@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@bazel_gazelle//:def.bzl", "DEFAULT_LANGUAGES", "gazelle", "gazelle_binary")
 load("//contrib:test.bzl", "container_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -25,8 +25,17 @@ exports_files(["WORKSPACE"])
 
 gazelle(
     name = "gazelle",
+    gazelle = ":gazelle_bin",
     prefix = "github.com/bazelbuild/rules_docker",
 )
+
+gazelle_binary(
+    name = "gazelle_bin",
+    languages = DEFAULT_LANGUAGES + [
+        "@bazel_skylib_gazelle_plugin//bzl",
+    ],
+)
+
 # Make Gazelle ignore Go files in the tesdata directory used by test Go Image
 # targets.
 # gazelle:exclude testdata

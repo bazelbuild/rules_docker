@@ -19,19 +19,24 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bzl_library(
-    name = "go_bzl",
-    srcs = ["go.bzl"],
-    visibility = ["//visibility:private"],
-)
-
-bzl_library(
-    name = "image_bzl",
+    name = "image",
     srcs = ["image.bzl"],
-    visibility = ["//visibility:private"],
+    deps = [
+        ":go",
+        ":static",
+        "//container",
+        "//lang:image",
+        "//repositories:go_repositories",
+        "@io_bazel_rules_go//go:def",
+    ],
 )
 
 bzl_library(
-    name = "static_bzl",
+    name = "go",
+    srcs = ["go.bzl"],
+)
+
+bzl_library(
+    name = "static",
     srcs = ["static.bzl"],
-    visibility = ["//visibility:private"],
 )
