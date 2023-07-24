@@ -284,7 +284,7 @@ def _impl(
 _layer_attrs = dicts.add({
     "build_layer": attr.label(
         default = Label("//container:build_tar"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),

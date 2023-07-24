@@ -39,7 +39,8 @@ load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
     _gen_img_args = "generate_args_for_image",
-    _get_layers = "get_from_target",
+    _get_layers_from_archive_file = "get_from_archive_file",
+    _get_layers_from_target = "get_from_target",
     _incr_load = "incremental_load",
     _layer_tools = "tools",
 )
@@ -56,20 +57,6 @@ load(
     _join_path = "join",
 )
 
-def _get_base_config(ctx, name, base):
-    if ctx.files.base or base:
-        # The base is the first layer in container_parts if provided.
-        layer = _get_layers(ctx, name, ctx.attr.base, base)
-        return layer.get("config")
-    return None
-
-def _get_base_manifest(ctx, name, base):
-    if ctx.files.base or base:
-        # The base is the first layer in container_parts if provided.
-        layer = _get_layers(ctx, name, ctx.attr.base, base)
-        return layer.get("manifest")
-    return None
-
 def _add_create_image_config_args(
         ctx,
         args,
@@ -77,6 +64,7 @@ def _add_create_image_config_args(
         manifest,
         config,
         labels,
+        label_files,
         entrypoint,
         cmd,
         null_cmd,
@@ -84,6 +72,7 @@ def _add_create_image_config_args(
         creation_time,
         env,
         workdir,
+        user,
         layer_names,
         base_config,
         base_manifest,
@@ -125,16 +114,16 @@ def _add_create_image_config_args(
             ctx.expand_make_variables("env", value, {}),
         ]))
 
-    if ctx.attr.user:
-        args.add("-user", ctx.attr.user)
+    if user:
+        args.add("-user", user)
     if workdir:
         args.add("-workdir", workdir)
 
     inputs += layer_names
     args.add_all(layer_names, before_each = "-layerDigestFile", format_each = "@%s")
 
-    if ctx.attr.label_files:
-        inputs += ctx.files.label_files
+    if label_files:
+        inputs += label_files
 
     if base_config:
         args.add("-baseConfig", base_config)
@@ -182,24 +171,28 @@ def _image_config(
         os_version = None,
         layer_name = None,
         workdir = None,
+        user = None,
         null_entrypoint = False,
-        null_cmd = False):
+        null_cmd = False,
+        labels = None,
+        label_files = None,
+        label_file_strings = None):
     """Create the configuration for a new container image."""
     config = ctx.actions.declare_file(name + "." + layer_name + ".config")
     manifest = ctx.actions.declare_file(name + "." + layer_name + ".manifest")
 
     label_file_dict = _string_to_label(
-        ctx.files.label_files,
-        ctx.attr.label_file_strings,
+        label_files,
+        label_file_strings,
     )
 
-    labels = dict()
-    for label in ctx.attr.labels:
-        fname = ctx.attr.labels[label]
+    labels_fixed = dict()
+    for label in labels:
+        fname = labels[label]
         if fname[0] == "@":
-            labels[label] = "@" + label_file_dict[fname[1:]].path
+            labels_fixed[label] = "@" + label_file_dict[fname[1:]].path
         else:
-            labels[label] = fname
+            labels_fixed[label] = fname
 
     args = ctx.actions.args()
     inputs = []
@@ -211,7 +204,8 @@ def _image_config(
         inputs,
         manifest,
         config,
-        labels,
+        labels_fixed,
+        label_files,
         entrypoint,
         cmd,
         null_cmd,
@@ -219,6 +213,7 @@ def _image_config(
         creation_time,
         env,
         workdir,
+        user,
         layer_names,
         base_config,
         base_manifest,
@@ -242,12 +237,12 @@ def _repository_name(ctx):
     """Compute the repository name for the current rule."""
     if ctx.attr.legacy_repository_naming:
         # Legacy behavior, off by default.
-        return _join_path(ctx.attr.repository, ctx.label.package.replace("/", "_"))
+        return _join_path(ctx.attr.repository, ctx.label.package.lower().replace("/", "_"))
 
     # Newer Docker clients support multi-level names, which are a part of
     # the v2 registry specification.
 
-    return _join_path(ctx.attr.repository, ctx.label.package)
+    return _join_path(ctx.attr.repository, ctx.label.package.lower())
 
 def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
     img_args, inputs = _gen_img_args(ctx, image)
@@ -296,8 +291,13 @@ def _impl(
         output_digest = None,
         output_layer = None,
         workdir = None,
+        user = None,
         null_cmd = None,
-        null_entrypoint = None):
+        null_entrypoint = None,
+        tag_name = None,
+        labels = None,
+        label_files = None,
+        label_file_strings = None):
     """Implementation for the container_image rule.
 
     You can write a customized container_image rule by writing something like:
@@ -352,10 +352,16 @@ def _impl(
         output_digest: File, overrides ctx.outputs.digest
         output_layer: File, overrides ctx.outputs.layer
         workdir: str, overrides ctx.attr.workdir
+        user: str, overrides ctx.attr.user
         null_cmd: bool, overrides ctx.attr.null_cmd
         null_entrypoint: bool, overrides ctx.attr.null_entrypoint
+        tag_name: str, overrides ctx.attr.tag_name
+        labels: str Dict, overrides ctx.attr.labels
+        label_files: File list, overrides ctx.attr.label_files
+        label_file_strings: str list, overrides ctx.attr.label_file_strings
     """
     name = name or ctx.label.name
+    base = base or ctx.attr.base
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
     architecture = architecture or ctx.attr.architecture
@@ -374,6 +380,10 @@ def _impl(
     build_script = ctx.outputs.build_script
     null_cmd = null_cmd or ctx.attr.null_cmd
     null_entrypoint = null_entrypoint or ctx.attr.null_entrypoint
+    tag_name = tag_name or ctx.attr.tag_name
+    labels = labels or ctx.attr.labels
+    label_files = label_files or ctx.files.label_files
+    label_file_strings = label_file_strings or ctx.attr.label_file_strings
 
     # If this target specifies docker_run_flags, they are always used.
     # Fall back to the base image's run flags if present, otherwise use the default value.
@@ -421,7 +431,10 @@ def _impl(
     # Get the layers and shas from our base.
     # These are ordered as they'd appear in the v2.2 config,
     # so they grow at the end.
-    parent_parts = _get_layers(ctx, name, ctx.attr.base, base)
+    if hasattr(base, "basename"):
+        parent_parts = _get_layers_from_archive_file(ctx, name, base)
+    else:
+        parent_parts = _get_layers_from_target(ctx, name, base)
     zipped_layers = parent_parts.get("zipped_layer", []) + [layer.zipped_layer for layer in layers]
     shas = parent_parts.get("blobsum", []) + [layer.blob_sum for layer in layers]
     unzipped_layers = parent_parts.get("unzipped_layer", []) + [layer.unzipped_layer for layer in layers]
@@ -434,11 +447,11 @@ def _impl(
     transitive_files = depset(new_files + new_emptyfiles + new_symlinks, transitive = [parent_transitive_files])
 
     # Get the config for the base layer
-    config_file = _get_base_config(ctx, name, base)
+    config_file = parent_parts.get("config")
     config_digest = None
 
     # Get the manifest for the base layer
-    manifest_file = _get_base_manifest(ctx, name, base)
+    manifest_file = parent_parts.get("manifest")
     manifest_digest = None
 
     # Generate the new config layer by layer, using the attributes specified and the diff_id
@@ -458,12 +471,18 @@ def _impl(
             os_version = os_version,
             layer_name = str(i),
             workdir = workdir or ctx.attr.workdir,
+            user = user or ctx.attr.user,
             null_entrypoint = null_entrypoint,
             null_cmd = null_cmd,
+            labels = labels,
+            label_files = label_files,
+            label_file_strings = label_file_strings,
         )
 
-    # Construct a temporary name based on the build target.
-    tag_name = "{}:{}".format(_repository_name(ctx), name)
+    # Construct a temporary name based on the build target. This is the name
+    # of the docker container.
+    final_tag = tag_name if tag_name else name
+    container_name = "{}:{}".format(_repository_name(ctx), final_tag)
 
     # These are the constituent parts of the Container image, which each
     # rule in the chain must preserve.
@@ -500,7 +519,7 @@ def _impl(
     # We support incrementally loading or assembling this single image
     # with a temporary name given by its build rule.
     images = {
-        tag_name: container_parts,
+        container_name: container_parts,
     }
 
     _incr_load(
@@ -591,7 +610,7 @@ _attrs = dicts.add(_layer.attrs, {
     ),
     "create_image_config": attr.label(
         default = Label("//container/go/cmd/create_image_config:create_image_config"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -747,12 +766,15 @@ _attrs = dicts.add(_layer.attrs, {
 
         This field supports stamp variables.""",
     ),
+    "tag_name": attr.string(
+        doc = """Override final tag name. If unspecified, is set to name.""",
+    ),
     "_allowlist_function_transition": attr.label(
         default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
     ),
     "_digester": attr.label(
         default = "//container/go/cmd/digester",
-        cfg = "host",
+        cfg = "exec",
         executable = True,
     ),
 }, _hash_tools, _layer_tools)

@@ -22,8 +22,6 @@ jobs:
         executable_mime: ["application/x-executable", "application/x-mach-binary"]
         exclude:
           - os: darwin
-            cpu: arm64
-          - os: darwin
             cpu: s390x
           - os: darwin
             executable_mime: "application/x-executable"

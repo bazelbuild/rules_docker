@@ -47,6 +47,7 @@ var (
 	retryCount          = flag.Int("retry-count", 0, "Amount of times the push will be retried. This cannot be a negative number.")
 	layers              utils.ArrayStringFlags
 	stampInfoFile       utils.ArrayStringFlags
+	insecureRepository  = flag.Bool("insecure-repository", false, "If set to true, the repository is assumed to be insecure (http vs https)")
 )
 
 type dockerHeaders struct {
@@ -130,8 +131,13 @@ func main() {
 		log.Printf("Failed to digest image: %v", err)
 	}
 
+	var opts []name.Option
+	if *insecureRepository {
+		opts = append(opts, name.Insecure)
+	}
+
 	for retry := 0; retry < *retryCount+1; retry++ {
-		err := push(stamped, img)
+		err := push(stamped, img, opts...)
 		if err == nil {
 			break
 		}
@@ -176,9 +182,9 @@ func digestExists(dst string, img v1.Image) (bool, error) {
 // NOTE: This function is adapted from https://github.com/google/go-containerregistry/blob/master/pkg/crane/push.go
 // with modification for option to push OCI layout, legacy layout or Docker tarball format.
 // Push the given image to destination <dst>.
-func push(dst string, img v1.Image) error {
+func push(dst string, img v1.Image, opts ...name.Option) error {
 	// Push the image to dst.
-	ref, err := name.ParseReference(dst)
+	ref, err := name.ParseReference(dst, opts...)
 	if err != nil {
 		return errors.Wrapf(err, "error parsing %q as an image reference", dst)
 	}
@@ -210,7 +216,7 @@ func push(dst string, img v1.Image) error {
 		}
 
 		httpTransportOption := remote.WithTransport(&headerTransport{
-			inner:       http.DefaultTransport,
+			inner:       newTransport(),
 			httpHeaders: dockerConfig.HTTPHeaders,
 		})
 
@@ -240,4 +246,13 @@ func (ht *headerTransport) RoundTrip(in *http.Request) (*http.Response, error) {
 		in.Header.Set(k, v)
 	}
 	return ht.inner.RoundTrip(in)
+}
+
+func newTransport() http.RoundTripper {
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	// We really only expect to be talking to a couple of hosts during a push.
+	// Increasing MaxIdleConnsPerHost should reduce closed connection errors.
+	tr.MaxIdleConnsPerHost = tr.MaxIdleConns / 2
+
+	return tr
 }

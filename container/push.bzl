@@ -95,6 +95,8 @@ def _impl(ctx):
 
     if ctx.attr.skip_unchanged_digest:
         pusher_args.append("-skip-unchanged-digest")
+    if ctx.attr.insecure_repository:
+        pusher_args.append("-insecure-repository")
     digester_args += ["--dst", str(ctx.outputs.digest.path), "--format", str(ctx.attr.format)]
     ctx.actions.run(
         inputs = digester_input,
@@ -159,6 +161,10 @@ container_push_ = rule(
             mandatory = True,
             doc = "The label of the image to push.",
         ),
+        "insecure_repository": attr.bool(
+            default = False,
+            doc = "Whether the repository is insecure or not (http vs https)",
+        ),
         "registry": attr.string(
             mandatory = True,
             doc = "The registry to which we are pushing.",
@@ -200,12 +206,12 @@ container_push_ = rule(
         ),
         "_digester": attr.label(
             default = "//container/go/cmd/digester",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "_pusher": attr.label(
             default = "//container/go/cmd/pusher",
-            cfg = "host",
+            cfg = "target",
             executable = True,
             allow_files = True,
         ),
@@ -219,6 +225,10 @@ container_push_ = rule(
 )
 
 # Pushes a container image to a registry.
+# You can override some arguments by including adding arguments when running blaze run.
+# Additional arguments will be sent to the command listed in the _pusher rule above.
+# Most common use is adding --dst=myregistry/mypath:debugtag.
+# Use `bazel run //target:push -- -help` to get a printing of possible options.
 def container_push(name, format, image, registry, repository, **kwargs):
     container_push_(
         name = name,

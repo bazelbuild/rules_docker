@@ -17,7 +17,7 @@ load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@io_bazel_rules_docker_pip_deps//:requirements.bzl", "requirement")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@npm//@bazel/typescript:index.bzl", "ts_library")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//cc:image.bzl", "cc_image")
 load(
     "//container:container.bzl",
@@ -95,6 +95,12 @@ container_image(
     name = "dummy_repository",
     files = ["foo"],
     repository = "gcr.io/dummy",
+)
+
+container_image(
+    name = "tag_name",
+    files = ["foo"],
+    tag_name = "this-tag-instead",
 )
 
 container_image(

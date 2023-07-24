@@ -81,14 +81,14 @@ security_check = rule(
         # JSON to YAML converter.
         "_json_to_yaml": attr.label(
             default = Label("@io_bazel_rules_docker//docker/security/cmd/json_to_yaml"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
         # The security checker python executable.
         "_security_check": attr.label(
             default = Label("@io_bazel_rules_docker//docker/security:security_check"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),

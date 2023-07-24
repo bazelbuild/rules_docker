@@ -59,7 +59,7 @@ def _file_path(ctx, val):
     """
     return val.path
 
-def generate_args_for_image(ctx, image, to_path = _file_path):
+def generate_args_for_image(ctx, image, to_path = _file_path, **kwargs):
     """Generates arguments & inputs for the given image.
 
     Args:
@@ -67,6 +67,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         image: The image parts dictionary as returned by 'get_from_target'.
         to_path: A function to transform the string paths as they
                         are added as arguments.
+        **kwargs: Arguments to give to the `to_path` function.
 
     Returns:
         The arguments to call the pusher, digester & flatenner with to load
@@ -77,7 +78,7 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
     uncompressed_layers = image.get("unzipped_layer", [])
     digest_files = image.get("blobsum", [])
     diff_id_files = image.get("diff_id", [])
-    args = ["--config={}".format(to_path(ctx, image["config"]))]
+    args = ["--config={}".format(to_path(ctx, image["config"], **kwargs))]
     inputs = [image["config"]]
     inputs += compressed_layers
     inputs += uncompressed_layers
@@ -89,43 +90,53 @@ def generate_args_for_image(ctx, image, to_path = _file_path):
         diff_id_file = diff_id_files[i]
         args.append(
             "--layer={},{},{},{}".format(
-                to_path(ctx, compressed_layer),
-                to_path(ctx, uncompressed_layer),
-                to_path(ctx, digest_file),
-                to_path(ctx, diff_id_file),
+                to_path(ctx, compressed_layer, **kwargs),
+                to_path(ctx, uncompressed_layer, **kwargs),
+                to_path(ctx, digest_file, **kwargs),
+                to_path(ctx, diff_id_file, **kwargs),
             ),
         )
     if image.get("legacy"):
         inputs.append(image["legacy"])
-        args.append("--tarball={}".format(to_path(ctx, image["legacy"])))
+        args.append("--tarball={}".format(to_path(ctx, image["legacy"], **kwargs)))
     if image["manifest"]:
         inputs.append(image["manifest"])
-        args.append("--manifest={}".format(to_path(ctx, image["manifest"])))
+        args.append("--manifest={}".format(to_path(ctx, image["manifest"], **kwargs)))
     return args, inputs
 
-def get_from_target(ctx, name, attr_target, file_target = None):
+def get_from_target(ctx, name, attr_target):
     """Gets all layers from the given target.
 
     Args:
        ctx: The context
        name: The name of the target
        attr_target: The attribute to get layers from
-       file_target: If not None, layers are extracted from this target
 
     Returns:
        The extracted layers
     """
-    if file_target:
-        return _extract_layers(ctx, name, file_target)
-    elif attr_target and ImageInfo in attr_target:
+    if not attr_target:
+        return {}
+    elif ImageInfo in attr_target:
         return attr_target[ImageInfo].container_parts
-    elif attr_target and ImportInfo in attr_target:
+    elif ImportInfo in attr_target:
         return attr_target[ImportInfo].container_parts
     else:
-        if not hasattr(attr_target, "files"):
-            return {}
-        target = attr_target.files.to_list()[0]
-        return _extract_layers(ctx, name, target)
+        archive_file = attr_target.files.to_list()[0]
+        return get_from_archive_file(ctx, name, archive_file)
+
+def get_from_archive_file(ctx, name, archive_file):
+    """Gets all layers from the given archive file.
+
+    Args:
+       ctx: The context
+       name: The name of the target
+       archive_file: The archive file to get layers from
+
+    Returns:
+       The extracted layers
+    """
+    return _extract_layers(ctx, name, archive_file)
 
 def _add_join_layers_args(args, inputs, images):
     """Add args & inputs needed to call the Go join_layers for the given images
@@ -298,7 +309,7 @@ def incremental_load(
 tools = {
     "extract_config": attr.label(
         default = Label("//container/go/cmd/extract_config:extract_config"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -308,7 +319,7 @@ tools = {
     ),
     "_join_layers": attr.label(
         default = Label("//container/go/cmd/join_layers"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
     ),
 }

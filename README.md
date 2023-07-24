@@ -4,8 +4,16 @@
 | :------: |
 [![Build status](https://badge.buildkite.com/693d7892250cfd44beea3cd95573388200935906a28cd3146d.svg?branch=master)](https://buildkite.com/bazel/docker-rules-docker-postsubmit)
 
-Generated API documentation is in the docs folder, or you can browse it online at
-<https://docs.aspect.dev/rules_docker>
+## Status
+
+🚨 rules_docker is in minimal maintenance mode.
+
+- The maintainers have very little time, and are unlikely to review PRs or respond to issues.
+- Releases will be infrequent or may not happen at all.
+- The maintainers are determining if the project has a long-term future, and hope to post a roadmap soon.
+
+You may find more details in
+[the discussion](https://github.com/bazelbuild/rules_docker/discussions/2038).
 
 ## Basic Rules
 
@@ -245,16 +253,22 @@ performs the following steps:
 You can suppress this behavior by passing the single flag: `bazel run :foo -- --norun`
 
 Alternatively, you can build a `docker load` compatible bundle with:
-`bazel build my/image:helloworld.tar`.  This will produce the file:
-`bazel-bin/my/image/helloworld.tar`, which you can load into
-your local Docker client by running:
-`docker load -i bazel-bin/my/image/helloworld.tar`.  Building
-this target can be expensive for large images.
+`bazel build my/image:helloworld.tar`.  This will produce a tar file
+in your `bazel-out` directory that can be loaded into your local Docker
+client. Building this target can be expensive for large images. You will
+first need to query the ouput file location.
+
+```bash
+TARBALL_LOCATION=$(bazel cquery my/image:helloworld.tar \
+    --output starlark \
+    --starlark:expr="target.files.to_list()[0].path")
+docker load -i $TARBALL_LOCATION
+```
 
 These work with both `container_image`, `container_bundle`, and the
-`lang_image` rules.  For everything except
-`container_bundle`, the image name will be `bazel/my/image:helloworld`.
-For `container_bundle`, it will apply the tags you have specified.
+`lang_image` rules.  For everything except `container_bundle`, the image
+name will be `bazel/my/image:helloworld`. The `container_bundle` rule will
+apply the tags you have specified.
 
 ## Authentication
 
@@ -523,7 +537,7 @@ py_image(
 ```
 
 You can also implement more complex fine layering strategies by using the
-`py_layer` rule and its `filter` attribute.  For example:
+`py_layer` or `java_layer` rules and their `filter` attribute.  For example:
 
 ```python
 # Suppose that we are synthesizing an image that depends on a complex set
@@ -707,7 +721,7 @@ rules, you can override the default `base="..."` attribute.  Consider this
 modified sample from the `distroless` repository:
 
 ```python
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 # Create a passwd file with a root and nonroot user and uid.
 passwd_entry(
@@ -1161,7 +1175,7 @@ docker_toolchain_configure(
   # in the client configuration JSON file.
   # See https://docs.docker.com/engine/reference/commandline/cli/#configuration-files
   # for more details.
-  client_config="@//path/to/docker:client.json",
+  client_config="@//path/to/docker:config.json",
 )
 ```
 In `BUILD` file:
