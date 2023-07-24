@@ -90,6 +90,9 @@ def _impl(ctx):
         tag = tag,
     ))
 
+    if ctx.attr.retry_count < 0:
+        fail("retry_count must be a positive integer")
+
     if ctx.attr.retry_count > 0:
         pusher_args.append("-retry-count={}".format(ctx.attr.retry_count))
 
@@ -178,7 +181,7 @@ container_push_ = rule(
             doc = "The label of the file with repository value. Overrides 'repository'.",
         ),
         "retry_count": attr.int(
-            doc = "Number of times to retry pushing the image.",
+            doc = "Number of times to retry pushing the image. Only positive numbers are valid.",
         ),
         "skip_unchanged_digest": attr.bool(
             default = False,
