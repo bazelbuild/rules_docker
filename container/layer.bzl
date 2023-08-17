@@ -349,7 +349,7 @@ _layer_attrs = dicts.add({
 
         "0o555" == a+rx
 
-        Applies to `files`, `empty_files`, and `empty_dirs` attributes.""",
+        Applies to `files`, `empty_files`, `empty_dirs`, and `empty_root_dirs` attributes.""",
     ),
     "mtime": attr.int(default = _DEFAULT_MTIME),
     "operating_system": attr.string(
