@@ -40,6 +40,7 @@ def _extract_layers(ctx, name, artifact):
         tools = [artifact],
         outputs = [config_file, manifest_file],
         mnemonic = "ExtractConfig",
+        toolchain = None,
     )
     return {
         "config": config_file,
@@ -199,6 +200,7 @@ def assemble(
         tools = inputs,
         outputs = [output],
         mnemonic = "JoinLayers",
+        toolchain = None,
     )
 
 def incremental_load(
