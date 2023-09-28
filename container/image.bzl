@@ -189,7 +189,7 @@ def _image_config(
     labels_fixed = dict()
     for label in labels:
         fname = labels[label]
-        if fname[0] == "@":
+        if fname.startswith("@"):
             labels_fixed[label] = "@" + label_file_dict[fname[1:]].path
         else:
             labels_fixed[label] = fname
@@ -1034,7 +1034,7 @@ def container_image(**kwargs):
             fail("reserved for internal use by container_image macro", attr = reserved)
 
     if "labels" in kwargs:
-        files = sorted({v[1:]: None for v in kwargs["labels"].values() if v[0] == "@"}.keys())
+        files = sorted({v[1:]: None for v in kwargs["labels"].values() if v.startswith("@")}.keys())
         kwargs["label_files"] = files
         kwargs["label_file_strings"] = files
 
