@@ -15,7 +15,7 @@ function guess_runfiles() {
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
 # Resolve the docker tool path
-DOCKER="%{docker_tool_path}"
+DOCKER="$(readlink -nf %{docker_tool_path})"
 DOCKER_FLAGS="%{docker_flags}"
 
 if [[ -z "$DOCKER" ]]; then

@@ -31,9 +31,8 @@ function guess_runfiles() {
 
 RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
 
-DOCKER="%{docker_tool_path}"
+DOCKER="$(readlink -nf %{docker_tool_path})"
 DOCKER_FLAGS="%{docker_flags}"
-
 if [[ -z "${DOCKER}" ]]; then
     echo >&2 "error: docker not found; do you need to manually configure the docker toolchain?"
     exit 1

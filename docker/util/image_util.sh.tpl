@@ -6,7 +6,7 @@ reset_cmd() {
     local output_image_name=$3
 
     # Resolve the docker tool path
-    DOCKER="%{docker_tool_path}"
+    DOCKER="$(readlink -nf %{docker_tool_path})"
     DOCKER_FLAGS="%{docker_flags}"
     local old_cmd
     # docker inspect input cannot be piped into docker commit directly, we need to JSON format it.
