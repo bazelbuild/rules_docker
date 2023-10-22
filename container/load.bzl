@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 "container_load rule"
+
+load("//internal:execution.bzl", "env_execute", "executable_extension")
+
 _DOC = """A repository rule that examines the contents of a docker save tarball and creates a container_import target.
 
 This extracts the tarball amd creates a filegroup of the untarred objects in OCI intermediate layout.
@@ -34,23 +37,28 @@ container_import(
     layers = glob(["*.tar.gz"]),
 )""")
 
-    loader = repository_ctx.attr._loader_linux_amd64
-    if repository_ctx.os.name.lower().startswith("mac os"):
-        loader = repository_ctx.attr._loader_darwin
-    elif repository_ctx.os.name.lower().startswith("linux"):
-        arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        if arch == "arm64" or arch == "aarch64":
-            loader = repository_ctx.attr._loader_linux_arm64
-        elif arch == "s390x":
-            loader = repository_ctx.attr._loader_linux_s390x
-
-    result = repository_ctx.execute([
-        repository_ctx.path(loader),
+    loader_args = [
         "-directory",
         repository_ctx.path("image"),
         "-tarball",
         repository_ctx.path(repository_ctx.attr.file),
-    ])
+    ]
+
+    if repository_ctx.attr.use_precompiled_binaries:
+        loader = repository_ctx.attr._loader_linux_amd64
+        if repository_ctx.os.name.lower().startswith("mac os"):
+            loader = repository_ctx.attr._loader_darwin
+        elif repository_ctx.os.name.lower().startswith("linux"):
+            arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            if arch == "arm64" or arch == "aarch64":
+                loader = repository_ctx.attr._loader_linux_arm64
+            elif arch == "s390x":
+                loader = repository_ctx.attr._loader_linux_s390x
+        loader_path = repository_ctx.path(loader)
+        result = repository_ctx.execute([loader_path] + loader_args)
+    else:
+        loader_path = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/loader{}".format(executable_extension(repository_ctx)))))
+        result = env_execute(repository_ctx, [loader_path] + loader_args)
 
     if result.return_code:
         fail("Importing from tarball failed (status %s): %s" % (result.return_code, result.stderr))
@@ -83,6 +91,12 @@ container_load = repository_rule(
             executable = True,
             default = Label("@loader_linux_s390x//file:downloaded"),
             cfg = "exec",
+        ),
+        "use_precompiled_binaries": attr.bool(
+            doc = """Whether to use precompiled binaries.
+            If true, the loader will be fetched from a prebuilt binary (legacy).
+            If false, loader will be built from source.""",
+            default = True,
         ),
     },
     implementation = _impl,

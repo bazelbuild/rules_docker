@@ -13,9 +13,8 @@
 *.dylib
 *.dll
 
-# Fortran module files
-*.mod
-*.smod
+# Vendored modules
+vendor/**/go.mod
 
 # Python 2 bytecode files
 *.pyc

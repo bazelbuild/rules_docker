@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 "container_pull rule"
+
+load("//internal:execution.bzl", "env_execute", "executable_extension")
+
 _DOC = """A repository rule that pulls down a Docker base image in a manner suitable for use with the `base` attribute of `container_image`.
 
 This is based on google/containerregistry using google/go-containerregistry.
@@ -135,6 +138,12 @@ _container_pull_attrs = {
 
         This attribute will be overridden by the PULLER_TIMEOUT environment variable, if it is set.""",
     ),
+    "use_precompiled_binaries": attr.bool(
+        doc = """Whether to use precompiled binaries.
+        If true, the loader will be fetched from a prebuilt binary (legacy).
+        If false, loader will be built from source.""",
+        default = True,
+    ),
 }
 
 def _impl(repository_ctx):
@@ -148,18 +157,22 @@ def _impl(repository_ctx):
 
     import_rule_tags = "[\"{}\"]".format("\", \"".join(repository_ctx.attr.import_tags))
 
-    puller = repository_ctx.attr.puller_linux_amd64
-    if repository_ctx.os.name.lower().startswith("mac os"):
-        puller = repository_ctx.attr.puller_darwin
-    elif repository_ctx.os.name.lower().startswith("linux"):
-        arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        if arch == "arm64" or arch == "aarch64":
-            puller = repository_ctx.attr.puller_linux_arm64
-        elif arch == "s390x":
-            puller = repository_ctx.attr.puller_linux_s390x
+    if repository_ctx.attr.use_precompiled_binaries:
+        puller = repository_ctx.attr.puller_linux_amd64
+        if repository_ctx.os.name.lower().startswith("mac os"):
+            puller = repository_ctx.attr.puller_darwin
+        elif repository_ctx.os.name.lower().startswith("linux"):
+            arch = repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            if arch == "arm64" or arch == "aarch64":
+                puller = repository_ctx.attr.puller_linux_arm64
+            elif arch == "s390x":
+                puller = repository_ctx.attr.puller_linux_s390x
+        puller_path = repository_ctx.path(puller)
+    else:
+        puller_path = str(repository_ctx.path(Label("@rules_docker_repository_tools//:bin/puller{}".format(executable_extension(repository_ctx)))))
 
     args = [
-        repository_ctx.path(puller),
+        puller_path,
         "-directory",
         repository_ctx.path("image"),
         "-os",
@@ -235,7 +248,26 @@ def _impl(repository_ctx):
             ),
         }
 
-    result = repository_ctx.execute(args, **kwargs)
+    # Only allow environment variables that influence the pusher through.
+    env = {
+        k: v
+        for k, v in repository_ctx.os.environ.items()
+        if k.lower() in (
+            "home",
+            "path",  # TODO(user): confirm if this is necessary as it can bust cache.
+            "ssh_auth_sock",
+            "ssl_cert_file",
+            "ssl_cert_dir",
+            "http_proxy",
+            "https_proxy",
+            "no_proxy",
+        )
+    }
+
+    if repository_ctx.attr.use_precompiled_binaries:
+        result = repository_ctx.execute(args, **kwargs)
+    else:
+        result = env_execute(repository_ctx, args, environment = env, **kwargs)
     if result.return_code:
         fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args])))
 
