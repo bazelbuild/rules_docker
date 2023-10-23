@@ -648,9 +648,15 @@ file_test(
 
 # Testing for content of downloaded image artifacts.
 file_test(
-    name = "new_distroless_base_oci_test_config",
+    name = "new_distroless_base_oci_test_config_architecture",
     file = "@alpine_linux_armv6_fixed_id//image:config.json",
     regexp = "{\"architecture\":\"arm\",.*",
+)
+
+file_test(
+    name = "new_distroless_base_oci_test_config_variant",
+    file = "@alpine_linux_armv6_fixed_id//image:config.json",
+    regexp = ".*\"variant\":\"v6\".*",
 )
 
 file_test(
@@ -1025,7 +1031,6 @@ genrule(
     outs = ["got_arch.txt"],
     cmd = select({
         "@platforms//cpu:arm64": "echo arm64 > \"$@\"",
-        "@platforms//cpu:aarch64": "echo arm64 > \"$@\"",
         "@platforms//cpu:x86_64": "echo x86_64 > \"$@\"",
         "@platforms//cpu:arm": "echo arm > \"$@\"",
     }),
@@ -1050,7 +1055,6 @@ templated_file(
             "@platforms//os:macos": ["%WANT_OS%=macos"],
         }) + select({
             "@platforms//cpu:arm64": ["%WANT_ARCH%=arm64"],
-            "@platforms//cpu:aarch64": ["%WANT_ARCH%=arm64"],
             "@platforms//cpu:x86_64": ["%WANT_ARCH%=x86_64"],
         }),
     template = "//tests/container/configs:transitions_off.yaml.tpl",

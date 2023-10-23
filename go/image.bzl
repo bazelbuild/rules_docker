@@ -28,22 +28,13 @@ load(
     "//lang:image.bzl",
     "app_layer",
 )
-load(
-    "//repositories:go_repositories.bzl",
-    _go_deps = "go_deps",
-)
 
 # Load the resolved digests.
 load(":go.bzl", BASE_DIGESTS = "DIGESTS")
 load(":static.bzl", STATIC_DIGESTS = "DIGESTS")
 
 def repositories():
-    """Import the dependencies of the go_image rule.
-
-    Call the core "go_deps" function to reduce boilerplate. This is
-    idempotent if folks call it themselves.
-    """
-    _go_deps()
+    """Import the dependencies of the go_image rule."""
 
     excludes = native.existing_rules().keys()
     if "go_image_base" not in excludes:

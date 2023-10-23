@@ -77,6 +77,7 @@ def _add_create_image_config_args(
         base_config,
         base_manifest,
         architecture,
+        variant,
         operating_system,
         os_version):
     """
@@ -136,6 +137,9 @@ def _add_create_image_config_args(
     if architecture:
         args.add("-architecture", architecture)
 
+    if variant:
+        args.add("-variant", variant)
+
     if operating_system:
         args.add("-operatingSystem", operating_system)
 
@@ -167,6 +171,7 @@ def _image_config(
         base_config = None,
         base_manifest = None,
         architecture = None,
+        variant = None,
         operating_system = None,
         os_version = None,
         layer_name = None,
@@ -218,6 +223,7 @@ def _image_config(
         base_config,
         base_manifest,
         architecture,
+        variant,
         operating_system,
         os_version,
     )
@@ -282,6 +288,7 @@ def _impl(
         debs = None,
         tars = None,
         architecture = None,
+        variant = None,
         operating_system = None,
         os_version = None,
         output_executable = None,
@@ -343,6 +350,7 @@ def _impl(
         debs: File list, overrides ctx.files.debs
         tars: File list, overrides ctx.files.tars
         architecture: str, overrides ctx.attr.architecture
+        variant: str, overrides ctx.attr.variant
         operating_system: Operating system to target (e.g. linux, windows)
         os_version: Operating system version to target
         output_executable: File to use as output for script to load docker image
@@ -365,6 +373,7 @@ def _impl(
     entrypoint = entrypoint or ctx.attr.entrypoint
     cmd = cmd or ctx.attr.cmd
     architecture = architecture or ctx.attr.architecture
+    variant = variant or ctx.attr.variant
     compression = compression or ctx.attr.compression
     compression_options = compression_options or ctx.attr.compression_options
     experimental_tarball_format = experimental_tarball_format or ctx.attr.experimental_tarball_format
@@ -467,6 +476,7 @@ def _impl(
             base_config = config_file,
             base_manifest = manifest_file,
             architecture = architecture,
+            variant = variant,
             operating_system = operating_system,
             os_version = os_version,
             layer_name = str(i),
@@ -750,6 +760,9 @@ _attrs = dicts.add(_layer.attrs, {
         this user does not affect the other actions (e.g., adding files).
 
         This field supports stamp variables.""",
+    ),
+    "variant": attr.string(
+        doc = "The desired CPU variant to use in the container image.",
     ),
     "volumes": attr.string_list(
         doc = """List of volumes to mount.
