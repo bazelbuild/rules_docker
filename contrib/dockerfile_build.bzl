@@ -59,7 +59,7 @@ def _impl(repository_ctx):
             build_args.extend(["--build-arg", "%s=%s" % (pair[0], pair[1])])
     if repository_ctx.attr.vars:
         for env_var in repository_ctx.attr.vars:
-            build_args.extend(["--build-arg", "%s=%s" % (env_var, repository_ctx.os.environ.get(env_var))])
+            build_args.extend(["--build-arg", "%s=%s" % (env_var, repository_ctx.os.environ.get(env_var, ""))])
 
     # The docker bulid command needs to run using the supplied Dockerfile
     # because it may refer to relative paths in its ADD, COPY and WORKDIR
