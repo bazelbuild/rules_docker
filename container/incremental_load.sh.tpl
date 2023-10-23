@@ -249,6 +249,16 @@ function read_variables() {
 # This is not executed if the single argument --norun is passed or
 # no run_statements are generated (in which case, 'run' is 'False').
 if [[ "%{run}" == "True" ]]; then
+  # When 'bazel run' is called, it expects that the args specified in the BUILD
+  # file are not known to the run command and will prepend them to all other
+  # arguments.
+  #
+  # However, we have already baked those commands into the image, because users
+  # expect that 'args' in the case of an image target will be included in the
+  # image.  This templated script de-duplicates the args specified in the BUILD
+  # file by skipping the number of args already included in the image command.
+  shift "%{run_num_args}"
+
   docker_args=()
   container_args=()
 
