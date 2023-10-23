@@ -344,8 +344,12 @@ _layer_attrs = dicts.add({
         A list of files that should be included in the Docker image.""",
     ),
     "mode": attr.string(
-        default = "0o555",  # 0o555 == a+rx
-        doc = "Set the mode of files added by the `files` attribute.",
+        default = "0o555",
+        doc = """Set the mode of files and directories added.
+
+        "0o555" == a+rx
+
+        Applies to `files`, `empty_files`, `empty_dirs`, and `empty_root_dirs` attributes.""",
     ),
     "mtime": attr.int(default = _DEFAULT_MTIME),
     "operating_system": attr.string(
