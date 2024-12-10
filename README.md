@@ -6,7 +6,12 @@
 
 ## Status
 
-🚨 rules_docker is no longer maintained and deprecated. Please see [rules_oci](https://github.com/bazel-contrib/rules_oci) for a better designed and maintained alternative.
+🚨 rules_docker is maintained on an as-needed basis. Please see
+[rules_oci](https://github.com/bazel-contrib/rules_oci) for an alternative. This
+repo was previously archived in Oct 2023, then unarchived Nov 2024 as
+rules_docker remains a dependency for many projects.  Having it in an unarchived
+state permits the community to post new issues, workarounds, and maintainance
+and security pull requests.
 
 ## Basic Rules
 
