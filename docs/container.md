@@ -161,8 +161,7 @@ The created target can be referenced as `@label_name//image`.
 
 <pre>
 container_pull(<a href="#container_pull-name">name</a>, <a href="#container_pull-architecture">architecture</a>, <a href="#container_pull-cpu_variant">cpu_variant</a>, <a href="#container_pull-cred_helpers">cred_helpers</a>, <a href="#container_pull-digest">digest</a>, <a href="#container_pull-docker_client_config">docker_client_config</a>,
-               <a href="#container_pull-import_tags">import_tags</a>, <a href="#container_pull-os">os</a>, <a href="#container_pull-os_features">os_features</a>, <a href="#container_pull-os_version">os_version</a>, <a href="#container_pull-platform_features">platform_features</a>, <a href="#container_pull-puller_darwin">puller_darwin</a>,
-               <a href="#container_pull-puller_linux_amd64">puller_linux_amd64</a>, <a href="#container_pull-puller_linux_arm64">puller_linux_arm64</a>, <a href="#container_pull-puller_linux_s390x">puller_linux_s390x</a>, <a href="#container_pull-registry">registry</a>, <a href="#container_pull-repo_mapping">repo_mapping</a>,
+               <a href="#container_pull-import_tags">import_tags</a>, <a href="#container_pull-os">os</a>, <a href="#container_pull-os_features">os_features</a>, <a href="#container_pull-os_version">os_version</a>, <a href="#container_pull-platform_features">platform_features</a>, <a href="#container_pull-registry">registry</a>, <a href="#container_pull-repo_mapping">repo_mapping</a>,
                <a href="#container_pull-repository">repository</a>, <a href="#container_pull-tag">tag</a>, <a href="#container_pull-timeout">timeout</a>)
 </pre>
 
@@ -204,10 +203,6 @@ please use the bazel startup flag `--loading_phase_threads=1` in your bazel invo
 | <a id="container_pull-os_features"></a>os_features |  Specifies os features when pulling a multi-platform manifest list.   | List of strings | optional | [] |
 | <a id="container_pull-os_version"></a>os_version |  Which os version to pull if this image refers to a multi-platform manifest list.   | String | optional | "" |
 | <a id="container_pull-platform_features"></a>platform_features |  Specifies platform features when pulling a multi-platform manifest list.   | List of strings | optional | [] |
-| <a id="container_pull-puller_darwin"></a>puller_darwin |  Exposed to provide a way to test other pullers on macOS   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | @go_puller_darwin//file:downloaded |
-| <a id="container_pull-puller_linux_amd64"></a>puller_linux_amd64 |  Exposed to provide a way to test other pullers on Linux   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | @go_puller_linux_amd64//file:downloaded |
-| <a id="container_pull-puller_linux_arm64"></a>puller_linux_arm64 |  Exposed to provide a way to test other pullers on Linux   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | @go_puller_linux_arm64//file:downloaded |
-| <a id="container_pull-puller_linux_s390x"></a>puller_linux_s390x |  Exposed to provide a way to test other pullers on Linux   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | @go_puller_linux_s390x//file:downloaded |
 | <a id="container_pull-registry"></a>registry |  The registry from which we are pulling.   | String | required |  |
 | <a id="container_pull-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | required |  |
 | <a id="container_pull-repository"></a>repository |  The name of the image.   | String | required |  |

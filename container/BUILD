@@ -98,6 +98,7 @@ bzl_library(
         ":layer",
         ":layer_tools",
         ":providers",
+        "//internal:execution_bzl",
         "//skylib:filetype",
         "//skylib:hash",
         "//skylib:label",
