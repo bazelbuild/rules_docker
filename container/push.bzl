@@ -59,7 +59,11 @@ def _impl(ctx):
     # If a tag file is provided, override <tag> with tag value
     if ctx.file.tag_file:
         tag = "$(cat {})".format(_get_runfile_path(ctx, ctx.file.tag_file))
+        tag_file = ctx.file.tag_file
         pusher_input.append(ctx.file.tag_file)
+    else:
+        tag_file = ctx.actions.declare_file(ctx.label.name + "_tag")
+        ctx.actions.write(tag_file, "latest")
 
     stamp = ctx.attr.stamp[StampSettingInfo].value
     stamp_inputs = [ctx.info_file, ctx.version_file] if stamp else []
@@ -137,6 +141,7 @@ def _impl(ctx):
             registry = registry,
             repository = repository,
             digest = ctx.outputs.digest,
+            tag = tag_file,
         ),
     ]
 
