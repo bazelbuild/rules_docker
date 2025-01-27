@@ -157,7 +157,7 @@ def build_layer(
         debs = [f.path for f in debs],
     )
     manifest_file = ctx.actions.declare_file(name + "-layer.manifest")
-    ctx.actions.write(manifest_file, manifest.to_json())
+    ctx.actions.write(manifest_file, json.encode(manifest))
     args.add(manifest_file, format = "--manifest=%s")
 
     ctx.actions.run(
