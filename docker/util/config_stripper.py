@@ -70,7 +70,10 @@ def strip_tar(input, output):
         # that symlinks to a lower layer that hasn't been extracted yet. Just
         # reversing the iteration order avoids this problem.
         for layer in reversed(image['Layers']):
-          (new_layer_name, new_diff_id) = strip_layer(os.path.join(tempdir, layer))
+          layer_path = os.path.join(tempdir, layer)
+          if not os.path.exists(layer_path):
+              continue
+          (new_layer_name, new_diff_id) = strip_layer(layer_path)
 
           new_layers.append(new_layer_name)
           new_diff_ids.append(new_diff_id)
