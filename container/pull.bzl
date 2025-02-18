@@ -123,7 +123,7 @@ _container_pull_attrs = {
     "tag": attr.string(
         default = "latest",
         doc = """The `tag` of the Docker image to pull from the specified `repository`.
-        
+
         If neither this nor `digest` is specified, this attribute defaults to `latest`.
         If both are specified, then `tag` is ignored.
 
@@ -288,7 +288,7 @@ pull = struct(
     implementation = _impl,
 )
 
-# Pulls a container image.
+# Pulls a container image. sdfsdfds
 
 # This rule pulls a container image into our intermediate format (OCI Image Layout).
 container_pull = repository_rule(
