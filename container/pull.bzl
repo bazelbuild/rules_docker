@@ -243,7 +243,6 @@ def _impl(repository_ctx):
     result = struct(return_code = -1, stdout = "", stderr = "")
 
     for i in range(total_attempts):
-        print("tanx", i)
         result = repository_ctx.execute(args, **kwargs)
         if result.return_code == 0:
             break
