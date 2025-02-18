@@ -42,5 +42,5 @@ write_file(
 sh_binary(
     name = "update",
     srcs = [":gen_update"],
-    data = [":container_doc"],
+    data = [":container.md_"],
 )
