@@ -240,7 +240,7 @@ def _impl(repository_ctx):
         }
 
     total_attempts = repository_ctx.attr.retry + 1
-    result = struct(return_code=-1, stdout="", stderr="")
+    result = struct(return_code = -1, stdout = "", stderr = "")
 
     for i in range(total_attempts):
         print("tanx", i)
@@ -249,7 +249,7 @@ def _impl(repository_ctx):
             break
 
     if result.return_code != 0:  # If it still fails after all retries
-        fail("Pull command failed after {%d} attempts: %s (%s)" % (total_attempts , result.stderr, " ".join([str(a) for a in args])))
+        fail("Pull command failed after {%d} attempts: %s (%s)" % (total_attempts, result.stderr, " ".join([str(a) for a in args])))
 
     updated_attrs = {
         k: getattr(repository_ctx.attr, k)

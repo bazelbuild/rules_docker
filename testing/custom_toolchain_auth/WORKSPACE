@@ -73,6 +73,6 @@ authenticated_local_pull(
     name = "local_pull",
     registry = "localhost:5000",
     repository = "docker/test",
-    tag = "test",
     retry = 3,
+    tag = "test",
 )
