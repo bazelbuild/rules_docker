@@ -48,6 +48,7 @@ container_pull(
     repository = "library/alpine",
     # tag field is ignored since digest is set
     tag = "3.8",
+    retry = 2,
 )
 
 container_pull(
@@ -57,6 +58,7 @@ container_pull(
     repository = "google/ubuntu1604",
     # tag field is ignored since digest is set
     tag = "latest",
+    retry = 2,
 )
 
 container_pull(
@@ -64,6 +66,7 @@ container_pull(
     digest = "sha256:ace9881e6e9c5d48b5fd637321361aeffe54000265894a65f7d818dc1065bd80",
     registry = "launcher.gcr.io",
     repository = "google/bazel",
+    retry = 2,
 )
 
 dockerfile_image(

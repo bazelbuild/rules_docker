@@ -123,7 +123,7 @@ _container_pull_attrs = {
     "tag": attr.string(
         default = "latest",
         doc = """The `tag` of the Docker image to pull from the specified `repository`.
-        
+
         If neither this nor `digest` is specified, this attribute defaults to `latest`.
         If both are specified, then `tag` is ignored.
 
@@ -134,6 +134,10 @@ _container_pull_attrs = {
         doc = """Timeout in seconds to fetch the image from the registry.
 
         This attribute will be overridden by the PULLER_TIMEOUT environment variable, if it is set.""",
+    ),
+    "retry": attr.int(
+        doc = """The number of retries that will be attempted should there be a failure when pulling""",
+        default = 0,
     ),
 }
 
@@ -235,9 +239,17 @@ def _impl(repository_ctx):
             ),
         }
 
-    result = repository_ctx.execute(args, **kwargs)
-    if result.return_code:
-        fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args])))
+    total_attempts = repository_ctx.attr.retry + 1
+    result = struct(return_code=-1, stdout="", stderr="")
+
+    for i in range(total_attempts):
+        print("tanx", i)
+        result = repository_ctx.execute(args, **kwargs)
+        if result.return_code == 0:
+            break
+
+    if result.return_code != 0:  # If it still fails after all retries
+        fail("Pull command failed after {%d} attempts: %s (%s)" % (total_attempts , result.stderr, " ".join([str(a) for a in args])))
 
     updated_attrs = {
         k: getattr(repository_ctx.attr, k)

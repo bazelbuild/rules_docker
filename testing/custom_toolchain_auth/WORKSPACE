@@ -61,6 +61,7 @@ container_pull(
     name = "distroless_fixed_id",
     registry = "gcr.io",
     repository = "distroless/base",
+    retry = 2,
 )
 
 load(
@@ -73,4 +74,5 @@ authenticated_local_pull(
     registry = "localhost:5000",
     repository = "docker/test",
     tag = "test",
+    retry = 3,
 )
