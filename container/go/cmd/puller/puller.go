@@ -30,9 +30,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/pkg/errors"
 
-	"github.com/bazelbuild/rules_docker/container/go/pkg/compat"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -53,6 +53,19 @@ var (
 	variant         = flag.String("variant", "", "Image's CPU variant, if referring to a multi-platform manifest list.")
 	features        = flag.String("features", "", "Image's CPU features, if referring to a multi-platform manifest list.")
 	timeout         = flag.Int("timeout", 600, "Timeout in seconds for the puller. e.g., --timeout=1000 for a 1000 second timeout.")
+
+	// HTTP status codes worth retrying
+	retryableStatusCodes = []string{"429", "500", "502", "503", "504"}
+	// Common network errors
+	networkErrors = []string{
+		"connection refused",
+		"timeout",
+		"connection reset",
+		"connection closed",
+		"no such host",
+		"network",
+		"dial tcp",
+	}
 )
 
 // Tag applied to images that were pulled by digest. This denotes
@@ -91,11 +104,38 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform, transport *h
 		return errors.Wrapf(err, "parsing tag %q", imgName)
 	}
 
-	// Fetch the image with desired cache files and platform specs.
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform), remote.WithTransport(transport))
-	if err != nil {
-		return errors.Wrapf(err, "reading image %q", ref)
+	// Implement retry logic for HTTP failures
+	const maxRetries = 3
+	var img v1.Image
+	var lastErr error
+
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		if attempt > 0 {
+			log.Printf("Retrying image pull (attempt %d/%d) after error: %v", attempt+1, maxRetries, lastErr)
+			// Add a small delay before retrying
+			time.Sleep(time.Duration(attempt) * time.Second)
+		}
+
+		// Fetch the image with desired cache files and platform specs.
+		img, err = remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain), remote.WithPlatform(platform), remote.WithTransport(transport))
+		if err == nil {
+			// Success, no need to retry
+			break
+		}
+
+		lastErr = err
+
+		// Only retry on HTTP/network errors, not on invalid image errors
+		if !isHTTPError(err) {
+			return errors.Wrapf(err, "reading image %q", ref)
+		}
+
+		// If this is the last attempt, return the error
+		if attempt == maxRetries-1 {
+			return errors.Wrapf(err, "reading image %q after %d attempts", ref, maxRetries)
+		}
 	}
+
 	if cachePath != "" {
 		img = cache.Image(img, cache.NewFilesystemCache(cachePath))
 	}
@@ -105,6 +145,26 @@ func pull(imgName, dstPath, cachePath string, platform v1.Platform, transport *h
 	}
 
 	return nil
+}
+
+// isHTTPError determines if the given error is an HTTP/network-related error
+// that's suitable for retry
+func isHTTPError(err error) bool {
+	errStr := err.Error()
+
+	for _, code := range retryableStatusCodes {
+		if strings.Contains(errStr, code) {
+			return true
+		}
+	}
+
+	for _, netErr := range networkErrors {
+		if strings.Contains(errStr, netErr) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func main() {
