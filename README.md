@@ -6,14 +6,12 @@
 
 ## Status
 
-🚨 rules_docker is in minimal maintenance mode.
-
-- The maintainers have very little time, and are unlikely to review PRs or respond to issues.
-- Releases will be infrequent or may not happen at all.
-- The maintainers are determining if the project has a long-term future, and hope to post a roadmap soon.
-
-You may find more details in
-[the discussion](https://github.com/bazelbuild/rules_docker/discussions/2038).
+🚨 rules_docker is maintained on an as-needed basis. Please see
+[rules_oci](https://github.com/bazel-contrib/rules_oci) for an alternative. This
+repo was previously archived in Oct 2023, then unarchived Nov 2024 as
+rules_docker remains a dependency for many projects.  Having it in an unarchived
+state permits the community to post new issues, workarounds, and maintainance
+and security pull requests.
 
 ## Basic Rules
 
