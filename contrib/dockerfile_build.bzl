@@ -51,7 +51,7 @@ def _impl(repository_ctx):
 
     docker_path = _docker(repository_ctx)
     dockerfile_path = repository_ctx.path(repository_ctx.attr.dockerfile)
-    img_name = repository_ctx.name + ":dockerfile_image"
+    img_name = repository_ctx.original_name + ":dockerfile_image"
 
     build_args = []
     if repository_ctx.attr.build_args:
