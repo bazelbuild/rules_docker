@@ -17,15 +17,15 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "extract_config_lib",
     srcs = ["extract_config.go"],
     importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/extract_config",
     visibility = ["//visibility:private"],
-    deps = ["@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library"],
+    deps = ["@com_github_google_go_containerregistry//pkg/v1/tarball"],
 )
 
 go_binary(
     name = "extract_config",
-    embed = [":go_default_library"],
+    embed = [":extract_config_lib"],
     visibility = ["//visibility:public"],
 )

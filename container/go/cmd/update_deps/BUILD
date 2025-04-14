@@ -18,7 +18,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
     name = "update_deps",
-    embed = [":go_default_library"],
+    embed = [":update_deps_lib"],
     visibility = ["//visibility:public"],
 )
 
@@ -32,5 +32,16 @@ go_library(
         "@com_github_google_go_containerregistry//pkg/crane:go_default_library",
         "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
         "@com_github_pkg_errors//:go_default_library",
+    ],
+)
+
+go_library(
+    name = "update_deps_lib",
+    srcs = ["update_deps.go"],
+    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/update_deps",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_google_go_containerregistry//pkg/crane",
+        "@com_github_google_go_containerregistry//pkg/v1:pkg",
     ],
 )

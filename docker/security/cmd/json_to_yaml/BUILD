@@ -14,15 +14,15 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "json_to_yaml_lib",
     srcs = ["json_to_yaml.go"],
     importpath = "github.com/bazelbuild/rules_docker/docker/security/cmd/json_to_yaml",
     visibility = ["//visibility:private"],
-    deps = ["@com_github_ghodss_yaml//:go_default_library"],
+    deps = ["@com_github_ghodss_yaml//:yaml"],
 )
 
 go_binary(
     name = "json_to_yaml",
-    embed = [":go_default_library"],
+    embed = [":json_to_yaml_lib"],
     visibility = ["//visibility:public"],
 )

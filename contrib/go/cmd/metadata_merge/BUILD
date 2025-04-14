@@ -14,18 +14,18 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "metadata_merge_lib",
     srcs = ["metadata_merge.go"],
     importpath = "github.com/bazelbuild/rules_docker/contrib/go/cmd/metadata_merge",
     visibility = ["//visibility:private"],
     deps = [
-        "//contrib/go/pkg/metadata:go_default_library",
-        "@in_gopkg_yaml_v2//:go_default_library",
+        "//contrib/go/pkg/metadata",
+        "@in_gopkg_yaml_v2//:yaml_v2",
     ],
 )
 
 go_binary(
     name = "metadata_merge",
-    embed = [":go_default_library"],
+    embed = [":metadata_merge_lib"],
     visibility = ["//visibility:public"],
 )

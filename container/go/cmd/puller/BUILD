@@ -22,22 +22,22 @@ gazelle(name = "gazelle")
 
 go_binary(
     name = "puller",
-    embed = [":go_default_library"],
+    embed = [":rules_docker_lib"],
     visibility = ["//visibility:public"],
 )
 
 go_library(
-    name = "go_default_library",
+    name = "rules_docker_lib",
     srcs = ["puller.go"],
     importpath = "github.com/bazelbuild/rules_docker",
     visibility = ["//visibility:private"],
     deps = [
-        "//container/go/pkg/compat:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/name:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/cache:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/remote:go_default_library",
-        "@com_github_pkg_errors//:go_default_library",
+        "//container/go/pkg/compat",
+        "@com_github_google_go_containerregistry//pkg/authn",
+        "@com_github_google_go_containerregistry//pkg/name",
+        "@com_github_google_go_containerregistry//pkg/v1:pkg",
+        "@com_github_google_go_containerregistry//pkg/v1/cache",
+        "@com_github_google_go_containerregistry//pkg/v1/remote",
+        "@com_github_pkg_errors//:errors",
     ],
 )

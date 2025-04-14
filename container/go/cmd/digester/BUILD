@@ -17,19 +17,19 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 # Build file for digester binary based on go-containerregistry backend.
 
 go_library(
-    name = "go_default_library",
+    name = "digester_lib",
     srcs = ["digester.go"],
     importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/digester",
     visibility = ["//visibility:private"],
     deps = [
-        "//container/go/pkg/compat:go_default_library",
-        "//container/go/pkg/oci:go_default_library",
-        "//container/go/pkg/utils:go_default_library",
+        "//container/go/pkg/compat",
+        "//container/go/pkg/oci",
+        "//container/go/pkg/utils",
     ],
 )
 
 go_binary(
     name = "digester",
-    embed = [":go_default_library"],
+    embed = [":digester_lib"],
     visibility = ["//visibility:public"],
 )

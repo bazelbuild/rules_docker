@@ -18,7 +18,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
     name = "zipper",
-    embed = [":go_default_library"],
+    embed = [":zipper_lib"],
     visibility = ["//visibility:public"],
 )
 
@@ -26,5 +26,12 @@ go_library(
     name = "go_default_library",
     srcs = ["zipper.go"],
     importpath = "github.com/bazelbuild/rules_docker",
+    visibility = ["//visibility:private"],
+)
+
+go_library(
+    name = "zipper_lib",
+    srcs = ["zipper.go"],
+    importpath = "github.com/bazelbuild/rules_docker/container/go/cmd/zipper",
     visibility = ["//visibility:private"],
 )

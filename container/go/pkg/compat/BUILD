@@ -18,7 +18,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "go_default_library",
+    name = "compat",
     srcs = [
         "config.go",
         "image.go",
@@ -28,26 +28,26 @@ go_library(
     importpath = "github.com/bazelbuild/rules_docker/container/go/pkg/compat",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/tarball:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
-        "@com_github_pkg_errors//:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:pkg",
+        "@com_github_google_go_containerregistry//pkg/v1/tarball",
+        "@com_github_google_go_containerregistry//pkg/v1/types",
+        "@com_github_pkg_errors//:errors",
     ],
 )
 
 go_test(
-    name = "go_default_test",
+    name = "compat_test",
     srcs = [
         "config_test.go",
         "write_test.go",
     ],
-    embed = [":go_default_library"],
+    embed = [":compat"],
     deps = [
-        "@com_github_google_go_containerregistry//pkg/v1:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/empty:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/mutate:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/random:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/types:go_default_library",
-        "@com_github_kylelemons_godebug//pretty:go_default_library",
+        "@com_github_google_go_containerregistry//pkg/v1:pkg",
+        "@com_github_google_go_containerregistry//pkg/v1/empty",
+        "@com_github_google_go_containerregistry//pkg/v1/mutate",
+        "@com_github_google_go_containerregistry//pkg/v1/random",
+        "@com_github_google_go_containerregistry//pkg/v1/types",
+        "@com_github_kylelemons_godebug//pretty",
     ],
 )
