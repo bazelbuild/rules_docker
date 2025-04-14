@@ -20,7 +20,6 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "py_image_library",
     srcs = ["//testdata:py_image_library.py"],
-    srcs_version = "PY2AND3",
 )
 
 py3_image(

@@ -423,7 +423,6 @@ py_test(
         "//tests/container/testdata:expected.tar",
         "//tests/container/testdata:source",
     ],
-    python_version = "PY3",
     deps = ["//container:build_tar_lib"],
 )
 
@@ -976,8 +975,6 @@ py_test(
     size = "medium",
     srcs = ["image_test.py"],
     data = TEST_DATA,
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = ["@containerregistry"],
 )
 

@@ -95,7 +95,6 @@ def py3_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
 
     py_binary(
         name = binary_name,
-        python_version = "PY3",
         deps = deps + layers,
         exec_compatible_with = ["@io_bazel_rules_docker//platforms:run_in_container"],
         **kwargs

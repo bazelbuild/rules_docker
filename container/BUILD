@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -33,8 +34,6 @@ py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
     imports = ["."],
-    python_version = "PY3",
-    srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [":build_tar_lib"],
 )

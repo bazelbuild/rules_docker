@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@subpar//:subpar.bzl", "par_binary")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -21,11 +21,10 @@ exports_files([
     "security_check_whitelist.json",
 ])
 
-par_binary(
+py_binary(
     name = "security_check",
     srcs = ["security_check.py"],
     main = "security_check.py",
-    python_version = "PY3",
     visibility = ["//visibility:public"],
 )
 

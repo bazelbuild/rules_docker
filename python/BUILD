@@ -18,23 +18,6 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-# Python2 is a dependency of rules_docker due to its dependency on
-# containerregistry. To run builds on environments in which 'which python'
-# points to python3, you can use the py_runtime target below.
-# To use this target, simply add the following flag to your build commands:
-# --python_top=//python:py_runtime_2
-# Note you need to have a symlink to a valid python2 version in
-# '/usr/bin/python2' for this to work.
-# Note this will stop working with Bazel 0.26.0 or whenever
-# --incompatible_use_python_toolchains is turned on by default.
-# See https://github.com/bazelbuild/bazel/issues/7899
-py_runtime(
-    name = "py_runtime_2",
-    files = [],
-    interpreter_path = "/usr/bin/python2",
-    python_version = "PY2",
-)
-
 bzl_library(
     name = "python_bzl",
     srcs = ["python.bzl"],

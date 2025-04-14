@@ -100,7 +100,6 @@ def py_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
 
     native.py_binary(
         name = binary_name,
-        python_version = "PY2",
         deps = deps + layers,
         exec_compatible_with = ["@io_bazel_rules_docker//platforms:run_in_container"],
         **kwargs

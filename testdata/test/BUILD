@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
-load("@io_bazel_rules_docker_pip_deps//:requirements.bzl", "all_requirements", "requirement")
+load("@pip//:requirements.bzl", "all_requirements", "requirement")
 
 package(default_visibility = ["//testdata:__subpackages__"])
 
@@ -30,7 +30,6 @@ filegroup(
 py_library(
     name = "py_image_library_using_addict",
     srcs = ["py_image_library_using_addict.py"],
-    srcs_version = "PY2AND3",
     deps = [requirement("addict")],
 )
 

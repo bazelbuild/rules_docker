@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -21,13 +22,11 @@ licenses(["notice"])  # Apache 2.0
 py_binary(
     name = "config_stripper",
     srcs = ["config_stripper.py"],
-    python_version = "PY3",
 )
 
 py_binary(
     name = "to_json",
     srcs = ["to_json.py"],
-    python_version = "PY3",
 )
 
 exports_files([
@@ -56,6 +55,5 @@ py_test(
     size = "medium",
     srcs = ["config_stripper_test.py"],
     data = ["//docker/util/testdata:image_with_symlinked_layer.tar"],
-    python_version = "PY3",
     deps = [":config_stripper_lib"],
 )

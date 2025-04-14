@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -34,28 +35,24 @@ py_binary(
     name = "extract_image_id",
     srcs = [":extract_image_id.py"],
     legacy_create_init = False,
-    python_version = "PY3",
     deps = [":extract_image_id_lib"],
 )
 
 py_library(
     name = "extract_image_id_lib",
     srcs = [":extract_image_id.py"],
-    srcs_version = "PY2AND3",
 )
 
 py_binary(
     name = "extract_last_layer",
     srcs = [":extract_last_layer.py"],
     legacy_create_init = False,
-    python_version = "PY3",
 )
 
 py_binary(
     name = "compare_ids_test",
     srcs = [":compare_ids_test.py"],
     legacy_create_init = False,
-    python_version = "PY3",
     deps = [":extract_image_id_lib"],
 )
 

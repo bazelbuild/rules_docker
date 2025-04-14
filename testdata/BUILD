@@ -14,7 +14,7 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
-load("@io_bazel_rules_docker_pip_deps//:requirements.bzl", "requirement")
+load("@pip//:requirements.bzl", "requirement")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@npm//@bazel/typescript:index.bzl", "ts_library")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
@@ -522,8 +522,6 @@ container_bundle(
 py_binary(
     name = "gen_deb",
     srcs = ["gen_deb.py"],
-    python_version = "PY3",
-    srcs_version = "PY2AND3",
 )
 
 generate_deb(
@@ -742,14 +740,12 @@ py3_image(
 py_library(
     name = "py_image_library_using_six",
     srcs = ["py_image_library_using_six.py"],
-    srcs_version = "PY2AND3",
     deps = [requirement("six")],
 )
 
 py_library(
     name = "py_image_complex_library",
     srcs = ["py_image_complex_library.py"],
-    srcs_version = "PY2AND3",
     deps = [
         ":py_image_library_using_six",
         "//testdata/test:py_image_library_using_addict",

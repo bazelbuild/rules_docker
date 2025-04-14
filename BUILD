@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("//contrib:test.bzl", "container_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -52,4 +53,10 @@ container_test(
     name = "structure_test_at_workspace_root",
     configs = ["//tests/container/configs:test.yaml"],
     image = "//testdata:link_with_files_base",
+)
+
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.txt",
+    requirements_txt = "requirements_lock.txt",
 )
