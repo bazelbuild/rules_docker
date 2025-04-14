@@ -19,12 +19,12 @@ load(
     "ImportInfo",
 )
 load(
-    "//skylib:path.bzl",
-    _get_runfile_path = "runfile",
-)
-load(
     "//skylib:docker.bzl",
     "docker_path",
+)
+load(
+    "//skylib:path.bzl",
+    _get_runfile_path = "runfile",
 )
 
 def _extract_layers(ctx, name, artifact):

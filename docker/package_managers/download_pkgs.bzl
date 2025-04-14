@@ -14,15 +14,15 @@
 
 """Rule for downloading apt packages and tar them in a .tar file."""
 
-load(
-    "//skylib:path.bzl",
-    "runfile",
-)
+load("@bazel_skylib//lib:types.bzl", "types")
 load(
     "//skylib:docker.bzl",
     "docker_path",
 )
-load("@bazel_skylib//lib:types.bzl", "types")
+load(
+    "//skylib:path.bzl",
+    "runfile",
+)
 
 def _generate_add_additional_repo_commands(ctx, additional_repos):
     return """printf "{repos}" >> /etc/apt/sources.list.d/{name}_repos.list""".format(

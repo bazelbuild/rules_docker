@@ -1,9 +1,9 @@
 """Top level extensions to download stuff.
 """
 
-load("//toolchains/docker:extensions.bzl", _docker_toolchain = "docker_toolchain")
 load("//container:extensions.bzl", _container = "container")
 load("//repositories:download_binaries.bzl", _download_go_puller = "download_go_puller", _download_structure_test = "download_structure_test")
+load("//toolchains/docker:extensions.bzl", _docker_toolchain = "docker_toolchain")
 
 container = _container
 docker_toolchain = _docker_toolchain

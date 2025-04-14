@@ -19,19 +19,19 @@ the host machine.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
+load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
+load(
+    "//skylib:docker.bzl",
+    "docker_path",
+)
 load(
     "//skylib:hash.bzl",
     _hash_tools = "tools",
 )
-load("@io_bazel_rules_docker//container:layer.bzl", "zip_layer")
-load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
     "//skylib:zip.bzl",
     _zip_tools = "tools",
-)
-load(
-    "//skylib:docker.bzl",
-    "docker_path",
 )
 
 def _extract_impl(

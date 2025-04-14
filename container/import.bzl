@@ -14,11 +14,6 @@
 """Rule for importing a container image."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load(
-    "//skylib:hash.bzl",
-    _hash_tools = "tools",
-    _sha256 = "sha256",
-)
 load("@io_bazel_rules_docker//container:providers.bzl", "ImportInfo", "PullInfo")
 load(
     "//container:layer_tools.bzl",
@@ -30,6 +25,11 @@ load(
     "//skylib:filetype.bzl",
     tar_filetype = "tar",
     tgz_filetype = "tgz",
+)
+load(
+    "//skylib:hash.bzl",
+    _hash_tools = "tools",
+    _sha256 = "sha256",
 )
 load(
     "//skylib:path.bzl",

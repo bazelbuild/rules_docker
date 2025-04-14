@@ -17,12 +17,12 @@ release.
 """
 
 load(
-    "//skylib:path.bzl",
-    "runfile",
-)
-load(
     "//skylib:docker.bzl",
     "docker_path",
+)
+load(
+    "//skylib:path.bzl",
+    "runfile",
 )
 
 def _get_runfile_path(ctx, f):

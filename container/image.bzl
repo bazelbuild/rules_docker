@@ -20,11 +20,6 @@ more specialized build leveraging the same implementation.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
-    "//skylib:hash.bzl",
-    _hash_tools = "tools",
-    _sha256 = "sha256",
-)
-load(
     "@io_bazel_rules_docker//container:providers.bzl",
     "ImageInfo",
     "LayerInfo",
@@ -47,6 +42,11 @@ load(
 load(
     "//skylib:filetype.bzl",
     container_filetype = "container",
+)
+load(
+    "//skylib:hash.bzl",
+    _hash_tools = "tools",
+    _sha256 = "sha256",
 )
 load(
     "//skylib:label.bzl",

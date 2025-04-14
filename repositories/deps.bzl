@@ -19,8 +19,8 @@ Provides functions to pull all external package dependencies of this
 repository.
 """
 
-load(":go_repositories.bzl", "go_deps")
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+load(":go_repositories.bzl", "go_deps")
 
 # TODO: `go_repository_default_config` is only useful for working around
 # https://github.com/bazelbuild/rules_docker/issues/1902 and could likely be
