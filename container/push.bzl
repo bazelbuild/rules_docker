@@ -199,12 +199,12 @@ container_push_ = rule(
             mandatory = True,
         ),
         "_digester": attr.label(
-            default = "//container/go/cmd/digester",
+            default = Label("//container/go/cmd/digester"),
             cfg = "exec",
             executable = True,
         ),
         "_pusher": attr.label(
-            default = "//container/go/cmd/pusher",
+            default = Label("//container/go/cmd/pusher"),
             cfg = "target",
             executable = True,
             allow_files = True,

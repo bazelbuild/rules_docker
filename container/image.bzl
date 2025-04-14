@@ -773,7 +773,7 @@ _attrs = dicts.add(_layer.attrs, {
         default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
     ),
     "_digester": attr.label(
-        default = "//container/go/cmd/digester",
+        default = Label("//container/go/cmd/digester"),
         cfg = "exec",
         executable = True,
     ),
