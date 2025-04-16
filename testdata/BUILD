@@ -14,9 +14,9 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
-load("@pip//:requirements.bzl", "requirement")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@npm//@bazel/typescript:index.bzl", "ts_library")
+load("@pip//:requirements.bzl", "requirement")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//cc:image.bzl", "cc_image")
 load(

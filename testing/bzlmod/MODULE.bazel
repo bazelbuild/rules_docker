@@ -45,6 +45,7 @@ docker_toolchain.configure(
     #],
 )
 use_repo(docker_toolchain, "docker_config")
+
 register_toolchains(
     # Register the toolchains resulting from the configuration.
     "@docker_config//:default_linux_toolchain",
