@@ -14,11 +14,6 @@
 """Rule for building a Container layer."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load(
-    "//skylib:hash.bzl",
-    _hash_tools = "tools",
-    _sha256 = "sha256",
-)
 load("@io_bazel_rules_docker//container:providers.bzl", "LayerInfo")
 load(
     "//container:layer_tools.bzl",
@@ -28,6 +23,11 @@ load(
     "//skylib:filetype.bzl",
     deb_filetype = "deb",
     tar_filetype = "tar",
+)
+load(
+    "//skylib:hash.bzl",
+    _hash_tools = "tools",
+    _sha256 = "sha256",
 )
 load(
     "//skylib:path.bzl",
@@ -157,7 +157,7 @@ def build_layer(
         debs = [f.path for f in debs],
     )
     manifest_file = ctx.actions.declare_file(name + "-layer.manifest")
-    ctx.actions.write(manifest_file, manifest.to_json())
+    ctx.actions.write(manifest_file, json.encode(manifest))
     args.add(manifest_file, format = "--manifest=%s")
 
     ctx.actions.run(

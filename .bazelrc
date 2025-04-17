@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The following flags are set to test use of new features for python toolchains
-# These flags will only work with Bazel 0.25.0 or above and are only needed for
-#  //tests/docker/security/... & the docker/package_managers rules.
-build --incompatible_use_python_toolchains
-test --incompatible_use_python_toolchains
+common --noenable_bzlmod
+common --enable_workspace
+
+common --verbose_failures
+
+common --test_output=errors
+
+common --incompatible_strict_action_env
+
+common --experimental_platform_in_output_dir
 
 # The flags below enable running tests using Remote Build Execution
 # for the provided toolchain.
