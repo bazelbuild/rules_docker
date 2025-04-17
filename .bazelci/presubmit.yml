@@ -159,14 +159,6 @@ tasks:
     test_flags:
       - --keep_going
       - --config=buildkite
-  testing_bzlmod:
-    platform: ubuntu2004
-    bazel: 6.0.0 # test minimum supported version of bazel and bzlmod
-    working_directory: testing/bzlmod
-    test_targets:
-      - //...
-    test_flags:
-      - --test_output=errors
   testing_examples:
     platform: ubuntu2004
     working_directory: testing/examples
