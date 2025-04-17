@@ -15,6 +15,7 @@
 
 # Fortran module files
 *.mod
+!go.mod
 *.smod
 
 # Python 2 bytecode files
@@ -56,3 +57,6 @@ node_modules
 
 # JetBrains garbage
 .idea/
+
+# MODULE.bazel stuff, for now
+MODULE.bazel.lock

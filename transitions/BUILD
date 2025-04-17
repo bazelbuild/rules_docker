@@ -20,7 +20,7 @@ package(
 
 bool_flag(
     name = "enable",
-    build_setting_default = True,
+    build_setting_default = False,
 )
 
 config_setting(
