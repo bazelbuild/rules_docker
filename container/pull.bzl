@@ -34,7 +34,7 @@ please use the bazel startup flag `--loading_phase_threads=1` in your bazel invo
 (typically by adding `startup --loading_phase_threads=1` as a line in your `.bazelrc`)
 """
 
-container_pull_attrs = {
+_container_pull_attrs = {
     "architecture": attr.string(
         default = "amd64",
         doc = "Which CPU architecture to pull if this image " +
@@ -123,7 +123,7 @@ container_pull_attrs = {
     "tag": attr.string(
         default = "latest",
         doc = """The `tag` of the Docker image to pull from the specified `repository`.
-
+        
         If neither this nor `digest` is specified, this attribute defaults to `latest`.
         If both are specified, then `tag` is ignored.
 
@@ -241,7 +241,7 @@ def _impl(repository_ctx):
 
     updated_attrs = {
         k: getattr(repository_ctx.attr, k)
-        for k in container_pull_attrs.keys()
+        for k in _container_pull_attrs.keys()
     }
     updated_attrs["name"] = repository_ctx.name
 
@@ -284,7 +284,7 @@ exports_files(["image.digest", "digest"])
     return updated_attrs
 
 pull = struct(
-    attrs = container_pull_attrs,
+    attrs = _container_pull_attrs,
     implementation = _impl,
 )
 
@@ -293,7 +293,7 @@ pull = struct(
 # This rule pulls a container image into our intermediate format (OCI Image Layout).
 container_pull = repository_rule(
     doc = _DOC,
-    attrs = container_pull_attrs,
+    attrs = _container_pull_attrs,
     implementation = _impl,
     environ = [
         "DOCKER_REPO_CACHE",
