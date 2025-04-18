@@ -416,6 +416,29 @@ docker_push_all(
     bundle = ":three_images_bundle",
 )
 
+container_bundle(
+    name = "push_targets_bundle",
+    push_targets = [
+        ":new_push_test_oci",
+        ":new_push_test_oci_from_new_puller",
+        ":new_push_test_legacy_from_container_img",
+        ":new_push_test_legacy_from_container_img_with_auth",
+        ":new_push_test_legacy_from_new_puller",
+        ":new_push_test_legacy_from_old_puller",
+        ":new_push_test_tar",
+        ":new_push_test_old_puller_tar",
+        ":new_push_test_oci_tag_file",
+        ":new_push_test_legacy_tag_file",
+        ":new_push_stamped_test_legacy",
+        ":new_push_stamped_test_oci",
+    ]
+)
+
+docker_push_all(
+    name = "test_docker_push_push_targets_bundle",
+    bundle = ":push_targets_bundle",
+)
+
 py_test(
     name = "build_tar_test",
     srcs = ["build_tar_test.py"],

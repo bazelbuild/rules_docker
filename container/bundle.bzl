@@ -14,7 +14,7 @@
 """Rule for bundling Container images into a tarball."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo", "STAMP_ATTR", "StampSettingInfo")
+load("@io_bazel_rules_docker//container:providers.bzl", "BundleInfo", "PushInfo", "STAMP_ATTR", "StampSettingInfo")
 load(
     "//container:layer_tools.bzl",
     _assemble_image = "assemble",
@@ -63,6 +63,20 @@ def _container_bundle_impl(ctx):
         runfiles += layer.get("diff_id", [])
         if layer.get("legacy"):
             runfiles.append(layer.get("legacy"))
+    for push_target in ctx.attr.push_targets:
+        push_info = push_target[PushInfo]
+        tag = push_info.registry + "/" + push_info.repository + ":" + push_info.tag
+
+        layer = _get_layers(ctx, ctx.label.name, push_info.image)
+        images[tag] = layer
+        runfiles.append(layer.get("config"))
+        runfiles.append(layer.get("config_digest"))
+        runfiles += layer.get("unzipped_layer", [])
+        runfiles += layer.get("diff_id", [])
+        if layer.get("legacy"):
+            runfiles.append(layer.get("legacy"))
+        if push_info.tag_file:
+            runfiles.append(push_info.tag_file)
 
     _incr_load(
         ctx,
@@ -102,6 +116,7 @@ container_bundle_ = rule(
         # Implicit dependencies.
         "image_targets": attr.label_list(allow_files = True),
         "images": attr.string_dict(),
+        "push_targets": attr.label_list(allow_files = True, providers = [PushInfo]),
         "stamp": STAMP_ATTR,
         "tar_output": attr.output(),
         "experimental_tarball_format": attr.string(
