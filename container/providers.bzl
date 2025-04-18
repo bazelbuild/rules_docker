@@ -53,6 +53,7 @@ PushInfo = provider(fields = [
     "registry",
     "repository",
     "digest",
+    "tag",
 ])
 
 # A provider containing information exposed by filter_layer rules
