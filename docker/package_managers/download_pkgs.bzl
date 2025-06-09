@@ -40,8 +40,8 @@ rm -rf /var/lib/apt/lists/*
 apt-get update -y -qq
 # Make partial dir
 mkdir -p /tmp/install/./partial
-# Install command
-apt-get install --no-install-recommends -y -qq -o Dir::Cache="/tmp/install" -o Dir::Cache::archives="." {packages} --download-only
+# Install command.  Use --reinstall to ensure packages are downloaded when present on build host.
+apt-get install --no-install-recommends -y -qq -o Dir::Cache="/tmp/install" -o Dir::Cache::archives="." {packages} --download-only --reinstall
 
 items=$(ls /tmp/install/*.deb)
 if [ -z "$items" ]; then
