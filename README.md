@@ -1381,6 +1381,7 @@ Here's a (non-exhaustive) list of companies that use `rules_docker` in productio
   * [Button](https://usebutton.com)
   * [Domino Data Lab](https://www.dominodatalab.com/)
   * [Canva](https://canva.com)
+  * [Cookies](https://cookies.co)
   * [Etsy](https://www.etsy.com)
   * [Evertz](https://evertz.com/)
   * [Jetstack](https://www.jetstack.io/)
