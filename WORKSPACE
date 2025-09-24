@@ -459,6 +459,8 @@ rbe_autoconfig(
 http_archive(
     name = "httplib2",
     build_file_content = """
+load("@rules_python//python:defs.bzl", "py_library")
+
 py_library(
     name = "httplib2",
     srcs = glob(["**/*.py"]),
@@ -477,6 +479,8 @@ py_library(
 http_archive(
     name = "six",
     build_file_content = """
+load("@rules_python//python:defs.bzl", "py_library")
+
 # Rename six.py to __init__.py
 genrule(
     name = "rename",
@@ -502,6 +506,8 @@ py_library(
 http_archive(
     name = "oauth2client",
     build_file_content = """
+load("@rules_python//python:defs.bzl", "py_library")
+
 py_library(
     name = "oauth2client",
     srcs = glob(["**/*.py"]),

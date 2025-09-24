@@ -29,6 +29,7 @@ load(
     "//repositories:go_repositories.bzl",
     _go_deps = "go_deps",
 )
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 # Load the resolved digests.
 load(":python.bzl", "DIGESTS")
@@ -75,7 +76,7 @@ DEFAULT_BASE = select({
 
 def py_layer(name, deps, filter = "", **kwargs):
     binary_name = name + ".layer-binary"
-    native.py_library(name = binary_name, deps = deps, **kwargs)
+    py_library(name = binary_name, deps = deps, **kwargs)
     filter_layer(name = name, dep = binary_name, filter = filter)
 
 def py_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
@@ -98,7 +99,7 @@ def py_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
     # TODO(mattmoor): Consider using par_binary instead, so that
     # a single target can be used for all three.
 
-    native.py_binary(
+    py_binary(
         name = binary_name,
         deps = deps + layers,
         exec_compatible_with = ["@io_bazel_rules_docker//platforms:run_in_container"],
