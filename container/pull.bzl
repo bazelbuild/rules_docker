@@ -135,6 +135,10 @@ _container_pull_attrs = {
 
         This attribute will be overridden by the PULLER_TIMEOUT environment variable, if it is set.""",
     ),
+    "lazy_download": attr.bool(
+        default = False,
+        doc = "(optional) Indicates whether donwload is postponed to build phase.",
+    ),
 }
 
 def _impl(repository_ctx):
@@ -159,9 +163,6 @@ def _impl(repository_ctx):
             puller = repository_ctx.attr.puller_linux_s390x
 
     args = [
-        repository_ctx.path(puller),
-        "-directory",
-        repository_ctx.path("image"),
         "-os",
         repository_ctx.attr.os,
         "-os-version",
@@ -235,16 +236,24 @@ def _impl(repository_ctx):
             ),
         }
 
-    result = repository_ctx.execute(args, **kwargs)
-    if result.return_code:
-        fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in args])))
-
     updated_attrs = {
         k: getattr(repository_ctx.attr, k)
         for k in _container_pull_attrs.keys()
     }
     updated_attrs["name"] = repository_ctx.name
 
+    fetch_args = [
+        repository_ctx.path(puller),
+        "-directory",
+        repository_ctx.path("image"),
+    ] + args
+
+    if repository_ctx.attr.lazy_download:
+        fetch_args += ["-metadata-only"]
+
+    result = repository_ctx.execute(fetch_args, **kwargs)
+    if result.return_code:
+        fail("Pull command failed: %s (%s)" % (result.stderr, " ".join([str(a) for a in fetch_args])))
     updated_attrs["digest"] = repository_ctx.read(repository_ctx.path("image/digest"))
 
     if repository_ctx.attr.digest and repository_ctx.attr.digest != updated_attrs["digest"]:
@@ -261,13 +270,44 @@ def _impl(repository_ctx):
     # foo.digest for an image named foo.
     repository_ctx.symlink(repository_ctx.path("image/digest"), repository_ctx.path("image/image.digest"))
 
+    tar_gz_files = []
+    sha256_files = []
+    config = json.decode(repository_ctx.read(repository_ctx.path("image/config.json")))
+    for i in range(len(config["rootfs"]["diff_ids"])):
+        layer_id = "{}".format(i)
+        layer_id = "000"[0:3-len(layer_id)] + layer_id
+        tar_gz_files.append("{}.tar.gz".format(layer_id))
+        sha256_files.append("{}.sha256".format(layer_id))
+
+    download_target = ""
+    if repository_ctx.attr.lazy_download:
+        later_fetch_args = [
+            "$(location {})".format(puller),
+            "-directory",
+            "$(RULEDIR)",
+        ] + args
+
+        download_target = """
+genrule(
+    name = "download",
+    message = "Fetching",
+    outs = ["{outs}"],
+    cmd = "{args}",
+    tools = ["{tool}"],
+)
+""".format(
+            outs = "\", \"".join(tar_gz_files + sha256_files),
+            args = " ".join(later_fetch_args),
+            tool = "{}".format(puller),
+        )
+
     repository_ctx.file("image/BUILD", """package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:import.bzl", "container_import")
-
+{download_hook}
 container_import(
     name = "image",
     config = "config.json",
-    layers = glob(["*.tar.gz"]),
+    layers = ["{layers}"],
     base_image_registry = "{registry}",
     base_image_repository = "{repository}",
     base_image_digest = "{digest}",
@@ -276,6 +316,8 @@ container_import(
 
 exports_files(["image.digest", "digest"])
 """.format(
+        download_hook = download_target,
+        layers = "\", \"".join(tar_gz_files),
         registry = updated_attrs["registry"],
         repository = updated_attrs["repository"],
         digest = updated_attrs["digest"],
