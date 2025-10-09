@@ -21,6 +21,7 @@ load(
     "@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl",
     "download_pkgs",
 )
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 package(default_visibility = ["//visibility:public"])
 

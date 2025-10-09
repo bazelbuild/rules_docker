@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@io_bazel_rules_docker//java:image.bzl", "java_image")
+load("@rules_java//java:java_binary.bzl", "java_binary")
 
 package(default_visibility = ["//visibility:public"])
 

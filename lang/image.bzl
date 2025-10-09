@@ -20,6 +20,9 @@ load(
     "FilterAspectInfo",
     "FilterLayerInfo",
 )
+load("@rules_java//java/common:java_common.bzl", "java_common")
+load("@rules_java//java/common:java_info.bzl", "JavaInfo")
+load("@rules_python//python:py_info.bzl", "PyInfo")
 load(
     "//container:container.bzl",
     _container = "container",

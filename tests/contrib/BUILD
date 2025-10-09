@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//container:bundle.bzl", "container_bundle")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 load("//contrib:push-all.bzl", "docker_push")

@@ -20,6 +20,10 @@ The signature of war_image is compatible with java_library.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_tools//tools/build_defs/repo:jvm.bzl", "jvm_maven_import_external")
+load("@rules_java//java:java_binary.bzl", "java_binary")
+load("@rules_java//java:java_library.bzl", "java_library")
+load("@rules_java//java/common:java_common.bzl", "java_common")
+load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load(
     "//container:container.bzl",
     "container_pull",
@@ -108,7 +112,7 @@ DEFAULT_JETTY_BASE = select({
 
 def java_layer(name, deps = [], runtime_deps = [], filter = "", **kwargs):
     binary_name = name + ".layer-binary"
-    native.java_library(name = binary_name, runtime_deps = deps + runtime_deps, **kwargs)
+    java_library(name = binary_name, runtime_deps = deps + runtime_deps, **kwargs)
     filter_layer(name = name, dep = binary_name, filter = filter)
 
 def java_files(f):
@@ -298,7 +302,7 @@ def java_image(
     **kwargs: See java_binary.
   """
     binary_name = name + ".binary"
-    native.java_binary(
+    java_binary(
         name = binary_name,
         # Calling java_binary with main_class = None will work if the package
         # name contains java or javatest. In this case, the main_class is
@@ -432,8 +436,7 @@ def war_image(name, base = None, deps = [], layers = [], env = {}, **kwargs):
     **kwargs: See java_library.
   """
     library_name = name + ".library"
-
-    native.java_library(name = library_name, deps = deps + layers, **kwargs)
+    java_library(name = library_name, deps = deps + layers, **kwargs)
 
     base = base or DEFAULT_JETTY_BASE
     tags = kwargs.get("tags", None)

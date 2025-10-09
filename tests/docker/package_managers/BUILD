@@ -17,6 +17,7 @@ load(
     "file_test",
     "rule_test",
 )
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//contrib:compare_ids_test.bzl", "compare_ids_test")
 load("//contrib:test.bzl", "container_test")
 load("//docker/package_managers:apt_key.bzl", "add_apt_key")

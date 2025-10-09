@@ -17,7 +17,11 @@ load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@npm//@bazel/typescript:index.bzl", "ts_library")
 load("@pip//:requirements.bzl", "requirement")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_java//java:java_library.bzl", "java_library")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("//cc:image.bzl", "cc_image")
 load(
     "//container:container.bzl",
@@ -54,7 +58,6 @@ load("//python3:image.bzl", "py3_image")
 load("//scala:image.bzl", "scala_image")
 load("//testdata:utils.bzl", "generate_deb", "rule_with_symlinks")
 load(":stamp_info.bzl", "stamp_info")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 

@@ -18,6 +18,7 @@ load(
     "file_test",
 )
 load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//container:bundle.bzl", "container_bundle")
 load(
     "//container:container.bzl",
