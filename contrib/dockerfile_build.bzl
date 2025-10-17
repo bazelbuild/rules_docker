@@ -77,6 +77,8 @@ def _impl(repository_ctx):
 
     if repository_ctx.attr.target:
         command.extend(["--target", repository_ctx.attr.target])
+    if repository_ctx.attr.platform:
+        command.extend(["--platform", repository_ctx.attr.platform])
 
     build_result = repository_ctx.execute(command)
     if build_result.return_code:
@@ -125,6 +127,9 @@ dockerfile_image = repository_rule(
         ),
         "target": attr.string(
             doc = "Specify which intermediate stage to finish at, passed to `--target`.",
+        ),
+        "platform": attr.string(
+            doc = "Specify which platform to build for, passed to `--platform`.",
         ),
     },
     implementation = _impl,
