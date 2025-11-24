@@ -46,6 +46,8 @@ def _impl(ctx):
 
         pusher_args, pusher_inputs = _gen_img_args(ctx, image, _get_runfile_path)
         pusher_args += ["--stamp-info-file=%s" % _get_runfile_path(ctx, f) for f in stamp_inputs]
+        if ctx.attr.retry_count > 0:
+            pusher_args.append("--retry-count={}".format(ctx.attr.retry_count))
         if ctx.attr.skip_unchanged_digest:
             pusher_args.append("--skip-unchanged-digest")
         pusher_args.append("--dst={}".format(tag))
@@ -111,6 +113,9 @@ container_push = rule(
                 "Docker",
             ],
             doc = "The form to push: Docker or OCI.",
+        ),
+        "retry_count": attr.int(
+            doc = "Number of times to retry pushing an image",
         ),
         "sequential": attr.bool(
             default = False,
