@@ -126,6 +126,12 @@ def _default_symlinks(dep):
     else:
         return dep[DefaultInfo].default_runfiles.symlinks
 
+def _default_root_symlinks(dep):
+    if FilterLayerInfo in dep:
+        return dep[FilterLayerInfo].runfiles.root_symlinks
+    else:
+        return dep[DefaultInfo].default_runfiles.root_symlinks
+
 def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     """Appends a layer for a single dependency's runfiles.
 
@@ -186,11 +192,24 @@ def _app_layer_impl(ctx, runfiles = None, emptyfiles = None):
     # app layer, we can already create symlinks to the runfiles path.
     if ctx.attr.binary:
         # Include any symlinks from the runfiles of the target for which we are synthesizing the layer.
-        symlinks.update({
-            (_reference_dir(ctx) + "/" + s.path): layer_file_path(ctx, s.target_file)
-            for s in _default_symlinks(dep).to_list()
-            if hasattr(s, "path")  # "path" and "target_file" are exposed to starlark since bazel 0.21.0.
-        })
+        for s in _default_symlinks(dep).to_list():
+            symlink_path = _reference_dir(ctx) + "/" + s.path
+            if filepath(ctx, s.target_file) in file_map:  # If the target is a real file, link to it
+                symlinks.update({
+                    symlink_path: _final_file_path(ctx, s.target_file),
+                })
+            else:
+                file_map[symlink_path] = s.target_file  # Otherwise, synthesize the "symlink" as a real file
+
+        # Include root_symlinks
+        for s in _default_root_symlinks(dep).to_list():
+            symlink_path = _runfiles_dir(ctx) + "/" + s.path
+            if filepath(ctx, s.target_file) in file_map:
+                symlinks.update({
+                    symlink_path: _final_file_path(ctx, s.target_file),
+                })
+            else:
+                file_map[symlink_path] = s.target_file
 
         symlinks.update({
             _final_file_path(ctx, f): layer_file_path(ctx, f)
