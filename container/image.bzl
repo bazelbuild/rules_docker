@@ -543,11 +543,13 @@ def _impl(
         outputs = [output_config],
         inputs = [config_file],
         command = "cp %s %s" % (config_file.path, output_config.path),
+        mnemonic = "CopyConfig",
     )
     ctx.actions.run_shell(
         outputs = [output_config_digest],
         inputs = [config_digest],
         command = "cp %s %s" % (config_digest.path, output_config_digest.path),
+        mnemonic = "CopyConfigDigest",
     )
 
     runfiles = ctx.runfiles(
