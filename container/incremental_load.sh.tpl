@@ -66,6 +66,7 @@ function join_by() {
   echo "$*"
 }
 
+# [CAAS] second argument is the tag name now so we can skip tag_layer() 
 function sequence_exists() {
   local diff_ids="$@"
   cat > config.json <<EOF
@@ -89,11 +90,12 @@ function sequence_exists() {
 }
 EOF
 
+  local TAG="$2"
   cat > manifest.json <<EOF
 [{
    "Config": "config.json",
    "Layers": [$(join_by , ${diff_ids[@]})],
-   "RepoTags": []
+   "RepoTags": ["$TAG"]
 }]
 EOF
 
@@ -128,10 +130,12 @@ function find_diffbase() {
   echo "${TOTAL_DIFF_IDS[@]:0:${LEGACY_COUNT}}"
 }
 
+# [CAAS] third argument is the tag name now so we can skip tag_layer() 
 function import_config() {
   # Create an image from the image configuration file.
   local name="${RUNFILES}/$1"
-  shift 1
+  local TAG="$2"
+  shift 2
 
   local tmp_dir="$(mktemp -d)"
   echo "${tmp_dir}" >> "${TEMP_FILES}"
@@ -167,7 +171,7 @@ function import_config() {
 
     DIFF_IDS+=("\"sha256:${diff_id}\"")
 
-    if ! sequence_exists "${DIFF_IDS[@]}"; then
+    if ! sequence_exists "${DIFF_IDS[@]}" "$TAG"; then
       # This sequence of diff-ids has not been seen,
       # so we must start by making this layer part of
       # the tarball we load.
@@ -202,7 +206,7 @@ function import_config() {
 [{
    "Config": "config.json",
    "Layers": [$(join_by , ${ALL_QUOTED[@]})],
-   "RepoTags": []
+   "RepoTags": ["$TAG"]
 }]
 EOF
 
@@ -214,12 +218,12 @@ EOF
   tar cPh "${MISSING[@]}" | "${DOCKER}" ${DOCKER_FLAGS} load
 }
 
+# [CAAS] Since the manifest.json file was adaped in this file in both places to include the image tag, this is a no-op now
 function tag_layer() {
   local name="$(cat "${RUNFILES}/$2")"
 
   local TAG="$1"
-  echo "Tagging ${name} as ${TAG}"
-  "${DOCKER}" ${DOCKER_FLAGS} tag sha256:${name} ${TAG}
+  echo "nothing to tag > no-op"
 }
 
 function read_variables() {

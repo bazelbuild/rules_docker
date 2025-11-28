@@ -258,10 +258,12 @@ def incremental_load(
         pairs = zip(image["diff_id"], image["unzipped_layer"])
 
         # Import the config and the subset of layers not present
-        # in the daemon.
+        # in the daemon. [CAAS] also tag
+        tag_reference = tag if not stamp else tag.replace("{", "${")
         load_statements.append(
-            "import_config '%s' %s" % (
+            "import_config '%s' \"%s\" %s" % (
                 _get_runfile_path(ctx, image["config"]),
+                tag_reference,
                 " ".join([
                     "'%s' '%s'" % (
                         _get_runfile_path(ctx, diff_id),

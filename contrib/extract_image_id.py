@@ -22,16 +22,18 @@ from json import JSONDecoder
 import sys
 import tarfile
 
-
+""" 
+[CAAS] get_id is now actually retrieving the name of the image (not the id). Since docker engine 1.29 and it utilizing the containerd image store, we cannot reliably retrieve the id from the tar
+"""
 def get_id(tar_path):
-  """Extracts the id of a docker image from its tarball.
+  """Extracts the ~~id~~ name of a docker image from its tarball.
 
   Args:
     tar_path: str path to the tarball
 
 
   Returns:
-    str id of the image
+    str ~~id~~name of the image
 
   """
   tar = tarfile.open(tar_path, mode="r")
@@ -51,13 +53,10 @@ def get_id(tar_path):
   # Get the manifest dictionary from JSON
   manifest = decoder.decode(manifest)[0]
 
-  # The name of the config file is of the form <image_id>.json
-  config_file = manifest["Config"]
+  # The name of the ~~config file is of the form <image_id>.json~~ image
+  image_name = manifest["RepoTags"][0]
 
-  # Get the id
-  id_ = config_file.split(".")[0]
-
-  return id_
+  return image_name
 
 
 if __name__ == "__main__":
