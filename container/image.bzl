@@ -229,6 +229,7 @@ def _image_config(
         outputs = [config, manifest],
         use_default_shell_env = True,
         mnemonic = "ImageConfig",
+        toolchain = None,
     )
 
     return config, _sha256(ctx, config), manifest, _sha256(ctx, manifest)
@@ -259,6 +260,7 @@ def _assemble_image_digest(ctx, name, image, image_tarball, output_digest):
         arguments = [args],
         mnemonic = "ImageDigest",
         progress_message = "Extracting image digest of %s" % image_tarball.short_path,
+        toolchain = None,
     )
 
 def _impl(

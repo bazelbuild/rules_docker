@@ -100,12 +100,14 @@ def build_layer(
        the layer tar and its sha256 digest
 
     """
-    toolchain_info = ctx.toolchains["@io_bazel_rules_docker//toolchains/docker:toolchain_type"].info
+    toolchain_type = "@io_bazel_rules_docker//toolchains/docker:toolchain_type"
+    toolchain_info = ctx.toolchains[toolchain_type].info
     layer = output_layer
     if toolchain_info.build_tar_target:
         build_layer_exec = toolchain_info.build_tar_target.files_to_run.executable
     else:
         build_layer_exec = ctx.executable.build_layer
+        toolchain_type = None
     args = ctx.actions.args()
     args.add(layer, format = "--output=%s")
     args.add(directory, format = "--directory=%s")
@@ -168,6 +170,7 @@ def build_layer(
         outputs = [layer],
         use_default_shell_env = True,
         mnemonic = "ImageLayer",
+        toolchain = toolchain_type,
     )
     return layer, _sha256(ctx, layer)
 
