@@ -14,5 +14,7 @@
 @REM  limitations under the License.
  
 SET RUNFILES=..
- 
+
+%{env_path}
+
 %{container_pusher} %{args} "$@"

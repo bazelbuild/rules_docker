@@ -35,6 +35,21 @@ def _get_runfile_path(ctx, f):
     else:
         return "${RUNFILES}/%s" % runfile(ctx, f)
 
+def _get_env_path(ctx, toolchain_info):
+    cred_helpers = toolchain_info.cred_helpers
+    if len(cred_helpers) == 0:
+        return ""
+
+    # if cred_helpers are configured in the toolchain, then we need to make those part of the PATH environment
+    cred_helpers_path = [x.dirname.replace("external/", "") for x in cred_helpers]
+
+    if ctx.attr.windows_paths:
+        cred_helpers_path = ";".join(["%{RUNFILES}%\\%s" % x.replace("/", "\\") for x in cred_helpers_path])
+        return "SET PATH=%PATH%;%s" % cred_helpers_path
+
+    cred_helpers_path = ":".join(["${RUNFILES}/%s" % x for x in cred_helpers_path])
+    return "export PATH=${PATH}:%s" % cred_helpers_path
+
 def _impl(ctx):
     """Core implementation of container_push."""
 
@@ -110,7 +125,7 @@ def _impl(ctx):
     if toolchain_info.client_config != "":
         pusher_args += ["-client-config-dir", str(toolchain_info.client_config)]
 
-    pusher_runfiles = [ctx.executable._pusher] + pusher_input
+    pusher_runfiles = [ctx.executable._pusher] + pusher_input + toolchain_info.cred_helpers
     runfiles = ctx.runfiles(files = pusher_runfiles)
     runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
 
@@ -121,6 +136,7 @@ def _impl(ctx):
         substitutions = {
             "%{args}": " ".join(pusher_args),
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
+            "%{env_path}": _get_env_path(ctx, toolchain_info),
         },
         is_executable = True,
     )
