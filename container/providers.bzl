@@ -52,7 +52,10 @@ LayerInfo = provider(fields = [
 PushInfo = provider(fields = [
     "registry",
     "repository",
+    "image",
     "digest",
+    "tag",
+    "tag_file",
 ])
 
 # A provider containing information exposed by filter_layer rules

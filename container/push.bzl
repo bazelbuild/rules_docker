@@ -136,7 +136,10 @@ def _impl(ctx):
         PushInfo(
             registry = registry,
             repository = repository,
+            image = ctx.attr.image,
             digest = ctx.outputs.digest,
+            tag = tag,
+            tag_file = ctx.file.tag_file,
         ),
     ]
 
