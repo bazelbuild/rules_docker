@@ -44,6 +44,7 @@ var (
 	format              = flag.String("format", "", "The format of the uploaded image (Docker or OCI).")
 	clientConfigDir     = flag.String("client-config-dir", "", "The path to the directory where the client configuration files are located. Overiddes the value from DOCKER_CONFIG.")
 	skipUnchangedDigest = flag.Bool("skip-unchanged-digest", false, "If set to true, will only push images where the digest has changed.")
+	retryCount          = flag.Int("retry-count", 0, "Amount of times the push will be retried. This cannot be a negative number.")
 	layers              utils.ArrayStringFlags
 	stampInfoFile       utils.ArrayStringFlags
 	insecureRepository  = flag.Bool("insecure-repository", false, "If set to true, the repository is assumed to be insecure (http vs https)")
@@ -84,6 +85,9 @@ func main() {
 	}
 	if *imgTarball == "" && *imgConfig == "" {
 		log.Fatalln("Neither --tarball nor --config was specified.")
+	}
+	if *retryCount < 0 {
+		log.Fatalln("-retry-count cannot be a negative number.")
 	}
 
 	// If the user provided a client config directory, ensure it's a valid
@@ -132,8 +136,17 @@ func main() {
 		opts = append(opts, name.Insecure)
 	}
 
-	if err := push(stamped, img, opts...); err != nil {
-		log.Fatalf("Error pushing image to %s: %v", stamped, err)
+	for retry := 0; retry < *retryCount+1; retry++ {
+		err := push(stamped, img, opts...)
+		if err == nil {
+			break
+		}
+
+		if *retryCount > 0 && retry < *retryCount {
+			log.Printf("Error pushing image to %s (attempt %d): %v", stamped, retry+1, err)
+		} else {
+			log.Fatalf("Error pushing image to %s: %v", stamped, err)
+		}
 	}
 
 	digestStr := ""
