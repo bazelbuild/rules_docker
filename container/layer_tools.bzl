@@ -290,6 +290,7 @@ def incremental_load(
             "%{docker_flags}": " ".join(toolchain_info.docker_flags),
             "%{docker_tool_path}": docker_path(toolchain_info),
             "%{load_statements}": "\n".join(load_statements),
+            "%{run_num_args}": str(len(ctx.attr.args)),
             "%{run_statement}": run_statement,
             "%{run_tag}": run_tag,
             "%{run}": str(run),
