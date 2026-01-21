@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from io import BytesIO
+import contextlib
 import datetime
 import json
 import os
@@ -53,19 +54,32 @@ class ImageTest(unittest.TestCase):
         self.maxDiff = None
         self.assertEqual(paths, tar.getnames())
 
-    def assertLayerNContains(self, img, n, paths):
+    def assertTarballSymlink(self, tar, path, target):
+        self.assertEqual(target, tar.getmember(path).linkname)
+
+    @contextlib.contextmanager
+    def _tarball_layer_n(self, img, n):
         buf = BytesIO(img.blob(img.fs_layers()[n]))
-        with tarfile.open(fileobj=buf, mode='r') as layer:
+        yield tarfile.open(fileobj=buf, mode='r')
+
+    def assertLayerNContains(self, img, n, paths):
+        with self._tarball_layer_n(img, n) as layer:
             self.assertTarballContains(layer, paths)
 
+    def assertLayerNSymlink(self, img, n, path, target):
+        with self._tarball_layer_n(img, n) as layer:
+            self.assertTarballSymlink(layer, path, target)
+
     def assertNonZeroMtimesInTopLayer(self, img):
-        buf = BytesIO(img.blob(img.fs_layers()[0]))
-        with tarfile.open(fileobj=buf, mode='r') as layer:
+        with self._tarball_layer_n(img, 0) as layer:
             for member in layer.getmembers():
                 self.assertNotEqual(member.mtime, 0)
 
     def assertTopLayerContains(self, img, paths):
         self.assertLayerNContains(img, 0, paths)
+
+    def assertTopLayerSymlink(self, img, path, target):
+        self.assertLayerNSymlink(img, 0, path, target)
 
     def assertConfigEqual(self, img, key, value):
         cfg = json.loads(img.config_file())
@@ -562,6 +576,12 @@ class ImageTest(unittest.TestCase):
                 './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image.py',
                 './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image_with_symlinks_in_data.binary',
                 './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/foo.txt',
+                # baz-symlink-real.txt is a real file, since the File that it points to is not in runfiles.files
+                './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/baz',
+                './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/baz/dir',
+                './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/baz/dir/baz-symlink-real.txt',
+                # bar-root-symlink-real.txt is a real file, since the File that it points to is not in runfiles.files
+                './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/bar-root-symlink-real.txt',
                 './app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/__init__.py',
                 './app/io_bazel_rules_docker',
                 # TODO(mattmoor): The path normalization for symlinks should match
@@ -571,9 +591,17 @@ class ImageTest(unittest.TestCase):
                 '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles',
                 '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker',
                 '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/foo-symlink.txt',
+                '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/foo-root-symlink.txt',
                 '/app/testdata/py_image_with_symlinks_in_data.binary',
                 '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/external',
             ])
+
+            # Test that root_symlinks that point to a file that is also in the runfiles tree is a symlink
+            self.assertTopLayerSymlink(
+                img,
+                '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/foo-root-symlink.txt',
+                '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/foo.txt',
+            )
 
             # Below that, we have a layer that generates symlinks for the library layer.
             self.assertLayerNContains(img, 1, [
@@ -585,6 +613,14 @@ class ImageTest(unittest.TestCase):
                 '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata',
                 '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py',
             ])
+
+            # Validate that library symlink is actually a symlink to the right path
+            self.assertLayerNSymlink(
+                img,
+                1,
+                '/app/testdata/py_image_with_symlinks_in_data.binary.runfiles/io_bazel_rules_docker/testdata/py_image_library.py',
+                '/app/io_bazel_rules_docker/testdata/py_image_library.py',
+            )
 
             # Check the library layer, which is two below our application layer.
             self.assertLayerNContains(img, 2, [

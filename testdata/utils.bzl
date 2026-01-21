@@ -28,9 +28,21 @@ def generate_deb(name, args = [], metadata_compression_type = "none"):
     )
 
 def _rule_with_symlinks_impl(ctx):
-    f = ctx.actions.declare_file("foo.txt")
-    ctx.actions.write(f, "test content")
-    runfiles = ctx.runfiles(files = [f], symlinks = {"foo-symlink.txt": f})
+    foo = ctx.actions.declare_file("foo.txt")
+    ctx.actions.write(foo, "test content")
+    bar = ctx.actions.declare_file("bar.txt")
+    ctx.actions.write(bar, "test content")
+    baz = ctx.actions.declare_file("baz.txt")
+    ctx.actions.write(baz, "test content")
+    runfiles = ctx.runfiles(
+        # bar and baz are specifically excluded from runfiles.files
+        # We want to test that we don't create broken symlinks for [root_]symlinks that don't
+        # have a corresponding file in runfiles.files.
+        # We expect that for those [root_]symlinks, a real file exists at the symlink path.
+        files = [foo],
+        symlinks = {"foo-symlink.txt": foo, "baz/dir/baz-symlink-real.txt": baz},
+        root_symlinks = {"foo-root-symlink.txt": foo, "bar-root-symlink-real.txt": bar},
+    )
     return DefaultInfo(runfiles = runfiles)
 
 rule_with_symlinks = rule(
