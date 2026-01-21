@@ -19,6 +19,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -43,6 +44,7 @@ var (
 	operatingSystem    = flag.String("operatingSystem", "linux", "Operating system to create docker image for, eg. linux.")
 	osVersion          = flag.String("osVersion", "", "Operating system version to create docker image for (primarily for windows).")
 	labelsArray        utils.ArrayStringFlags
+	labelsFilesArray   utils.ArrayStringFlags
 	ports              utils.ArrayStringFlags
 	volumes            utils.ArrayStringFlags
 	entrypointPrefix   utils.ArrayStringFlags
@@ -55,6 +57,7 @@ var (
 
 func main() {
 	flag.Var(&labelsArray, "labels", "Augment the Label of the previous layer.")
+	flag.Var(&labelsFilesArray, "labelsFile", "Augment the Label of the previous layer (json file with string-to-string dict).")
 	flag.Var(&ports, "ports", "Augment the ExposedPorts of the previous layer.")
 	flag.Var(&volumes, "volumes", "Augment the Volumes of the previous layer.")
 	flag.Var(&entrypointPrefix, "entrypointPrefix", "Prefix the Entrypoint with the specified arguments.")
@@ -80,6 +83,20 @@ func main() {
 		configFile, err = v1.ParseConfigFile(bytes.NewReader(configBlob))
 		if err != nil {
 			log.Fatalf("Failed to successfully parse config file json contents: %v", err)
+		}
+	}
+
+	for _, labelFile := range labelsFilesArray {
+		labelsBlob, err := ioutil.ReadFile(labelFile)
+		if err != nil {
+			log.Fatalf("Failed to read the labels JSON file: %v", err)
+		}
+		labels := make(map[string]string)
+		if err := json.Unmarshal(labelsBlob, &labels); err != nil {
+			log.Fatalf("Can't parse JSON file %q: %v", labelFile, err)
+		}
+		for name, value := range labels {
+			labelsArray = append(labelsArray, name+"="+value)
 		}
 	}
 
